@@ -1,0 +1,539 @@
+.container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  place-items: center;
+}
+
+.header {
+  width: 93.61%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  background: var(--secondary-color);
+  border-radius: 20px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+
+  margin: 0.5% 0% 0% 0%;
+}
+
+.logo img {
+  width: 100px;
+  height: 30.66px;
+  margin-left: 26px;
+  gap: 0px;
+  opacity: 0px;
+  border-radius: 10px;
+}
+
+.nav-menu ul {
+  list-style: none;
+  display: flex;
+  gap: 30px;
+}
+
+.nav-menu ul li a {
+  text-decoration: none;
+  color: black;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 16.8px;
+}
+.auth-buttons {
+  margin-right: 26px;
+}
+.auth-buttons .signup,
+.auth-buttons .login {
+  background-color: rgba(255, 255, 255, 1);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 36.49px;
+  cursor: pointer;
+  margin-left: 10px;
+  font-size: 14px;
+  color: rgba(26, 130, 255, 1);
+  font-weight: 600;
+}
+
+.auth-buttons .signup {
+  background: transparent;
+  background-color: rgba(255, 255, 255, 1);
+}
+.auth-buttons .login {
+  background: transparent;
+  background-color: rgba(255, 255, 255, 1);
+}
+.auth-buttons .signup:hover {
+  background: black;
+  color: white;
+}
+.auth-buttons .login:hover {
+  background: black;
+  color: white;
+}
+.content {
+  width: 92.91%;
+  display: flex;
+
+  margin: 1%;
+  color: #333;
+}
+.history-pagination {
+  margin-left: 1%;
+  width: 20%;
+
+  padding: 27px, 0px, 27px, 0px;
+  /* height: 70vh; */
+  max-height: 700px;
+  overflow-y: auto;
+  color: #333;
+  border-radius: 20px;
+  border: 1px solid #ebebf3;
+  /* background-color: rgba(249, 249, 249); */
+}
+
+.article-content {
+  width: 43.61%;
+  height: 67vh;
+  /* max-height: 300px; */
+  overflow-y: auto;
+  text-align: start;
+  margin: 0% 1%;
+  gap: 28px;
+  border-radius: 20px;
+  flex: 1;
+  padding: 0 20px 20px 20px;
+  border: 1px solid rgba(235, 235, 243, 1);
+}
+.article-title {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  /* margin-bottom: 16px; */
+  font-weight: 600;
+  font-size: 16px;
+  position: sticky; /* Makes it stick to a position */
+  top: 0; /* Sticks to the top of the screen */
+  z-index: 1000; /* Ensures it's above other content */
+  background: #fff;
+  padding-bottom: 10px;
+}
+.content-brake {
+  border: 1px solid #97b0c8;
+  margin-bottom: 2%;
+}
+.article-content .meta p {
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 16px;
+  color: #333;
+}
+
+.article-content .meta p:last-child {
+  font-weight: normal; /* Normal font-weight for the abstract */
+  font-size: 14px; /* Keep the font size same */
+  margin-bottom: 16px;
+  margin-top: 0;
+}
+.streaming-section {
+  width: 100%;
+
+  display: flex;
+
+  margin: 2% 0% 2% 0%;
+}
+.streaming-content {
+  width: 100%;
+
+  flex: 1;
+}
+.typographyRow-articles {
+  text-align: justify;
+  margin-top: 10px;
+  width: fit-content; /* Ensure it takes the full width of the container */
+  font-size: 15px !important;
+}
+
+.query-asked {
+  background-color: rgba(237, 237, 237, 1);
+  /* text-align: right; */
+  float: right;
+  max-width: 300px;
+  margin-bottom: 10px;
+  padding: 10px;
+  border-radius: 8px;
+  margin-left: auto; /* Pushes it to the right */
+  clear: both;
+  word-wrap: break-word;
+  margin: 2%;
+  max-height: 300px;
+  overflow-y: auto;
+  color: black;
+  font-size: 15px;
+}
+
+.response {
+  text-align: left;
+  float: left;
+  width: 80%;
+  /* max-width: 500px; */
+  margin-bottom: 10px;
+  padding: 10px;
+  border-radius: 8px;
+  margin-right: auto;
+  clear: both;
+  overflow-y: auto;
+  color: black;
+  background: #f9fcfe;
+  font-size: 14px;
+}
+
+.clearfix::after {
+  content: "";
+  display: block;
+  clear: both;
+}
+#pagination-a {
+  padding: 0 15px;
+}
+.history-pagination h5 {
+  width: fit-content;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: start;
+  margin-left: 10%;
+  margin: auto;
+  margin-top: 30px;
+}
+
+.history-pagination ul {
+  list-style: none;
+  padding: 0;
+  justify-content: start;
+}
+
+.history-pagination ul li {
+  text-align: start;
+  position: relative;
+  padding: 8px 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: color 0.3s ease;
+  /* border: 0px, 0px, 10px, 0px; */
+  border-bottom: 1px solid rgba(235, 235, 243, 1);
+  /* margin-left: 10%; */
+}
+.history-pagination ul li a {
+  text-decoration: none;
+  justify-content: start;
+  color: black;
+}
+
+.history-pagination ul li.active {
+  color: black;
+  font-weight: 600;
+}
+
+.history-pagination ul li.active::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 1px;
+}
+
+.history-pagination ul li.active a::before {
+  content: "";
+  position: absolute;
+  left: 3px; /* Adjusts the left position for the blue line */
+  top: 0;
+  bottom: 0;
+  width: 2px; /* Width of the blue line */
+  border-radius: 10px;
+  background-color: #007bff; /* Blue color for the active line */
+}
+
+.history-pagination ul li:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -5px;
+  width: 100%;
+  height: 1px;
+}
+
+.custom-bold {
+  font-weight: 900; /* Increase the boldness */
+}
+
+.stream-input {
+  position: absolute;
+  bottom: 10px;
+  left: 23.5%;
+  /* position: relative; */
+  width: 100%;
+  /* margin: 0% 0% 1% 17%; */
+  width: 68%;
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  border-radius: 20px;
+  /* z-index: 10; */
+  border: 1px solid rgba(235, 235, 243, 1);
+}
+.stream-input input {
+  flex-grow: 1;
+  padding: 15px 60px 15px 40px; /* Add padding for the flag and button */
+  border-radius: 20px;
+  border: 1px solid #ccc;
+  /* margin-right: 2%; */
+  font-size: 14px;
+  box-shadow: 500px;
+  width: 70%;
+}
+
+.stream-flag-logo {
+  position: absolute;
+  left: 2%;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 20px;
+  width: auto;
+}
+
+.stream-input button {
+  position: absolute;
+  height: 35px;
+  right: 0px;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 5px 15px;
+  background-color: #fff;
+  color: #007bff;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  margin-right: 1.5%;
+}
+.stream-input-query {
+  margin-bottom: 10px;
+  position: absolute;
+  bottom: 0px;
+  left: 22%;
+  display: flex;
+  align-items: center;
+  width: 76%;
+  margin-bottom: 20px;
+  padding: 10px;
+  z-index: 10;
+}
+/* For the entire scrollbar */
+::-webkit-scrollbar {
+  width: 5px; /* Width of the scrollbar */
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #f1f1f1; /* Background of the scrollbar track */
+  border-radius: 10px; /* Rounding the track corners */
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #888; /* Color of the scrollbar handle */
+  border-radius: 20px; /* Rounding the handle corners */
+}
+
+.right-aside {
+  /* width: 44px;
+    height: 88px; */
+  display: flex;
+  gap: 0px;
+  opacity: 0px;
+  height: fit-content;
+  /* border: 1px solid rgba(235, 235, 243, 1); */
+}
+.annotate {
+  width: 349px;
+  height: 70vh;
+  gap: 0px;
+  border-radius: 16px;
+  margin: 0 5% 0 0;
+  opacity: 0px;
+  border: 1px solid rgba(235, 235, 243, 1);
+  background: #fbfbfd;
+}
+.notes {
+  width: 349px;
+  height: 70vh;
+  gap: 0px;
+  border-radius: 16px;
+  margin: 0 5% 0 0;
+
+  opacity: 0px;
+  border: 1px solid rgba(235, 235, 243, 1);
+  background-color: rgba(235, 235, 243, 0.5);
+}
+.note-taking {
+  width: 100%;
+  height: 514px;
+  box-sizing: border-box;
+  background-color: rgba(235, 235, 243, 1);
+  border: 1px soild rgba(235, 235, 243, 1);
+  flex: 1;
+  border: none;
+  padding: 3%;
+  outline: none;
+  background: transparent;
+  resize: none;
+  font-size: 14px;
+  font-family: Manrope;
+}
+.icons-group {
+  gap: 10px;
+  display: flex;
+  flex-direction: column;
+}
+.notes p {
+  color: black;
+  width: 40px;
+  height: 20px;
+  gap: 0px;
+  opacity: 0px;
+  font-family: Manrope;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  text-align: left;
+  margin-left: 17px;
+
+  /* text-align: start; */
+}
+.annotate-icon {
+  border: 1px solid rgba(235, 235, 243, 1);
+  border-radius: 8px;
+  padding: 10px;
+}
+.notes-icon {
+  border: 1px solid rgba(235, 235, 243, 1);
+  /* background-color: rgba(235, 244, 255, 1); */
+  border-radius: 8px;
+  padding: 10px;
+}
+.tables p {
+  font-family: Manrope;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  text-align: left;
+  color: black;
+  margin: 3%;
+}
+.Annotate-tables {
+  margin: 3%;
+}
+.table-head {
+  border-bottom: 1px solid;
+}
+.annotate-icon,
+.notes-icon {
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.annotate-icon.open {
+  background-color: rgba(235, 244, 255, 1);
+}
+
+.annotate-icon.closed {
+  background-color: white;
+}
+
+.notes-icon.open {
+  background-color: rgba(235, 244, 255, 1);
+}
+
+.notes-icon.closed {
+  background-color: white;
+}
+/* Add custom border-bottom for each row */
+.table-row td {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.table-head {
+  border-bottom: 2px solid #ddd;
+}
+/* Add border-left for each th element */
+.table-head th {
+  border-left: 1px solid #ddd;
+  border-top: 1px solid #ddd;
+}
+.table-row td {
+  border-left: 1px solid #ddd;
+}
+
+/* Add overall table border styles */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+th {
+  text-decoration: none;
+}
+th,
+td {
+  padding: 8px; /* Optional padding for readability */
+  text-align: left; /* Optional for alignment */
+  text-decoration: none;
+  color: black;
+  font-family: Manrope;
+  font-size: small;
+  padding-left: 10px;
+}
+.save-button {
+  background-color: rgba(255, 255, 255, 1);
+  width: 50%;
+  height: 40px;
+  border: none;
+  border-radius: 15px;
+  cursor: pointer;
+  font-size: 15px;
+  color: rgba(26, 130, 255, 1);
+  font-weight: 500;
+  margin: 6px 6px 0 0;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+.back-button {
+  border: none;
+  padding: 0;
+  border-radius: 36.49px;
+  cursor: pointer;
+  /* margin-left: 10px; */
+  font-size: 14px;
+  color: rgba(26, 130, 255, 1);
+  font-weight: 600;
+  background: transparent;
+  background-color: rgba(255, 255, 255, 1);
+}
+
+.back-button > img {
+  margin-right: 5px;
+  margin-left: 5px;
+  font-size: 20px;
+  transition: all 0.4s ease-in;
+}
+
+.back-button:hover > img {
+  font-size: 1.2em;
+  transform: translateX(-5px);
+}
+.back-button > span {
+  font-weight: 500;
+  color: black;
+}
