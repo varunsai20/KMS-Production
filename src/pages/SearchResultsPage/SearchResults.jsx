@@ -8,14 +8,21 @@ import Annotation from "../../components/Annotaions"
 import { Button, CircularProgress } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
 import annotate from "../../assets/images/task-square.svg";
-//import notesicon from "../../assets/images/note-2.svg";
-
-import axios from "axios";
+import notesicon from "../../assets/images/note-2.svg";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faBookmark as regularBookmark } from '@fortawesome/free-regular-svg-icons';
+import { faComment  } from '@fortawesome/free-regular-svg-icons';
+import flag from "../../assets/images/flash.svg"
+//import sendicon from "../../assets/images/sendicon.svg";
+import { faTelegram } from "@fortawesome/free-brands-svg-icons";
+import axios from "axios";  
 const ITEMS_PER_PAGE = 5;
 
 const SearchResults = ({ open, onClose, applyFilters }) => {
   const location = useLocation(); // Access the passed state
   const { data } = location.state || { data: [] };
+ 
+
   const searchTerm = location.state?.searchTerm || "";
   const navigate = useNavigate();
   const contentRightRef = useRef(null); // Ref for searchContent-right
@@ -24,28 +31,101 @@ const SearchResults = ({ open, onClose, applyFilters }) => {
   const [selectedArticles, setSelectedArticles] = useState([]);
   const [showPopup, setShowPopup] = useState(false);
   const [hoveredRow, setHoveredRow] = useState(null);
-
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [bookmarkedPmids, setBookmarkedPmids] = useState({});
   const [currentPage, setCurrentPage] = useState(1);
+  const [pageInput, setPageInput] = useState(1); // Separate state for the page input
+  const [selectedDateRange, setSelectedDateRange] = useState('');
+  const [customStartDate, setCustomStartDate] = useState('');
+  const [customEndDate, setCustomEndDate] = useState('');
+  const [completePMID,setCompletePMID]=useState([])
+
+
+ 
+
+  //Chatbot
+  const [query, setQuery] = useState(""); // Initialize with empty string
+  const [response, setResponse] = useState("");
+  const [showStreamingSection, setShowStreamingSection] = useState(false);
+  const [chatHistory, setChatHistory] = useState(() => {
+    const storedHistory = sessionStorage.getItem("chatHistory");
+    return storedHistory ? JSON.parse(storedHistory) : [];
+  });
+  const endOfMessagesRef = useRef(null); // Ref to scroll to the last message
+  
+
   const [filters, setFilters] = useState(() => {
     // Get initial state from localStorage, if available
     const savedFilters = localStorage.getItem("filters");
     return savedFilters ? JSON.parse(savedFilters) : { articleType: [] };
   });
-  console.log(selectedArticles.length)
-  console.log(selectedArticles.length)
   // Save filters to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem("filters", JSON.stringify(filters));
   }, [filters]);
 
+
+  useEffect(()=>{
+    localStorage.setItem("PublicationDate",selectedDateRange)
+  },[selectedDateRange])
+  
+  const topPageRef = useRef(null); 
   const [showFilterPopup, setShowFilterPopup] = useState(false);
-  const [showTextAvailability, setShowTextAvailability] = useState(true);
+  const [showTextAvailability, setShowTextAvailability] = useState(false);
   const [showArticleType, setShowArticleType] = useState(true);
   const [showPublicationDate, setShowPublicationDate] = useState(true);
   const [openAnnotate, setOpenAnnotate] = useState(false);
   const [annotateData, setAnnotateData] = useState();
   const [openNotes, setOpenNotes] = useState(false);
   const [annotateLoading, setAnnotateLoading] = useState(false);
+  const [sortedData, setSortedData] = useState([]); // State to store sorted data
+  const [selectedSort, setSelectedSort] = useState("best_match");
+  const parseDate = (dateString) => {
+    const [day, month, year] = dateString.split("-");
+    const monthIndex = new Date(Date.parse(`${month} 1, ${year}`)).getMonth(); // Get month index from the string (e.g., "Jun" -> 5)
+    return new Date(year, monthIndex, day); // Return a Date object
+  };
+
+  const sortedPublicationData = [...data.articles].sort((a, b) => {
+    const dateA = parseDate(a.publication_date);
+    const dateB = parseDate(b.publication_date);
+    return dateB - dateA; // Sort in descending order (newest first)
+  });
+
+  // Function to handle sorting based on selected option
+  const handleSortChange = (e) => {
+    const sortType = e.target.value;
+    setSelectedSort(sortType); // Store the selected sort option
+
+    // If publication date is selected, use the sorted list for display
+    if (sortType === "publication_date") {
+      setSortedData(sortedPublicationData);
+    } else {
+      setSortedData(data.articles); // Reset to the original data for Best Match
+    }
+  };
+
+  useEffect(() => {
+    // Initialize with original data on component load
+    setSortedData(data.articles || []);
+  }, [data]);
+
+  // Pagination logic
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const paginatedArticles = sortedData.slice(startIndex, endIndex);
+
+  // Function to handle page change
+  const handlePageChange = (newPage) => {
+    if (newPage > 0 && newPage <= Math.ceil(sortedData.length / ITEMS_PER_PAGE)) {
+      setCurrentPage(newPage);
+      setPageInput(newPage);
+      scrollToTop();
+    }
+  };
+
+
+ 
   const handleAnnotate = () => {
     if (openAnnotate) {
       setOpenAnnotate(false);
@@ -55,7 +135,14 @@ const SearchResults = ({ open, onClose, applyFilters }) => {
     }
   };
   // console.log(filters)
-
+  const handleNotes = () => {
+    if (openNotes) {
+      setOpenNotes(false);
+    } else {
+      setOpenAnnotate(false);
+      setOpenNotes(true);
+    }
+  };
   useEffect(() => {
     if (annotateLoading) {
       // Disable scrolling
@@ -70,7 +157,14 @@ const SearchResults = ({ open, onClose, applyFilters }) => {
       document.body.style.overflow = "auto";
     };
   }, [annotateLoading]);
-
+  const handleBookmarkClick = (pmid) => {
+    setBookmarkedPmids((prevState) => ({
+      ...prevState,
+      [pmid]: !prevState[pmid], // Toggle the bookmark state for the specific pmid
+    }));
+    
+  };
+ 
   const handleFilterChange = async (event) => {
     setLoading(true);
     setSelectedArticles([])
@@ -93,7 +187,113 @@ const SearchResults = ({ open, onClose, applyFilters }) => {
     // Making API request with the updated filters and search term when a filter changes
     handleButtonClick(updatedFilters);
   };
+  
 
+
+
+     // Function to handle radio button change
+     const handleDateRangeChange = (event) => {
+      const value = event.target.value;
+    
+      // Check if the new value is different from the current state
+      if (value !== selectedDateRange) {
+        setSelectedDateRange(value);
+    
+        if (value !== "custom") {
+          // Call the filter immediately for non-custom ranges
+          handleDateFilter(value); 
+        }
+      }
+    };
+
+    const isValidDate = (dateString) => {
+      // Check if the format matches yyyy-mm-dd and the date is valid
+      const regex = /^\d{4}-\d{2}-\d{2}$/;
+    
+      if (!regex.test(dateString)) {
+        return false; // Invalid format
+      }
+    
+      const date = new Date(dateString);
+      return date instanceof Date && !isNaN(date); // Check if it's a valid date
+    };
+    
+    const handleCustomDateChange = (event) => {
+      const { name, value } = event.target;
+    
+      // Validate the date before setting it
+      if (isValidDate(value)) {
+        if (name === "startDate") {
+          setCustomStartDate(value); // Only set if valid
+        } else if (name === "endDate") {
+          setCustomEndDate(value); // Only set if valid
+        }
+    
+        // Ensure both dates are available and fully entered (length = 10) before calling handleDateFilter
+        const updatedStartDate = name === "startDate" ? value : customStartDate;
+        const updatedEndDate = name === "endDate" ? value : customEndDate;
+    
+        if (updatedStartDate.length === 10 && updatedEndDate.length === 10) {
+          handleDateFilter(updatedStartDate, updatedEndDate); // Pass valid raw dates to the filter
+        }
+      } else {
+        console.error("Invalid date format. Please enter a valid date.");
+      }
+    };
+    
+    const handleDateFilter = (startDate, endDate) => {
+      setLoading(true);
+      const filtersToSend = completePMID;
+    
+      let requestBody;
+    
+      if (selectedDateRange === "custom") {
+        if (startDate && endDate) {
+          // Format dates here to dd-mm-yyyy
+          const formattedStartDate = formatDate(startDate);
+          const formattedEndDate = formatDate(endDate);
+    
+          requestBody = {
+            pmids: filtersToSend,
+            filter_type: "Custom Range",
+            from_date: formattedStartDate, // Format applied here
+            to_date: formattedEndDate,
+          };
+        } else {
+          console.error("Please provide both start and end dates for the custom range.");
+          return;
+        }
+      } else {
+        requestBody = {
+          pmids: filtersToSend,
+          filter_type: selectedDateRange === "1" ? "5 years" : "1 year",
+        };
+      }
+    
+      const apiUrl = "http://13.127.207.184:80/filterdate";
+      axios
+        .post(apiUrl, requestBody)
+        .then((response) => {
+          const data = response.data;
+          setResults(data);
+          setLoading(false);
+          setCustomStartDate(""); // Reset after successful filtering
+          setCustomEndDate("");   // Reset after successful filtering
+          navigate("/search", { state: { data, searchTerm } });
+        })
+        .catch((error) => {
+          console.error("Error fetching data from the API", error);
+          setLoading(false);
+          navigate("/search", { state: { data: [], searchTerm } });
+        });
+    };
+    
+    const formatDate = (dateString) => {
+      const [year, month, day] = dateString.split("-");
+      return `${day}-${month}-${year}`; // Format for the API
+    };
+    
+    
   const handleButtonClick = (updatedFilters) => {
     //setCheckBoxLoading(true);
     //const term = newSearchTerm || seachTerm;
@@ -158,13 +358,22 @@ const SearchResults = ({ open, onClose, applyFilters }) => {
   useEffect(() => {
     setSelectedArticles([]);
     setAnnotateData([]);
-    setOpenAnnotate(false)
+    setOpenAnnotate(false) 
   }, []);
+  useEffect(() => {
+      const pmidData=sessionStorage.getItem("ResultData")
+      const parsedPmid=JSON.parse(pmidData)
+      const pmidList = parsedPmid.articles.map(article => article.pmid);
+      setCompletePMID(pmidList);
+    
+  }, [data, result]);
   useEffect(() => {
     // Clear session storage for chatHistory when the location changes
     sessionStorage.removeItem("chatHistory");
   }, [location]);
-
+  const capitalizeFirstLetter = (text) => {
+    return text.replace(/\b\w/g, (char) => char.toUpperCase());
+  };
   // Function to italicize the search term in the text
   const italicizeTerm = (text) => {
     if (!text) return "";
@@ -194,9 +403,13 @@ const SearchResults = ({ open, onClose, applyFilters }) => {
     setAnnotateData([])
     setSelectedArticles([])
     setOpenAnnotate(false)
+    setSelectedSort("best_match")
+    setSelectedDateRange(""); // Reset selectedDateRange to its default value (none selected)
+    setCustomStartDate(""); // Clear custom start date
+    setCustomEndDate(""); // Clear custom end date
     // Clear the filters from localStorage
     localStorage.removeItem("filters");
-    
+    localStorage.removeItem("PublicationDate");
     // Optionally, you can also trigger the API call without any filters
     handleButtonClick({ articleType: [] });
   };
@@ -204,23 +417,42 @@ const SearchResults = ({ open, onClose, applyFilters }) => {
     navigate(`/article/${pmid}`, { state: { data: data, searchTerm,annotateData: annotateData } });
   };
   // Calculate the index range for articles to display
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const endIndex = startIndex + ITEMS_PER_PAGE;
-  const paginatedArticles = data.articles && data.articles.slice(startIndex, endIndex) || [];
+  // const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  // const endIndex = startIndex + ITEMS_PER_PAGE;
+  // const paginatedArticles = data.articles && data.articles.slice(startIndex, endIndex) || [];
   // console.log(paginatedArticles);
 
   // Handle page change
-  const handlePageChange = (newPage) => {
-    if (newPage > 0 && newPage <= totalPages) {
-      setCurrentPage(newPage);
-
-      contentRightRef.current.scrollIntoView({ behavior: "smooth" });
+  const scrollToTop = () => {
+    if (topPageRef.current) {
+      topPageRef.current.scrollIntoView({ behavior: "smooth" });
     }
   };
-  console.log(annotateData);
+  // const handlePageChange = (newPage) => {
+  //   if (newPage > 0 && newPage <= totalPages) {
+  //     setCurrentPage(newPage);
+  //     setPageInput(newPage);
+  //     scrollToTop();
+  //     // contentRightRef.current.scrollIntoView({ behavior: "smooth" });
+  //   }
+  // };
+  const handlePageInputChange = (e) => {
+    const value = e.target.value;
+    setPageInput(value); // Update the input field value regardless of its validity
+  };
+  const handlePageInputSubmit = () => {
+    const pageNumber = parseInt(pageInput, 10);
+    if (!isNaN(pageNumber) && pageNumber > 0 && pageNumber <= totalPages) {
+      handlePageChange(pageNumber); // Only update the page if the input is valid
+    } else {
+      setPageInput(currentPage); // Reset input to current page if invalid
+    }
+  };
   useEffect(() => {
-    // Reset currentPage to 1 whenever new search results are loaded
-    setCurrentPage(1);
+    setCurrentPage(1); // Reset currentPage to 1 whenever new search results are loaded
+    setPageInput(1); // Reset the input field to 1 as well
+    scrollToTop();
+
   }, [data.articles]);
   useEffect(() => {
     if (loading) {
@@ -256,14 +488,13 @@ const SearchResults = ({ open, onClose, applyFilters }) => {
           , // Sending the selected PMIDs in the request body
       })
         .then((response) => {
-          console.log(response)
+
           //setIsChecked((prev) => !prev);
           //localStorage.setItem("checkboxState", JSON.stringify(!isChecked));
           const data = response.data; 
           // console.log(response)
           setAnnotateData(data)
-          console.log(data)
-          console.log(data.length)
+
           setOpenAnnotate(true)
           // console.log(data)// Assuming the API response contains the necessary data
           // setResults(data);
@@ -272,13 +503,10 @@ const SearchResults = ({ open, onClose, applyFilters }) => {
           // clearTimeout(timeoutId);
           // setLoading(false);
           setAnnotateLoading(false);
-          console.log("executed")
+
         })
         .catch((error) => {
           console.log(error);
-          // clearTimeout(timeoutId);
-          // setLoading(false);
-          // navigate("/search", { state: { data: [], searchTerm } });
           console.error("Error fetching data from the API", error);
         });
         }
@@ -315,7 +543,7 @@ const SearchResults = ({ open, onClose, applyFilters }) => {
       };
     });
   };
-
+  console.log(data)
   const toggleExpandText = (key) => {
     setExpandedTexts((prevState) => ({
       ...prevState,
@@ -375,7 +603,7 @@ const SearchResults = ({ open, onClose, applyFilters }) => {
             </td>
           </tr>
         );
-
+        
         // Collect all other type rows (cellular, gene, etc.)
         const otherTypeRows = Object.entries(types)
           .filter(([type]) => type !== "diseases")
@@ -491,7 +719,7 @@ const SearchResults = ({ open, onClose, applyFilters }) => {
       <SearchBar className="searchResults-Bar"></SearchBar>
       {/* Content-Section */}
 
-      <div className="Content">
+      <div className="Content" >
         <div id="Search-Content-Container">
           <div className="searchContent-left">
             <div className="searchContent-left-header">
@@ -625,16 +853,63 @@ const SearchResults = ({ open, onClose, applyFilters }) => {
                 </h5>
                 {showPublicationDate && (
                   <div className="searchfilter-options-dropdown">
-                    <label>
-                      <input type="radio" name="date" /> 1 year
-                    </label>
-                    <label>
-                      <input type="radio" name="date" /> 5 years
-                    </label>
-                    <label>
-                      <input type="radio" name="date" /> Custom range
-                    </label>
-                  </div>
+      {/* Radio buttons for 1 year, 5 years, and custom range */}
+      <label>
+        <input
+          type="radio"
+          name="date"
+          value="1"
+          checked={selectedDateRange === '1'}
+          onChange={handleDateRangeChange}
+        />{' '}
+        1 year
+      </label>
+      <label>
+        <input
+          type="radio"
+          name="date"
+          value="5"
+          checked={selectedDateRange === '5'}
+          onChange={handleDateRangeChange}
+        />{' '}
+        5 years
+      </label>
+      <label>
+        <input
+          type="radio"
+          name="date"
+          value="custom"
+          checked={selectedDateRange === 'custom'}
+          onChange={handleDateRangeChange}
+        />{' '}
+        Custom range
+      </label>
+
+      {/* Custom date range inputs, displayed only when 'Custom range' is selected */}
+      {selectedDateRange === 'custom' && (
+        <div className="custom-date-range">
+          <label>
+            Start Date:
+            <input
+              type="date"
+              name="startDate"
+              value={customStartDate}
+              onChange={handleCustomDateChange}
+            />
+          </label>
+          <label>
+            End Date:
+            <input
+              type="date"
+              name="endDate"
+              value={customEndDate}
+              onChange={handleCustomDateChange}
+            />
+          </label>
+        </div>
+      )}
+    </div>
+
                 )}
               </div>
               {/* Text availability section */}
@@ -694,23 +969,33 @@ const SearchResults = ({ open, onClose, applyFilters }) => {
           {loading ? (
            <Loading/>):("")}
           
-            <div className="searchContent-right" ref={contentRightRef}>
+            <div className="searchContent-right" >
               {data.articles && data.articles.length > 0 ? (
                 <>
                   <div className="SearchResult-Count-Filters">
                     <div className="SearchResult-Option-Left"
                       style={{
-                          cursor: selectedArticles.length > 0 ? 'pointer' : 'not-allowed',
+                          cursor: selectedArticles.length > 0 ? 'pointer' : '',
                           opacity: selectedArticles.length > 0 ? 1 : "", // Change opacity for a disabled effect
                         }}
+                        title={selectedArticles.length === 0 ? 'Select atleast one article to annotate' : 'Annotate selected articles'}
                         >
                         {annotateLoading ? (
                             <CircularProgress className="Loading-Spinner"background={"white"} size={24}  style={{ border:"none", marginLeft: "10px" }} />
                             
                           ):(
-                            <button className={`SearchResult-Annotate ${selectedArticles.length > 0 ? "active" : "disabled"}`} disabled={selectedArticles.length === 0}
-                                onClick={selectedArticles.length > 0 ? handleAnnotateClick : null} style={{ cursor: selectedArticles.length > 0 ? 'pointer' : 'not-allowed',
-                                  opacity: selectedArticles.length > 0 ? 1 : "",  }}> Annotate </button>
+                            <button 
+                            className={`SearchResult-Annotate ${selectedArticles.length > 0 ? "active" : "disabled"}`} 
+                            
+                            onClick={selectedArticles.length > 0 ? handleAnnotateClick : null} 
+                            style={{ 
+                              cursor: selectedArticles.length > 0 ? 'pointer' : '',
+                              opacity: selectedArticles.length > 0 ? 1 : ""
+                            }} 
+                            title={selectedArticles.length === 0 ? 'Select an article' : 'Annotate selected articles'}
+                          >
+                            Annotate
+                          </button>
                           )}
                     </div>
 
@@ -724,73 +1009,163 @@ const SearchResults = ({ open, onClose, applyFilters }) => {
                       </div>
                       <div style={{display:"flex",flexDirection:"row",alignItems:"baseline",gap:"5px"}}>
                         <span style={{color:"black", fontSize:"14px"}}>Sort by:</span>
-                      <select className="SearchResult-dropdown">
-                      <option value="audi">Publication Date</option>
-                      <option value="volvo">Best Match</option>
-                      </select>
+                        <select className="SearchResult-dropdown" onChange={handleSortChange} value={selectedSort}>
+          <option value="best_match">Most Relevant</option>
+          <option value="publication_date">Publication Date</option>
+        </select>
                       </div>
                      
                     </div>
                   </div>
 
-                  <div className="searchContent-articles">
-                    <div className="searchresults-list">
-                      {paginatedArticles.map((result, index) => (
-                        <div key={index} className="searchresult-item ">
-                          <div className="searchresult-item-header">
-                            <h3 className="searchresult-title">
-                            <input
-                                    type="checkbox"
-                                    className="result-checkbox"
-                                    onChange={() => handleCheckboxChange(result.pmid)}
-                                    checked={selectedArticles.includes(result.pmid)} // Sync checkbox state
-                                  />
-                              <span
-                                className="gradient-text"
-                                onClick={() => handleNavigate(result.pmid)}
-                                style={{ cursor: "pointer" }}
-                              >
-                                {italicizeTerm(result.article_title)}
-                              </span>
-                            </h3>
-                           
-                          </div>
-                          <p className="searchresult-authors">{`Published on: ${result.publication_date}`}</p>
-                          <p className="searchresult-pmid">{`PMID: ${result.pmid}`}</p>
-                          <p
-                              className="searchresult-description"
-                              style={{ textAlign: "justify" }}
-                            >
-                              {italicizeTerm(
-                                Object.values(result.abstract_content[1]).join(" ").slice(0, 500)
-                              )}
-                              {Object.values(result.abstract_content[1]).join(" ").length > 500 ? "..." : ""}
-                            </p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="pagination">
-                    <span>{`${startIndex + 1} - ${endIndex} of ${
-                      data.articles.length
-                    }`}</span>
-                    <div className="pagination-controls">
-                      <Button
-                        onClick={() => handlePageChange(currentPage - 1)}
-                        disabled={currentPage === 1}
-                      >
-                        {"<<"}
-                      </Button>
-                      <span>{currentPage}</span>
-                      <span>/ {totalPages}</span>
-                      <Button
-                        onClick={() => handlePageChange(currentPage + 1)}
-                        disabled={currentPage === totalPages}
-                      >
-                        {">>"}
-                      </Button>
-                    </div>
-                  </div>
+                  <div className="searchContent-articles" ref={contentRightRef}>
+  <div className="searchresults-list">
+  {paginatedArticles.map((result, index) => {
+    // Check if the similarity_score is available in the result or session storage
+    let similarityScore = result.similarity_score;
+
+    // If similarity score is not present in the result, retrieve it from session storage
+    if (!similarityScore) {
+      const storedData = sessionStorage.getItem('ResultData');
+      if (storedData) {
+        const parsedData = JSON.parse(storedData);
+        const articles = parsedData.articles;
+
+        // Find the article with the matching pmid in session storage and get similarity score
+        articles.forEach((article) => {
+          if (article.pmid === result.pmid) {
+            similarityScore = article.similarity_score || 'N/A';
+          }
+        });
+      }
+    }
+
+    return (
+      <div key={index} className="searchresult-item" >
+        <div className="searchresult-item-header">
+          <h3 className="searchresult-title">
+            <input
+              type="checkbox"
+              className="result-checkbox"
+              onChange={() => handleCheckboxChange(result.pmid)}
+              checked={selectedArticles.includes(result.pmid)} // Sync checkbox state
+            />
+            <span
+  className="gradient-text"
+  onClick={() => handleNavigate(result.pmid)}
+  style={{ cursor: "pointer" }}
+>
+  {italicizeTerm(
+    capitalizeFirstLetter(
+      openAnnotate
+        ? result.article_title.slice(0, 100) + (result.article_title.length > 100 ? "..." : "")
+        : result.article_title
+    )
+  )}
+</span>
+
+          </h3>
+        </div>
+        <p className="searchresult-authors">{`Published on: ${result.publication_date}`}</p>
+        <p className="searchresult-pmid">{`PMID: ${result.pmid}`}</p>
+        <p
+          className="searchresult-description"
+          style={{ textAlign: "justify" }}
+        >
+          {italicizeTerm(
+            Object.values(result.abstract_content[1])
+              .join(" ")
+              .slice(0, openAnnotate || openNotes ? 200 : 500)
+          )}
+          {Object.values(result.abstract_content[1]).join(" ").length > (openAnnotate || openNotes ? 200 : 500) ? "..." : ""}
+        </p>
+        <div className="Article-Options">
+          <p className="searchresult-similarity_score">
+            <span style={{color:"#c05600"}}>Relevancy Score: </span>
+            {similarityScore ? `${similarityScore.toFixed(2)} %` : 'N/A'}
+          </p>
+          <FontAwesomeIcon
+            icon={regularBookmark}
+            size="l"
+            style={{ color: bookmarkedPmids[result.pmid] ? 'blue' : 'black', cursor: 'pointer' }}
+            onClick={() => handleBookmarkClick(result.pmid)}
+            title={bookmarkedPmids[result.pmid] ? 'Bookmarked' : 'Bookmark this article'}
+          />
+          {/* <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: "3px", cursor: "pointer" }} title="Ask a question">
+            <FontAwesomeIcon icon={faComment} />
+            <p className="Ask-Question">Ask a Question</p>
+          </div> */}
+        </div>
+      </div>
+    );
+  })}
+  </div>
+</div>
+
+<div className="pagination">
+<div className="pagination-controls">
+    {/* Button to go to the first page */}
+    <Button
+      onClick={() => handlePageChange(1)}
+      disabled={currentPage === 1}
+    >
+      {"<<"} {/* First page button */}
+    </Button>
+
+    {/* Button to go to the previous page */}
+    <Button
+      onClick={() => handlePageChange(currentPage - 1)}
+      disabled={currentPage === 1}
+    >
+      {"<"} {/* Previous page button */}
+    </Button>
+
+    {/* Input for direct page number entry */}
+    <Button style={{ background: "none", border: "1px solid", padding: "0" }}>
+      <input
+        type="text"  // Keep as "text" to control the format (leading zeros)
+        value={String(pageInput).padStart(2, "0")}  // Display value with leading zero if necessary
+        onChange={(e) => {
+          const value = e.target.value;
+
+          // Only allow numeric input
+          if (/^\d*$/.test(value)) {
+            setPageInput(value); // Update only if it's a valid number or empty
+          }
+        }}
+        onBlur={handlePageInputSubmit} // Validate when input loses focus
+        onKeyDown={(e) => {
+          if (e.key === "Enter") handlePageInputSubmit(); // Validate when pressing Enter
+        }}
+        style={{
+          width: "35px",
+          textAlign: "center",
+          border: "none",
+          padding: "6px",
+          outline: "none"
+        }}
+      />
+    </Button>
+
+    <span> / {totalPages}</span>
+    {/* Button to go to the next page */}
+    <Button
+      onClick={() => handlePageChange(currentPage + 1)}
+      disabled={currentPage === totalPages}
+    >
+      {">"} {/* Next page button */}
+    </Button>
+
+    {/* Button to go to the last page */}
+    <Button
+      onClick={() => handlePageChange(totalPages)}
+      disabled={currentPage === totalPages}
+    >
+      {">>"} {/* Last page button */}
+    </Button>
+  </div>
+
+        </div>
                 </>
               ) : (
                 <div className="data-not-found-container">
@@ -820,19 +1195,55 @@ const SearchResults = ({ open, onClose, applyFilters }) => {
               </div>
             )}
 
+            {/* {openNotes && (
+                          <div className="search-notes">
+                            
+                            <div className="search-stream-input" >
+                                  <img src={flag} alt="flag-logo" className="stream-flag-logo" />
+                                  <input
+                                    type="text"
+                                    placeholder="Ask anything..."
+                                    value={query}
+                                    onChange={(e) => setQuery(e.target.value)}
+                                    onKeyDown={handleKeyDown}
+                                  />
+                                 
+                                    {loading ? (
+                                      <CircularProgress size={24} color="white" />
+                                    ) : (
+                                      <FontAwesomeIcon className="button" onClick={handleAskClick} icon={faTelegram} size={"xl"} />
+                                    )}
+                                  
+                                </div>
+                          </div>
+                        )} */}
+
 
                 <div className="search-icons-group">
-                <div
-        className={`search-annotate-icon ${openAnnotate ? "open" : "closed"} ${annotateData && annotateData.length > 0 ? "" : "disabled"}`}
-        onClick={annotateData && annotateData.length > 0 ? handleAnnotate : null}
-        style={{
-          cursor: annotateData && annotateData.length > 0 ? 'pointer' : 'not-allowed',
-          opacity: annotateData && annotateData.length > 0 ? 1 : 1, // Adjust visibility when disabled
-        }}
-      >
+                  <>
+                  <div
+                      className={`search-annotate-icon ${openAnnotate ? "open" : "closed"} ${annotateData && annotateData.length > 0 ? "" : "disabled"}`}
+                      onClick={annotateData && annotateData.length > 0 ? handleAnnotate : null}
+                      style={{
+                        cursor: annotateData && annotateData.length > 0 ? 'pointer' : '',
+                        opacity: annotateData && annotateData.length > 0 ? 1 : 1, // Adjust visibility when disabled
+                      }}
+                    >
                     <img src={annotate} alt="annotate-icon" />
                   </div>
+                  {/* <div
+                className={`notes-icon ${openNotes ? "open" : "closed"}`}
+                onClick={() => {
+                  handleNotes();
+                  // handleResize();
+                }}
+              >
+                <img src={notesicon} alt="notes-icon" />
+              </div> */}
+                  </>
+                
                 </div>
+                
               </div>
 
                     
@@ -842,6 +1253,7 @@ const SearchResults = ({ open, onClose, applyFilters }) => {
           
         </div>
       </div>
+      
       <Footer />
     </div>
   );

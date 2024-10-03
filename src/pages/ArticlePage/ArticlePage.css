@@ -214,6 +214,9 @@
 }
 
 .history-pagination ul li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   text-align: start;
   position: relative;
   padding: 8px 8px;
@@ -268,55 +271,90 @@
 .custom-bold {
   font-weight: 900; /* Increase the boldness */
 }
-
-.stream-input {
+.chat-query{
   position: absolute;
   bottom: 10px;
-  left: 23.5%;
+  left: 24%;
   /* position: relative; */
   width: 100%;
   /* margin: 0% 0% 1% 17%; */
   width: 68%;
   display: flex;
-  align-items: center;
-  padding: 10px;
+  
+  flex-direction: column;
+  padding: 10px 0;
   border-radius: 20px;
   /* z-index: 10; */
   border: 1px solid rgba(235, 235, 243, 1);
 }
+.predefined-prompts{
+  display: flex;
+  gap: 20px;
+  padding: 0 10px 10px 10px;
+}
+
+.predefined-prompts button{
+      /* background-color: transparent; */
+      border: 1px solid rgb(206 206 206);
+      color: black;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 24PX;
+      padding: 7px;
+      background-color: #C4DAD2;
+ }
+.stream-input {
+  width: 98%;
+  display: flex;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    align-items: center ;
+    margin: auto;
+  /* position: absolute;
+  bottom: 10px;
+  left: 23.5%;
+  width: 100%;
+  width: 68%;
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  border-radius: 20px;
+  border: 1px solid rgba(235, 235, 243, 1); */
+}
 .stream-input input {
   flex-grow: 1;
-  padding: 15px 60px 15px 40px; /* Add padding for the flag and button */
+  padding: 15px 0; /* Add padding for the flag and button */
   border-radius: 20px;
-  border: 1px solid #ccc;
-  /* margin-right: 2%; */
+  /* border: 1px solid #ccc; */
+  margin-left: 1%;
   font-size: 14px;
   box-shadow: 500px;
-  width: 70%;
+  width: 85%;
+  border:none;
+  outline: none;
 }
 
 .stream-flag-logo {
-  position: absolute;
-  left: 2%;
-  top: 50%;
-  transform: translateY(-50%);
+  /* position: absolute; */
+  /* left: 2%; */
+  top: 60%;
+  margin-left: 1%;
+  /* transform: translateY(-50%);
   height: 20px;
-  width: auto;
+  width: auto; */
 }
 
-.stream-input button {
-  position: absolute;
-  height: 35px;
-  right: 0px;
-  top: 50%;
-  transform: translateY(-50%);
-  padding: 5px 15px;
-  background-color: #fff;
-  color: #007bff;
-  border: none;
-  border-radius: 20px;
-  cursor: pointer;
-  margin-right: 1.5%;
+.stream-input .button {
+      /* position: absolute; */
+      height: 30px;
+      /* transform: translateY(-50%); */
+      /* padding: 5px 15px; */
+      background-color: #fff;
+      color: #007bff;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+      margin-right: 1%;
 }
 .stream-input-query {
   margin-bottom: 10px;
@@ -516,7 +554,7 @@ td {
   cursor: pointer;
   /* margin-left: 10px; */
   font-size: 14px;
-  color: rgba(26, 130, 255, 1);
+  color: black;
   font-weight: 600;
   background: transparent;
   background-color: rgba(255, 255, 255, 1);
@@ -536,4 +574,54 @@ td {
 .back-button > span {
   font-weight: 500;
   color: black;
+}
+
+.loading-dots {
+  display: inline-block;
+  width: 50px;
+  size:24px;
+  text-align: center;
+}
+
+.loading-dots span {
+  display: inline-block;
+  animation: blink 1s infinite both;
+}
+
+.loading-dots span:nth-child(1) {
+  animation-delay: 0s;
+}
+.loading-dots span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.loading-dots span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes blink {
+  0% {
+    opacity: 0.2;
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.2;
+  }
+}
+
+.typing-dot {
+  /* display: inline-block; */
+  display: flex;
+  flex-direction: row;
+  margin-left: 5px;
+  font-size: 24px;
+  color: #00bfa5;
+  animation: blink 1.2s infinite;
+}
+
+@keyframes blink {
+  0% { opacity: 0.2; }
+  20% { opacity: 1; }
+  100% { opacity: 0.2; }
 }

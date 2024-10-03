@@ -2,7 +2,7 @@ import React from "react";
 import Button from "./Buttons";
 import "../styles/variables.css";
 import "./Header.css";
-
+import Logo from "../assets/images/Logo_New.svg"
 const Header = () => {
   return (
     <div className="Search-Nav">
@@ -11,7 +11,7 @@ const Header = () => {
           <img
             href="/"
             className="Search-nav-logo"
-            src="https://www.infersol.com/wp-content/uploads/2020/02/logo.png"
+            src={Logo}
             alt="Infer logo"
           ></img>
         </a>

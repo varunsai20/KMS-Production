@@ -8,7 +8,9 @@ import annotate from "../../assets/images/task-square.svg";
 import { useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import { CircularProgress } from "@mui/material";
+import { Autocomplete,InputAdornment, TextField } from "@mui/material";
 import Annotation from "../../components/Annotaions";
+import Button from "../../components/Buttons"
 //import edit from "../../assets/images/16px.svg";
 //import annotate from "../../assets/images/task-square.svg";
 import notesicon from "../../assets/images/note-2.svg";
@@ -16,6 +18,7 @@ import rehypeRaw from "rehype-raw";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 //import sendicon from "../../assets/images/sendicon.svg";
 import { faTelegram } from "@fortawesome/free-brands-svg-icons";
+import { faPen } from '@fortawesome/free-solid-svg-icons';
 const ArticlePage = () => {
   const { pmid } = useParams();
   const location = useLocation();
@@ -39,7 +42,11 @@ const ArticlePage = () => {
   const [activeSection, setActiveSection] = useState("Title");
   const contentRef = useRef(null); // Ref to target the content div
   const [contentWidth, setContentWidth] = useState(); // State for content width
+  const [triggerAskClick, setTriggerAskClick] = useState(false);
 
+
+  const [editingPmid, setEditingPmid] = useState(null);
+  const [editedTitle, setEditedTitle] = useState('');
   // const handleResize = (event) => {
   //   const newWidth = event.target.value; // Get the new width from user interaction
   //   setWidth1(newWidth);
@@ -95,79 +102,80 @@ const ArticlePage = () => {
   }, [chatHistory]); // This will trigger when chatHistory changes
 
   const handleAskClick = async () => {
-    if (!query) {
-      alert("Please enter a query");
-      return;
-    }
+  if (!query) {
+    alert("Please enter a query");
+    return;
+  }
 
-    setShowStreamingSection(true);
-    setLoading(true);
+  setShowStreamingSection(true);
+  setLoading(true);
 
-    const newChatEntry = { query, response: "" };
-    setChatHistory((prevChatHistory) => [...prevChatHistory, newChatEntry]);
+  const newChatEntry = { query, response: "", showDot: true };
+  setChatHistory((prevChatHistory) => [...prevChatHistory, newChatEntry]);
 
-    const bodyData = JSON.stringify({
-      question: query,
-      pmid: pmid,
+  const bodyData = JSON.stringify({
+    question: query,
+    pmid: pmid,
+  });
+
+  try {
+    const response = await fetch("http://13.127.207.184:80/generateanswer", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: bodyData,
     });
 
-    try {
-      const response = await fetch("http://13.127.207.184:80/generateanswer", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: bodyData,
-      });
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
 
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = "";
+    setQuery("");
 
-      setQuery("");
+    const readStream = async () => {
+      let done = false;
+      const delay = 100; // Delay between words
 
-      const readStream = async () => {
-        let done = false;
+      while (!done) {
+        const { value, done: streamDone } = await reader.read();
+        done = streamDone;
 
-        while (!done) {
-          const { value, done: streamDone } = await reader.read();
-          done = streamDone;
+        if (value) {
+          buffer += decoder.decode(value, { stream: true });
+          if (articleData) {
+            let storedHistory = JSON.parse(localStorage.getItem("history")) || [];
 
-          if (value) {
-            buffer += decoder.decode(value, { stream: true });
+            // Check if the pmid is already present in the history
+            const pmidExists = storedHistory.some((item) => item.pmid === pmid);
 
-            // Store the latest history entry on top
-            if (articleData) {
-              let storedHistory =
-                JSON.parse(localStorage.getItem("history")) || [];
-              const newHistoryEntry = {
-                pmid: pmid,
-                title: articleData.article_title.toLowerCase(),
-              };
+            // Only add the entry if the pmid is not already in the history
+            if (!pmidExists) {
+              const newHistoryEntry = { pmid: pmid, title: articleData.article_title.toLowerCase() };
 
               // Add the new entry to the beginning of the history
-              storedHistory = [
-                newHistoryEntry,
-                ...storedHistory.filter((item) => item.pmid !== pmid),
-              ];
+              storedHistory = [newHistoryEntry, ...storedHistory];
 
               // Update localStorage
               localStorage.setItem("history", JSON.stringify(storedHistory));
             }
-            // While there is a complete JSON object in the buffer
-            while (buffer.indexOf("{") !== -1 && buffer.indexOf("}") !== -1) {
-              let start = buffer.indexOf("{");
-              let end = buffer.indexOf("}", start); // Ensure this is after the start
-              if (start !== -1 && end !== -1) {
-                // Extract the complete JSON object from the buffer
-                const jsonChunk = buffer.slice(start, end + 1);
-                buffer = buffer.slice(end + 1); // Keep the remaining buffer for the next chunk
+          }
+          // Process chunks
+          while (buffer.indexOf("{") !== -1 && buffer.indexOf("}") !== -1) {
+            let start = buffer.indexOf("{");
+            let end = buffer.indexOf("}", start);
+            if (start !== -1 && end !== -1) {
+              const jsonChunk = buffer.slice(start, end + 1);
+              buffer = buffer.slice(end + 1);
 
-                try {
-                  const parsedData = JSON.parse(jsonChunk); // Try parsing the extracted JSON
-                  const answer = parsedData.answer;
+              try {
+                const parsedData = JSON.parse(jsonChunk);
+                const answer = parsedData.answer;
+                const words = answer.split(" ");
 
-                  // Update the chat history with the new response
+                for (const word of words) {
+                  await new Promise((resolve) => setTimeout(resolve, delay));
+
                   setChatHistory((chatHistory) => {
                     const updatedChatHistory = [...chatHistory];
                     const lastEntryIndex = updatedChatHistory.length - 1;
@@ -176,45 +184,61 @@ const ArticlePage = () => {
                       updatedChatHistory[lastEntryIndex] = {
                         ...updatedChatHistory[lastEntryIndex],
                         response:
-                          updatedChatHistory[lastEntryIndex].response + answer,
+                          updatedChatHistory[lastEntryIndex].response + " " + word,
+                        showDot: true, // Show dot while streaming
                       };
                     }
 
                     return updatedChatHistory;
                   });
 
-                  setResponse((prev) => prev + answer);
+                  setResponse((prev) => prev + " " + word);
 
-                  // Scroll to the bottom of the chat history
                   if (endOfMessagesRef.current) {
                     endOfMessagesRef.current.scrollIntoView({
                       behavior: "smooth",
                     });
                   }
-                } catch (error) {
-                  console.error("Error parsing JSON chunk:", error);
-                  console.log("Chunk content:", jsonChunk);
-                  // Continue reading the stream
                 }
-              } else {
-                // No more complete JSON objects in the buffer; break out of the loop
-                break;
+
+                // Hide dot after last word
+                setChatHistory((chatHistory) => {
+                  const updatedChatHistory = [...chatHistory];
+                  const lastEntryIndex = updatedChatHistory.length - 1;
+                  if (lastEntryIndex >= 0) {
+                    updatedChatHistory[lastEntryIndex].showDot = false;
+                  }
+                  return updatedChatHistory;
+                });
+              } catch (error) {
+                console.error("Error parsing JSON chunk:", error);
               }
             }
           }
         }
+      }
 
-        setLoading(false);
-        sessionStorage.setItem("chatHistory", JSON.stringify(chatHistory));
-      };
-
-      readStream();
-    } catch (error) {
-      console.error("Error fetching or reading stream:", error);
       setLoading(false);
-    }
-  };
+      sessionStorage.setItem("chatHistory", JSON.stringify(chatHistory));
+    };
 
+    readStream();
+  } catch (error) {
+    console.error("Error fetching or reading stream:", error);
+    setLoading(false);
+  }
+};
+
+  const handlePromptClick = (queryText) => {
+  setQuery(queryText);
+  setTriggerAskClick(true);
+  };
+  useEffect(() => {
+    if (triggerAskClick) {
+      handleAskClick();
+      setTriggerAskClick(false);  // Reset the flag after handling the click
+    }
+  }, [query, triggerAskClick]);
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
       handleAskClick();
@@ -284,6 +308,7 @@ const ArticlePage = () => {
       </ReactMarkdown>
     );
   };
+  
   const renderContentInOrder = (content, isAbstract = false) => {
     const sortedKeys = Object.keys(content).sort(
       (a, b) => parseInt(a) - parseInt(b)
@@ -324,7 +349,7 @@ const ArticlePage = () => {
         return (
           <div key={sectionKey} style={{ marginBottom: "10px" }}>
             {/* Display the key as "Keywords" and the inline keywords */}
-            <Typography variant="h6" style={{ marginBottom: "2%" }}>
+            <Typography variant="h6" style={{fontSize:"18px"}}>
               Keywords
             </Typography>
             <Typography variant="body1">{boldKeywords}</Typography>
@@ -337,7 +362,7 @@ const ArticlePage = () => {
         return (
           <div key={sectionKey} style={{ marginBottom: "20px" }}>
             {/* Display the key only if it's not 'paragraph' */}
-            <Typography variant="h6" style={{ marginBottom: "2%" }}>
+            <Typography variant="h6" style={{fontSize:"18px"}}>
               {capitalizeFirstLetter(cleanedSectionKey)}
             </Typography>
             {renderContentInOrder(sectionData)}
@@ -353,7 +378,7 @@ const ArticlePage = () => {
         return (
           <div key={sectionKey} style={{ marginBottom: "10px" }}>
             {/* Display the key and its associated value */}
-            <Typography variant="h6" style={{ marginBottom: "2%" }}>
+            <Typography variant="h6" style={{fontSize:"18px"}}>
               {capitalizeFirstLetter(cleanedSectionKey)}
             </Typography>
             <MyMarkdownComponent markdownContent={boldtextContent} />
@@ -367,6 +392,27 @@ const ArticlePage = () => {
     let storedHistory = JSON.parse(localStorage.getItem("history")) || {};
     // Return the stored history as an array of {pmid, title} objects
     return storedHistory;
+  };
+  const handleEditClick = (pmid, title) => {
+    setEditingPmid(pmid); // Set the current pmid being edited
+    setEditedTitle(title); // Set the initial value for editing
+  };
+
+  const handleTitleChange = (e) => {
+    setEditedTitle(e.target.value); // Update the state as the user types
+  };
+
+  const handleSaveEdit = (pmid) => {
+    const updatedHistory = getHistoryTitles().map((item) =>
+      item.pmid === pmid ? { ...item, title: editedTitle } : item
+    );
+
+    // Save the updated history back to localStorage without changing the pmid
+    localStorage.setItem('history', JSON.stringify(updatedHistory));
+
+    // Reset the editing state
+    setEditingPmid(null);
+    setEditedTitle('');
   };
 
   // const getHistoryTitles = () => {
@@ -405,21 +451,56 @@ const ArticlePage = () => {
           </div>
         </header>
         <div className="content">
-          <div className="history-pagination">
-            <h5>Recent Interactions</h5>
-            <ul>
-              {localStorage.getItem("history")
-                ? getHistoryTitles().map((item) => (
-                    <li key={item.pmid}>
-                      <a>
-                        {capitalize(item.title.slice(0, 35))}
-                        {item.title.length > 35 ? "..." : ""}
-                      </a>
-                    </li>
-                  ))
-                : ""}
-            </ul>
-          </div>
+        <div className="history-pagination">
+      <h5>Recent Interactions</h5>
+      <ul >
+        {getHistoryTitles().length > 0 ? (
+          getHistoryTitles().map((item) => (
+            <li key={item.pmid}>
+              {editingPmid === item.pmid ? (
+                <TextField
+                  type="text"
+                  open
+                  style={{padding:"0"}}
+                  sx={{"& .MuiOutlinedInput-root": {
+                height:"40px",
+                "& fieldset": {
+                  borderColor: "transparent",
+                },
+                "&:hover fieldset": {
+                  borderColor: "transparent",
+                },
+                "&.Mui-focused fieldset": {
+                  borderColor: "transparent",
+                },
+              },
+              "& .MuiOutlinedInput-input": {
+                outline: "none",
+              },}}
+                  value={editedTitle}
+                  onChange={handleTitleChange}
+                  onBlur={() => handleSaveEdit(item.pmid)} // Save on blur
+                  autoFocus
+                />
+              ) : (
+                <a>
+                {capitalize(item.title.slice(0, 35))}
+                {item.title.length > 35 ? "..." : ""}
+              </a>
+              )}
+              <FontAwesomeIcon
+              title="Rename the title"
+                icon={faPen}
+                onClick={() => handleEditClick(item.pmid, item.title)}
+                style={{ cursor: 'pointer', marginLeft: '10px' }}
+              />
+            </li>
+          ))
+        ) : (
+          <li>No recent interactions</li>
+        )}
+      </ul>
+    </div>
 
           {articleData ? (
             <div
@@ -441,7 +522,7 @@ const ArticlePage = () => {
                   <button  className="back-button">Back</button>
                   </div>
 
-                <p style={{ marginTop: "0", marginBottom: "0" }}>
+                <p style={{ marginTop: "0", marginBottom: "0" ,color:"#0071bc",fontSize:"20px"}}>
                   {articleData.article_title}
                 </p>
               </div>
@@ -453,7 +534,6 @@ const ArticlePage = () => {
                     fontSize: "14px",
                     color: "grey",
                     marginBottom: "5px",
-                    gap: "10px",
                   }}
                 >
                   <span>
@@ -473,9 +553,9 @@ const ArticlePage = () => {
                       variant="h4"
                       gutterBottom
                       style={{
-                        fontSize: "20px",
-                        marginBottom: "2% ",
-                        marginTop: "2%",
+                        fontSize: "18px",
+                        marginBottom: "0 ",
+                        marginTop: "1%",
                       }}
                     >
                       Abstract
@@ -487,30 +567,41 @@ const ArticlePage = () => {
                 {articleData.body_content &&
                   renderContentInOrder(articleData.body_content)}
 
-                {showStreamingSection && (
-                  <div className="streaming-section">
-                    <div className="streaming-content">
-                      {chatHistory.map((chat, index) => (
-                        <div key={index}>
-                          <div className="query-asked">
-                            <span>{chat.query}</span>
-                          </div>
+                  {showStreamingSection && (
+                    <div className="streaming-section">
+                      <div className="streaming-content">
+                        {chatHistory.map((chat, index) => (
+                          <div key={index}>
+                            <div className="query-asked">
+                              <span>{chat.query}</span>
+                            </div>
 
-                          <div
-                            className="response"
-                            style={{ textAlign: "left" }}
-                          >
-                            <ReactMarkdown>{chat.response}</ReactMarkdown>
-                            <div ref={endOfMessagesRef} />
+                            <div className="response" style={{ textAlign: "left" }}>
+                              {/* Check if there's a response, otherwise show loading dots */}
+                              {chat.response ? (
+                                      <>
+                                        <span>
+  <ReactMarkdown>
+    {`${chat.response}`}
+  </ReactMarkdown>
+</span>
+                                      </>
+                                    ) : (
+                                      <div className="loading-dots">
+                                        <span>•••</span>
+                                      </div>
+                                    )}
+
+                              <div ref={endOfMessagesRef} />
+                            </div>
                           </div>
-                        </div>
-                      ))}
-                      {/* This div will act as the reference for scrolling */}
+                        ))}
+                        {/* This div will act as the reference for scrolling */}
+                      </div>
                     </div>
+                  )}
                   </div>
-                )}
-              </div>
-            </div>
+                  </div>
           ) : (
             <div className="data-not-found">
               <p>Data not found for the given PMID</p>
@@ -576,7 +667,19 @@ const ArticlePage = () => {
           </div>
         </div>
       </div>
-      <div className="stream-input" style={{ width: contentWidth }}>
+      <div className="chat-query" style={{ width: openNotes ? contentWidth : '69%'}}>
+       <div className="predefined-prompts">
+       <button onClick={() => handlePromptClick("Summarize this")}>
+      Summarize
+    </button>
+    <button onClick={() => handlePromptClick("what can we conclude form this article")}>
+      Conclusion
+    </button>
+    <button onClick={() => handlePromptClick(" what are the key highlights from this article")}>
+      Key Highlights
+    </button>
+      </div>
+      <div className="stream-input" >
         <img src={flag} alt="flag-logo" className="stream-flag-logo" />
         <input
           type="text"
@@ -585,14 +688,16 @@ const ArticlePage = () => {
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={handleKeyDown}
         />
-        <button onClick={handleAskClick} style={{ width: "6%" }}>
+        {/* <button onClick={handleAskClick} > */}
           {loading ? (
-            <CircularProgress size={24} color="white" />
+            <CircularProgress className="button" size={24} style={{marginLeft:"1.5%"}}color="white" />
           ) : (
-            <FontAwesomeIcon icon={faTelegram} size={"xl"} />
+            <FontAwesomeIcon className="button" onClick={handleAskClick} icon={faTelegram} size={"xl"} />
           )}
-        </button>
+        {/* </button> */}
       </div>
+      </div>
+      
     </>
   );
 };

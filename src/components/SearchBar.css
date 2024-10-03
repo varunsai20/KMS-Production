@@ -15,6 +15,7 @@
   bottom: 30px;
   display: flex;
   justify-content: center;
+  outline: none;
 }
 
 .input-container {
@@ -24,6 +25,8 @@
   display: flex;
   justify-content: space-between;
 }
+
+
 
 .search-input {
   width: 80%;
@@ -46,6 +49,9 @@
     height: 20px;
     z-index: 1;
 }
+.sticky .search-icon{
+  left: 7%;
+}
 .search-button {
   position: absolute;
   right: 5px;
@@ -61,7 +67,8 @@
 }
 .sticky .search-button{
   top: 9%;
-  right: 5px;
+  left: 93%;
+  right: auto;
 }
 .MuiOutlinedInput-root {
   height: 46px;

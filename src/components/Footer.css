@@ -34,7 +34,7 @@
   margin-left: 0%;
   color: #010101;
   font-family: manrope;
-  margin: auto;
+  margin: 30px auto 0;
   /* margin-left: 3.5%; */
 }
 .contact-info h3 {
@@ -56,7 +56,7 @@
   margin-left: 0%;
   color: #010101;
   font-family: manrope;
-  margin: auto;
+  margin: 30px auto 0;
   /* margin-left: 3.5%; */
   width: 25%;
   align-items: center;
@@ -70,27 +70,7 @@
   color: #1a1a1a;
   font-weight: 600;
 }
-.faqs {
-  display: flex;
-  flex-direction: column;
-  height: fit-content;
-  text-align: justify;
-  margin-left: 0%;
-  color: #010101;
-  font-family: manrope;
-  margin: auto;
-  margin-left: 3.5%;
-  width: 25%;
-}
-.faqs h3 {
-  margin: 0;
-  width: fit-content;
-}
-.faqs a {
-  text-decoration: none;
-  color: #1a1a1a;
-  font-weight: 600;
-}
+
 .newsletter {
   display: flex;
   flex-direction: column;
@@ -99,8 +79,7 @@
   margin-left: 0%;
   color: #010101;
   font-family: manrope;
-  margin: auto;
-
+  margin: 30px auto 0;
   width: 25%;
   /* align-items: end; */
 }

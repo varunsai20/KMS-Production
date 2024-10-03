@@ -8,7 +8,7 @@ import points1 from "../../assets/images/points1.svg";
 import points2 from "../../assets/images/points2.svg";
 import points3 from "../../assets/images/points3.svg";
 import points4 from "../../assets/images/points4.svg";
-
+import Logo from "../../assets/images/Logo_New.svg"
 const LandingPage = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isSticky, setIsSticky] = useState(false);
@@ -91,7 +91,7 @@ const LandingPage = () => {
             className="nav-logo"
             href="/"
             style={{ cursor: "pointer" }}
-            src="https://www.infersol.com/wp-content/uploads/2020/02/logo.png"
+            src={Logo}
             alt="Infer logo"
           ></img>
           {isSticky && <SearchBar renderInputContainer={true} />}
