@@ -27,7 +27,7 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
   const navigate = useNavigate();
   const contentRightRef = useRef(null); // Ref for searchContent-right
   const [result, setResults] = useState();
-  const [loading, setLoading] = useState(location.state?.searchTerm || "false");
+  const [loading, setLoading] = useState(false);
   const [selectedArticles, setSelectedArticles] = useState([]);
   const [showPopup, setShowPopup] = useState(false);
   const [hoveredRow, setHoveredRow] = useState(null);
@@ -109,7 +109,7 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
   useEffect(()=>{
     if(selectedSort!="publication_date"){
       handleSortChange({ target: { value: "best_match" } });
-      setLoading(false)
+      
     }
   })
   // Function to handle sorting based on selected option
@@ -356,7 +356,7 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
           console.log(response)
           console.log(data)
           setResults(data);   
-          // setLoading(false);
+          setLoading(false);
           setCustomStartDate(''); // Clear custom dates when selecting a non-custom range
           setCustomEndDate('');
           localStorage.setItem('publicationDate', JSON.stringify({
