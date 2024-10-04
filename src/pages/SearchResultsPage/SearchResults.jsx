@@ -411,7 +411,13 @@ const SearchResults = ({ open, onClose, applyFilters }) => {
     localStorage.removeItem("filters");
     localStorage.removeItem("PublicationDate");
     // Optionally, you can also trigger the API call without any filters
-    handleButtonClick({ articleType: [] });
+    const storeddata=sessionStorage.getItem("ResultData")
+
+    const parseddata=JSON.parse(storeddata)
+    console.log(parseddata)
+    const data=parseddata
+
+    navigate("/search", { state: { data, searchTerm } });
   };
   const handleNavigate = (pmid) => {
     navigate(`/article/${pmid}`, { state: { data: data, searchTerm,annotateData: annotateData } });
