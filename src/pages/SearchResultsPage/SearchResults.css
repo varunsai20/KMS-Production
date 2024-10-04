@@ -866,3 +866,59 @@ td {
   margin-bottom: 5%;
   border-radius: 40px;
 }
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: Arial, sans-serif;
+}
+
+.pagination-controls button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  margin: 0 5px;
+  padding: 5px 10px;
+  color: #007bff; /* Button text color */
+}
+
+.pagination-controls button:disabled {
+  color: #dcdcdc; /* Disabled button color */
+  cursor: not-allowed;
+}
+
+.pagination-controls input {
+  width: 40px;
+  text-align: center;
+  border: 1px solid #ccc;
+  padding: 5px;
+  font-size: 16px;
+  margin: 0 5px;
+}
+
+.pagination-controls span {
+  margin-left: 5px;
+  font-size: 16px;
+  color: #000; /* Text color */
+}
+
+/* Style for first and last page buttons */
+.pagination-controls button:first-child,
+.pagination-controls button:last-child {
+  padding: 5px;
+  border-radius: 3px;
+}
+
+.pagination-controls button:hover:not(:disabled) {
+  color: #0056b3; /* Button hover color */
+}
+
+/* Align the input with other elements */
+button input {
+  padding: 0;
+  background: none;
+  border: none;
+  outline: none;
+}

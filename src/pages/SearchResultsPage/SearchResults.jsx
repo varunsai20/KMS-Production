@@ -52,6 +52,21 @@ const SearchResults = ({ open, onClose, applyFilters }) => {
     return storedHistory ? JSON.parse(storedHistory) : [];
   });
   const endOfMessagesRef = useRef(null); // Ref to scroll to the last message
+  useEffect(() => {
+    const storedDateInfo = localStorage.getItem('publicationDate');
+    if (storedDateInfo) {
+      const { selectedDateRange, customStartDate, customEndDate } = JSON.parse(storedDateInfo);
+
+      if (selectedDateRange) {
+        setSelectedDateRange(selectedDateRange);
+      }
+      if (selectedDateRange === 'custom') {
+        // Only set custom start/end dates if the range is custom
+        setCustomStartDate(customStartDate || '');
+        setCustomEndDate(customEndDate || '');
+      }
+    }
+  }, []);
   
 
   const [filters, setFilters] = useState(() => {
@@ -201,7 +216,7 @@ const SearchResults = ({ open, onClose, applyFilters }) => {
     
         if (value !== "custom") {
           // Call the filter immediately for non-custom ranges
-          handleDateFilter(value); 
+          handleYearFilter(value); 
         }
       }
     };
@@ -241,44 +256,70 @@ const SearchResults = ({ open, onClose, applyFilters }) => {
       }
     };
     
-    const handleDateFilter = (startDate, endDate) => {
-      setLoading(true);
-      const filtersToSend = completePMID;
+    const handleCustomDateFilter = (startDate, endDate) => {
+      if (startDate && endDate) {
+        const formattedStartDate = formatDate(startDate);
+        const formattedEndDate = formatDate(endDate);
     
-      let requestBody;
-    
-      if (selectedDateRange === "custom") {
-        if (startDate && endDate) {
-          // Format dates here to dd-mm-yyyy
-          const formattedStartDate = formatDate(startDate);
-          const formattedEndDate = formatDate(endDate);
-    
-          requestBody = {
-            pmids: filtersToSend,
-            filter_type: "Custom Range",
-            from_date: formattedStartDate, // Format applied here
-            to_date: formattedEndDate,
-          };
-        } else {
-          console.error("Please provide both start and end dates for the custom range.");
-          return;
-        }
-      } else {
-        requestBody = {
-          pmids: filtersToSend,
-          filter_type: selectedDateRange === "1" ? "5 years" : "1 year",
+        const requestBody = {
+          pmids: completePMID,
+          filter_type: "Custom Range",
+          from_date: formattedStartDate,
+          to_date: formattedEndDate,
         };
+    
+        console.log(requestBody);
+    
+        const apiUrl = "http://13.127.207.184:80/filterdate";
+        setLoading(true);
+        axios
+          .post(apiUrl, requestBody)
+          .then((response) => {
+            const data = response.data;
+            setResults(data);
+            setLoading(false);
+
+            localStorage.setItem('publicationDate', JSON.stringify({
+              selectedDateRange,
+              customStartDate: startDate,
+              customEndDate: endDate
+            }));
+            navigate("/search", { state: { data, searchTerm } });
+          })
+          .catch((error) => {
+            console.error("Error fetching data from the API", error);
+            setLoading(false);
+            navigate("/search", { state: { data: [], searchTerm } });
+          });
+      } else {
+        console.error("Please provide both start and end dates for the custom range.");
       }
+    };
+    const handleYearFilter = (selectedDateRange) => {
+      const filterType = selectedDateRange === "5" ? "5 years" : "1 year";
+    
+      const requestBody = {
+        pmids: completePMID,
+        filter_type: filterType,
+      };
+    
+      console.log(requestBody);
     
       const apiUrl = "http://13.127.207.184:80/filterdate";
+      setLoading(true);
       axios
         .post(apiUrl, requestBody)
         .then((response) => {
           const data = response.data;
           setResults(data);
           setLoading(false);
-          setCustomStartDate(""); // Reset after successful filtering
-          setCustomEndDate("");   // Reset after successful filtering
+          setCustomStartDate(''); // Clear custom dates when selecting a non-custom range
+          setCustomEndDate('');
+          localStorage.setItem('publicationDate', JSON.stringify({
+            selectedDateRange,
+            customStartDate: '',
+            customEndDate: ''
+          }));
           navigate("/search", { state: { data, searchTerm } });
         })
         .catch((error) => {
@@ -287,6 +328,7 @@ const SearchResults = ({ open, onClose, applyFilters }) => {
           navigate("/search", { state: { data: [], searchTerm } });
         });
     };
+    
     
     const formatDate = (dateString) => {
       const [year, month, day] = dateString.split("-");
@@ -409,7 +451,7 @@ const SearchResults = ({ open, onClose, applyFilters }) => {
     setCustomEndDate(""); // Clear custom end date
     // Clear the filters from localStorage
     localStorage.removeItem("filters");
-    localStorage.removeItem("PublicationDate");
+    localStorage.removeItem("publicationDate");
     // Optionally, you can also trigger the API call without any filters
     const storeddata=sessionStorage.getItem("ResultData")
 
@@ -894,36 +936,34 @@ const SearchResults = ({ open, onClose, applyFilters }) => {
       {/* Custom date range inputs, displayed only when 'Custom range' is selected */}
       {selectedDateRange === 'custom' && (
         <div className="custom-date-range">
-        <div className="custom-date-input">
-          <label>
-            Start Date:
-            <input
-              type="date"
-              name="startDate"
-              value={customStartDate}
-              onChange={handleCustomDateChange}
-            />
-          </label>
-        </div>
-  
-        <div className="custom-date-input">
-          <label>
-            End Date :
-            <input
-              type="date"
-              name="endDate"
-              value={customEndDate}
-              onChange={handleCustomDateChange}
-            />
-          </label>
-        </div>
-  
-          <button className="ApplyFilters" onClick={() => handleDateFilter(customStartDate, customEndDate)}>
+          <div className="custom-date-input">
+            <label>
+              Start Date:
+              <input
+                type="date"
+                name="startDate"
+                value={customStartDate}
+                onChange={handleCustomDateChange}
+              />
+            </label>
+          </div>
+
+          <div className="custom-date-input">
+            <label>
+              End Date:
+              <input
+                type="date"
+                name="endDate"
+                value={customEndDate}
+                onChange={handleCustomDateChange}
+              />
+            </label>
+          </div>
+
+          <button className="ApplyFilters" onClick={() => handleCustomDateFilter(customStartDate, customEndDate)}>
             Apply 
           </button>
-  
-  
-      </div>
+        </div>
       )}
     </div>
 
@@ -1037,23 +1077,23 @@ const SearchResults = ({ open, onClose, applyFilters }) => {
                   <div className="pagination">
 <div className="pagination-controls">
     {/* Button to go to the first page */}
-    <Button
+    <button
       onClick={() => handlePageChange(1)}
       disabled={currentPage === 1}
     >
       {"<<"} {/* First page button */}
-    </Button>
+    </button>
 
     {/* Button to go to the previous page */}
-    <Button
+    <button
       onClick={() => handlePageChange(currentPage - 1)}
       disabled={currentPage === 1}
     >
       {"<"} {/* Previous page button */}
-    </Button>
+    </button>
 
     {/* Input for direct page number entry */}
-    <Button style={{ background: "none", border: "1px solid", padding: "0" }}>
+    <button style={{ background: "none", border: "1px solid", padding: "0" }}>
     <input
   type="text" 
   value={pageInput === "" || pageInput === "0" ? pageInput : String(pageInput).padStart(2, "0")} 
@@ -1078,24 +1118,24 @@ const SearchResults = ({ open, onClose, applyFilters }) => {
   }}
 />
 
-    </Button>
+    </button>
 
     <span> / {totalPages}</span>
     {/* Button to go to the next page */}
-    <Button
+    <button
       onClick={() => handlePageChange(currentPage + 1)}
       disabled={currentPage === totalPages}
     >
       {">"} {/* Next page button */}
-    </Button>
+    </button>
 
     {/* Button to go to the last page */}
-    <Button
+    <button
       onClick={() => handlePageChange(totalPages)}
       disabled={currentPage === totalPages}
     >
       {">>"} {/* Last page button */}
-    </Button>
+    </button>
   </div>
 
         </div>
@@ -1185,23 +1225,23 @@ const SearchResults = ({ open, onClose, applyFilters }) => {
 <div className="pagination">
 <div className="pagination-controls">
     {/* Button to go to the first page */}
-    <Button
+    <button
       onClick={() => handlePageChange(1)}
       disabled={currentPage === 1}
     >
       {"<<"} {/* First page button */}
-    </Button>
+    </button>
 
     {/* Button to go to the previous page */}
-    <Button
+    <button
       onClick={() => handlePageChange(currentPage - 1)}
       disabled={currentPage === 1}
     >
       {"<"} {/* Previous page button */}
-    </Button>
+    </button>
 
     {/* Input for direct page number entry */}
-    <Button style={{ background: "none", border: "1px solid", padding: "0" }}>
+    <button style={{ background: "none", border: "1px solid", padding: "0" }}>
     <input
   type="text" 
   value={pageInput === "" || pageInput === "0" ? pageInput : String(pageInput).padStart(2, "0")} 
@@ -1226,27 +1266,25 @@ const SearchResults = ({ open, onClose, applyFilters }) => {
   }}
 />
 
-    </Button>
-
+    </button>
 
     <span> / {totalPages}</span>
     {/* Button to go to the next page */}
-    <Button
+    <button
       onClick={() => handlePageChange(currentPage + 1)}
       disabled={currentPage === totalPages}
     >
       {">"} {/* Next page button */}
-    </Button>
+    </button>
 
     {/* Button to go to the last page */}
-    <Button
+    <button
       onClick={() => handlePageChange(totalPages)}
       disabled={currentPage === totalPages}
     >
       {">>"} {/* Last page button */}
-    </Button>
+    </button>
   </div>
-
         </div>
                 </>
               ) : (
