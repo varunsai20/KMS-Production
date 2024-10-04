@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState,useMemo } from "react";
 import "./SearchResults.css";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
@@ -18,16 +18,16 @@ import { faTelegram } from "@fortawesome/free-brands-svg-icons";
 import axios from "axios";  
 const ITEMS_PER_PAGE = 5;
 
-const SearchResults = ({ open, onClose, applyFilters }) => {
+const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
   const location = useLocation(); // Access the passed state
   const { data } = location.state || { data: [] };
  
-
+  
   const searchTerm = location.state?.searchTerm || "";
   const navigate = useNavigate();
   const contentRightRef = useRef(null); // Ref for searchContent-right
   const [result, setResults] = useState();
-  const [loading, setLoading] = useState();
+  const [loading, setLoading] = useState(location.state?.searchTerm || "false");
   const [selectedArticles, setSelectedArticles] = useState([]);
   const [showPopup, setShowPopup] = useState(false);
   const [hoveredRow, setHoveredRow] = useState(null);
@@ -106,7 +106,12 @@ const SearchResults = ({ open, onClose, applyFilters }) => {
     const dateB = parseDate(b.publication_date);
     return dateB - dateA; // Sort in descending order (newest first)
   });
-
+  useEffect(()=>{
+    if(selectedSort!="publication_date"){
+      handleSortChange({ target: { value: "best_match" } });
+      setLoading(false)
+    }
+  })
   // Function to handle sorting based on selected option
   const handleSortChange = (e) => {
     const sortType = e.target.value;
@@ -114,16 +119,53 @@ const SearchResults = ({ open, onClose, applyFilters }) => {
 
     // If publication date is selected, use the sorted list for display
     if (sortType === "publication_date") {
-      setSortedData(sortedPublicationData);
-    } else {
-      setSortedData(data.articles); // Reset to the original data for Best Match
+      setSortedData(sortedPublicationData); // Sort by publication date
+      console.log(sortedPublicationData)
+    } else if (sortType === "best_match") {
+      setSortedData(sortedSimilarityData); // Sort by similarity score
+      console.log(sortedSimilarityData)
     }
+
   };
 
   useEffect(() => {
     // Initialize with original data on component load
     setSortedData(data.articles || []);
   }, [data]);
+
+  let sessionDataCache = null; // Cache for session storage data
+  
+  // Utility function to get similarity score from article or session storage
+  const getSimilarityScore = (article) => {
+    let similarityScore = article.similarity_score;
+
+    // If similarity score is not present in the article, try to retrieve it from session storage
+    if (!similarityScore) {
+      if (!sessionDataCache) {
+        const storedData = sessionStorage.getItem('ResultData');
+        sessionDataCache = storedData ? JSON.parse(storedData).articles : [];
+      }
+
+      // Find the article with the matching pmid in session storage and get similarity score
+      const matchedArticle = sessionDataCache.find(storedArticle => storedArticle.pmid === article.pmid);
+      similarityScore = matchedArticle ? matchedArticle.similarity_score || 0 : 0;
+    }
+
+    return similarityScore || 0; // Default to 0 if no similarity score found
+  };
+
+  // Memoized sorting based on similarity score
+  const sortedSimilarityData = useMemo(() => {
+    // Sort the data in descending order by similarity score
+    return [...data.articles].sort((a, b) => getSimilarityScore(b) - getSimilarityScore(a));
+  }, [data.articles]); // Re-run sorting only when articles change
+
+  // 
+
+
+
+
+
 
   // Pagination logic
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -311,8 +353,10 @@ const SearchResults = ({ open, onClose, applyFilters }) => {
         .post(apiUrl, requestBody)
         .then((response) => {
           const data = response.data;
-          setResults(data);
-          setLoading(false);
+          console.log(response)
+          console.log(data)
+          setResults(data);   
+          // setLoading(false);
           setCustomStartDate(''); // Clear custom dates when selecting a non-custom range
           setCustomEndDate('');
           localStorage.setItem('publicationDate', JSON.stringify({
@@ -325,7 +369,7 @@ const SearchResults = ({ open, onClose, applyFilters }) => {
         .catch((error) => {
           console.error("Error fetching data from the API", error);
           setLoading(false);
-          navigate("/search", { state: { data: [], searchTerm } });
+          navigate("/search", { state: { data: [], searchTerm,dateloading:true } });
         });
     };
     
@@ -1164,26 +1208,26 @@ const SearchResults = ({ open, onClose, applyFilters }) => {
 
     return (
       <div key={index} className="searchresult-item" >
-        <div className="searchresult-item-header" style={{display:"flex",flexDirection:"column"}}>
-          <div >
-          <h3 className="searchresult-title">
-            <input
-              type="checkbox"
-              className="result-checkbox"
-              onChange={() => handleCheckboxChange(result.pmid)}
-              checked={selectedArticles.includes(result.pmid)} // Sync checkbox state
-            />
-              <span className="gradient-text"onClick={() => handleNavigate(result.pmid)}style={{ cursor: "pointer" }}>
-                {italicizeTerm(
-                    capitalizeFirstLetter(
-                      openAnnotate
-                        ? result.article_title.slice(0, 100) + (result.article_title.length > 100 ? "..." : "")
-                        : result.article_title
-                    )
-                  )}
-                </span>
-
-          </h3>
+        <div className="searchresult-item-header" style={{display:"flex",flexDirection:"column",maxHeight:"85%",overflow:"hiddden"}}>
+          <div className="div1">
+            <div className="div2">
+                <h3 className="searchresult-title">
+                  <input
+                    type="checkbox"
+                    className="result-checkbox"
+                    onChange={() => handleCheckboxChange(result.pmid)}
+                    checked={selectedArticles.includes(result.pmid)} // Sync checkbox state
+                  />
+                    <span className="gradient-text"onClick={() => handleNavigate(result.pmid)}style={{ cursor: "pointer" }}>
+                      {italicizeTerm(
+                          capitalizeFirstLetter(
+                            openAnnotate
+                              ? result.article_title.slice(0, 100) + (result.article_title.length > 100 ? "..." : "")
+                              : result.article_title
+                          )
+                        )}
+                      </span>
+                      </h3>
         </div>
         <p className="searchresult-authors">{`Published on: ${result.publication_date}`}</p>
         <p className="searchresult-pmid">{`PMID: ${result.pmid}`}</p>
@@ -1198,6 +1242,7 @@ const SearchResults = ({ open, onClose, applyFilters }) => {
           )}
           {Object.values(result.abstract_content[1]).join(" ").length > (openAnnotate || openNotes ? 200 : 300) ? "..." : ""}
         </p>
+        </div>
         </div>
         <div className="Article-Options">
           <p className="searchresult-similarity_score">
