@@ -296,18 +296,16 @@ button {
 
 /* HTML: <div class="loader"></div> */
 .loader {
-  width: 50px;
-  padding: 8px;
-  aspect-ratio: 1;
+  width: 24px;
+  height: 24px;
+  padding: 4px;
+  /* aspect-ratio: 1; */
   border-radius: 50%;
-  background: #25b09b;
-  --_m: 
-    conic-gradient(#0000 10%,#000),
-    linear-gradient(#000 0 0) content-box;
-  -webkit-mask: var(--_m);
-          mask: var(--_m);
-  -webkit-mask-composite: source-out;
-          mask-composite: subtract;
+  /* size: 24px; */
+  background: #1976d2;
+  --_m: conic-gradient(#0000 10%, #000), linear-gradient(#000 0 0) content-box;
+  mask: var(--_m);
+  mask-composite: subtract;
   animation: l3 1s infinite linear;
 }
 @keyframes l3 {to{transform: rotate(1turn)}}
@@ -344,7 +342,7 @@ button {
   flex-direction: column;
   color: black;
   /* border: 1px solid black; */
-  margin-top: 5%;
+  margin-top: 1%;
   width: 98%;
 }
 .searchresults-list {
@@ -358,6 +356,7 @@ button {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  justify-content: space-between;
   border-radius: 8px;
   padding: 8px;
   background-color: #fff;
@@ -510,8 +509,18 @@ button {
 
 .pagination-controls {
   display: flex;
-  gap: 8px;
+  /* gap: 8px; */
   align-items: center;
+}
+.MuiButtonBase-root .MuiButton-root{
+  min-width:30px
+}
+.pagination-controls button {
+  /* background-color: #f1f3f4; */
+  border: none;
+  padding: 6px;
+  border-radius: 4px;
+  cursor: pointer;
 }
 
 .pagination-controls button {
@@ -586,7 +595,22 @@ button {
   border: 1px solid rgba(235, 235, 243, 1);
   background: #fbfbfd;
 }
+.search-annotate::-webkit-scrollbar {
+  width: 3px; /* Width of the scrollbar */
+}
 
+.search-annotate::-webkit-scrollbar-thumb {
+  background: #a7a7a7; /* Color of the scrollbar */
+  border-radius: 10px;
+}
+
+.search-annotate::-webkit-scrollbar-thumb:hover {
+  background: #555; /* Color when hovered */
+}
+
+.search-annotate::-webkit-scrollbar-track {
+  background: #f1f1f1; /* Background of the scrollbar track */
+}
 .search-icons-group {
   gap: 10px;
   display: flex;
@@ -816,4 +840,29 @@ td {
 
 .search-notes-icon.closed {
   background-color: white;
+}
+
+.custom-date-range{
+  display: flex;
+    flex-direction: column;
+}
+.custom-date-input label{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.custom-date-input label input{
+ width: 60%;
+ padding: 2%; 
+ border:1px solid #b6b6b6;
+ border-radius: 24px;
+ color: #000;
+}
+.ApplyFilters{
+  margin: 0 0 0 auto;
+  border: 1px solid #b6b6b6;
+  color: #1A82FF;
+  padding: 3% 10%;
+  margin-bottom: 5%;
+  border-radius: 40px;
 }

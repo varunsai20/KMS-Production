@@ -233,9 +233,9 @@ const SearchResults = ({ open, onClose, applyFilters }) => {
         const updatedStartDate = name === "startDate" ? value : customStartDate;
         const updatedEndDate = name === "endDate" ? value : customEndDate;
     
-        if (updatedStartDate.length === 10 && updatedEndDate.length === 10) {
-          handleDateFilter(updatedStartDate, updatedEndDate); // Pass valid raw dates to the filter
-        }
+        // if (updatedStartDate.length === 10 && updatedEndDate.length === 10) {
+        //   handleDateFilter(updatedStartDate, updatedEndDate); // Pass valid raw dates to the filter
+        // }
       } else {
         console.error("Invalid date format. Please enter a valid date.");
       }
@@ -894,6 +894,7 @@ const SearchResults = ({ open, onClose, applyFilters }) => {
       {/* Custom date range inputs, displayed only when 'Custom range' is selected */}
       {selectedDateRange === 'custom' && (
         <div className="custom-date-range">
+        <div className="custom-date-input">
           <label>
             Start Date:
             <input
@@ -903,8 +904,11 @@ const SearchResults = ({ open, onClose, applyFilters }) => {
               onChange={handleCustomDateChange}
             />
           </label>
+        </div>
+  
+        <div className="custom-date-input">
           <label>
-            End Date:
+            End Date :
             <input
               type="date"
               name="endDate"
@@ -913,6 +917,13 @@ const SearchResults = ({ open, onClose, applyFilters }) => {
             />
           </label>
         </div>
+  
+          <button className="ApplyFilters" onClick={() => handleDateFilter(customStartDate, customEndDate)}>
+            Apply 
+          </button>
+  
+  
+      </div>
       )}
     </div>
 
@@ -987,7 +998,7 @@ const SearchResults = ({ open, onClose, applyFilters }) => {
                         title={selectedArticles.length === 0 ? 'Select atleast one article to annotate' : 'Annotate selected articles'}
                         >
                         {annotateLoading ? (
-                            <CircularProgress className="Loading-Spinner"background={"white"} size={24}  style={{ border:"none", marginLeft: "10px" }} />
+                            <div class="loader"></div>
                             
                           ):(
                             <button 
@@ -1023,6 +1034,71 @@ const SearchResults = ({ open, onClose, applyFilters }) => {
                      
                     </div>
                   </div>
+                  <div className="pagination">
+<div className="pagination-controls">
+    {/* Button to go to the first page */}
+    <Button
+      onClick={() => handlePageChange(1)}
+      disabled={currentPage === 1}
+    >
+      {"<<"} {/* First page button */}
+    </Button>
+
+    {/* Button to go to the previous page */}
+    <Button
+      onClick={() => handlePageChange(currentPage - 1)}
+      disabled={currentPage === 1}
+    >
+      {"<"} {/* Previous page button */}
+    </Button>
+
+    {/* Input for direct page number entry */}
+    <Button style={{ background: "none", border: "1px solid", padding: "0" }}>
+    <input
+  type="text" 
+  value={pageInput === "" || pageInput === "0" ? pageInput : String(pageInput).padStart(2, "0")} 
+  onChange={(e) => {
+    const value = e.target.value;
+
+    // Only allow numeric input
+    if (/^\d*$/.test(value)) {
+      setPageInput(value); // Update only if it's a valid number or empty
+    }
+  }}
+  onBlur={handlePageInputSubmit} // Validate when input loses focus
+  onKeyDown={(e) => {
+    if (e.key === "Enter") handlePageInputSubmit(); // Validate when pressing Enter
+  }}
+  style={{
+    width: "35px",
+    textAlign: "center",
+    border: "none",
+    padding: "6px",
+    outline: "none"
+  }}
+/>
+
+    </Button>
+
+    <span> / {totalPages}</span>
+    {/* Button to go to the next page */}
+    <Button
+      onClick={() => handlePageChange(currentPage + 1)}
+      disabled={currentPage === totalPages}
+    >
+      {">"} {/* Next page button */}
+    </Button>
+
+    {/* Button to go to the last page */}
+    <Button
+      onClick={() => handlePageChange(totalPages)}
+      disabled={currentPage === totalPages}
+    >
+      {">>"} {/* Last page button */}
+    </Button>
+  </div>
+
+        </div>
 
                   <div className="searchContent-articles" ref={contentRightRef}>
   <div className="searchresults-list">
@@ -1048,7 +1124,8 @@ const SearchResults = ({ open, onClose, applyFilters }) => {
 
     return (
       <div key={index} className="searchresult-item" >
-        <div className="searchresult-item-header">
+        <div className="searchresult-item-header" style={{display:"flex",flexDirection:"column"}}>
+          <div >
           <h3 className="searchresult-title">
             <input
               type="checkbox"
@@ -1056,19 +1133,15 @@ const SearchResults = ({ open, onClose, applyFilters }) => {
               onChange={() => handleCheckboxChange(result.pmid)}
               checked={selectedArticles.includes(result.pmid)} // Sync checkbox state
             />
-            <span
-  className="gradient-text"
-  onClick={() => handleNavigate(result.pmid)}
-  style={{ cursor: "pointer" }}
->
-  {italicizeTerm(
-    capitalizeFirstLetter(
-      openAnnotate
-        ? result.article_title.slice(0, 100) + (result.article_title.length > 100 ? "..." : "")
-        : result.article_title
-    )
-  )}
-</span>
+              <span className="gradient-text"onClick={() => handleNavigate(result.pmid)}style={{ cursor: "pointer" }}>
+                {italicizeTerm(
+                    capitalizeFirstLetter(
+                      openAnnotate
+                        ? result.article_title.slice(0, 100) + (result.article_title.length > 100 ? "..." : "")
+                        : result.article_title
+                    )
+                  )}
+                </span>
 
           </h3>
         </div>
@@ -1081,10 +1154,11 @@ const SearchResults = ({ open, onClose, applyFilters }) => {
           {italicizeTerm(
             Object.values(result.abstract_content[1])
               .join(" ")
-              .slice(0, openAnnotate || openNotes ? 200 : 500)
+              .slice(0, openAnnotate || openNotes ? 200 : 300)
           )}
-          {Object.values(result.abstract_content[1]).join(" ").length > (openAnnotate || openNotes ? 200 : 500) ? "..." : ""}
+          {Object.values(result.abstract_content[1]).join(" ").length > (openAnnotate || openNotes ? 200 : 300) ? "..." : ""}
         </p>
+        </div>
         <div className="Article-Options">
           <p className="searchresult-similarity_score">
             <span style={{color:"#c05600"}}>Relevancy Score: </span>
@@ -1128,30 +1202,32 @@ const SearchResults = ({ open, onClose, applyFilters }) => {
 
     {/* Input for direct page number entry */}
     <Button style={{ background: "none", border: "1px solid", padding: "0" }}>
-      <input
-        type="text"  // Keep as "text" to control the format (leading zeros)
-        value={String(pageInput).padStart(2, "0")}  // Display value with leading zero if necessary
-        onChange={(e) => {
-          const value = e.target.value;
+    <input
+  type="text" 
+  value={pageInput === "" || pageInput === "0" ? pageInput : String(pageInput).padStart(2, "0")} 
+  onChange={(e) => {
+    const value = e.target.value;
 
-          // Only allow numeric input
-          if (/^\d*$/.test(value)) {
-            setPageInput(value); // Update only if it's a valid number or empty
-          }
-        }}
-        onBlur={handlePageInputSubmit} // Validate when input loses focus
-        onKeyDown={(e) => {
-          if (e.key === "Enter") handlePageInputSubmit(); // Validate when pressing Enter
-        }}
-        style={{
-          width: "35px",
-          textAlign: "center",
-          border: "none",
-          padding: "6px",
-          outline: "none"
-        }}
-      />
+    // Only allow numeric input
+    if (/^\d*$/.test(value)) {
+      setPageInput(value); // Update only if it's a valid number or empty
+    }
+  }}
+  onBlur={handlePageInputSubmit} // Validate when input loses focus
+  onKeyDown={(e) => {
+    if (e.key === "Enter") handlePageInputSubmit(); // Validate when pressing Enter
+  }}
+  style={{
+    width: "35px",
+    textAlign: "center",
+    border: "none",
+    padding: "6px",
+    outline: "none"
+  }}
+/>
+
     </Button>
+
 
     <span> / {totalPages}</span>
     {/* Button to go to the next page */}

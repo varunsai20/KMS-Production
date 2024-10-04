@@ -12,7 +12,7 @@ const Button = ({ text, onClick, className, loading }) => {
       disabled={loading}
     >
       {loading ? (
-        <CircularProgress color="inherit" size={24} />
+       <div class="searchbar-loader"></div>
       ) : (
         text // Show the text when not loading
       )}
