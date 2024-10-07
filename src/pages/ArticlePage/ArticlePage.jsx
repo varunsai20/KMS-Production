@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef,useContext } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import "./ArticlePage.css";
 import { Typography } from "@mui/material";
@@ -19,6 +19,9 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 //import sendicon from "../../assets/images/sendicon.svg";
 import { faTelegram } from "@fortawesome/free-brands-svg-icons";
 import { faPen } from '@fortawesome/free-solid-svg-icons';
+import { TextContext } from "../../components/Notes/TextProvider";
+import { IoSaveOutline } from "react-icons/io5";
+import Notes from "../NotesPage/Notes"
 const ArticlePage = () => {
   const { pmid } = useParams();
   const location = useLocation();
@@ -43,7 +46,9 @@ const ArticlePage = () => {
   const contentRef = useRef(null); // Ref to target the content div
   const [contentWidth, setContentWidth] = useState(); // State for content width
   const [triggerAskClick, setTriggerAskClick] = useState(false);
-
+  const [showPopup, setShowPopup] = useState(false);
+  const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
+  const { setSelectedText } = useContext(TextContext);
 
   const [editingPmid, setEditingPmid] = useState(null);
   const [editedTitle, setEditedTitle] = useState('');
@@ -67,6 +72,18 @@ const ArticlePage = () => {
     }
   }, [openNotes]);
   console.log(showStreamingSection);
+
+  const handleMouseUp = (event) => {
+    const selection = window.getSelection().toString();
+
+    if (selection) {
+      setSelectedText(selection);
+      setPopupPosition({ x: event.pageX, y: event.pageY });
+      setShowPopup(true);
+    } else {
+      setShowPopup(false);
+    }
+  };
 
   useEffect(() => {
     if (data && data.articles) {
@@ -526,7 +543,7 @@ const ArticlePage = () => {
                   {articleData.article_title}
                 </p>
               </div>
-              <div className="meta">
+              <div className="meta" onMouseUp={handleMouseUp}>
                 <div
                   style={{
                     display: "flex",
@@ -600,6 +617,26 @@ const ArticlePage = () => {
                       </div>
                     </div>
                   )}
+                  {showPopup && (
+                  <div
+                    className="Popup"
+                    style={{
+                      position: "absolute",
+                      top: popupPosition.y + 10,
+                      left: popupPosition.x + 10,
+                      backgroundColor: "#f1f1f1",
+                      gridTemplateColumns: "1fr",
+                    }}
+                  >
+                    <button
+                      onClick={() => setShowPopup(false)}
+                      className="Popup-buttons"
+                    >
+                      <IoSaveOutline fontSize={"20px"} color="#1A82ff" />
+                      <span style={{ color: "#1A82FF" }}>Save to notes</span>
+                    </button>
+                  </div>
+                )}
                   </div>
                   </div>
           ) : (
@@ -620,28 +657,7 @@ const ArticlePage = () => {
            </div>
             )}
             {openNotes && (
-              <div className="notes">
-                <div
-                  className="notes-header"
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    width: "100%",
-                  }}
-                >
-                  <p>Notes</p>
-                  <div style={{ display: "flex", width: "50%", gap: "10px" }}>
-                    <button className="search-save-button"> Share</button>
-                    <button className="search-save-button"> save</button>
-                  </div>
-                </div>
-                <textarea
-                  className="note-taking"
-                  name=""
-                  id=""
-                  placeholder="Type something..."
-                ></textarea>
-              </div>
+              <Notes/>
             )}
             <div className="icons-group">
             <div
