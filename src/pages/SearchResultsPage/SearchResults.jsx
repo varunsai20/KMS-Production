@@ -1098,6 +1098,8 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
                             Annotate
                           </button>
                           )}
+                          <button className="SearchResult-Annotate">Send</button>
+                          <button className="SearchResult-Annotate">Save</button>
                     </div>
 
                     <div style={{display:"flex",flexDirection:"row",alignItems:"baseline"}}>
@@ -1119,68 +1121,68 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
                     </div>
                   </div>
                   <div className="pagination">
-<div className="pagination-controls">
-    {/* Button to go to the first page */}
-    <button
-      onClick={() => handlePageChange(1)}
-      disabled={currentPage === 1}
-    >
-      {"<<"} {/* First page button */}
-    </button>
+                    <div className="pagination-controls">
+                        {/* Button to go to the first page */}
+                        <button
+                          onClick={() => handlePageChange(1)}
+                          disabled={currentPage === 1}
+                        >
+                          {"<<"} {/* First page button */}
+                        </button>
 
-    {/* Button to go to the previous page */}
-    <button
-      onClick={() => handlePageChange(currentPage - 1)}
-      disabled={currentPage === 1}
-    >
-      {"<"} {/* Previous page button */}
-    </button>
+                        {/* Button to go to the previous page */}
+                        <button
+                          onClick={() => handlePageChange(currentPage - 1)}
+                          disabled={currentPage === 1}
+                        >
+                          {"<"} {/* Previous page button */}
+                        </button>
 
-    {/* Input for direct page number entry */}
-    <button style={{ background: "none", border: "1px solid", padding: "0" }}>
-    <input
-  type="text" 
-  value={pageInput === "" || pageInput === "0" ? pageInput : String(pageInput).padStart(2, "0")} 
-  onChange={(e) => {
-    const value = e.target.value;
+                        {/* Input for direct page number entry */}
+                        <button style={{ background: "none", border: "1px solid", padding: "0" }}>
+                        <input
+                      type="text" 
+                      value={pageInput === "" || pageInput === "0" ? pageInput : String(pageInput).padStart(2, "0")} 
+                      onChange={(e) => {
+                        const value = e.target.value;
 
-    // Only allow numeric input
-    if (/^\d*$/.test(value)) {
-      setPageInput(value); // Update only if it's a valid number or empty
-    }
-  }}
-  onBlur={handlePageInputSubmit} // Validate when input loses focus
-  onKeyDown={(e) => {
-    if (e.key === "Enter") handlePageInputSubmit(); // Validate when pressing Enter
-  }}
-  style={{
-    width: "35px",
-    textAlign: "center",
-    border: "none",
-    padding: "6px",
-    outline: "none"
-  }}
-/>
+                        // Only allow numeric input
+                        if (/^\d*$/.test(value)) {
+                          setPageInput(value); // Update only if it's a valid number or empty
+                        }
+                      }}
+                      onBlur={handlePageInputSubmit} // Validate when input loses focus
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") handlePageInputSubmit(); // Validate when pressing Enter
+                      }}
+                      style={{
+                        width: "35px",
+                        textAlign: "center",
+                        border: "none",
+                        padding: "6px",
+                        outline: "none"
+                      }}
+                    />
 
-    </button>
+                        </button>
 
-    <span> / {totalPages}</span>
-    {/* Button to go to the next page */}
-    <button
-      onClick={() => handlePageChange(currentPage + 1)}
-      disabled={currentPage === totalPages}
-    >
-      {">"} {/* Next page button */}
-    </button>
+                        <span> / {totalPages}</span>
+                        {/* Button to go to the next page */}
+                        <button
+                          onClick={() => handlePageChange(currentPage + 1)}
+                          disabled={currentPage === totalPages}
+                        >
+                          {">"} {/* Next page button */}
+                        </button>
 
-    {/* Button to go to the last page */}
-    <button
-      onClick={() => handlePageChange(totalPages)}
-      disabled={currentPage === totalPages}
-    >
-      {">>"} {/* Last page button */}
-    </button>
-  </div>
+                        {/* Button to go to the last page */}
+                        <button
+                          onClick={() => handlePageChange(totalPages)}
+                          disabled={currentPage === totalPages}
+                        >
+                          {">>"} {/* Last page button */}
+                        </button>
+                      </div>
 
         </div>
 

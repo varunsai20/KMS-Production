@@ -164,10 +164,10 @@ const Annotation = ({ openAnnotate, annotateData, searchTerm }) => {
         <table>
           <thead>
             <tr className="search-table-head">
-              <th style={{ width: '23%' }}>PMID</th>
-              <th style={{ width: '12%' }}>Score</th>
-              <th style={{ width: '20%' }}>Type</th>
-              <th style={{ width: '40%' }}>Text</th>
+              <th style={{ width: '23%',textAlign:"center" }}>ID</th>
+              <th style={{ width: '12%',textAlign:"center" }}>Score</th>
+              <th style={{ width: '20%',textAlign:"center" }}>Type</th>
+              <th style={{ width: '40%',textAlign:"center" }}>Text</th>
             </tr>
           </thead>
           <tbody>

@@ -19,6 +19,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 //import sendicon from "../../assets/images/sendicon.svg";
 import { faTelegram } from "@fortawesome/free-brands-svg-icons";
 import { faPen } from '@fortawesome/free-solid-svg-icons';
+import { faAnglesUp } from '@fortawesome/free-solid-svg-icons';
 import { TextContext } from "../../components/Notes/TextProvider";
 import { IoSaveOutline } from "react-icons/io5";
 import Notes from "../NotesPage/Notes"
@@ -111,6 +112,45 @@ const ArticlePage = () => {
     }
   }, [pmid, data]);
   console.log(articleData);
+ 
+  useEffect(() => {
+    const articleContent = document.querySelector('.article-content');
+  
+    const handleScroll = () => {
+      if (articleContent.scrollTop > 20) {
+        document.getElementById('scrollTopBtn').style.display = 'block'; // Show the button
+      } else {
+        document.getElementById('scrollTopBtn').style.display = 'none'; // Hide the button
+      }
+    };
+  
+    // Attach the scroll event listener to .article-content
+    if (articleContent) {
+      articleContent.addEventListener('scroll', handleScroll);
+    }
+  
+    // Clean up event listener on component unmount
+    return () => {
+      if (articleContent) {
+        articleContent.removeEventListener('scroll', handleScroll);
+      }
+    };
+  });
+  
+
+  function scrollToTop() {
+    const articleContent = document.querySelector('.article-content');
+    if (articleContent) {
+      articleContent.scrollTo({
+        top: 0,
+        behavior: 'smooth' // This will create the smooth scrolling effect
+      });
+    }
+  }
+  
+
+
+
   useEffect(() => {
     // Scroll to the bottom whenever chat history is updated
     if (endOfMessagesRef.current) {
@@ -534,15 +574,37 @@ const ArticlePage = () => {
                     onClick={handleBackClick}
                     style={{cursor:"pointer"}}
                   >Back</button> */}
-                 <div style={{display:"flex",cursor:"pointer",marginTop:"1%"}} onClick={handleBackClick}>
-                    <img src={Arrow} style={{width:"1.5%"}}></img>
-                  <button  className="back-button">Back</button>
-                  </div>
+                  
+                    <div style={{display:"flex",cursor:"pointer",marginTop:"1%",justifyContent:"space-between"}} >
+                    <div style={{display:"flex"}} onClick={handleBackClick}>
+                      <img src={Arrow} style={{width:"14px"}}></img>
+                      <button  className="back-button">Back</button>
+                      </div>
+                    <div className="Rate-Article">
+                    <span>Rate the article </span>
+                      <div class="rate">
+                        <input type="radio" id="star5" name="rate" value="5" />
+                        <label for="star5" title="5 star" />
+                        <input type="radio" id="star4" name="rate" value="4" />
+                        <label for="star4" title="4 star" />
+                        <input type="radio" id="star3" name="rate" value="3" />
+                        <label for="star3" title="3 star" />
+                        <input type="radio" id="star2" name="rate" value="2" />
+                        <label for="star2" title="2 star" />
+                        <input type="radio" id="star1" name="rate" value="1" />
+                        <label for="star1" title="1 star" />
+                      </div>
+                    </div>
+                    </div>
+                    
+                  
+                 
 
                 <p style={{ marginTop: "0", marginBottom: "0" ,color:"#0071bc",fontSize:"20px"}}>
                   {articleData.article_title}
                 </p>
               </div>
+              
               <div className="meta" onMouseUp={handleMouseUp}>
                 <div
                   style={{
@@ -583,7 +645,7 @@ const ArticlePage = () => {
                 {/* <div className="content-brake"></div>  */}
                 {articleData.body_content &&
                   renderContentInOrder(articleData.body_content)}
-
+                  
                   {showStreamingSection && (
                     <div className="streaming-section">
                       <div className="streaming-content">
@@ -597,11 +659,7 @@ const ArticlePage = () => {
                               {/* Check if there's a response, otherwise show loading dots */}
                               {chat.response ? (
                                       <>
-                                        <span>
-  <ReactMarkdown>
-    {`${chat.response}`}
-  </ReactMarkdown>
-</span>
+                                        <span> <ReactMarkdown> {`${chat.response}`} </ReactMarkdown> </span>
                                       </>
                                     ) : (
                                       <div className="loading-dots">
@@ -683,37 +741,44 @@ const ArticlePage = () => {
           </div>
         </div>
       </div>
+        
       <div className="chat-query" style={{ width: openNotes ? contentWidth : '69%'}}>
        <div className="predefined-prompts">
-       <button onClick={() => handlePromptClick("Summarize this")}>
-      Summarize
-    </button>
-    <button onClick={() => handlePromptClick("what can we conclude form this article")}>
-      Conclusion
-    </button>
-    <button onClick={() => handlePromptClick(" what are the key highlights from this article")}>
-      Key Highlights
-    </button>
-      </div>
-      <div className="stream-input" >
-        <img src={flag} alt="flag-logo" className="stream-flag-logo" />
-        <input
-          type="text"
-          placeholder="Ask anything..."
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onKeyDown={handleKeyDown}
-        />
-        {/* <button onClick={handleAskClick} > */}
-          {loading ? (
-            <CircularProgress className="button" size={24} style={{marginLeft:"1.5%"}}color="white" />
-          ) : (
-            <FontAwesomeIcon className="button" onClick={handleAskClick} icon={faTelegram} size={"xl"} />
-          )}
-        {/* </button> */}
-      </div>
+       <button onClick={() => handlePromptClick("Summarize this article")}>
+          Summarize
+        </button>
+        <button onClick={() => handlePromptClick("what can we conclude form this article")}>
+          Conclusion
+        </button>
+        <button onClick={() => handlePromptClick(" what are the key highlights from this article")}>
+          Key Highlights
+        </button>
+          </div>
+          <div className="stream-input" >
+            <img src={flag} alt="flag-logo" className="stream-flag-logo" />
+            <input
+              type="text"
+              placeholder="Ask anything..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={handleKeyDown}
+            />
+            {/* <button onClick={handleAskClick} > */}
+              {loading ? (
+                <CircularProgress className="button" size={24} style={{marginLeft:"1.5%"}}color="white" />
+              ) : (
+                <FontAwesomeIcon className="button" onClick={handleAskClick} icon={faTelegram} size={"xl"} />
+              )}
+            {/* </button> */}
       </div>
       
+      </div>
+
+      <div className="ScrollTop">
+        <button onClick={scrollToTop} id="scrollTopBtn" title="Go to top">
+          <FontAwesomeIcon icon={faAnglesUp} />
+        </button>
+      </div>
     </>
   );
 };

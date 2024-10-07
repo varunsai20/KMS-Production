@@ -273,7 +273,7 @@
 }
 .chat-query{
   position: absolute;
-  bottom: 10px;
+  /* bottom: 10px; */
   left: 24%;
   /* position: relative; */
   width: 100%;
@@ -624,4 +624,72 @@ td {
   0% { opacity: 0.2; }
   20% { opacity: 1; }
   100% { opacity: 0.2; }
+}
+
+.Rate-Article{
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+.rate {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 0px;
+  /* gap: 10px; */
+  /* width: 235px; */
+  height: 1vh;
+  transform: matrix(-1, 0, 0, 1, 0, 0);
+}
+.rate:not(:checked) > input {
+  position: absolute;
+  top: -9999px;
+}
+.rate:not(:checked) > label {
+  float: right;
+  width: 1em;
+  overflow: hidden;
+  white-space: nowrap;
+  cursor: pointer;
+  font-size: 30px;
+  color: rgb(205 205 205);
+}
+.rate:not(:checked) > label:before {
+  content: "★ ";
+}
+.rate > input:checked ~ label {
+  color: #ffc700;
+}
+.rate:not(:checked) > label:hover,
+.rate:not(:checked) > label:hover ~ label {
+  color: #ffc700;
+}
+.rate > input:checked + label:hover,
+.rate > input:checked + label:hover ~ label,
+.rate > input:checked ~ label:hover,
+.rate > input:checked ~ label:hover ~ label,
+.rate > label:hover ~ input:checked ~ label {
+  color: #ffc700;
+}
+
+
+#scrollTopBtn {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  bottom: 20px; /* Place the button at the bottom */
+  right: 30px; /* Place the button on the right */
+  z-index: 99; /* Make sure it does not overlap */
+  border: none; /* Remove borders */
+  outline: none;
+  background-color: #000; /* Black background */
+  color: white; /* White text */
+  cursor: pointer; /* Pointer/hand icon */
+  padding: 15px; /* Some padding */
+  border-radius: 10px; /* Rounded corners */
+  font-size: 18px; /* Increase font size */
+}
+
+#scrollTopBtn:hover {
+  background-color: #555; /* Add a dark-grey background on hover */
 }
