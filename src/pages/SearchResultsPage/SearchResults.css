@@ -462,10 +462,20 @@ button {
 }
 .Article-Options{
   min-height: 10%;
+  width: 100%;
   display: flex;
   flex-direction: row;
   gap: 20px;
     align-items: center;
+}
+.Article-Options-Left{
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  align-items: center;
+}
+.Article-Rating{
+
 }
 .Ask-Question{
   cursor: pointer;

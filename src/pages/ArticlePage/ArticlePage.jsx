@@ -50,7 +50,6 @@ const ArticlePage = () => {
   const [showPopup, setShowPopup] = useState(false);
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
   const { setSelectedText } = useContext(TextContext);
-
   const [editingPmid, setEditingPmid] = useState(null);
   const [editedTitle, setEditedTitle] = useState('');
   // const handleResize = (event) => {
@@ -73,18 +72,39 @@ const ArticlePage = () => {
     }
   }, [openNotes]);
   console.log(showStreamingSection);
-
-  const handleMouseUp = (event) => {
-    const selection = window.getSelection().toString();
-
-    if (selection) {
-      setSelectedText(selection);
-      setPopupPosition({ x: event.pageX, y: event.pageY });
-      setShowPopup(true);
-    } else {
-      setShowPopup(false);
-    }
+  const [ratingsList, setRatingsList] = useState(() => {
+    // Get ratingsList from sessionStorage or initialize an empty array
+    return JSON.parse(sessionStorage.getItem("ratingsList")) || [];
+  });
+  const getRatingForArticle = (pmid) => {
+    const savedRating = ratingsList.find((item) => item.pmid === pmid);
+    return savedRating ? savedRating.rating : 3; // Default rating is 3 if not found
   };
+  // Handle rating change
+  const handleRatingChange = (pmid, newRating) => {
+    const updatedRatings = [...ratingsList];
+    const existingRatingIndex = updatedRatings.findIndex((item) => item.pmid === pmid);
+
+    if (existingRatingIndex !== -1) {
+      updatedRatings[existingRatingIndex].rating = newRating;
+    } else {
+      updatedRatings.push({ pmid, rating: newRating });
+    }
+
+    setRatingsList(updatedRatings);
+    sessionStorage.setItem("ratingsList", JSON.stringify(updatedRatings));
+  };
+  // const handleMouseUp = (event) => {
+  //   const selection = window.getSelection().toString();
+
+  //   if (selection) {
+  //     setSelectedText(selection);
+  //     setPopupPosition({ x: event.pageX, y: event.pageY });
+  //     setShowPopup(true);
+  //   } else {
+  //     setShowPopup(false);
+  //   }
+  // };
 
   useEffect(() => {
     if (data && data.articles) {
@@ -583,16 +603,19 @@ const ArticlePage = () => {
                     <div className="Rate-Article">
                     <span>Rate the article </span>
                       <div class="rate">
-                        <input type="radio" id="star5" name="rate" value="5" />
-                        <label for="star5" title="5 star" />
-                        <input type="radio" id="star4" name="rate" value="4" />
-                        <label for="star4" title="4 star" />
-                        <input type="radio" id="star3" name="rate" value="3" />
-                        <label for="star3" title="3 star" />
-                        <input type="radio" id="star2" name="rate" value="2" />
-                        <label for="star2" title="2 star" />
-                        <input type="radio" id="star1" name="rate" value="1" />
-                        <label for="star1" title="1 star" />
+                      {[5, 4, 3, 2, 1].map((value) => (
+                      <React.Fragment key={value}>
+                        <input
+                          type="radio"
+                          id={`star${value}-${articleData.pmid}`}
+                          name={`rate_${articleData.pmid}`}
+                          value={value}
+                          checked={getRatingForArticle(articleData.pmid) === value}
+                          onChange={() => handleRatingChange(articleData.pmid, value)}
+                        />
+                        <label htmlFor={`star${value}-${articleData.pmid}`} title={`${value} star`} />
+                      </React.Fragment>
+                    ))}
                       </div>
                     </div>
                     </div>
@@ -605,7 +628,7 @@ const ArticlePage = () => {
                 </p>
               </div>
               
-              <div className="meta" onMouseUp={handleMouseUp}>
+              <div className="meta"     >
                 <div
                   style={{
                     display: "flex",

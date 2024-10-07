@@ -6,7 +6,7 @@
     margin: 0 1% 0 0;
     opacity: 0px;
     border: 1px solid rgba(235, 235, 243, 1);
-    /* background-color: rgba(235, 235, 243, 0.5); */
+    background-color: rgba(255, 255, 255, 0.5);
   }
   .note-taking {
     width: 100%;
@@ -40,10 +40,23 @@
   .close-button {
     background-color: blueviolet;
   }
-  .Save-button {
-    background-color: antiquewhite;
-    color: black;
-    border-radius: 5px;
+  .create-note__actions{
+    display: flex;
+    align-items: center;
+  }
+  .note-save-button {
+    background-color: rgba(255, 255, 255, 1);
+    width: 50%;
+    height: 40px;
+    border: 1px solid rgba(235, 235, 243, 1);
+    border-radius: 15px;
+    cursor: pointer;
+    font-size: 15px;
+    color: rgba(26, 130, 255, 1);
+    font-weight: 500;
+    margin: 6px  0 0;
+    padding-left: 10px;
+    padding-right: 10px;
   }
   .save-button > span {
     color: black;

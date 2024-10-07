@@ -72,7 +72,6 @@ const Createnotes = ({ setNotes, onClose }) => {
           display: "flex",
           justifyContent: "space-between",
           width: "100%",
-          backgroundColor: "black",
         }}
         ref={headerRef}
       >
@@ -109,7 +108,7 @@ const Createnotes = ({ setNotes, onClose }) => {
           <CiMenuFries size={20} color="black" />
         </button>
         <div className="create-note__actions">
-          <Button className="save-button" text="Save" onClick={handleSubmit} />
+          <Button className="note-save-button" text="Save" onClick={handleSubmit} />
           <Button
             text={<IoCloseOutline color="#1a82ff" />}
             className="cancel-button"

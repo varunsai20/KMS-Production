@@ -39,7 +39,16 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
   const [customStartDate, setCustomStartDate] = useState('');
   const [customEndDate, setCustomEndDate] = useState('');
   const [completePMID,setCompletePMID]=useState([])
-
+  const [ratingsList, setRatingsList] = useState(() => {
+    // Get ratingsList from sessionStorage or initialize an empty array
+    return JSON.parse(sessionStorage.getItem("ratingsList")) || [];
+  });
+  console.log(ratingsList)
+  const getRatingForArticle = (pmid) => {
+    const ratingsList = JSON.parse(sessionStorage.getItem("ratingsList")) || [];
+    const savedRating = ratingsList.find((item) => item.pmid === pmid);
+    return savedRating ? savedRating.rating : 3; // Default rating is 3 if not found
+  };
 
  
 
@@ -106,26 +115,34 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
     const dateB = parseDate(b.publication_date);
     return dateB - dateA; // Sort in descending order (newest first)
   });
-  useEffect(()=>{
-    if(selectedSort!="publication_date"){
+  useEffect(() => {
+    // If the selected sort is neither "publication_date" nor "Ratings", default to "best_match"
+    if (selectedSort !== "publication_date" && selectedSort !== "Ratings") {
       handleSortChange({ target: { value: "best_match" } });
-      
     }
-  })
+  }, [selectedSort]);
+  
+  const sortedRatingData = useMemo(() => {
+    return [...data.articles].sort((a, b) => {
+      const ratingA = getRatingForArticle(a.pmid);
+      const ratingB = getRatingForArticle(b.pmid);
+      return ratingB - ratingA; // Sort in descending order by rating
+    });
+  }, [data.articles]);
+  
   // Function to handle sorting based on selected option
   const handleSortChange = (e) => {
     const sortType = e.target.value;
     setSelectedSort(sortType); // Store the selected sort option
-
+  
     // If publication date is selected, use the sorted list for display
     if (sortType === "publication_date") {
       setSortedData(sortedPublicationData); // Sort by publication date
-      console.log(sortedPublicationData)
     } else if (sortType === "best_match") {
       setSortedData(sortedSimilarityData); // Sort by similarity score
-      console.log(sortedSimilarityData)
+    } else if (sortType === "Ratings") {
+      setSortedData(sortedRatingData); // Sort by rating
     }
-
   };
 
   useEffect(() => {
@@ -1098,7 +1115,7 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
                             Annotate
                           </button>
                           )}
-                          <button className="SearchResult-Annotate">Send</button>
+                          <button className="SearchResult-Annotate">Share to</button>
                           <button className="SearchResult-Annotate">Save</button>
                     </div>
 
@@ -1115,6 +1132,7 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
                         <select className="SearchResult-dropdown" onChange={handleSortChange} value={selectedSort}>
           <option value="best_match">Most Relevant</option>
           <option value="publication_date">Publication Date</option>
+          <option value="Ratings">Rating</option>
         </select>
                       </div>
                      
@@ -1246,23 +1264,42 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
         </p>
         </div>
         </div>
-        <div className="Article-Options">
-          <p className="searchresult-similarity_score">
-            <span style={{color:"#c05600"}}>Relevancy Score: </span>
-            {similarityScore ? `${similarityScore.toFixed(2)} %` : 'N/A'}
-          </p>
-          <FontAwesomeIcon
-            icon={regularBookmark}
-            size="l"
-            style={{ color: bookmarkedPmids[result.pmid] ? 'blue' : 'black', cursor: 'pointer' }}
-            onClick={() => handleBookmarkClick(result.pmid)}
-            title={bookmarkedPmids[result.pmid] ? 'Bookmarked' : 'Bookmark this article'}
-          />
-          {/* <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: "3px", cursor: "pointer" }} title="Ask a question">
-            <FontAwesomeIcon icon={faComment} />
-            <p className="Ask-Question">Ask a Question</p>
-          </div> */}
+        <div className="Article-Options" style={{justifyContent:"space-between"}}>
+            <div className="Article-Options-Left" style={{justifyContent:"space-between"}}>
+                <p className="searchresult-similarity_score">
+                  <span style={{color:"#c05600"}}>Relevancy Score: </span>
+                  {similarityScore ? `${similarityScore.toFixed(2)} %` : 'N/A'}
+                </p>
+                <FontAwesomeIcon
+                  icon={regularBookmark}
+                  size="l"
+                  style={{ color: bookmarkedPmids[result.pmid] ? 'blue' : 'black', cursor: 'pointer' }}
+                  onClick={() => handleBookmarkClick(result.pmid)}
+                  title={bookmarkedPmids[result.pmid] ? 'Bookmarked' : 'Bookmark this article'}
+                />
+            </div>
+            <div className="Article-Options-Right">
+                      <div class="rate">
+                      {[5, 4, 3, 2, 1].map((value) => (
+                    <React.Fragment key={value}>
+                      <input
+                        type="radio"
+                        id={`star${value}-${result.pmid}`}
+                        name={`rate_${result.pmid}`}
+                        value={value}
+                        checked={getRatingForArticle(result.pmid) === value}
+                        disabled // Disable the input as we don't want to modify it
+                      />
+                      <label
+                        htmlFor={`star${value}-${result.pmid}`}
+                        title={`${value} star`}
+                      />
+                    </React.Fragment>
+                  ))}
+                      </div>
+            </div>
         </div>
+        
       </div>
     );
   })}
