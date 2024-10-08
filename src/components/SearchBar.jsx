@@ -107,6 +107,8 @@ const SearchBar = ({ renderInputContainer, className }) => {
     />
     <Autocomplete
         freeSolo
+        open
+        Open
         options={filteredResults} // Show filtered suggestions
         onInputChange={handleInputChange} // Update input value dynamically as the user types
         onChange={handleOptionSelect}

@@ -630,6 +630,7 @@ td {
   display: flex;
   flex-direction: row;
   align-items: center;
+  gap:5px;
 }
 .rate {
   display: flex;
@@ -640,6 +641,7 @@ td {
   /* gap: 10px; */
   /* width: 235px; */
   height: 1vh;
+  width: 15vh;
   transform: matrix(-1, 0, 0, 1, 0, 0);
 }
 .rate:not(:checked) > input {

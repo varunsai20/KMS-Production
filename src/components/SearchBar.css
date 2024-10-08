@@ -9,7 +9,7 @@
   border-radius: 20px;
   width: 60%;
   height: 94px;
-  padding: 24px 0px 24px 0px;
+  /* padding: 24px 0px 24px 0px; */
   gap: 32px;
   z-index: 99;
   bottom: 30px;
@@ -23,6 +23,7 @@
   width: 80%;
   /*max-width: 500px;*/ /* Set a maximum width to control sizing */
   display: flex;
+  align-items: center;
   justify-content: space-between;
 }
 
@@ -43,7 +44,7 @@
 .search-icon {
   position: absolute;
     left: 10px;
-    top: 13%;
+    /* top: 13%; */
     /* transform: translateY(-50%); */
     width: 5%;
     height: 20px;
@@ -55,7 +56,7 @@
 .search-button {
   position: absolute;
   right: 5px;
-  top: 3%;
+  /* top: 3%; */
   /* transform: translateY(40%); */
   background-color: var(--color-btn-blue);
   color: white;
@@ -111,7 +112,7 @@
 
 .autocomplete {
   position: absolute;
-
+  
   width: 100%;
 
   border: 0;

@@ -78,7 +78,7 @@ const ArticlePage = () => {
   });
   const getRatingForArticle = (pmid) => {
     const savedRating = ratingsList.find((item) => item.pmid === pmid);
-    return savedRating ? savedRating.rating : 3; // Default rating is 3 if not found
+    return savedRating ? savedRating.rating : 0; // Default rating is 3 if not found
   };
   // Handle rating change
   const handleRatingChange = (pmid, newRating) => {
@@ -601,7 +601,10 @@ const ArticlePage = () => {
                       <button  className="back-button">Back</button>
                       </div>
                     <div className="Rate-Article">
+                      <div>
+                        
                     <span>Rate the article </span>
+                    </div>
                       <div class="rate">
                       {[5, 4, 3, 2, 1].map((value) => (
                       <React.Fragment key={value}>

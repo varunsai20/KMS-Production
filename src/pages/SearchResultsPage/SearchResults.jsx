@@ -1279,7 +1279,7 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
                 />
             </div>
             <div className="Article-Options-Right">
-                      <div class="rate">
+                      <div class="searchResult-rate">
                       {[5, 4, 3, 2, 1].map((value) => (
                     <React.Fragment key={value}>
                       <input
