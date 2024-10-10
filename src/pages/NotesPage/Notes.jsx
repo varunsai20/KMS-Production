@@ -15,24 +15,24 @@ const NotesManager = ({ selectedText }) => {
     localStorage.setItem("notes", JSON.stringify(notes));
   }, [notes]);
 
-  // Automatically switch to the 'create' view when text is passed
-  // useEffect(() => {
-  //   if (selectedText && currentView === "list") {
-  //     setCurrentView("create");
-  //   }
-  // }, [selectedText]);
-  // Automatically switch to the 'create' view when text is passed and append new text
+  //Automatically switch to the 'create' view when text is passed
   useEffect(() => {
-    if (selectedText) {
-      if (currentView !== "create") {
-        setCurrentView("create");
-      }
-      // Append selected text
-      setTextToSave((prevText) =>
-        prevText ? `${prevText} ${selectedText}` : selectedText
-      );
+    if (selectedText && currentView === "list") {
+      setCurrentView("create");
     }
   }, [selectedText]);
+  // Automatically switch to the 'create' view when text is passed and append new text
+  // useEffect(() => {
+  //   if (selectedText) {
+  //     if (currentView !== "create") {
+  //       setCurrentView("create");
+  //     }
+  //     // Append selected text
+  //     setTextToSave((prevText) =>
+  //       prevText ? `${prevText} ${selectedText}` : selectedText
+  //     );
+  //   }
+  // }, [selectedText]);
   console.log(selectedText);
 
   const handleAddNewNote = () => {
