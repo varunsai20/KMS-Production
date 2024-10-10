@@ -1,108 +1,177 @@
 .notes {
-    width: 349px;
-    height: 70vh;
-    gap: 0px;
-    border-radius: 16px;
-    margin: 0 1% 0 0;
-    opacity: 0px;
-    border: 1px solid rgba(235, 235, 243, 1);
-    background-color: rgba(255, 255, 255, 0.5);
+  width: 349px;
+  height: 65vh;
+  gap: 0px;
+  border-radius: 16px;
+  margin: 0 1% 0 0;
+  opacity: 0px;
+  border: 1px solid rgba(235, 235, 243, 1);
+  /* background-color: rgba(235, 235, 243, 0.5); */
+}
+.note-taking {
+  width: 100%;
+  height: 50vh;
+  box-sizing: border-box;
+  background-color: rgba(235, 235, 243, 1);
+  border: 1px soild rgba(235, 235, 243, 1);
+  flex: 1;
+  border: none;
+  padding: 3%;
+  outline: none;
+  background: transparent;
+  resize: none;
+  font-size: 14px;
+  font-family: Manrope;
+  overflow-y: auto;
+}
+
+.note-input {
+  width: 100%;
+  box-sizing: border-box;
+  background-color: rgba(235, 235, 243, 1);
+  border: 1px soild rgba(235, 235, 243, 1);
+  flex: 1;
+  border: none;
+  padding: 3%;
+  outline: none;
+  background: transparent;
+  resize: none;
+  font-size: 14px;
+  font-family: Manrope;
+}
+.close-button {
+  background-color: blueviolet;
+}
+.Save-button {
+  background-color: antiquewhite;
+  color: black;
+  border-radius: 5px;
+}
+.save-button > span {
+  color: black;
+}
+.dropdown {
+  /* width: 100%; */
+  background-color: white; /* or your preferred background color */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 4px; /* optional */
+  padding: 10px; /* optional */
+}
+
+.open-header-dropdown {
+  gap: 15px;
+  text-align: start;
+  display: flex;
+  flex-direction: column;
+}
+.dropdown-button-group {
+  display: grid;
+  justify-content: start;
+  gap: 10px;
+}
+.dots {
+  font-size: 28px;
+  color: black;
+}
+.cancel-button {
+  background-color: transparent;
+  border: none;
+  padding: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.cancel-button svg {
+  font-size: 20px;
+  padding: 10px 0px 0px 10px;
+  /* width: 24px;
+      height: 24px; */
+}
+.dropdown-toggle {
+  color: #1a82ff;
+  padding: 10px 0px 0px 10px;
+}
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  background-color: #f1f1f1;
+  padding: 5px;
+  border-radius: 4px;
+  margin-bottom: 10px;
+}
+
+.toolbar button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 5px;
+}
+
+.toolbar button:hover {
+  background-color: #e2e2e2;
+  border-radius: 4px;
+}
+.note-save-button {
+  width: 30%;
+  color: #1a82ff;
+}
+.custom-ordered-list {
+  margin: 0;
+  padding: 0;
+  list-style-type: none; /* Remove default numbering */
+  counter-reset: myCounter; /* Reset the counter */
+}
+
+.custom-ordered-list li {
+  counter-increment: myCounter; /* Increment the counter */
+}
+
+.custom-ordered-list li::before {
+  content: counter(myCounter) ") "; /* Add the number followed by ')' */
+  /* margin-right: 10px; */
+}
+.note-taking ol {
+  margin: 0;
+  padding: 0;
+}
+.note-taking ul {
+  margin: 0px 0px 0px 16px;
+  padding: 0;
+}
+.note-taking:empty:before {
+  content: attr(placeholder);
+  color: #aaa;
+  pointer-events: none;
+}
+.share-message {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: #4caf50; /* Green background */
+  color: white;
+  padding: 10px 20px;
+  border-radius: 5px;
+  z-index: 1000;
+  animation: fadein 0.5s, fadeout 0.5s 2.5s;
+}
+
+@keyframes fadein {
+  from {
+    opacity: 0;
   }
-  .note-taking {
-    width: 100%;
-    height: 56.5vh;
-    box-sizing: border-box;
-    background-color: rgba(235, 235, 243, 1);
-    border: 1px soild rgba(235, 235, 243, 1);
-    flex: 1;
-    border: none;
-    padding: 3%;
-    outline: none;
-    background: transparent;
-    resize: none;
-    font-size: 14px;
-    font-family: Manrope;
+  to {
+    opacity: 1;
   }
-  .note-input {
-    width: 100%;
-    box-sizing: border-box;
-    background-color: rgba(235, 235, 243, 1);
-    border: 1px soild rgba(235, 235, 243, 1);
-    flex: 1;
-    border: none;
-    padding: 3%;
-    outline: none;
-    background: transparent;
-    resize: none;
-    font-size: 14px;
-    font-family: Manrope;
+}
+
+@keyframes fadeout {
+  from {
+    opacity: 1;
   }
-  .close-button {
-    background-color: blueviolet;
+  to {
+    opacity: 0;
   }
-  .create-note__actions{
-    display: flex;
-    align-items: center;
-  }
-  .note-save-button {
-    background-color: rgba(255, 255, 255, 1);
-    width: 50%;
-    height: 40px;
-    border: 1px solid rgba(235, 235, 243, 1);
-    border-radius: 15px;
-    cursor: pointer;
-    font-size: 15px;
-    color: rgba(26, 130, 255, 1);
-    font-weight: 500;
-    margin: 6px  0 0;
-    padding-left: 10px;
-    padding-right: 10px;
-  }
-  .save-button > span {
-    color: black;
-  }
-  .dropdown {
-    /* width: 100%; */
-    background-color: white; /* or your preferred background color */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    border-radius: 4px; /* optional */
-    padding: 10px; /* optional */
-  }
-  
-  .open-header-dropdown {
-    gap: 15px;
-    text-align: start;
-    display: flex;
-    flex-direction: column;
-  }
-  .dropdown-button-group {
-    display: grid;
-    justify-content: start;
-    gap: 10px;
-  }
-  .dots {
-    font-size: 28px;
-    color: black;
-  }
-  .cancel-button {
-    background-color: transparent;
-    border: none;
-    padding: 8px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-  }
-  
-  .cancel-button svg {
-    font-size: 20px;
-    padding: 10px 0px 0px 10px;
-    /* width: 24px;
-    height: 24px; */
-  }
-  .dropdown-toggle {
-    color: #1a82ff;
-    padding: 10px 0px 0px 10px;
-  }
-  .create-note__actions {
-  }
+}

@@ -1,22 +1,39 @@
-// src/components/NotesManager.js
 import React, { useState, useEffect } from "react";
 import NotesList from "../../components/Notes/NotesList";
 import Createnotes from "../../components/Notes/CreateNotes";
 import Editnotes from "../../components/Notes/EditNotes";
-// import Createnotes from "../pages/Notes/Createnotes";
-// import Editnotes from "../pages/Notes/Editnotes";
-//import "./NotesManager.css"; // Import CSS for styling
 
-const NotesManager = () => {
+const NotesManager = ({ selectedText }) => {
   const [notes, setNotes] = useState(
     JSON.parse(localStorage.getItem("notes")) || []
   );
+  const [currentView, setCurrentView] = useState("list"); // 'list', 'create', 'edit'
+  const [selectedNote, setSelectedNote] = useState(null);
+  const [textToSave, setTextToSave] = useState(selectedText); // Store the passed selected text
 
   useEffect(() => {
     localStorage.setItem("notes", JSON.stringify(notes));
   }, [notes]);
-  const [currentView, setCurrentView] = useState("list"); // 'list', 'create', 'edit'
-  const [selectedNote, setSelectedNote] = useState(null);
+
+  // Automatically switch to the 'create' view when text is passed
+  // useEffect(() => {
+  //   if (selectedText && currentView === "list") {
+  //     setCurrentView("create");
+  //   }
+  // }, [selectedText]);
+  // Automatically switch to the 'create' view when text is passed and append new text
+  useEffect(() => {
+    if (selectedText) {
+      if (currentView !== "create") {
+        setCurrentView("create");
+      }
+      // Append selected text
+      setTextToSave((prevText) =>
+        prevText ? `${prevText} ${selectedText}` : selectedText
+      );
+    }
+  }, [selectedText]);
+  console.log(selectedText);
 
   const handleAddNewNote = () => {
     setCurrentView("create");
@@ -29,6 +46,7 @@ const NotesManager = () => {
 
   const handleCloseCreate = () => {
     setCurrentView("list");
+    setTextToSave(""); // Clear the selected text after creating the note
   };
 
   const handleCloseEdit = () => {
@@ -57,7 +75,11 @@ const NotesManager = () => {
         />
       )}
       {currentView === "create" && (
-        <Createnotes setNotes={setNotes} onClose={handleCloseCreate} />
+        <Createnotes
+          selectedText={textToSave}
+          setNotes={setNotes}
+          onClose={handleCloseCreate}
+        />
       )}
       {currentView === "edit" && selectedNote && (
         <Editnotes

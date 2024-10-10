@@ -1,14 +1,13 @@
-// src/components/NotesList.js
 import React, { useState, useEffect } from "react";
 import NoteItem from "./NoteItem";
 import SearchIcon from "../../assets/images/Search.svg";
 import { LuPlus } from "react-icons/lu";
 import { RxDotsHorizontal } from "react-icons/rx";
-//import { GrClose } from "react-icons/gr";
+import { IoShareSocial } from "react-icons/io5";
+import { RiDeleteBin6Line } from "react-icons/ri";
 import "./NotesList.css"; // Import CSS for styling
 
 const NotesList = ({ notes, onAddNewNote, onEditNote, onDeleteAllNotes }) => {
-  //const [showSearch, setShowSearch] = useState(false);
   const [text, setText] = useState("");
   const [filteredNotes, setFilteredNotes] = useState(notes);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -53,8 +52,27 @@ const NotesList = ({ notes, onAddNewNote, onEditNote, onDeleteAllNotes }) => {
             </button>
             {showDropdown && (
               <div className="dropdown-delete">
-                <button onClick={onDeleteAllNotes} className="dropdown-button">
+                <button
+                  onClick={onDeleteAllNotes}
+                  className="dropdown-button"
+                  style={{ display: "flex", gap: "3px" }}
+                >
+                  <div className="delete-icon">
+                    <RiDeleteBin6Line
+                      size={13}
+                      style={{ marginLeft: "0", padding: "0" }}
+                    />
+                  </div>
                   Delete All
+                </button>
+                <button
+                  className="dropdown-button"
+                  style={{ display: "flex", gap: "4px" }}
+                >
+                  <div className="share-icon">
+                    <IoShareSocial size={15} />
+                  </div>
+                  Share All
                 </button>
               </div>
             )}

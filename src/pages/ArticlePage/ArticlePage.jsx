@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef,useContext } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import "./ArticlePage.css";
 import { Typography } from "@mui/material";
@@ -66,7 +66,7 @@ const ArticlePage = () => {
   const [triggerAskClick, setTriggerAskClick] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
-  const { setSelectedText } = useContext(TextContext);
+  const [selectedText, setSelectedText] = useState("");
   const [editingPmid, setEditingPmid] = useState(null);
   const [editedTitle, setEditedTitle] = useState('');
   // const handleResize = (event) => {
@@ -107,17 +107,24 @@ const ArticlePage = () => {
     setRatingsList(updatedRatings);
     sessionStorage.setItem("ratingsList", JSON.stringify(updatedRatings));
   };  
-  // const handleMouseUp = (event) => {
-  //   const selection = window.getSelection().toString();
-
-  //   if (selection) {
-  //     setSelectedText(selection);
-  //     setPopupPosition({ x: event.pageX, y: event.pageY });
-  //     setShowPopup(true);
-  //   } else {
-  //     setShowPopup(false);
-  //   }
-  // };
+  const handleMouseUp = (event) => {
+    const selection = window.getSelection().toString().trim();
+    if (selection) {
+      setSelectedText(selection); // Store selected text
+      setPopupPosition({ x: event.pageX, y: event.pageY }); // Set popup position
+      setShowPopup(true); // Show the popup for saving the selection
+    } else {
+      setShowPopup(false);
+    }
+  };
+  const handleSaveToNote = () => {
+    if (selectedText) {
+      setOpenNotes(true); // Open Notes when the "Save to Notes" button is clicked
+      setShowPopup(false); // Hide the popup
+    }
+  };
+  
+  console.log("article Page: ", selectedText);
   const getIdType = () => {
     return `${source}_${id}`;
   };
@@ -729,11 +736,12 @@ const ArticlePage = () => {
                       top: popupPosition.y + 10,
                       left: popupPosition.x + 10,
                       backgroundColor: "#f1f1f1",
-                      gridTemplateColumns: "1fr",
+                      // gridTemplateColumns: "1fr",
+                      zindex:"1000",
                     }}
                   >
                     <button
-                      onClick={() => setShowPopup(false)}
+                      onClick={handleSaveToNote}  
                       className="Popup-buttons"
                     >
                       <IoSaveOutline fontSize={"20px"} color="#1A82ff" />
@@ -761,7 +769,7 @@ const ArticlePage = () => {
            </div>
             )}
             {openNotes && (
-              <Notes/>
+              <Notes selectedText={selectedText}/>
             )}
             <div className="icons-group">
             <div
@@ -772,8 +780,8 @@ const ArticlePage = () => {
                   opacity: annotateData && annotateData.length > 0 ? 1 : 1, // Adjust visibility when disabled
                 }}
               >
-                            <img src={annotate} alt="annotate-icon" />
-                          </div>
+              <img src={annotate} alt="annotate-icon" />
+              </div>
               <div
                 className={`notes-icon ${openNotes ? "open" : "closed"}`}
                 onClick={() => {

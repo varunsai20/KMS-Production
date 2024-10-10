@@ -609,6 +609,12 @@ td {
     opacity: 0.2;
   }
 }
+.Popup-buttons {
+  padding: 10px;
+}
+.highlight {
+  background-color: yellow; /* Custom highlight color */
+}
 
 .typing-dot {
   /* display: inline-block; */

@@ -51,9 +51,10 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
     // Get ratingsList from sessionStorage or initialize an empty array
     return JSON.parse(sessionStorage.getItem("ratingsList")) || [];
   });
-  const getRatingForArticle = (uniqueId) => {
-    const savedRating = ratingsList.find((item) => item.uniqueId === uniqueId);
-    return savedRating ? savedRating.rating : 0; // Default rating is 0 if not found
+  const getRatingForArticle = (pmid) => {
+    const ratingsList = JSON.parse(sessionStorage.getItem("ratingsList")) || [];
+    const savedRating = ratingsList.find((item) => item.pmid === pmid);
+    return savedRating ? savedRating.rating : 3; // Default rating is 3 if not found
   };
 
   
@@ -611,6 +612,8 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
           ? prevSelected.filter((id) => id !== pmid) // Remove unchecked article
           : [...prevSelected, pmid] // Add checked article
     );
+
+
   };
   console.log(bioRxivArticles)
   console.log(plosArticles)
@@ -656,20 +659,10 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
     if (totalArticles.length > 0) {
       setAnnotateData([])
       setAnnotateLoading(true);
-      const extractIdType = (uniqueId) => {
-        return uniqueId.split('_')[1]; // This splits "source_idType" and returns only the idType
-      };
-  
-      // Prepare the data by removing the "source_" part from uniqueId
-      const pubmedIds = selectedArticles.map(id => parseInt(extractIdType(id), 10));
-      const biorxivIds = bioRxivArticles.map(id => parseInt(extractIdType(id), 10));
-      const plosIds = plosArticles.map(id => parseInt(extractIdType(id), 10));
-      console.log(pubmedIds,biorxivIds,plosIds)
-      console.log(selectedArticles,bioRxivArticles,plosArticles)
       axios.post('http://13.127.207.184:80/annotate', {
-        pubmed: pubmedIds,
-        biorxiv:biorxivIds,
-        plos:plosIds // Sending the selected PMIDs in the request body
+        pubmed: selectedArticles,
+        biorxiv:bioRxivArticles,
+        plos:plosArticles // Sending the selected PMIDs in the request body
       })
         .then((response) => {
 
@@ -1283,6 +1276,7 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
   {paginatedArticles.map((result, index) => {
   // Check if the similarity_score is available in the result or session storage
   let similarityScore = result.similarity_score;
+    
   // If similarity score is not present in the result, retrieve it from session storage
   if (!similarityScore) {
     const storedData = sessionStorage.getItem('ResultData');
@@ -1299,7 +1293,6 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
     }
   }
   const idType = getIdType(result);
-  const uniqueId = `${result.source}_${idType}`;  
   console.log(idType)
   // Safely handle abstract_content based on its type
   let abstractContent = '';
@@ -1405,35 +1398,34 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
               {result.source?result.source:"PubMed"}
               </p>
               <FontAwesomeIcon
-            icon={regularBookmark}
-            size="l"
-            style={{ color: bookmarkedPmids[uniqueId] ? 'blue' : 'black', cursor: 'pointer' }}
-            onClick={() => handleBookmarkClick(uniqueId)}
-            title={bookmarkedPmids[uniqueId] ? 'Bookmarked' : 'Bookmark this article'}
-          />
+                icon={regularBookmark}
+                size="l"
+                style={{ color: bookmarkedPmids[idType] ? 'blue' : 'black', cursor: 'pointer' }}
+                onClick={() => handleBookmarkClick(idType)}
+                title={bookmarkedPmids[idType] ? 'Bookmarked' : 'Bookmark this article'}
+              />
              
           </div>
           <div className="Article-Options-Right">
-          <div className="searchResult-rate">
-                            {[5, 4, 3, 2, 1].map((value) => (
-                              <React.Fragment key={value}>
-                                <input
-                                  type="radio"
-                                  id={`star${value}-${uniqueId}`}
-                                  name={`rate_${uniqueId}`}
-                                  value={value}
-                                  checked={getRatingForArticle(uniqueId) === value}
-                                  disabled // Rating is read-only
-                                />
-                                <label
-                                  htmlFor={`star${value}-${uniqueId}`}
-                                  title={`${value} star`}
-                                />
-                              </React.Fragment>
-                            ))}
-                          </div>
-
-        </div>
+                    <div class="searchResult-rate">
+                    {[5, 4, 3, 2, 1].map((value) => (
+                  <React.Fragment key={value}>
+                    <input
+                      type="radio"
+                      id={`star${value}-${idType}`}
+                      name={`rate_${idType}`}
+                      value={value}
+                      checked={getRatingForArticle(idType) === value}
+                      disabled // Disable the input as we don't want to modify it
+                    />
+                    <label
+                      htmlFor={`star${value}-${idType}`}
+                      title={`${value} star`}
+                    />
+                  </React.Fragment>
+                ))}
+                    </div>
+          </div>
       </div>
       
     </div>

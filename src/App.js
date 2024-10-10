@@ -8,14 +8,11 @@ function App() {
   return (
     <Router>
       <div className="App">
-        <TextProvider>
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/search" element={<SearchResults />} />
           <Route path="/article/:pmid" element={<ArticlePage />} />
         </Routes>
-        </TextProvider>
-        
       </div>
     </Router>
   );
