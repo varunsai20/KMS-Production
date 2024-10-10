@@ -670,7 +670,7 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
       const biorxivIds = bioRxivArticles.map(id => parseInt(extractIdType(id), 10));
       const plosIds = plosArticles.map(id => parseInt(extractIdType(id), 10));
       console.log(pubmedIds,biorxivIds,plosIds)
-      console.log(selectedArticles,bioRxivArticles,plosArticles)
+      // console.log(selectedArticles,bioRxivArticles,plosArticles)
       axios.post('http://13.127.207.184:80/annotate', {
         pubmed: pubmedIds,
         biorxiv:biorxivIds,
@@ -963,7 +963,7 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
                         checked={filters.articleType.includes(
                           "Books and Documents"
                         )}
-                        onChange={handleFilterChange}
+                        //FiltersComments// onChange={handleFilterChange}
                         //checked={isChecked} // Controlled checkbox state
                       />{" "}
                       Books & Documents
@@ -976,7 +976,7 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
                         checked={filters.articleType.includes(
                           "Clinical Trials"
                         )}
-                        onChange={handleFilterChange}
+                        //FiltersComments // onChange={handleFilterChange}
                       />{" "}
                       Clinical Trials
                     </label>
@@ -985,7 +985,7 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
                         type="checkbox"
                         value="Meta Analysis"
                         checked={filters.articleType.includes("Meta Analysis")}
-                        onChange={handleFilterChange}
+                        //FiltersComments// onChange={handleFilterChange}
                       />{" "}
                       Meta Analysis
                     </label>
@@ -994,7 +994,7 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
                         type="checkbox"
                         value="Review"
                         checked={filters.articleType.includes("Review")}
-                        onChange={handleFilterChange}
+                        //FiltersComments onChange={handleFilterChange}
                       />{" "}
                       Review
                     </label>
@@ -1049,7 +1049,7 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
           name="date"
           value="1"
           checked={selectedDateRange === '1'}
-          onChange={handleDateRangeChange}
+         //FiltersComments // onChange={handleDateRangeChange}
         />{' '}
         1 year
       </label>
@@ -1059,7 +1059,7 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
           name="date"
           value="5"
           checked={selectedDateRange === '5'}
-          onChange={handleDateRangeChange}
+          //FiltersComments // onChange={handleDateRangeChange}
         />{' '}
         5 years
       </label>
@@ -1069,7 +1069,7 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
           name="date"
           value="custom"
           checked={selectedDateRange === 'custom'}
-          onChange={handleDateRangeChange}
+          //FiltersComments // onChange={handleDateRangeChange}
         />{' '}
         Custom range
       </label>
@@ -1084,7 +1084,7 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
                 type="date"
                 name="startDate"
                 value={customStartDate}
-                onChange={handleCustomDateChange}
+                //FiltersComments // onChange={handleCustomDateChange}
               />
             </label>
           </div>
@@ -1096,7 +1096,7 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
                 type="date"
                 name="endDate"
                 value={customEndDate}
-                onChange={handleCustomDateChange}
+                //FiltersComments // onChange={handleCustomDateChange}
               />
             </label>
           </div>

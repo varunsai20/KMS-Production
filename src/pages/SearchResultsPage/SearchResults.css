@@ -660,7 +660,7 @@ button {
   /* border: 1px solid rgba(235, 235, 243, 1); */
 }
 .search-annotate {
-  width: 25vw;
+  width: 26vw;
   /* height: 514px; */
   max-height: 532px;
   overflow-y: auto;
