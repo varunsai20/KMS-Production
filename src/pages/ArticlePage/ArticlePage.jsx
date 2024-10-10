@@ -25,8 +25,13 @@ import { IoSaveOutline } from "react-icons/io5";
 import Notes from "../NotesPage/Notes"
 const ArticlePage = () => {
   const { pmid } = useParams();
+  const [type, id1] = pmid.split(":");
+  const id=Number(id1)
+  const [source,setSource]=useState()
+  
   const location = useLocation();
   const { data } = location.state || { data: [] };
+
   const [searchTerm, setSearchTerm] = useState("");
   const [articleData, setArticleData] = useState(null);
   const navigate = useNavigate();
@@ -39,6 +44,15 @@ const ArticlePage = () => {
     const storedHistory = sessionStorage.getItem("chatHistory");
     return storedHistory ? JSON.parse(storedHistory) : [];
   });
+  useEffect(() => {
+    // Retrieve chat history from sessionStorage
+    const storedChatHistory = sessionStorage.getItem("chatHistory");
+  
+    if (storedChatHistory) {
+      // Parse the chat history string back into an array
+      setChatHistory(JSON.parse(storedChatHistory));
+    }
+  }, []);
   const [showStreamingSection, setShowStreamingSection] = useState(false);
   // const [chatInput, setChatInput] = useState(true);
   const [openAnnotate, setOpenAnnotate] = useState(false);
@@ -46,6 +60,9 @@ const ArticlePage = () => {
   const [activeSection, setActiveSection] = useState("Title");
   const contentRef = useRef(null); // Ref to target the content div
   const [contentWidth, setContentWidth] = useState(); // State for content width
+  const [ratingsList, setRatingsList] = useState(() => {
+    return JSON.parse(sessionStorage.getItem("ratingsList")) || [];
+  });
   const [triggerAskClick, setTriggerAskClick] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
@@ -71,29 +88,25 @@ const ArticlePage = () => {
       setContentWidth(`${width}px`); // Update the contentWidth state with the computed width
     }
   }, [openNotes]);
-  console.log(showStreamingSection);
-  const [ratingsList, setRatingsList] = useState(() => {
-    // Get ratingsList from sessionStorage or initialize an empty array
-    return JSON.parse(sessionStorage.getItem("ratingsList")) || [];
-  });
-  const getRatingForArticle = (pmid) => {
-    const savedRating = ratingsList.find((item) => item.pmid === pmid);
-    return savedRating ? savedRating.rating : 0; // Default rating is 3 if not found
+  
+  const getRatingForArticle = (uniqueId) => {
+    const savedRating = ratingsList.find((item) => item.uniqueId === uniqueId);
+    return savedRating ? savedRating.rating : 0; // Default rating is 0 if not found
   };
-  // Handle rating change
-  const handleRatingChange = (pmid, newRating) => {
+
+  const handleRatingChange = (uniqueId, newRating) => {
     const updatedRatings = [...ratingsList];
-    const existingRatingIndex = updatedRatings.findIndex((item) => item.pmid === pmid);
+    const existingRatingIndex = updatedRatings.findIndex((item) => item.uniqueId === uniqueId);
 
     if (existingRatingIndex !== -1) {
       updatedRatings[existingRatingIndex].rating = newRating;
     } else {
-      updatedRatings.push({ pmid, rating: newRating });
+      updatedRatings.push({ uniqueId, rating: newRating });
     }
 
     setRatingsList(updatedRatings);
     sessionStorage.setItem("ratingsList", JSON.stringify(updatedRatings));
-  };
+  };  
   // const handleMouseUp = (event) => {
   //   const selection = window.getSelection().toString();
 
@@ -105,23 +118,28 @@ const ArticlePage = () => {
   //     setShowPopup(false);
   //   }
   // };
+  const getIdType = () => {
+    return `${source}_${id}`;
+  };
 
+  const uniqueId = getIdType();
+  
   useEffect(() => {
+    if (type === "bioRxiv_id") {
+      setSource("biorxiv");
+    } else if (type === "pmid") {
+      setSource("pubmed");
+    } else if (type === "plos_id") {
+      setSource("plos");
+    }
+
     if (data && data.articles) {
       const savedTerm = sessionStorage.getItem("SearchTerm");
       setSearchTerm(savedTerm);
-      console.log(
-        "PMID from state data:",
-        typeof data.articles.map((article) => article.pmid)
-      );
-      console.log(typeof pmid);
-      // console.log(pmid)
       const article = data.articles.find((article) => {
-        // Example: If pmid is stored as `article.pmid.value`, modify accordingly
-        const articlePmid = article.pmid.value || article.pmid; // Update this line based on the actual structure of pmid
-        return String(articlePmid) === String(pmid);
+        const articlePmid = article.pmid || article.bioRxiv_id || article.plos_id;
+        return String(articlePmid) === String(id);
       });
-      console.log(article);
       if (article) {
         setArticleData(article);
       } else {
@@ -131,7 +149,6 @@ const ArticlePage = () => {
       console.error("Data or articles not available");
     }
   }, [pmid, data]);
-  console.log(articleData);
  
   useEffect(() => {
     const articleContent = document.querySelector('.article-content');
@@ -177,6 +194,7 @@ const ArticlePage = () => {
       endOfMessagesRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [chatHistory]); // This will trigger when chatHistory changes
+  console.log(source)
 
   const handleAskClick = async () => {
   if (!query) {
@@ -192,9 +210,10 @@ const ArticlePage = () => {
 
   const bodyData = JSON.stringify({
     question: query,
-    pmid: pmid,
+    id: id,
+    source: source,
   });
-
+  console.log(bodyData)
   try {
     const response = await fetch("http://13.127.207.184:80/generateanswer", {
       method: "POST",
@@ -203,11 +222,10 @@ const ArticlePage = () => {
       },
       body: bodyData,
     });
-
+    
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
     let buffer = "";
-
     setQuery("");
 
     const readStream = async () => {
@@ -249,7 +267,7 @@ const ArticlePage = () => {
                 const parsedData = JSON.parse(jsonChunk);
                 const answer = parsedData.answer;
                 const words = answer.split(" ");
-
+                
                 for (const word of words) {
                   await new Promise((resolve) => setTimeout(resolve, delay));
 
@@ -260,15 +278,14 @@ const ArticlePage = () => {
                     if (lastEntryIndex >= 0) {
                       updatedChatHistory[lastEntryIndex] = {
                         ...updatedChatHistory[lastEntryIndex],
-                        response:
-                          updatedChatHistory[lastEntryIndex].response + " " + word,
+                        response: (updatedChatHistory[lastEntryIndex].response || "") + " " + word,
                         showDot: true, // Show dot while streaming
                       };
                     }
 
                     return updatedChatHistory;
                   });
-
+                  
                   setResponse((prev) => prev + " " + word);
 
                   if (endOfMessagesRef.current) {
@@ -277,7 +294,6 @@ const ArticlePage = () => {
                     });
                   }
                 }
-
                 // Hide dot after last word
                 setChatHistory((chatHistory) => {
                   const updatedChatHistory = [...chatHistory];
@@ -305,6 +321,7 @@ const ArticlePage = () => {
     setLoading(false);
   }
 };
+
 
   const handlePromptClick = (queryText) => {
   setQuery(queryText);
@@ -485,7 +502,7 @@ const ArticlePage = () => {
     );
 
     // Save the updated history back to localStorage without changing the pmid
-    localStorage.setItem('history', JSON.stringify(updatedHistory));
+    localStorage.setItem('history',updatedHistory);
 
     // Reset the editing state
     setEditingPmid(null);
@@ -605,21 +622,21 @@ const ArticlePage = () => {
                         
                     <span>Rate the article </span>
                     </div>
-                      <div class="rate">
-                      {[5, 4, 3, 2, 1].map((value) => (
+                    <div className="rate">
+                    {[5, 4, 3, 2, 1].map((value) => (
                       <React.Fragment key={value}>
                         <input
                           type="radio"
-                          id={`star${value}-${articleData.pmid}`}
-                          name={`rate_${articleData.pmid}`}
+                          id={`star${value}-${uniqueId}`}
+                          name={`rate_${uniqueId}`}
                           value={value}
-                          checked={getRatingForArticle(articleData.pmid) === value}
-                          onChange={() => handleRatingChange(articleData.pmid, value)}
+                          checked={getRatingForArticle(uniqueId) === value}
+                          onChange={() => handleRatingChange(uniqueId, value)}
                         />
-                        <label htmlFor={`star${value}-${articleData.pmid}`} title={`${value} star`} />
+                        <label htmlFor={`star${value}-${uniqueId}`} title={`${value} star`} />
                       </React.Fragment>
                     ))}
-                      </div>
+                  </div>
                     </div>
                     </div>
                     
@@ -641,14 +658,15 @@ const ArticlePage = () => {
                     marginBottom: "5px",
                   }}
                 >
-                  <span>
+                  {articleData.publication_type?<span>
                     Publication Type :
                     <strong style={{ color: "black" }}>
                       {articleData.publication_type.join(", ")}
                     </strong>
                   </span>
+                  :""}
                   <span style={{ color: "#2b9247" }}>
-                    PMID : {articleData.pmid}
+                    PMID : {id}
                   </span>
                 </div>
 
@@ -675,28 +693,30 @@ const ArticlePage = () => {
                   {showStreamingSection && (
                     <div className="streaming-section">
                       <div className="streaming-content">
-                        {chatHistory.map((chat, index) => (
-                          <div key={index}>
-                            <div className="query-asked">
-                              <span>{chat.query}</span>
-                            </div>
+                      {chatHistory.map((chat, index) => (
+      <div key={index}>
+        <div className="query-asked">
+          <span>{chat.query}</span>
+        </div>
 
-                            <div className="response" style={{ textAlign: "left" }}>
-                              {/* Check if there's a response, otherwise show loading dots */}
-                              {chat.response ? (
-                                      <>
-                                        <span> <ReactMarkdown> {`${chat.response}`} </ReactMarkdown> </span>
-                                      </>
-                                    ) : (
-                                      <div className="loading-dots">
-                                        <span>•••</span>
-                                      </div>
-                                    )}
+        <div className="response" style={{ textAlign: "left" }}>
+          {/* Check if there's a response, otherwise show loading dots */}
+          {chat.response ? (
+            <>
+              <span>
+                <ReactMarkdown>{chat.response}</ReactMarkdown>
+              </span>
+            </>
+          ) : (
+            <div className="loading-dots">
+              <span>•••</span>
+            </div>
+          )}
 
-                              <div ref={endOfMessagesRef} />
-                            </div>
-                          </div>
-                        ))}
+          <div ref={endOfMessagesRef} />
+        </div>
+      </div>
+    ))}
                         {/* This div will act as the reference for scrolling */}
                       </div>
                     </div>

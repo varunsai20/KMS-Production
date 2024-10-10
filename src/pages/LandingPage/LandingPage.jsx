@@ -94,7 +94,7 @@ const LandingPage = () => {
             src={Logo}
             alt="Infer logo"
           ></img>
-          {isSticky && <SearchBar renderInputContainer={true} />}
+          {isSticky && <SearchBar   renderInputContainer={true} />}
           <section className="nav-login">
             <Button text="SignUp" className="signup-btn" />
             <Button text="Login" className="login-btn" />

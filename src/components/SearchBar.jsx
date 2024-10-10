@@ -6,7 +6,8 @@ import { Autocomplete,InputAdornment, TextField } from "@mui/material";
 import terms from "../assets/Data/final_cleaned_terms_only.json";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
-
+import { useDispatch } from "react-redux";
+import { setSearchResults, clearSearchResults } from "../redux/actions/actions";
 const SearchBar = ({ renderInputContainer, className }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [results, setResults] = useState([]);
@@ -14,7 +15,7 @@ const SearchBar = ({ renderInputContainer, className }) => {
   const [filteredResults, setFilteredResults] = useState([]);
   const navigate = useNavigate();
   const location = useLocation();
-
+  const dispatch=useDispatch();
   useEffect(() => {
     if (location.pathname === "/search") {
       // Check if searchTerm is present in sessionStorage
@@ -57,6 +58,7 @@ const SearchBar = ({ renderInputContainer, className }) => {
     setFilteredResults([]);
   };
   const handleButtonClick = () => {
+    dispatch(clearSearchResults());
     sessionStorage.removeItem("ResultData")
     if (searchTerm) {
       setLoading(true);
@@ -69,14 +71,14 @@ const SearchBar = ({ renderInputContainer, className }) => {
       axios
         .post("http://13.127.207.184:80/query", { query: searchTerm })
         .then((response) => {
-          console.log(response);
           // sessionStorage.setItem("SearchTerm", searchTerm); // Update sessionStorage after the response
           const data = response.data; // Assuming the API response contains a 'results' array
           setResults(data);
-          sessionStorage.setItem("ResultData",JSON.stringify(data))
-          navigate("/search", { state: { data, searchTerm } });
+          dispatch(setSearchResults(data));
           clearTimeout(timeoutId);
           setLoading(false);
+          navigate("/search", { state: { data, searchTerm } });
+          
         })
         .catch((error) => {
           console.log(error);
@@ -103,7 +105,6 @@ const SearchBar = ({ renderInputContainer, className }) => {
       src={Search}
       alt="search-icon"
       className="search-icon"
-      style={{ top: "30%" }}
     />
     <Autocomplete
         freeSolo

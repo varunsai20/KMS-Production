@@ -15,8 +15,10 @@ import { faComment  } from '@fortawesome/free-regular-svg-icons';
 import flag from "../../assets/images/flash.svg"
 //import sendicon from "../../assets/images/sendicon.svg";
 import { faTelegram } from "@fortawesome/free-brands-svg-icons";
+import { useSelector } from "react-redux";
+import { faAnglesUp } from '@fortawesome/free-solid-svg-icons';
 import axios from "axios";  
-const ITEMS_PER_PAGE = 5;
+const ITEMS_PER_PAGE = 10;
 
 const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
   const location = useLocation(); // Access the passed state
@@ -28,7 +30,13 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
   const contentRightRef = useRef(null); // Ref for searchContent-right
   const [result, setResults] = useState();
   const [loading, setLoading] = useState(false);
+  
   const [selectedArticles, setSelectedArticles] = useState([]);
+  const [bioRxivArticles, setBioRxivArticles] = useState([]);
+  const [plosArticles, setPlosArticles] = useState([]);
+  const totalArticles = useMemo(() => {
+    return [...bioRxivArticles, ...plosArticles, ...selectedArticles];
+  }, [bioRxivArticles, plosArticles, selectedArticles]);
   const [showPopup, setShowPopup] = useState(false);
   const [hoveredRow, setHoveredRow] = useState(null);
   const [isBookmarked, setIsBookmarked] = useState(false);
@@ -43,24 +51,12 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
     // Get ratingsList from sessionStorage or initialize an empty array
     return JSON.parse(sessionStorage.getItem("ratingsList")) || [];
   });
-  console.log(ratingsList)
-  const getRatingForArticle = (pmid) => {
-    const ratingsList = JSON.parse(sessionStorage.getItem("ratingsList")) || [];
-    const savedRating = ratingsList.find((item) => item.pmid === pmid);
-    return savedRating ? savedRating.rating : 3; // Default rating is 3 if not found
+  const getRatingForArticle = (uniqueId) => {
+    const savedRating = ratingsList.find((item) => item.uniqueId === uniqueId);
+    return savedRating ? savedRating.rating : 0; // Default rating is 0 if not found
   };
 
- 
-
-  //Chatbot
-  const [query, setQuery] = useState(""); // Initialize with empty string
-  const [response, setResponse] = useState("");
-  const [showStreamingSection, setShowStreamingSection] = useState(false);
-  const [chatHistory, setChatHistory] = useState(() => {
-    const storedHistory = sessionStorage.getItem("chatHistory");
-    return storedHistory ? JSON.parse(storedHistory) : [];
-  });
-  const endOfMessagesRef = useRef(null); // Ref to scroll to the last message
+  
   useEffect(() => {
     const storedDateInfo = localStorage.getItem('publicationDate');
     if (storedDateInfo) {
@@ -88,7 +84,7 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
     localStorage.setItem("filters", JSON.stringify(filters));
   }, [filters]);
 
-
+  
   useEffect(()=>{
     localStorage.setItem("PublicationDate",selectedDateRange)
   },[selectedDateRange])
@@ -110,6 +106,28 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
     return new Date(year, monthIndex, day); // Return a Date object
   };
 
+  const scrollToTop = () => {
+    if (contentRightRef.current) {
+      contentRightRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
+  // Scroll event listener to show or hide the scroll-to-top button
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 100) {
+        document.getElementById('scrollTopBtn').style.display = 'block'; // Show button
+      } else {
+        document.getElementById('scrollTopBtn').style.display = 'none'; // Hide button
+      }
+    };
+
+    // Add event listener for window scroll
+    window.addEventListener("scroll", handleScroll);
+
+    // Clean up event listener
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
   const sortedPublicationData = [...data.articles].sort((a, b) => {
     const dateA = parseDate(a.publication_date);
     const dateB = parseDate(b.publication_date);
@@ -124,8 +142,8 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
   
   const sortedRatingData = useMemo(() => {
     return [...data.articles].sort((a, b) => {
-      const ratingA = getRatingForArticle(a.pmid);
-      const ratingB = getRatingForArticle(b.pmid);
+      const ratingA = getRatingForArticle(a.bioRxiv_id);
+      const ratingB = getRatingForArticle(b.bioRxiv_id);
       return ratingB - ratingA; // Sort in descending order by rating
     });
   }, [data.articles]);
@@ -463,13 +481,20 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
     setAnnotateData([]);
     setOpenAnnotate(false) 
   }, []);
-  useEffect(() => {
-      const pmidData=sessionStorage.getItem("ResultData")
-      const parsedPmid=JSON.parse(pmidData)
-      const pmidList = parsedPmid.articles.map(article => article.pmid);
-      setCompletePMID(pmidList);
+  const searchResults = useSelector((state) => state.search.searchResults);
+    useEffect(() => {
+      if (searchResults) {
+        // const parsedPmid = JSON.parse(searchResults);
+        // Flatten the nested arrays in 'articles'
+        // const allArticles = searchResults.articles.flat();  // This will merge all nested arrays into a single array
     
-  }, [data, result]);
+        // Extract the PMID list from the articles
+        const pmidList = searchResults.articles.map((article) => article.pmid);
+    
+        // Set the state with the flattened article list
+        setCompletePMID(pmidList);
+      }
+    }, [searchResults]);
   useEffect(() => {
     // Clear session storage for chatHistory when the location changes
     sessionStorage.removeItem("chatHistory");
@@ -522,8 +547,13 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
 
     navigate("/search", { state: { data, searchTerm } });
   };
-  const handleNavigate = (pmid) => {
-    navigate(`/article/${pmid}`, { state: { data: data, searchTerm,annotateData: annotateData } });
+  const getIdType = (article) => {
+    return article.source === "BioRxiv" ? article.bioRxiv_id :article.source ===  "Public Library of Science (PLOS)" ? article.plos_id:article.pmid;
+  };
+  const handleNavigate = (article) => {
+    const idType = getIdType(article); // Determine whether it's pmid or bioRxiv_id
+    const type = article.source === "BioRxiv" ? "bioRxiv_id" : article.source === "Public Library of Science (PLOS)" ? "plos_id" : "pmid";// Pass the type explicitly
+    navigate(`/article/${type}:${idType}`, { state: { data: data, searchTerm,annotateData: annotateData } });
   };
   // Calculate the index range for articles to display
   // const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -532,11 +562,7 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
   // console.log(paginatedArticles);
 
   // Handle page change
-  const scrollToTop = () => {
-    if (topPageRef.current) {
-      topPageRef.current.scrollIntoView({ behavior: "smooth" });
-    }
-  };
+
   // const handlePageChange = (newPage) => {
   //   if (newPage > 0 && newPage <= totalPages) {
   //     setCurrentPage(newPage);
@@ -578,6 +604,7 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
   const totalPages = Math.ceil(data.articles.length / ITEMS_PER_PAGE);
   // console.log(data);
   const handleCheckboxChange = (pmid) => {
+
     setSelectedArticles(
       (prevSelected) =>
         prevSelected.includes(pmid)
@@ -585,16 +612,64 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
           : [...prevSelected, pmid] // Add checked article
     );
   };
-
+  console.log(bioRxivArticles)
+  console.log(plosArticles)
+  console.log(selectedArticles)
+ const handleBioRxivBoxChange=(pmid)=>{
+    setBioRxivArticles((prevBioRxiv) =>
+          prevBioRxiv.includes(pmid)
+            ? prevBioRxiv.filter((id) => id !== pmid) // Remove unchecked article from BioRxiv
+            : [...prevBioRxiv, pmid] // Add checked article to BioRxiv
+        );
+  }
+  const handlePlosBoxChange=(pmid)=>{
+       setPlosArticles((prevPlos) =>
+      prevPlos.includes(pmid)
+        ? prevPlos.filter((id) => id !== pmid) // Remove unchecked article from PLOS
+        : [...prevPlos, pmid] // Add checked article to PLOS
+    );
+  }
+  const handleSourceCheckboxChange = (source, idType) => {
+    const uniqueId = `${source}_${idType}`; // Create unique ID for checkbox state
+    if (source === "BioRxiv") {
+      handleBioRxivBoxChange(uniqueId);
+    } else if (source === "Public Library of Science (PLOS)") {
+      handlePlosBoxChange(uniqueId);
+    } else {
+      handleCheckboxChange(uniqueId); // For other sources
+    }
+  };
+  
+  const isArticleSelected = (source, idType) => {
+    const uniqueId = `${source}_${idType}`; // Create unique ID for checking selection state
+    if (source === "BioRxiv") {
+      return bioRxivArticles.includes(uniqueId);
+    } else if (source === "Public Library of Science (PLOS)") {
+      return plosArticles.includes(uniqueId);
+    } else {
+      return selectedArticles.includes(uniqueId); // For other sources
+    }
+  };
+  
   // console.log(selectedArticles)
   const handleAnnotateClick = async () => {
-    if (selectedArticles.length > 0) {
+    if (totalArticles.length > 0) {
       setAnnotateData([])
       setAnnotateLoading(true);
+      const extractIdType = (uniqueId) => {
+        return uniqueId.split('_')[1]; // This splits "source_idType" and returns only the idType
+      };
+  
+      // Prepare the data by removing the "source_" part from uniqueId
+      const pubmedIds = selectedArticles.map(id => parseInt(extractIdType(id), 10));
+      const biorxivIds = bioRxivArticles.map(id => parseInt(extractIdType(id), 10));
+      const plosIds = plosArticles.map(id => parseInt(extractIdType(id), 10));
+      console.log(pubmedIds,biorxivIds,plosIds)
+      console.log(selectedArticles,bioRxivArticles,plosArticles)
       axios.post('http://13.127.207.184:80/annotate', {
-        pmid: selectedArticles
-
-          , // Sending the selected PMIDs in the request body
+        pubmed: pubmedIds,
+        biorxiv:biorxivIds,
+        plos:plosIds // Sending the selected PMIDs in the request body
       })
         .then((response) => {
 
@@ -821,7 +896,7 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
   };
 
   return (
-    <div className="Container">
+    <div className="Container" ref={contentRightRef}>
       {/* Heade */}
       <Header />
       {/* Search-Bar */}
@@ -1103,14 +1178,13 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
                             
                           ):(
                             <button 
-                            className={`SearchResult-Annotate ${selectedArticles.length > 0 ? "active" : "disabled"}`} 
-                            
-                            onClick={selectedArticles.length > 0 ? handleAnnotateClick : null} 
+                            className={`SearchResult-Annotate ${totalArticles.length > 0 ? "active" : "disabled"}`} 
+                            onClick={totalArticles.length > 0 ? handleAnnotateClick : null} 
                             style={{ 
-                              cursor: selectedArticles.length > 0 ? 'pointer' : '',
-                              opacity: selectedArticles.length > 0 ? 1 : ""
+                              cursor: totalArticles.length > 0 ? 'pointer' : '',
+                              opacity: totalArticles.length > 0 ? 1 : ""
                             }} 
-                            title={selectedArticles.length === 0 ? 'Select an article' : 'Annotate selected articles'}
+                            title={totalArticles.length === 0 ? 'Select an article' : 'Annotate selected articles'}
                           >
                             Annotate
                           </button>
@@ -1207,102 +1281,165 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
                   <div className="searchContent-articles" ref={contentRightRef}>
   <div className="searchresults-list">
   {paginatedArticles.map((result, index) => {
-    // Check if the similarity_score is available in the result or session storage
-    let similarityScore = result.similarity_score;
+  // Check if the similarity_score is available in the result or session storage
+  let similarityScore = result.similarity_score;
+  // If similarity score is not present in the result, retrieve it from session storage
+  if (!similarityScore) {
+    const storedData = sessionStorage.getItem('ResultData');
+    if (storedData) {
+      const parsedData = JSON.parse(storedData);
+      const articles = parsedData.articles;
 
-    // If similarity score is not present in the result, retrieve it from session storage
-    if (!similarityScore) {
-      const storedData = sessionStorage.getItem('ResultData');
-      if (storedData) {
-        const parsedData = JSON.parse(storedData);
-        const articles = parsedData.articles;
-
-        // Find the article with the matching pmid in session storage and get similarity score
-        articles.forEach((article) => {
-          if (article.pmid === result.pmid) {
-            similarityScore = article.similarity_score || 'N/A';
-          }
-        });
-      }
+      // Find the article with the matching pmid in session storage and get similarity score
+      articles.forEach((article) => {
+        if (article.pmid === result.pmid) {
+          similarityScore = article.similarity_score || 'N/A';
+        }
+      });
     }
+  }
+  const idType = getIdType(result);
+  const uniqueId = `${result.source}_${idType}`;  
+  console.log(idType)
+  // Safely handle abstract_content based on its type
+  let abstractContent = '';
+  if (result.abstract_content) {
+    if (Array.isArray(result.abstract_content)) {
+      // If abstract_content is an array, join its elements (assuming they are strings)
+      abstractContent = result.abstract_content.join(" ");
+    } else if (typeof result.abstract_content === 'string') {
+      // If it's already a string, use it directly
+      abstractContent = result.abstract_content;
+    } else if (typeof result.abstract_content === 'object') {
+      // If it's an object, access specific keys or values
+      abstractContent = Object.values(result.abstract_content).join(" ");
+    }
+  }else {
+    abstractContent = 'No abstract available';
+  }
 
-    return (
-      <div key={index} className="searchresult-item" >
-        <div className="searchresult-item-header" style={{display:"flex",flexDirection:"column",maxHeight:"85%",overflow:"hiddden"}}>
-          <div className="div1">
-            <div className="div2">
-                <h3 className="searchresult-title">
-                  <input
+  return (
+    <div key={index} className="searchresult-item" >
+      <div className="searchresult-item-header" style={{display:"flex",flexDirection:"column",maxHeight:"85%",overflow:"hiddden"}}>
+        <div className="div1">
+          <div className="div2">
+              <h3 className="searchresult-title">
+              <input
                     type="checkbox"
                     className="result-checkbox"
-                    onChange={() => handleCheckboxChange(result.pmid)}
-                    checked={selectedArticles.includes(result.pmid)} // Sync checkbox state
+                    onChange={() => handleSourceCheckboxChange(result.source, idType)}
+                    checked={isArticleSelected(result.source, idType)}// Sync checkbox state
                   />
-                    <span className="gradient-text"onClick={() => handleNavigate(result.pmid)}style={{ cursor: "pointer" }}>
-                      {italicizeTerm(
-                          capitalizeFirstLetter(
-                            openAnnotate
-                              ? result.article_title.slice(0, 100) + (result.article_title.length > 100 ? "..." : "")
-                              : result.article_title
-                          )
-                        )}
-                      </span>
-                      </h3>
-        </div>
-        <p className="searchresult-authors">{`Published on: ${result.publication_date}`}</p>
-        <p className="searchresult-pmid">{`PMID: ${result.pmid}`}</p>
-        <p
-          className="searchresult-description"
-          style={{ textAlign: "justify" }}
-        >
-          {italicizeTerm(
-            Object.values(result.abstract_content[1])
-              .join(" ")
-              .slice(0, openAnnotate || openNotes ? 200 : 300)
-          )}
-          {Object.values(result.abstract_content[1]).join(" ").length > (openAnnotate || openNotes ? 200 : 300) ? "..." : ""}
-        </p>
-        </div>
-        </div>
-        <div className="Article-Options" style={{justifyContent:"space-between"}}>
-            <div className="Article-Options-Left" style={{justifyContent:"space-between"}}>
-                <p className="searchresult-similarity_score">
-                  <span style={{color:"#c05600"}}>Relevancy Score: </span>
-                  {similarityScore ? `${similarityScore.toFixed(2)} %` : 'N/A'}
-                </p>
-                <FontAwesomeIcon
-                  icon={regularBookmark}
-                  size="l"
-                  style={{ color: bookmarkedPmids[result.pmid] ? 'blue' : 'black', cursor: 'pointer' }}
-                  onClick={() => handleBookmarkClick(result.pmid)}
-                  title={bookmarkedPmids[result.pmid] ? 'Bookmarked' : 'Bookmark this article'}
-                />
-            </div>
-            <div className="Article-Options-Right">
-                      <div class="searchResult-rate">
-                      {[5, 4, 3, 2, 1].map((value) => (
-                    <React.Fragment key={value}>
-                      <input
-                        type="radio"
-                        id={`star${value}-${result.pmid}`}
-                        name={`rate_${result.pmid}`}
-                        value={value}
-                        checked={getRatingForArticle(result.pmid) === value}
-                        disabled // Disable the input as we don't want to modify it
-                      />
-                      <label
-                        htmlFor={`star${value}-${result.pmid}`}
-                        title={`${value} star`}
-                      />
-                    </React.Fragment>
-                  ))}
-                      </div>
-            </div>
-        </div>
-        
+                  <span
+                    className="gradient-text"
+                    onClick={() => handleNavigate(result)}
+                    style={{ cursor: "pointer" }}
+                  >
+                    {italicizeTerm(
+                      capitalizeFirstLetter(
+                        openAnnotate
+                          ? result.article_title.slice(0, 100) + (result.article_title.length > 100 ? "..." : "")
+                          : result.article_title
+                      )
+                    )}
+                  </span>
+
+                  </h3>
       </div>
-    );
-  })}
+      <p className="searchresult-authors">{`Published on: ${result.publication_date}`}</p>
+      <div className="searchresult-ID">
+        <p className="searchresult-pmid">{`ID: ${idType}`}</p>
+        {result.doi?<p className="searchresult-pmid">{`DOI: ${result.doi}`}</p>:""}
+      </div>
+      <p
+  className="searchresult-description"
+  style={{ textAlign: "justify" }}
+>
+  {result.source === "BioRxiv"
+    ? italicizeTerm(
+        abstractContent.slice(0, openAnnotate || openNotes ? 100 : 200)
+      )
+    : result.source === "Public Library of Science (PLOS)" &&
+      result.abstract_content?.Abstract?.[1]
+    ? italicizeTerm(
+        Object.values(result.abstract_content.Abstract[1])
+          .join("")
+          .slice(0, openAnnotate || openNotes ? 100 : 200)
+      )
+    : result.abstract_content?.[1]
+    ? italicizeTerm(
+        Object.values(result.abstract_content[1])
+          .join(" ")
+          .slice(0, openAnnotate || openNotes ? 100 : 200)
+      )
+    : "No abstract available"}
+
+  {
+    result.source === "BioRxiv"
+      ? abstractContent.length > (openAnnotate || openNotes ? 100 : 200)
+        ? "..."
+        : ""
+      : result.source === "Public Library of Science (PLOS)" &&
+        result.abstract_content?.Abstract?.[1]
+      ? Object.values(result.abstract_content.Abstract[1])
+          .join("")
+          .length > (openAnnotate || openNotes ? 100 : 200)
+        ? "..."
+        : ""
+      : abstractContent.length > (openAnnotate || openNotes ? 100 : 200)
+      ? "..."
+      : ""
+  }
+</p>
+
+      </div>
+      </div>
+      <div className="Article-Options" style={{justifyContent:"space-between"}}>
+          <div className="Article-Options-Left" style={{justifyContent:"space-between"}}>
+              <p className="searchresult-similarity_score">
+                <span style={{color:"#c05600"}}>Relevancy Score: </span>
+                {similarityScore ? `${similarityScore.toFixed(2)} %` : 'N/A'}
+              </p>
+              <p className="searchresult-similarity_score">
+              <span style={{color:"#c05600"}}>Source: </span>
+              {result.source?result.source:"PubMed"}
+              </p>
+              <FontAwesomeIcon
+            icon={regularBookmark}
+            size="l"
+            style={{ color: bookmarkedPmids[uniqueId] ? 'blue' : 'black', cursor: 'pointer' }}
+            onClick={() => handleBookmarkClick(uniqueId)}
+            title={bookmarkedPmids[uniqueId] ? 'Bookmarked' : 'Bookmark this article'}
+          />
+             
+          </div>
+          <div className="Article-Options-Right">
+          <div className="searchResult-rate">
+                            {[5, 4, 3, 2, 1].map((value) => (
+                              <React.Fragment key={value}>
+                                <input
+                                  type="radio"
+                                  id={`star${value}-${uniqueId}`}
+                                  name={`rate_${uniqueId}`}
+                                  value={value}
+                                  checked={getRatingForArticle(uniqueId) === value}
+                                  disabled // Rating is read-only
+                                />
+                                <label
+                                  htmlFor={`star${value}-${uniqueId}`}
+                                  title={`${value} star`}
+                                />
+                              </React.Fragment>
+                            ))}
+                          </div>
+
+        </div>
+      </div>
+      
+    </div>
+  );
+})
+}
   </div>
 </div>
 
@@ -1459,6 +1596,11 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
       </div>
       
       <Footer />
+      <div className="ScrollTop">
+          <button onClick={scrollToTop} id="scrollTopBtn" title="Go to top">
+            <FontAwesomeIcon icon={faAnglesUp} />
+          </button>
+        </div>
     </div>
   );
 };
