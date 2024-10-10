@@ -540,11 +540,11 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
     localStorage.removeItem("filters");
     localStorage.removeItem("publicationDate");
     // Optionally, you can also trigger the API call without any filters
-    const storeddata=sessionStorage.getItem("ResultData")
+    // const storeddata=sessionStorage.getItem("ResultData")
 
-    const parseddata=JSON.parse(storeddata)
-    console.log(parseddata)
-    const data=parseddata
+    // const parseddata=JSON.parse(storeddata)
+    // console.log(parseddata)
+    // const data=parseddata
 
     navigate("/search", { state: { data, searchTerm } });
   };
@@ -633,13 +633,15 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
     );
   }
   const handleSourceCheckboxChange = (source, idType) => {
-    const uniqueId = `${source}_${idType}`; // Create unique ID for checkbox state
-    if (source === "BioRxiv") {
+    const sourceType = source || "PubMed"; // Set to "PubMed" if source is null or undefined
+    const uniqueId = `${sourceType}_${idType}`; // Create unique ID for checkbox state
+    console.log(uniqueId)
+    if (sourceType === "BioRxiv") {
       handleBioRxivBoxChange(uniqueId);
-    } else if (source === "Public Library of Science (PLOS)") {
+    } else if (sourceType === "Public Library of Science (PLOS)") {
       handlePlosBoxChange(uniqueId);
     } else {
-      handleCheckboxChange(uniqueId); // For other sources
+      handleCheckboxChange(uniqueId); // For other sources, including "PubMed"
     }
   };
   
@@ -649,7 +651,7 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
       return bioRxivArticles.includes(uniqueId);
     } else if (source === "Public Library of Science (PLOS)") {
       return plosArticles.includes(uniqueId);
-    } else {
+    } else if(source==="Pub"){
       return selectedArticles.includes(uniqueId); // For other sources
     }
   };
@@ -659,10 +661,20 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
     if (totalArticles.length > 0) {
       setAnnotateData([])
       setAnnotateLoading(true);
+       const extractIdType = (uniqueId) => {
+        return uniqueId.split('_')[1]; // This splits "source_idType" and returns only the idType
+      };
+  
+      // Prepare the data by removing the "source_" part from uniqueId
+      const pubmedIds = selectedArticles.map(id => parseInt(extractIdType(id), 10));
+      const biorxivIds = bioRxivArticles.map(id => parseInt(extractIdType(id), 10));
+      const plosIds = plosArticles.map(id => parseInt(extractIdType(id), 10));
+      console.log(pubmedIds,biorxivIds,plosIds)
+      console.log(selectedArticles,bioRxivArticles,plosArticles)
       axios.post('http://13.127.207.184:80/annotate', {
-        pubmed: selectedArticles,
-        biorxiv:bioRxivArticles,
-        plos:plosArticles // Sending the selected PMIDs in the request body
+        pubmed: pubmedIds,
+        biorxiv:biorxivIds,
+        plos:plosIds // Sending the selected PMIDs in the request body
       })
         .then((response) => {
 
@@ -1388,7 +1400,7 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
       </div>
       </div>
       <div className="Article-Options" style={{justifyContent:"space-between"}}>
-          <div className="Article-Options-Left" style={{justifyContent:"space-between"}}>
+          <div className="Article-Options-Left" >
               <p className="searchresult-similarity_score">
                 <span style={{color:"#c05600"}}>Relevancy Score: </span>
                 {similarityScore ? `${similarityScore.toFixed(2)} %` : 'N/A'}
