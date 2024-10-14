@@ -10,6 +10,8 @@ import ReactMarkdown from "react-markdown";
 import { CircularProgress } from "@mui/material";
 import { Autocomplete, InputAdornment, TextField } from "@mui/material";
 import Annotation from "../../components/Annotaions";
+import { faBookmark as regularBookmark } from '@fortawesome/free-regular-svg-icons';
+
 import Button from "../../components/Buttons";
 //import edit from "../../assets/images/16px.svg";
 //import annotate from "../../assets/images/task-square.svg";
@@ -39,6 +41,7 @@ const ArticlePage = () => {
   const [response, setResponse] = useState("");
   const [loading, setLoading] = useState(false);
   const annotateData = location.state.annotateData || { annotateData: [] };
+  console.log(annotateData)
   const endOfMessagesRef = useRef(null); // Ref to scroll to the last message
   const [chatHistory, setChatHistory] = useState(() => {
     const storedHistory = sessionStorage.getItem("chatHistory");
@@ -69,6 +72,7 @@ const ArticlePage = () => {
   const [selectedText, setSelectedText] = useState("");
   const [editingPmid, setEditingPmid] = useState(null);
   const [editedTitle, setEditedTitle] = useState("");
+  const [bookmarkedPmids, setBookmarkedPmids] = useState({});
   // const handleResize = (event) => {
   //   const newWidth = event.target.value; // Get the new width from user interaction
   //   setWidth1(newWidth);
@@ -111,9 +115,7 @@ const ArticlePage = () => {
   };
   const handleMouseUp = (event) => {
     const selection = window.getSelection().toString().trim();
-    console.log(selection);
     if (selection) {
-      console.log(typeof selection);
       setSelectedText(selection); // Store selected text
       setPopupPosition({ x: event.pageX, y: event.pageY }); // Set popup position
       setShowPopup(true); // Show the popup for saving the selection
@@ -121,14 +123,17 @@ const ArticlePage = () => {
       setShowPopup(false);
     }
   };
-  console.log(selectedText);
-  console.log("openNotes", openNotes);
-
+  const handleBookmarkClick = (pmid) => {
+    setBookmarkedPmids((prevState) => ({
+      ...prevState,
+      [pmid]: !prevState[pmid], // Toggle the bookmark state for the specific pmid
+    }));
+    
+  };
+ 
   const handleSaveToNote = () => {
-    console.log(selectedText);
 
     if (selectedText) {
-      console.log(selectedText);
       setOpenNotes(true); // Open Notes when the "Save to Notes" button is clicked
       setShowPopup(false); // Hide the popup
     }
@@ -139,8 +144,6 @@ const ArticlePage = () => {
     }
   }, [selectedText]);
 
-  console.log("open Notes", openNotes);
-  console.log("article Page: ", selectedText);
 
   const getIdType = () => {
     return `${source}_${id}`;
@@ -215,7 +218,6 @@ const ArticlePage = () => {
       endOfMessagesRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [chatHistory]); // This will trigger when chatHistory changes
-  console.log(source);
 
   const handleAskClick = async () => {
     if (!query) {
@@ -234,7 +236,6 @@ const ArticlePage = () => {
       id: id,
       source: source,
     });
-    console.log(bodyData);
     try {
       const response = await fetch("http://13.127.207.184:80/generateanswer", {
         method: "POST",
@@ -692,17 +693,19 @@ const ArticlePage = () => {
                     </div>
                   </div>
                 </div>
-
-                <p
-                  style={{
-                    marginTop: "0",
-                    marginBottom: "0",
-                    color: "#0071bc",
-                    fontSize: "20px",
-                  }}
-                >
+                <div className="ArticleTitle-Bookmark">      
+                <p  style={{ marginTop: "0", marginBottom: "0",  color: "#0071bc", fontSize: "20px", }} >
                   {articleData.article_title}
                 </p>
+                <FontAwesomeIcon
+                icon={regularBookmark}
+                size="l"
+            
+                style={{ color: bookmarkedPmids[id] ? 'blue' : 'black', cursor: 'pointer',width:"20px",height:"20px" }}
+                onClick={() => handleBookmarkClick(id)}
+                title={bookmarkedPmids[id] ? 'Bookmarked' : 'Bookmark this article'}
+              />
+                </div>
               </div>
 
               <div className="meta">
@@ -808,7 +811,7 @@ const ArticlePage = () => {
               </div>
             </div>
           ) : (
-            <div className="data-not-found">
+            <div className="Article-data-not-found">
               <p>Data not found for the given PMID</p>
             </div>
           )}

@@ -625,7 +625,11 @@ td {
   color: #00bfa5;
   animation: blink 1.2s infinite;
 }
-
+.ArticleTitle-Bookmark{
+  display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
 @keyframes blink {
   0% { opacity: 0.2; }
   20% { opacity: 1; }
@@ -700,4 +704,24 @@ td {
 
 #scrollTopBtn:hover {
   background-color: #555; /* Add a dark-grey background on hover */
+}
+
+
+
+
+
+/* Styling for the message box */
+.Article-data-not-found {
+  height: 60vh;
+  width: 70%;
+  text-align: center;
+  background-color: #fff; /* White background for the box */
+  border: 1px solid #ddd; /* Light border */
+  border-radius: 10px; /* Rounded corners */
+  padding: 30px 50px; /* Padding inside the box */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Soft shadow */
+}
+
+.Article-data-not-found .history-pagination{
+  
 }

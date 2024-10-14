@@ -398,7 +398,18 @@ button {
 }
 .result-checkbox {
 }
+.searchresult-ArticleTitle{
+  display: flex;
+}
 .searchresult-title-container {
+  display: flex;
+    align-items: center;
+    justify-content:space-between;
+    gap: 5px;
+}
+.searchresult-title-container:hover {
+  text-decoration: underline;
+  text-decoration-color:#0071bc ;
 }
 .gradient-text {
   /* background: linear-gradient(90deg, #cc81b9 0%, #1aa8d2 100%); */
@@ -406,12 +417,9 @@ button {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  position: relative;
-  text-decoration: none;
-  text-fill-color: transparent;
+
 }
 .gradient-text:hover {
-  text-decoration: none;
 }
 .gradient-text::after {
   content: "";
@@ -436,7 +444,7 @@ button {
 .searchresult-title {
   font-size: 16px;
   font-weight: bold;
-  margin-bottom: 4px;
+  margin-bottom: 0px;
   cursor: pointer;
   margin-top: 0;
 }

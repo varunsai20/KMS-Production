@@ -97,6 +97,7 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
   const [showPublicationDate, setShowPublicationDate] = useState(true);
   const [openAnnotate, setOpenAnnotate] = useState(false);
   const [annotateData, setAnnotateData] = useState();
+  const [annotateSource,setAnnotateSource]=useState()
   const [openNotes, setOpenNotes] = useState(false);
   const [annotateLoading, setAnnotateLoading] = useState(false);
   const [sortedData, setSortedData] = useState([]); // State to store sorted data
@@ -218,7 +219,6 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
   };
 
 
- 
   const handleAnnotate = () => {
     if (openAnnotate) {
       setOpenAnnotate(false);
@@ -227,7 +227,6 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
       setOpenNotes(false);
     }
   };
-  // console.log(filters)
   const handleNotes = () => {
     if (openNotes) {
       setOpenNotes(false);
@@ -346,8 +345,6 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
           to_date: formattedEndDate,
         };
     
-        console.log(requestBody);
-    
         const apiUrl = "http://13.127.207.184:80/filterdate";
         setLoading(true);
         axios
@@ -381,16 +378,12 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
         filter_type: filterType,
       };
     
-      console.log(requestBody);
-    
       const apiUrl = "http://13.127.207.184:80/filterdate";
       setLoading(true);
       axios
         .post(apiUrl, requestBody)
         .then((response) => {
           const data = response.data;
-          console.log(response)
-          console.log(data)
           setResults(data);   
           setLoading(false);
           setCustomStartDate(''); // Clear custom dates when selecting a non-custom range
@@ -430,13 +423,10 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
       }, 30000); // 30 seconds
 
       const filtersToSend = updatedFilters.articleType;
-      // console.log(typeof(filtersToSend))
-      // Check the length of filtersToSend
       const apiUrl =
         filtersToSend.length > 0
           ? "http://13.127.207.184:80/filter"
           : "http://13.127.207.184:80/query";
-      // console.log(apiUrl);
       const requestBody =
         filtersToSend.length > 0
           ? {
@@ -446,12 +436,10 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
           : {
               query: searchTerm, // Send only the query if filters are empty
             };
-      // console.log(requestBody);
       axios
         //.post(apiUrl,{query:term,filters:updatedFilters.articleType})
         .post(apiUrl, requestBody)
         .then((response) => {
-          // console.log(response);
           //setIsChecked((prev) => !prev);
           //localStorage.setItem("checkboxState", JSON.stringify(!isChecked));
           const data = response.data; // Assuming the API response contains the necessary data
@@ -464,7 +452,6 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
           setLoading(false);
         })
         .catch((error) => {
-          console.log(error);
           clearTimeout(timeoutId);
           setLoading(false);
           navigate("/search", { state: { data: [], searchTerm } });
@@ -472,15 +459,27 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
         });
     }
   };
-
+  
   const handleApplyFilters = () => {
     applyFilters(filters);
     setShowFilterPopup(false);
   };
   useEffect(() => {
-    setSelectedArticles([]);
-    setAnnotateData([]);
-    setOpenAnnotate(false) 
+    const storedData = sessionStorage.getItem("AnnotateData");
+  
+    if (storedData) {
+      try {
+        // Parse the stored JSON string back into an object or array
+        const parsedData = JSON.parse(storedData);
+        setAnnotateData(parsedData);
+      } catch (error) {
+        console.error("Failed to parse AnnotateData from sessionStorage", error);
+        setAnnotateData([]);
+      }
+    } else {
+      setAnnotateData([]);
+    }
+    setOpenAnnotate(false);
   }, []);
   const searchResults = useSelector((state) => state.search.searchResults);
     useEffect(() => {
@@ -543,7 +542,6 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
     // const storeddata=sessionStorage.getItem("ResultData")
 
     // const parseddata=JSON.parse(storeddata)
-    // console.log(parseddata)
     // const data=parseddata
 
     navigate("/search", { state: { data, searchTerm } });
@@ -560,7 +558,6 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
   // const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   // const endIndex = startIndex + ITEMS_PER_PAGE;
   // const paginatedArticles = data.articles && data.articles.slice(startIndex, endIndex) || [];
-  // console.log(paginatedArticles);
 
   // Handle page change
 
@@ -603,7 +600,6 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
   }, [loading]);
   // Calculate total pages
   const totalPages = Math.ceil(data.articles.length / ITEMS_PER_PAGE);
-  // console.log(data);
   const handleCheckboxChange = (pmid) => {
 
     setSelectedArticles(
@@ -615,9 +611,6 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
 
 
   };
-  console.log(bioRxivArticles)
-  console.log(plosArticles)
-  console.log(selectedArticles)
  const handleBioRxivBoxChange=(pmid)=>{
     setBioRxivArticles((prevBioRxiv) =>
           prevBioRxiv.includes(pmid)
@@ -635,7 +628,6 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
   const handleSourceCheckboxChange = (source, idType) => {
     const sourceType = source || "PubMed"; // Set to "PubMed" if source is null or undefined
     const uniqueId = `${sourceType}_${idType}`; // Create unique ID for checkbox state
-    console.log(uniqueId)
     if (sourceType === "BioRxiv") {
       handleBioRxivBoxChange(uniqueId);
     } else if (sourceType === "Public Library of Science (PLOS)") {
@@ -656,21 +648,26 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
     }
   };
   
-  // console.log(selectedArticles)
   const handleAnnotateClick = async () => {
     if (totalArticles.length > 0) {
+      sessionStorage.setItem("AnnotateData","")
+      sessionStorage.setItem("AnnotateSource","")
       setAnnotateData([])
       setAnnotateLoading(true);
        const extractIdType = (uniqueId) => {
+        console.log(uniqueId)
         return uniqueId.split('_')[1]; // This splits "source_idType" and returns only the idType
       };
-  
+      const extractIdSource = (uniqueId) => uniqueId.split('_')[0];
+      const annotatedArticles = totalArticles.map((id) => ({
+        source: extractIdSource(id),
+        idType: extractIdType(id),
+      }));
+      console.log(annotatedArticles)
       // Prepare the data by removing the "source_" part from uniqueId
       const pubmedIds = selectedArticles.map(id => parseInt(extractIdType(id), 10));
       const biorxivIds = bioRxivArticles.map(id => parseInt(extractIdType(id), 10));
       const plosIds = plosArticles.map(id => parseInt(extractIdType(id), 10));
-      console.log(pubmedIds,biorxivIds,plosIds)
-      // console.log(selectedArticles,bioRxivArticles,plosArticles)
       axios.post('http://13.127.207.184:80/annotate', {
         pubmed: pubmedIds,
         biorxiv:biorxivIds,
@@ -680,12 +677,12 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
 
           //setIsChecked((prev) => !prev);
           //localStorage.setItem("checkboxState", JSON.stringify(!isChecked));
-          const data = response.data; 
-          // console.log(response)
+          const data = response.data
+          sessionStorage.setItem("AnnotateData", JSON.stringify(data));
+          sessionStorage.setItem("AnnotateSource", JSON.stringify(annotatedArticles));
           setAnnotateData(data)
-
+          setAnnotateSource(annotatedArticles)
           setOpenAnnotate(true)
-          // console.log(data)// Assuming the API response contains the necessary data
           // setResults(data);
           // Navigate to SearchPage and pass data via state
           // navigate("/search", { state: { data, searchTerm } });
@@ -695,7 +692,6 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
 
         })
         .catch((error) => {
-          console.log(error);
           console.error("Error fetching data from the API", error);
         });
         }
@@ -732,172 +728,11 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
       };
     });
   };
-  console.log(data)
   const toggleExpandText = (key) => {
     setExpandedTexts((prevState) => ({
       ...prevState,
       [key]: !prevState[key], // Toggle between full text and sliced text for a specific row
     }));
-  };
-
-  const renderAnnotations = () => {
-    return annotateData.map((entry) =>
-      Object.entries(entry).flatMap(([pmid, types]) => {
-        const rows = [];
-        const isExpanded = expandedPmids[pmid];
-
-        // Collect all disease keys and their values into an array
-        let diseaseEntries = [];
-        let diseaseAnnotationScore = 0;
-
-        if (types.diseases) {
-          diseaseEntries = Object.entries(types.diseases)
-            .filter(([key]) => key !== "annotation_score")
-            .map(([key]) => `${key}`);
-
-          // Extract annotation score if present for diseases
-          diseaseAnnotationScore = types.diseases.annotation_score
-            ? `${Math.round(types.diseases.annotation_score)}%`
-            : "0%"; // Default to 0% if not present
-        }
-
-        const diseaseValues = diseaseEntries.join(", ");
-        const diseaseKey = `${pmid}-diseases`;
-        const isDiseaseTextExpanded = expandedTexts[diseaseKey];
-        const diseaseText = isDiseaseTextExpanded
-          ? diseaseValues
-          : diseaseValues.length > 30
-          ? `${diseaseValues.slice(0, 30)}`
-          : diseaseValues;
-
-        const diseaseRow = (
-          <tr className="search-table-body" key={diseaseKey}>
-            <td>{pmid}</td>
-            <td>{diseaseAnnotationScore}</td>
-            <td>diseases</td>
-            <td>
-              {diseaseText}
-              {diseaseValues.length > 30 && !isDiseaseTextExpanded && (
-                <span
-                  onClick={() => toggleExpandText(diseaseKey)}
-                  style={{
-                    color: "blue",
-                    cursor: "pointer",
-                    marginLeft: "5px",
-                  }}
-                >
-                  ...
-                </span>
-              )}
-            </td>
-          </tr>
-        );
-        
-        // Collect all other type rows (cellular, gene, etc.)
-        const otherTypeRows = Object.entries(types)
-          .filter(([type]) => type !== "diseases")
-          .map(([type, values]) => {
-            const valueEntries = Object.entries(values)
-              .filter(([key]) => key !== "annotation_score")
-              .map(([key]) => `${key}`);
-
-            const annotationScore = values.annotation_score
-              ? `${Math.round(values.annotation_score)}%`
-              : "0%";
-
-            const valueText = valueEntries.join(", ");
-            const typeKey = `${pmid}-${type}`;
-            const isTypeTextExpanded = expandedTexts[typeKey];
-            const displayText = isTypeTextExpanded
-              ? valueText
-              : valueText.length > 30
-              ? `${valueText.slice(0, 30)}`
-              : valueText;
-
-            return (
-              <tr className="search-table-body" key={typeKey}>
-                <td>{pmid}</td>
-                <td>{annotationScore}</td>
-                <td>{type}</td>
-                <td>
-                  {displayText}
-                  {valueText.length > 30 && !isTypeTextExpanded && (
-                    <span
-                      onClick={() => toggleExpandText(typeKey)}
-                      style={{
-                        color: "blue",
-                        cursor: "pointer",
-                        marginLeft: "5px",
-                      }}
-                    >
-                      ...
-                    </span>
-                  )}
-                </td>
-              </tr>
-            );
-          });
-
-        // Display only the first row and a "+" button if the rows are not expanded
-        if (!isExpanded) {
-          rows.push(
-            <tr className="search-table-body" key={`${pmid}-first`}>
-              <td>
-                <div className="flex-row">
-                  {pmid}
-                  <button
-                    onClick={() => toggleExpandPmid(pmid)}
-                    style={{ marginLeft: "10px" }}
-                  >
-                    +
-                  </button>
-                </div>
-              </td>
-              <td>{diseaseAnnotationScore}</td>
-              <td>diseases</td>
-              <td>
-                {diseaseText}
-                {diseaseValues.length > 30 && !isDiseaseTextExpanded && (
-                  <span
-                    onClick={() => toggleExpandText(diseaseKey)}
-                    style={{
-                      color: "blue",
-                      cursor: "pointer",
-                      marginLeft: "5px",
-                    }}
-                  >
-                    ...
-                  </span>
-                )}
-              </td>
-            </tr>
-          );
-        }
-
-        // If expanded, show all rows and a "-" button
-        if (isExpanded) {
-          rows.push(
-            <tr className="search-table-body" key={`${pmid}-header`}>
-              <td>
-                <div className="flex-row">
-                  {pmid}
-                  <button
-                    onClick={() => toggleExpandPmid(pmid)}
-                    style={{ marginLeft: "10px" }}
-                  >
-                    -
-                  </button>
-                </div>
-              </td>
-              <td colSpan="3"></td>
-            </tr>
-          );
-          rows.push(diseaseRow, ...otherTypeRows);
-        }
-
-        return rows;
-      })
-    );
   };
 
   return (
@@ -1305,7 +1140,6 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
     }
   }
   const idType = getIdType(result);
-  console.log(idType)
   // Safely handle abstract_content based on its type
   let abstractContent = '';
   if (result.abstract_content) {
@@ -1327,30 +1161,38 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
     <div key={index} className="searchresult-item" >
       <div className="searchresult-item-header" style={{display:"flex",flexDirection:"column",maxHeight:"85%",overflow:"hiddden"}}>
         <div className="div1">
-          <div className="div2">
-              <h3 className="searchresult-title">
-              <input
-                    type="checkbox"
-                    className="result-checkbox"
-                    onChange={() => handleSourceCheckboxChange(result.source, idType)}
-                    checked={isArticleSelected(result.source, idType)}// Sync checkbox state
-                  />
-                  <span
-                    className="gradient-text"
-                    onClick={() => handleNavigate(result)}
-                    style={{ cursor: "pointer" }}
-                  >
-                    {italicizeTerm(
-                      capitalizeFirstLetter(
-                        openAnnotate
-                          ? result.article_title.slice(0, 100) + (result.article_title.length > 100 ? "..." : "")
-                          : result.article_title
-                      )
-                    )}
-                  </span>
-
-                  </h3>
-      </div>
+            <div className="searchresult-title-container">
+                <div className="searchresult-ArticleTitle">
+                  <input
+                          type="checkbox"
+                          className="result-checkbox"
+                          onChange={() => handleSourceCheckboxChange(result.source, idType)}
+                          checked={isArticleSelected(result.source, idType)}// Sync checkbox state
+                        />
+                    <h3 className="searchresult-title">
+                        <span
+                          className="gradient-text"
+                          onClick={() => handleNavigate(result)}
+                          style={{ cursor: "pointer" }}
+                        >
+                          {italicizeTerm(
+                            capitalizeFirstLetter(
+                              openAnnotate
+                                ? result.article_title.slice(0, 100) + (result.article_title.length > 100 ? "..." : "")
+                              : result.article_title
+                          )
+                        )}
+                        </span>
+                    </h3>  
+                </div>
+                <FontAwesomeIcon
+                icon={regularBookmark}
+                size="l"
+                style={{ color: bookmarkedPmids[idType] ? 'blue' : 'black', cursor: 'pointer' }}
+                onClick={() => handleBookmarkClick(idType)}
+                title={bookmarkedPmids[idType] ? 'Bookmarked' : 'Bookmark this article'}
+              />
+            </div>
       <p className="searchresult-authors">{`Published on: ${result.publication_date}`}</p>
       <div className="searchresult-ID">
         <p className="searchresult-pmid">{`ID: ${idType}`}</p>
@@ -1362,36 +1204,36 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
 >
   {result.source === "BioRxiv"
     ? italicizeTerm(
-        abstractContent.slice(0, openAnnotate || openNotes ? 100 : 200)
+        abstractContent.slice(0, openAnnotate || openNotes ? 100 : 400)
       )
     : result.source === "Public Library of Science (PLOS)" &&
       result.abstract_content?.Abstract?.[1]
     ? italicizeTerm(
-        Object.values(result.abstract_content.Abstract[1])
+        Object.values(result.abstract_content.Abstract[1]||result.abstract_content[1])
           .join("")
-          .slice(0, openAnnotate || openNotes ? 100 : 200)
+          .slice(0, openAnnotate || openNotes ? 100 : 400)
       )
     : result.abstract_content?.[1]
     ? italicizeTerm(
         Object.values(result.abstract_content[1])
           .join(" ")
-          .slice(0, openAnnotate || openNotes ? 100 : 200)
+          .slice(0, openAnnotate || openNotes ? 100 : 400)
       )
     : "No abstract available"}
 
   {
     result.source === "BioRxiv"
-      ? abstractContent.length > (openAnnotate || openNotes ? 100 : 200)
+      ? abstractContent.length > 400
         ? "..."
         : ""
       : result.source === "Public Library of Science (PLOS)" &&
         result.abstract_content?.Abstract?.[1]
       ? Object.values(result.abstract_content.Abstract[1])
           .join("")
-          .length > (openAnnotate || openNotes ? 100 : 200)
+          .length > 400
         ? "..."
         : ""
-      : abstractContent.length > (openAnnotate || openNotes ? 100 : 200)
+      : abstractContent.length > 400
       ? "..."
       : ""
   }
@@ -1409,13 +1251,7 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
               <span style={{color:"#c05600"}}>Source: </span>
               {result.source?result.source:"PubMed"}
               </p>
-              <FontAwesomeIcon
-                icon={regularBookmark}
-                size="l"
-                style={{ color: bookmarkedPmids[idType] ? 'blue' : 'black', cursor: 'pointer' }}
-                onClick={() => handleBookmarkClick(idType)}
-                title={bookmarkedPmids[idType] ? 'Bookmarked' : 'Bookmark this article'}
-              />
+              
              
           </div>
           <div className="Article-Options-Right">
@@ -1535,6 +1371,7 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
                 <Annotation 
                     openAnnotate={openAnnotate} 
                     annotateData={annotateData}
+                    source={annotateSource}
                 />
             
               </div>
