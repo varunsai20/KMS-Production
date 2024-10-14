@@ -8,19 +8,14 @@ import annotate from "../../assets/images/task-square.svg";
 import { useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import { CircularProgress } from "@mui/material";
-import { Autocomplete, InputAdornment, TextField } from "@mui/material";
+import { TextField } from "@mui/material";
 import Annotation from "../../components/Annotaions";
-import Button from "../../components/Buttons";
-//import edit from "../../assets/images/16px.svg";
-//import annotate from "../../assets/images/task-square.svg";
 import notesicon from "../../assets/images/note-2.svg";
 import rehypeRaw from "rehype-raw";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-//import sendicon from "../../assets/images/sendicon.svg";
 import { faTelegram } from "@fortawesome/free-brands-svg-icons";
 import { faPen } from "@fortawesome/free-solid-svg-icons";
 import { faAnglesUp } from "@fortawesome/free-solid-svg-icons";
-//import { TextContext } from "../../components/Notes/TextProvider";
 import { IoSaveOutline } from "react-icons/io5";
 import Notes from "../NotesPage/Notes";
 const ArticlePage = () => {
@@ -69,11 +64,9 @@ const ArticlePage = () => {
   const [selectedText, setSelectedText] = useState("");
   const [editingPmid, setEditingPmid] = useState(null);
   const [editedTitle, setEditedTitle] = useState("");
-  // const handleResize = (event) => {
-  //   const newWidth = event.target.value; // Get the new width from user interaction
-  //   setWidth1(newWidth);
-  //   setWidth2(100 - newWidth); // Second div takes up the remaining width
-  // };
+  const [highlightedText, setHighlightedText] = useState("");
+  const [savedText, setSavedText] = useState("");
+
   useEffect(() => {
     // Access the computed width of the content div
     if (contentRef.current) {
@@ -109,12 +102,14 @@ const ArticlePage = () => {
     setRatingsList(updatedRatings);
     sessionStorage.setItem("ratingsList", JSON.stringify(updatedRatings));
   };
+
   const handleMouseUp = (event) => {
     const selection = window.getSelection().toString().trim();
-    console.log(selection);
+    //console.log(selection);
     if (selection) {
-      console.log(typeof selection);
+      //console.log(typeof selection);
       setSelectedText(selection); // Store selected text
+      setHighlightedText(selection);
       setPopupPosition({ x: event.pageX, y: event.pageY }); // Set popup position
       setShowPopup(true); // Show the popup for saving the selection
     } else {
@@ -125,19 +120,24 @@ const ArticlePage = () => {
   console.log("openNotes", openNotes);
 
   const handleSaveToNote = () => {
+    const textToSave = highlightedText || selectedText;
     console.log(selectedText);
 
-    if (selectedText) {
-      console.log(selectedText);
-      setOpenNotes(true); // Open Notes when the "Save to Notes" button is clicked
+    if (textToSave) {
+      console.log(textToSave);
+      setSavedText(textToSave);
+      //setOpenNotes(true); // Open Notes when the "Save to Notes" button is clicked
       setShowPopup(false); // Hide the popup
+
+      if (!openNotes) {
+        setOpenNotes(true); // Open Notes
+      }
+      window.getSelection().removeAllRanges();
     }
+    // else {
+    //   console.error("No text selected to save.");
+    // }
   };
-  useEffect(() => {
-    if (selectedText && openNotes === true) {
-      setOpenNotes(true);
-    }
-  }, [selectedText]);
 
   console.log("open Notes", openNotes);
   console.log("article Page: ", selectedText);
@@ -389,12 +389,7 @@ const ArticlePage = () => {
     // Replace the search term in the text with markdown bold syntax
     return text.replace(regex, "**$1**"); // Wrap the matched term with markdown bold syntax
   };
-  // const contentWidth = "43.61%";
-  // const searchBarwidth = "62%";
-  // const handleWidth = (newWidth) => {
-  //   //const newWidth = parseInt(event.target.value);
-  //   setSearchWidth(newWidth);
-  // };
+
   const handleAnnotate = () => {
     if (openAnnotate) {
       setOpenAnnotate(false);
@@ -412,10 +407,9 @@ const ArticlePage = () => {
     }
   };
   // Dynamically render the nested content in order, removing numbers, and using keys as side headings
-  // Dynamically render the nested content in order, removing numbers, and using keys as side headings
 
   // Helper function to capitalize the first letter of each word
-  // Helper function to capitalize the first letter of each word
+
   const capitalizeFirstLetter = (text) => {
     return text.replace(/\b\w/g, (char) => char.toUpperCase());
   };
@@ -433,66 +427,135 @@ const ArticlePage = () => {
     );
   };
 
-  const renderContentInOrder = (content, isAbstract = false) => {
+  // const renderContentInOrder = (content, isAbstract = false) => {
+  //   const sortedKeys = Object.keys(content).sort(
+  //     (a, b) => parseInt(a) - parseInt(b)
+  //   );
+
+  //   return sortedKeys.map((sectionKey) => {
+  //     const sectionData = content[sectionKey];
+
+  //     // Remove numbers from the section key
+  //     const cleanedSectionKey = sectionKey.replace(/^\d+[:.]?\s*/, "");
+
+  //     // Handle the case where the key is 'paragraph'
+  //     if (cleanedSectionKey.toLowerCase() === "paragraph") {
+  //       // Check if sectionData is a string, if not convert to string
+  //       const textContent =
+  //         typeof sectionData === "string"
+  //           ? sectionData
+  //           : JSON.stringify(sectionData);
+  //       //const boldtextContent = boldTerm(textContent);
+
+  //       // Apply highlight if the text matches highlightedText state
+  //       const highlightedContent = textContent.replace(
+  //         new RegExp(`(${highlightedText})`, "gi"),
+  //         (match) => `<span class="highlight">${match}</span>`
+  //       );
+
+  //       return (
+  //         <div
+  //           key={sectionKey}
+  //           style={{ marginBottom: "10px" }}
+  //           onMouseUp={handleMouseUp} // Ensure mouse event is bound here
+  //         >
+  //           {/* <MyMarkdownComponent markdownContent={boldtextContent} /> */}
+  //           <MyMarkdownComponent markdownContent={highlightedContent} />
+  //         </div>
+  //       );
+  //     }
+
+  //     // Handle keywords
+  //     if (cleanedSectionKey.toLowerCase() === "keywords") {
+  //       let keywords = Array.isArray(sectionData)
+  //         ? sectionData.join(", ")
+  //         : sectionData;
+  //       keywords = capitalizeFirstLetter(keywords);
+  //       const boldKeywords = boldTerm(keywords);
+
+  //       return (
+  //         <div
+  //           key={sectionKey}
+  //           style={{ marginBottom: "10px" }}
+  //           onMouseUp={handleMouseUp} // Ensure mouse event is bound here
+  //         >
+  //           <Typography variant="h6" style={{ fontSize: "18px" }}>
+  //             Keywords
+  //           </Typography>
+  //           <Typography variant="body1">{boldKeywords}</Typography>
+  //         </div>
+  //       );
+  //     }
+
+  //     // Handle nested objects or content
+  //     if (typeof sectionData === "object") {
+  //       return (
+  //         <div
+  //           key={sectionKey}
+  //           style={{ marginBottom: "20px" }}
+  //           onMouseUp={handleMouseUp} // Ensure mouse event is bound here
+  //         >
+  //           <Typography variant="h6" style={{ fontSize: "18px" }}>
+  //             {capitalizeFirstLetter(cleanedSectionKey)}
+  //           </Typography>
+  //           {renderContentInOrder(sectionData)}
+  //         </div>
+  //       );
+  //     } else {
+  //       const textContent =
+  //         typeof sectionData === "string"
+  //           ? sectionData
+  //           : JSON.stringify(sectionData);
+  //       const boldtextContent = boldTerm(textContent);
+
+  //       return (
+  //         <div
+  //           key={sectionKey}
+  //           style={{ marginBottom: "10px" }}
+  //           onMouseUp={handleMouseUp} // Ensure mouse event is bound here
+  //         >
+  //           <Typography variant="h6" style={{ fontSize: "18px" }}>
+  //             {capitalizeFirstLetter(cleanedSectionKey)}
+  //           </Typography>
+  //           <MyMarkdownComponent markdownContent={boldtextContent} />
+  //         </div>
+  //       );
+  //     }
+  //   });
+  // };
+  const renderContentInOrder = (content) => {
     const sortedKeys = Object.keys(content).sort(
       (a, b) => parseInt(a) - parseInt(b)
     );
 
     return sortedKeys.map((sectionKey) => {
       const sectionData = content[sectionKey];
-
-      // Remove numbers from the section key
       const cleanedSectionKey = sectionKey.replace(/^\d+[:.]?\s*/, "");
 
-      // Handle the case where the key is 'paragraph'
       if (cleanedSectionKey.toLowerCase() === "paragraph") {
-        // Check if sectionData is a string, if not convert to string
         const textContent =
           typeof sectionData === "string"
             ? sectionData
             : JSON.stringify(sectionData);
-        const boldtextContent = boldTerm(textContent);
 
         return (
           <div
             key={sectionKey}
             style={{ marginBottom: "10px" }}
-            //onMouseUp={handleMouseUp} // Ensure mouse event is bound here
+            onMouseUp={handleMouseUp} // Ensure mouse event is bound here
           >
-            <MyMarkdownComponent markdownContent={boldtextContent} />
+            <p>{textContent}</p>
+            {/* <MyMarkdownComponent markdownContent={textContent} /> */}
           </div>
         );
       }
 
-      // Handle keywords
-      if (cleanedSectionKey.toLowerCase() === "keywords") {
-        let keywords = Array.isArray(sectionData)
-          ? sectionData.join(", ")
-          : sectionData;
-        keywords = capitalizeFirstLetter(keywords);
-        const boldKeywords = boldTerm(keywords);
-
-        return (
-          <div
-            key={sectionKey}
-            style={{ marginBottom: "10px" }}
-            // onMouseUp={handleMouseUp} // Ensure mouse event is bound here
-          >
-            <Typography variant="h6" style={{ fontSize: "18px" }}>
-              Keywords
-            </Typography>
-            <Typography variant="body1">{boldKeywords}</Typography>
-          </div>
-        );
-      }
-
-      // Handle nested objects or content
       if (typeof sectionData === "object") {
         return (
           <div
             key={sectionKey}
             style={{ marginBottom: "20px" }}
-            // onMouseUp={handleMouseUp} // Ensure mouse event is bound here
+            onMouseUp={handleMouseUp} // Ensure mouse event is bound here
           >
             <Typography variant="h6" style={{ fontSize: "18px" }}>
               {capitalizeFirstLetter(cleanedSectionKey)}
@@ -500,26 +563,22 @@ const ArticlePage = () => {
             {renderContentInOrder(sectionData)}
           </div>
         );
-      } else {
-        const textContent =
-          typeof sectionData === "string"
-            ? sectionData
-            : JSON.stringify(sectionData);
-        const boldtextContent = boldTerm(textContent);
-
-        return (
-          <div
-            key={sectionKey}
-            style={{ marginBottom: "10px" }}
-            // onMouseUp={handleMouseUp} // Ensure mouse event is bound here
-          >
-            <Typography variant="h6" style={{ fontSize: "18px" }}>
-              {capitalizeFirstLetter(cleanedSectionKey)}
-            </Typography>
-            <MyMarkdownComponent markdownContent={boldtextContent} />
-          </div>
-        );
       }
+
+      const textContent =
+        typeof sectionData === "string"
+          ? sectionData
+          : JSON.stringify(sectionData);
+
+      return (
+        <div
+          key={sectionKey}
+          style={{ marginBottom: "10px" }}
+          onMouseUp={handleMouseUp} // Ensure mouse event is bound here
+        >
+          <p>{textContent}</p>
+        </div>
+      );
     });
   };
 
@@ -568,17 +627,7 @@ const ArticlePage = () => {
             </a>
           </div>
           <nav className="nav-menu">
-            <ul>
-              {/* <li>
-                <a href="/">Home</a>
-              </li> */}
-              {/* <li>
-                <a href="#why-infer">Why Infer?</a>
-              </li> */}
-              {/* <li>
-                <a href="#FAQ's">FAQs</a>
-              </li> */}
-            </ul>
+            <ul></ul>
           </nav>
           <div className="auth-buttons" style={{ margin: "20px 26px 20px 0" }}>
             <button className="signup">Sign up</button>
@@ -642,13 +691,13 @@ const ArticlePage = () => {
           {articleData ? (
             <div
               className="article-content"
-              onMouseUp={handleMouseUp}
+              //onMouseUp={handleMouseUp}
               ref={contentRef}
               // style={{ width: `43.61%` }}
               // value={searchWidth}
               // onChange={handleWidth}
             >
-              <div className="article-title">
+              <div className="article-title" onMouseUp={handleMouseUp}>
                 {/* <button
                     
                     alt="Arrow-left-icon"
@@ -705,7 +754,7 @@ const ArticlePage = () => {
                 </p>
               </div>
 
-              <div className="meta">
+              <div className="meta" onMouseUp={handleMouseUp}>
                 <div
                   style={{
                     display: "flex",
@@ -741,12 +790,12 @@ const ArticlePage = () => {
                     >
                       Abstract
                     </Typography>
-                    <div onMouseUp={handleMouseUp}>
-                      {renderContentInOrder(articleData.abstract_content, true)}
-                    </div>
+
+                    {renderContentInOrder(articleData.abstract_content, true)}
                   </>
                 )}
                 {/* <div className="content-brake"></div>  */}
+
                 {articleData.body_content &&
                   renderContentInOrder(articleData.body_content, true)}
 
@@ -822,7 +871,7 @@ const ArticlePage = () => {
                 />
               </div>
             )}
-            {openNotes && <Notes selectedText={selectedText} />}
+            {openNotes && <Notes selectedText={savedText} />}
             <div className="icons-group">
               <div
                 className={`search-annotate-icon ${
@@ -849,8 +898,9 @@ const ArticlePage = () => {
                   handleNotes();
                   // handleResize();
                 }}
+                title="Notes"
               >
-                <img src={notesicon} alt="notes-icon" />
+                <img src={notesicon} alt="notes-icon" title="Note" />
               </div>
             </div>
           </div>

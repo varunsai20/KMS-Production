@@ -271,7 +271,7 @@
 .custom-bold {
   font-weight: 900; /* Increase the boldness */
 }
-.chat-query{
+.chat-query {
   position: absolute;
   /* bottom: 10px; */
   left: 24%;
@@ -280,36 +280,36 @@
   /* margin: 0% 0% 1% 17%; */
   width: 68%;
   display: flex;
-  
+
   flex-direction: column;
   padding: 10px 0;
   border-radius: 20px;
   /* z-index: 10; */
   border: 1px solid rgba(235, 235, 243, 1);
 }
-.predefined-prompts{
+.predefined-prompts {
   display: flex;
   gap: 20px;
   padding: 0 10px 10px 10px;
 }
 
-.predefined-prompts button{
-      /* background-color: transparent; */
-      border: 1px solid rgb(206 206 206);
-      color: black;
-      font-size: 16px;
-      cursor: pointer;
-      border-radius: 24PX;
-      padding: 7px;
-      background-color: #C4DAD2;
- }
+.predefined-prompts button {
+  /* background-color: transparent; */
+  border: 1px solid rgb(206 206 206);
+  color: black;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 24px;
+  padding: 7px;
+  background-color: #c4dad2;
+}
 .stream-input {
   width: 98%;
   display: flex;
-    border: 1px solid #ccc;
-    border-radius: 20px;
-    align-items: center ;
-    margin: auto;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  align-items: center;
+  margin: auto;
   /* position: absolute;
   bottom: 10px;
   left: 23.5%;
@@ -330,7 +330,7 @@
   font-size: 14px;
   box-shadow: 500px;
   width: 85%;
-  border:none;
+  border: none;
   outline: none;
 }
 
@@ -345,16 +345,16 @@
 }
 
 .stream-input .button {
-      /* position: absolute; */
-      height: 30px;
-      /* transform: translateY(-50%); */
-      /* padding: 5px 15px; */
-      background-color: #fff;
-      color: #007bff;
-      border: none;
-      border-radius: 20px;
-      cursor: pointer;
-      margin-right: 1%;
+  /* position: absolute; */
+  height: 30px;
+  /* transform: translateY(-50%); */
+  /* padding: 5px 15px; */
+  background-color: #fff;
+  color: #007bff;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  margin-right: 1%;
 }
 .stream-input-query {
   margin-bottom: 10px;
@@ -579,7 +579,7 @@ td {
 .loading-dots {
   display: inline-block;
   width: 50px;
-  size:24px;
+  size: 24px;
   text-align: center;
 }
 
@@ -627,16 +627,22 @@ td {
 }
 
 @keyframes blink {
-  0% { opacity: 0.2; }
-  20% { opacity: 1; }
-  100% { opacity: 0.2; }
+  0% {
+    opacity: 0.2;
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.2;
+  }
 }
 
-.Rate-Article{
+.Rate-Article {
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap:10px;
+  gap: 10px;
 }
 .rate {
   display: flex;
@@ -681,7 +687,6 @@ td {
   color: #ffc700;
 }
 
-
 #scrollTopBtn {
   display: none; /* Hidden by default */
   position: fixed; /* Stay in place */
@@ -700,4 +705,8 @@ td {
 
 #scrollTopBtn:hover {
   background-color: #555; /* Add a dark-grey background on hover */
+}
+.highlight {
+  background-color: #007bff; /* Highlight the selected text */
+  color: black;
 }
