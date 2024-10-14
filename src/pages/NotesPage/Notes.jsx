@@ -15,6 +15,7 @@ const NotesManager = ({ selectedText }) => {
     localStorage.setItem("notes", JSON.stringify(notes));
   }, [notes]);
 
+
   // Automatically switch to the 'create' view and accumulate unique text
   useEffect(() => {
     if (selectedText) {
@@ -26,6 +27,7 @@ const NotesManager = ({ selectedText }) => {
       setCurrentView("create"); // Switch to 'create' view
     }
   }, [selectedText]);
+
 
   console.log(selectedText);
 

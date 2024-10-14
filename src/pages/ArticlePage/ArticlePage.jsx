@@ -8,14 +8,24 @@ import annotate from "../../assets/images/task-square.svg";
 import { useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import { CircularProgress } from "@mui/material";
+
 import { TextField } from "@mui/material";
 import Annotation from "../../components/Annotaions";
+
+import { Autocomplete, InputAdornment, TextField } from "@mui/material";
+import Annotation from "../../components/Annotaions";
+import { faBookmark as regularBookmark } from '@fortawesome/free-regular-svg-icons';
+
+import Button from "../../components/Buttons"
+//import edit from "../../assets/images/16px.svg";
+
 import notesicon from "../../assets/images/note-2.svg";
 import rehypeRaw from "rehype-raw";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTelegram } from "@fortawesome/free-brands-svg-icons";
 import { faPen } from "@fortawesome/free-solid-svg-icons";
 import { faAnglesUp } from "@fortawesome/free-solid-svg-icons";
+
 import { IoSaveOutline } from "react-icons/io5";
 import Notes from "../NotesPage/Notes";
 const ArticlePage = () => {
@@ -34,6 +44,7 @@ const ArticlePage = () => {
   const [response, setResponse] = useState("");
   const [loading, setLoading] = useState(false);
   const annotateData = location.state.annotateData || { annotateData: [] };
+
   const endOfMessagesRef = useRef(null); // Ref to scroll to the last message
   const [chatHistory, setChatHistory] = useState(() => {
     const storedHistory = sessionStorage.getItem("chatHistory");
@@ -64,8 +75,17 @@ const ArticlePage = () => {
   const [selectedText, setSelectedText] = useState("");
   const [editingPmid, setEditingPmid] = useState(null);
   const [editedTitle, setEditedTitle] = useState("");
+
   const [highlightedText, setHighlightedText] = useState("");
   const [savedText, setSavedText] = useState("");
+
+
+  const [bookmarkedPmids, setBookmarkedPmids] = useState({});
+  // const handleResize = (event) => {
+  //   const newWidth = event.target.value; // Get the new width from user interaction
+  //   setWidth1(newWidth);
+  //   setWidth2(100 - newWidth); // Second div takes up the remaining width
+  // };
 
   useEffect(() => {
     // Access the computed width of the content div
@@ -116,6 +136,7 @@ const ArticlePage = () => {
       setShowPopup(false);
     }
   };
+
   console.log(selectedText);
   console.log("openNotes", openNotes);
 
@@ -126,7 +147,20 @@ const ArticlePage = () => {
     if (textToSave) {
       console.log(textToSave);
       setSavedText(textToSave);
-      //setOpenNotes(true); // Open Notes when the "Save to Notes" button is clicked
+
+  const handleBookmarkClick = (pmid) => {
+    setBookmarkedPmids((prevState) => ({
+      ...prevState,
+      [pmid]: !prevState[pmid], // Toggle the bookmark state for the specific pmid
+    }));
+    
+  };
+ 
+  const handleSaveToNote = () => {
+
+    if (selectedText) {
+      setOpenNotes(true); // Open Notes when the "Save to Notes" button is clicked
+
       setShowPopup(false); // Hide the popup
 
       if (!openNotes) {
@@ -139,8 +173,17 @@ const ArticlePage = () => {
     // }
   };
 
+
   console.log("open Notes", openNotes);
   console.log("article Page: ", selectedText);
+
+  useEffect(() => {
+    if (selectedText && openNotes === true) {
+      setOpenNotes(true);
+    }
+  }, [selectedText]);
+
+
 
   const getIdType = () => {
     return `${source}_${id}`;
@@ -215,7 +258,7 @@ const ArticlePage = () => {
       endOfMessagesRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [chatHistory]); // This will trigger when chatHistory changes
-  console.log(source);
+
 
   const handleAskClick = async () => {
     if (!query) {
@@ -234,7 +277,7 @@ const ArticlePage = () => {
       id: id,
       source: source,
     });
-    console.log(bodyData);
+
     try {
       const response = await fetch("http://13.127.207.184:80/generateanswer", {
         method: "POST",
@@ -317,7 +360,9 @@ const ArticlePage = () => {
                       return updatedChatHistory;
                     });
 
+
                     setResponse((prev) => prev + " " + word);
+
 
                     if (endOfMessagesRef.current) {
                       endOfMessagesRef.current.scrollIntoView({
@@ -427,102 +472,7 @@ const ArticlePage = () => {
     );
   };
 
-  // const renderContentInOrder = (content, isAbstract = false) => {
-  //   const sortedKeys = Object.keys(content).sort(
-  //     (a, b) => parseInt(a) - parseInt(b)
-  //   );
 
-  //   return sortedKeys.map((sectionKey) => {
-  //     const sectionData = content[sectionKey];
-
-  //     // Remove numbers from the section key
-  //     const cleanedSectionKey = sectionKey.replace(/^\d+[:.]?\s*/, "");
-
-  //     // Handle the case where the key is 'paragraph'
-  //     if (cleanedSectionKey.toLowerCase() === "paragraph") {
-  //       // Check if sectionData is a string, if not convert to string
-  //       const textContent =
-  //         typeof sectionData === "string"
-  //           ? sectionData
-  //           : JSON.stringify(sectionData);
-  //       //const boldtextContent = boldTerm(textContent);
-
-  //       // Apply highlight if the text matches highlightedText state
-  //       const highlightedContent = textContent.replace(
-  //         new RegExp(`(${highlightedText})`, "gi"),
-  //         (match) => `<span class="highlight">${match}</span>`
-  //       );
-
-  //       return (
-  //         <div
-  //           key={sectionKey}
-  //           style={{ marginBottom: "10px" }}
-  //           onMouseUp={handleMouseUp} // Ensure mouse event is bound here
-  //         >
-  //           {/* <MyMarkdownComponent markdownContent={boldtextContent} /> */}
-  //           <MyMarkdownComponent markdownContent={highlightedContent} />
-  //         </div>
-  //       );
-  //     }
-
-  //     // Handle keywords
-  //     if (cleanedSectionKey.toLowerCase() === "keywords") {
-  //       let keywords = Array.isArray(sectionData)
-  //         ? sectionData.join(", ")
-  //         : sectionData;
-  //       keywords = capitalizeFirstLetter(keywords);
-  //       const boldKeywords = boldTerm(keywords);
-
-  //       return (
-  //         <div
-  //           key={sectionKey}
-  //           style={{ marginBottom: "10px" }}
-  //           onMouseUp={handleMouseUp} // Ensure mouse event is bound here
-  //         >
-  //           <Typography variant="h6" style={{ fontSize: "18px" }}>
-  //             Keywords
-  //           </Typography>
-  //           <Typography variant="body1">{boldKeywords}</Typography>
-  //         </div>
-  //       );
-  //     }
-
-  //     // Handle nested objects or content
-  //     if (typeof sectionData === "object") {
-  //       return (
-  //         <div
-  //           key={sectionKey}
-  //           style={{ marginBottom: "20px" }}
-  //           onMouseUp={handleMouseUp} // Ensure mouse event is bound here
-  //         >
-  //           <Typography variant="h6" style={{ fontSize: "18px" }}>
-  //             {capitalizeFirstLetter(cleanedSectionKey)}
-  //           </Typography>
-  //           {renderContentInOrder(sectionData)}
-  //         </div>
-  //       );
-  //     } else {
-  //       const textContent =
-  //         typeof sectionData === "string"
-  //           ? sectionData
-  //           : JSON.stringify(sectionData);
-  //       const boldtextContent = boldTerm(textContent);
-
-  //       return (
-  //         <div
-  //           key={sectionKey}
-  //           style={{ marginBottom: "10px" }}
-  //           onMouseUp={handleMouseUp} // Ensure mouse event is bound here
-  //         >
-  //           <Typography variant="h6" style={{ fontSize: "18px" }}>
-  //             {capitalizeFirstLetter(cleanedSectionKey)}
-  //           </Typography>
-  //           <MyMarkdownComponent markdownContent={boldtextContent} />
-  //         </div>
-  //       );
-  //     }
-  //   });
-  // };
   const renderContentInOrder = (content) => {
     const sortedKeys = Object.keys(content).sort(
       (a, b) => parseInt(a) - parseInt(b)
@@ -538,24 +488,30 @@ const ArticlePage = () => {
             ? sectionData
             : JSON.stringify(sectionData);
 
+
         return (
           <div
             key={sectionKey}
             style={{ marginBottom: "10px" }}
+
             onMouseUp={handleMouseUp} // Ensure mouse event is bound here
           >
             <p>{textContent}</p>
             {/* <MyMarkdownComponent markdownContent={textContent} /> */}
+
           </div>
         );
       }
 
+      // Handle nested objects or content
       if (typeof sectionData === "object") {
         return (
           <div
             key={sectionKey}
             style={{ marginBottom: "20px" }}
+
             onMouseUp={handleMouseUp} // Ensure mouse event is bound here
+
           >
             <Typography variant="h6" style={{ fontSize: "18px" }}>
               {capitalizeFirstLetter(cleanedSectionKey)}
@@ -563,6 +519,7 @@ const ArticlePage = () => {
             {renderContentInOrder(sectionData)}
           </div>
         );
+
       }
 
       const textContent =
@@ -691,7 +648,7 @@ const ArticlePage = () => {
           {articleData ? (
             <div
               className="article-content"
-              //onMouseUp={handleMouseUp}
+
               ref={contentRef}
               // style={{ width: `43.61%` }}
               // value={searchWidth}
@@ -742,19 +699,23 @@ const ArticlePage = () => {
                   </div>
                 </div>
 
-                <p
-                  style={{
-                    marginTop: "0",
-                    marginBottom: "0",
-                    color: "#0071bc",
-                    fontSize: "20px",
-                  }}
-                >
+                <div className="ArticleTitle-Bookmark">      
+                <p  style={{ marginTop: "0", marginBottom: "0",  color: "#0071bc", fontSize: "20px", }} >
                   {articleData.article_title}
                 </p>
+                <FontAwesomeIcon
+                icon={regularBookmark}
+                size="l"
+            
+                style={{ color: bookmarkedPmids[id] ? 'blue' : 'black', cursor: 'pointer',width:"20px",height:"20px" }}
+                onClick={() => handleBookmarkClick(id)}
+                title={bookmarkedPmids[id] ? 'Bookmarked' : 'Bookmark this article'}
+              />
+                </div>
               </div>
 
               <div className="meta" onMouseUp={handleMouseUp}>
+
                 <div
                   style={{
                     display: "flex",
@@ -791,6 +752,7 @@ const ArticlePage = () => {
                       Abstract
                     </Typography>
 
+
                     {renderContentInOrder(articleData.abstract_content, true)}
                   </>
                 )}
@@ -798,6 +760,7 @@ const ArticlePage = () => {
 
                 {articleData.body_content &&
                   renderContentInOrder(articleData.body_content, true)}
+
 
                 {showStreamingSection && (
                   <div className="streaming-section">
@@ -857,7 +820,7 @@ const ArticlePage = () => {
               </div>
             </div>
           ) : (
-            <div className="data-not-found">
+            <div className="Article-data-not-found">
               <p>Data not found for the given PMID</p>
             </div>
           )}
@@ -871,7 +834,9 @@ const ArticlePage = () => {
                 />
               </div>
             )}
+
             {openNotes && <Notes selectedText={savedText} />}
+
             <div className="icons-group">
               <div
                 className={`search-annotate-icon ${

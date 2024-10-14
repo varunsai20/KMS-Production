@@ -3,7 +3,6 @@ import LandingPage from "./pages/LandingPage/LandingPage";
 import ArticlePage from "./pages/ArticlePage/ArticlePage";
 import SearchResults from "./pages/SearchResultsPage/SearchResults";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import TextProvider from "./components/Notes/TextProvider";
 function App() {
   return (
     <Router>

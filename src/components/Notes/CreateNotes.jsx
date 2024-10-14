@@ -26,6 +26,7 @@ const Createnotes = ({ setNotes, onClose, selectedText }) => {
   const editorRef = useRef(null);
   const [noteContent, setNoteContent] = useState(selectedText || ""); // Initialize with selectedText
   const [shareMessage, setShareMessage] = useState(""); // State for feedback message
+
   console.log("Selected Text:", selectedText);
   console.log("note content", noteContent);
 
@@ -43,26 +44,25 @@ const Createnotes = ({ setNotes, onClose, selectedText }) => {
         console.log(selectedText);
         setNoteContent(editorRef.current.innerHTML.trim());
       }
-    }
+
   }, [selectedText]);
 
   const handleInput = (e) => {
     setNoteContent(e.target.innerText); // Set the content as plain text (ignoring HTML)
   };
 
-  // console.log("CreateNote page: ", selectedText);
+  console.log("CreateNote page: ", selectedText);
+
+  const handleInput = (e) => {
+    setNoteContent(e.target.innerText); // Set the content as plain text (ignoring HTML)
+  };
+
+
 
   const handleEditorClick = () => {
     editorRef.current.focus(); // Set focus on the editor
   };
 
-  // const handleBlur = () => {
-  //   // If the editor becomes empty again after losing focus, show the placeholder again
-  //   if (editorRef.current.innerText.trim() === "") {
-  //     setIsPlaceholderVisible(true);
-  //     editorRef.current.innerHTML = "Take your note..."; // Placeholder text
-  //   }
-  // };
 
   const handleFormat = (command) => {
     document.execCommand(command, false, null);

@@ -1,24 +1,60 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import "./Annotations.css"
-const Annotation = ({ openAnnotate, annotateData, searchTerm }) => {
+const Annotation = ({ openAnnotate, annotateData, searchTerm,source: passedSource }) => {
+
   const location = useLocation();
   const navigate = useNavigate();
   const { pmid: pmidFromUrl } = useParams(); // Extract pmid from the URL
   const [expandedPmids, setExpandedPmids] = useState({}); // Track which PMIDs are expanded
   const [expandedTexts, setExpandedTexts] = useState({});
   const { data } = location.state || { data: [] };
-
+  const [source, setSource] = useState(passedSource || []);
+  useEffect(() => {
+    // Check if the source is available in sessionStorage if not passed as props
+    if (!passedSource) {
+      const storedSource = sessionStorage.getItem('source');
+      if (storedSource) {
+        setSource(JSON.parse(storedSource));
+      } else {
+        console.error("Source not found in sessionStorage or passed as props.");
+      }
+    } else {
+      // Store the passed source in sessionStorage
+      sessionStorage.setItem('source', JSON.stringify(passedSource));
+    }
+  }, [passedSource]);
   useEffect(() => {
     // Reset expandedTexts when openAnnotate changes
     if (openAnnotate) {
       setExpandedTexts({}); // Resets all expanded texts to the collapsed (sliced) state
     }
   }, [openAnnotate]);
+  //   const handleNavigate = (article) => {
+  //   // const idType = getIdType(article); // Determine whether it's pmid or bioRxiv_id
+  //   const type = article.source === "BioRxiv" ? "bioRxiv_id" : article.source === "Public Library of Science (PLOS)" ? "plos_id" : "pmid";// Pass the type explicitly
+  //   navigate(`/article/${type}:${article}`, { state: { data: data, searchTerm,annotateData: annotateData } });
+  // };
+  const handleNavigate = (articleId) => {
+    const article = source.find((entry) => entry.idType === articleId);
 
-  const handleNavigate = (pmid) => {
-    navigate(`/article/${pmid}`, { state: { data: data, searchTerm, annotateData: annotateData } });
+    if (article) {
+      const { source: articleSource } = article;
+      const type = 
+        articleSource === "BioRxiv"
+          ? "bioRxiv_id"
+          : articleSource === "Public Library of Science (PLOS)"
+          ? "plos_id"
+          : "pmid"; // Determine type based on source
+
+      navigate(`/article/${type}:${articleId}`, {
+        state: { data, searchTerm, annotateData },
+      });
+    } else {
+      console.error(`Article with ID ${articleId} not found in the source.`);
+    }
   };
+  
   const capitalizeFirstLetter = (string) => {
     return string.charAt(0).toUpperCase() + string.slice(1);
   };
@@ -49,55 +85,73 @@ const Annotation = ({ openAnnotate, annotateData, searchTerm }) => {
       [key]: !prevState[key], // Toggle between full text and sliced text for a specific row
     }));
   };
-
+  
   const renderAnnotations = () => {
     let filteredAnnotateData = annotateData;
-
-    // If on article page, filter the data for the specific pmid from the URL
-    if (location.pathname.startsWith('/article') && pmidFromUrl) {
-      filteredAnnotateData = annotateData.filter(entry => entry[pmidFromUrl]);
+  
+    // Check if the URL path matches the expected pattern (e.g., "/article/pmid:19230162")
+    const urlPath = location.pathname;
+    const typeMatch = urlPath.match(/^\/article\/(\w+):(\d+)$/);
+  
+    if (typeMatch) {
+      const [_, type, pmidFromUrl] = typeMatch;
+  
+      // Ensure filteredAnnotateData is always an array
+      filteredAnnotateData = annotateData
+        .filter(entry => entry.hasOwnProperty(pmidFromUrl))
+        .map(entry => ({ [pmidFromUrl]: entry[pmidFromUrl] }));
     }
-
+  
+    // If filteredAnnotateData is not an array, default it to an empty array
+    if (!Array.isArray(filteredAnnotateData)) {
+      filteredAnnotateData = [];
+    }
+  
+    // Render the annotations
     return filteredAnnotateData.map((entry) =>
       Object.entries(entry).flatMap(([pmid, types]) => {
         const rows = [];
         const isExpanded = expandedPmids[pmid];
-
-        // Get the first available type from the types object
-        const sortedTypes = Object.entries(types)
-          .sort(([_, a], [__, b]) => (b.annotation_score || 0) - (a.annotation_score || 0)); // Sort by annotation_score in descending order
-
+  
+        // Sort types by annotation score in descending order
+        const sortedTypes = Object.entries(types).sort(
+          ([_, a], [__, b]) => (b.annotation_score || 0) - (a.annotation_score || 0)
+        );
+  
         const [firstType, firstTypeData] = sortedTypes[0] || [];
-        const annotationScore = firstTypeData ? `${firstTypeData.annotation_score.toFixed(2)}%` : '0%';
-
+        const annotationScore = firstTypeData
+          ? `${firstTypeData.annotation_score.toFixed(2)}%`
+          : '0%';
+  
         const firstTypeValues = Object.entries(firstTypeData || {})
           .filter(([key]) => key !== 'annotation_score')
           .map(([key]) => key)
           .join(', ');
-
-        // Check if the text for this PMCID is expanded
+  
         const isFirstTypeExpanded = expandedTexts[`${pmid}-firstType`];
-
-        // First row with expand button and either expanded or sliced data
+  
+        // First row
         rows.push(
           <tr className="search-table-body" key={`${pmid}-first`}>
             <td style={{ paddingLeft: 0 }}>
               <button onClick={() => toggleExpandPmid(pmid)} style={{ paddingLeft: 4 }}>
                 {isExpanded ? '▼' : '▶'}
               </button>
-              <a style={{ color: "#1a82ff", fontWeight: 600, cursor: "pointer" }} onClick={() => handleNavigate(pmid)}>{pmid}</a>
+              <a
+                style={{ color: "#1a82ff", fontWeight: 600, cursor: "pointer" }}
+                onClick={() => handleNavigate(pmid)}
+              >
+                {pmid}
+              </a>
             </td>
             <td>{annotationScore}</td>
-            <td>{firstType && firstType.length > 25 ? `${capitalizeFirstLetter(firstType.slice(0, 25))}` : capitalizeFirstLetter(firstType)}</td>
+            <td>{capitalizeFirstLetter(firstType)}</td>
             <td>
-              {isFirstTypeExpanded
-                ? firstTypeValues // Show full data if expanded
-                : `${firstTypeValues.slice(0, 20)}`} {/* Show sliced data if not expanded */}
-
+              {isFirstTypeExpanded ? firstTypeValues : `${firstTypeValues.slice(0, 20)}`}
               {firstTypeValues.length > 30 && (
                 <span
                   style={{ color: 'blue', cursor: 'pointer', marginLeft: '5px' }}
-                  onClick={() => toggleExpandText(`${pmid}-firstType`)} // Toggle text expansion
+                  onClick={() => toggleExpandText(`${pmid}-firstType`)}
                 >
                   {isFirstTypeExpanded ? '' : '...'}
                 </span>
@@ -105,31 +159,31 @@ const Annotation = ({ openAnnotate, annotateData, searchTerm }) => {
             </td>
           </tr>
         );
-
-        // Collect all rows for each type, excluding the first type
+  
+        // Additional rows for other types
         const typeRows = sortedTypes.slice(1).map(([type, values]) => {
           const valueEntries = Object.entries(values)
             .filter(([key]) => key !== 'annotation_score')
-            .map(([key]) => `${key}`);
-
+            .map(([key]) => key);
+  
           const annotationScore = values.annotation_score
             ? `${values.annotation_score.toFixed(2)}%`
             : '0%';
-
+  
           const valueText = valueEntries.join(', ');
           const typeKey = `${pmid}-${type}`;
           const isTypeTextExpanded = expandedTexts[typeKey];
           const displayText = isTypeTextExpanded
             ? valueText
             : valueText.length > 30
-              ? `${valueText.slice(0, 20)}`
-              : valueText;
-
+            ? `${valueText.slice(0, 20)}`
+            : valueText;
+  
           return (
             <tr className="search-table-body" key={typeKey}>
-              <td style={{ paddingLeft: '30px' }}></td> {/* Indentation for expanded rows */}
+              <td style={{ paddingLeft: '30px' }}></td>
               <td>{annotationScore}</td>
-              <td>{type.length > 25 ? `${capitalizeFirstLetter(type.slice(0, 25))}` : capitalizeFirstLetter(type)}</td>
+              <td>{capitalizeFirstLetter(type)}</td>
               <td>
                 {displayText}
                 {valueText.length > 30 && !isTypeTextExpanded && (
@@ -144,16 +198,17 @@ const Annotation = ({ openAnnotate, annotateData, searchTerm }) => {
             </tr>
           );
         });
-
-        // If expanded, show all rows except the first type
+  
         if (isExpanded) {
           rows.push(...typeRows);
         }
-
+  
         return rows;
       })
     );
   };
+  
+  
 
   return (
     <div className="search-tables">
