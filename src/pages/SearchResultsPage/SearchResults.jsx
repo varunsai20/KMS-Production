@@ -1013,10 +1013,7 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
                         }}
                         title={selectedArticles.length === 0 ? 'Select atleast one article to annotate' : 'Annotate selected articles'}
                         >
-                        {annotateLoading ? (
-                            <div class="loader"></div>
-                            
-                          ):(
+                       
                             <button 
                             className={`SearchResult-Annotate ${totalArticles.length > 0 ? "active" : "disabled"}`} 
                             onClick={totalArticles.length > 0 ? handleAnnotateClick : null} 
@@ -1026,11 +1023,14 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
                             }} 
                             title={totalArticles.length === 0 ? 'Select an article' : 'Annotate selected articles'}
                           >
-                            Annotate
+                             Annotate{annotateLoading ? (
+                            <div class="loader"></div>
+                            
+                          ):""}
                           </button>
-                          )}
-                          <button className="SearchResult-Annotate">Share to</button>
-                          <button className="SearchResult-Annotate">Save</button>
+                          
+                          <button className="SearchResult-Share">Share to</button>
+                          <button className="SearchResult-Save">Save</button>
                     </div>
 
                     <div style={{display:"flex",flexDirection:"row",alignItems:"baseline"}}>
@@ -1221,22 +1221,26 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
       )
     : "No abstract available"}
 
-  {
-    result.source === "BioRxiv"
-      ? abstractContent.length > 400
-        ? "..."
-        : ""
-      : result.source === "Public Library of Science (PLOS)" &&
-        result.abstract_content?.Abstract?.[1]
-      ? Object.values(result.abstract_content.Abstract[1])
-          .join("")
-          .length > 400
-        ? "..."
-        : ""
-      : abstractContent.length > 400
+{
+  result.source === "BioRxiv"
+    ? abstractContent.length > 300
       ? "..."
       : ""
-  }
+    : result.source === "Public Library of Science (PLOS)" &&
+      result.abstract_content?.Abstract?.[1]
+    ? Object.values(result.abstract_content.Abstract[1] || result.abstract_content[1])
+        .join("")
+        .length > 300
+      ? "..."
+      : ""
+    : result.abstract_content?.[1]
+    ? Object.values(result.abstract_content[1])
+        .join(" ").length > 300
+      ? "..."
+      : ""
+    : ""
+}
+
 </p>
 
       </div>

@@ -234,7 +234,27 @@ button {
 
 }
 .SearchResult-Annotate {
-  padding: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-radius: 40px;
+    border: 1px solid;
+    opacity: 0px;
+    color: rgba(26, 26, 26, 1);
+
+}
+.SearchResult-Annotate .loader{
+}
+.SearchResult-Share {
+  width: fit-content;
+    gap: 10px;
+    border-radius: 40px;
+    border: 1px solid;
+    opacity: 0px;
+    color: rgba(26, 26, 26, 1);
+
+}.SearchResult-Save {
+  width: fit-content;
     gap: 10px;
     border-radius: 40px;
     border: 1px solid;
@@ -254,7 +274,6 @@ button {
   border: 1px solid;
   background: #0069e5;
   color: white;
-  height: fit-content;
 }
 
 /* Annotate button container */
@@ -311,13 +330,13 @@ button {
 
 /* HTML: <div class="loader"></div> */
 .loader {
-  width: 24px;
-  height: 24px;
+  width: 16px;
+  height: 16px;
   padding: 4px;
   /* aspect-ratio: 1; */
   border-radius: 50%;
   /* size: 24px; */
-  background: #1976d2;
+  background: #ffffff;
   --_m: conic-gradient(#0000 10%, #000), linear-gradient(#000 0 0) content-box;
   mask: var(--_m);
   mask-composite: subtract;
@@ -421,25 +440,7 @@ button {
 }
 .gradient-text:hover {
 }
-.gradient-text::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  bottom: 1px; /* Adjust the distance below the text */
-  width: 100%; /* Full width from the start */
-  height: 1.5px; /* Adjust the thickness of the underline */
-  background: #205493;
-  visibility: hidden; /* Hide the line initially */
-}
 
-.gradient-text:hover::after {
-  visibility: visible; /* Show the line on hover */
-}
-/* .gradient-text:hover {
-  text-decoration: underline;
-}
-.gradient-text.active {
-  color: #205493; */
 
 .searchresult-title {
   font-size: 16px;
