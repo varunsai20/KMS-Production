@@ -61,6 +61,7 @@ const SearchBar = ({ renderInputContainer, className }) => {
     dispatch(clearSearchResults());
     sessionStorage.removeItem("ResultData")
     if (searchTerm) {
+      sessionStorage.setItem("SearchTerm", searchTerm);
       setLoading(true);
       // sessionStorage.setItem("SearchTerm", searchTerm); // Save search term to sessionStorage
       const timeoutId = setTimeout(() => {
@@ -93,7 +94,7 @@ const SearchBar = ({ renderInputContainer, className }) => {
   const handleOptionSelect = (event, value) => {
     if (value) {
       setSearchTerm(value); // Set selected option as the search term
-      sessionStorage.setItem("SearchTerm", value); // Save selected term in sessionStorage
+       // Save selected term in sessionStorage
       handleButtonClick(); // Trigger the search after selection
     }
   };

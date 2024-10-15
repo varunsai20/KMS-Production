@@ -438,33 +438,28 @@ const ArticlePage = () => {
     const sortedKeys = Object.keys(content).sort(
       (a, b) => parseInt(a) - parseInt(b)
     );
-
+  
     return sortedKeys.map((sectionKey) => {
       const sectionData = content[sectionKey];
-
+  
       // Remove numbers from the section key
       const cleanedSectionKey = sectionKey.replace(/^\d+[:.]?\s*/, "");
-
-      // Handle the case where the key is 'paragraph'
+  
+      // Handle paragraphs
       if (cleanedSectionKey.toLowerCase() === "paragraph") {
-        // Check if sectionData is a string, if not convert to string
         const textContent =
           typeof sectionData === "string"
             ? sectionData
             : JSON.stringify(sectionData);
         const boldtextContent = boldTerm(textContent);
-
+  
         return (
-          <div
-            key={sectionKey}
-            style={{ marginBottom: "10px" }}
-            //onMouseUp={handleMouseUp} // Ensure mouse event is bound here
-          >
+          <div key={sectionKey} style={{ marginBottom: "10px" }}>
             <MyMarkdownComponent markdownContent={boldtextContent} />
           </div>
         );
       }
-
+  
       // Handle keywords
       if (cleanedSectionKey.toLowerCase() === "keywords") {
         let keywords = Array.isArray(sectionData)
@@ -472,13 +467,9 @@ const ArticlePage = () => {
           : sectionData;
         keywords = capitalizeFirstLetter(keywords);
         const boldKeywords = boldTerm(keywords);
-
+  
         return (
-          <div
-            key={sectionKey}
-            style={{ marginBottom: "10px" }}
-            // onMouseUp={handleMouseUp} // Ensure mouse event is bound here
-          >
+          <div key={sectionKey} style={{ marginBottom: "10px" }}>
             <Typography variant="h6" style={{ fontSize: "18px" }}>
               Keywords
             </Typography>
@@ -486,15 +477,31 @@ const ArticlePage = () => {
           </div>
         );
       }
-
-      // Handle nested objects or content
+  
+      // Handle Images Section
+      if (cleanedSectionKey.toLowerCase() === "images") {
+        const imageEntries = Object.values(sectionData); // Extract image objects
+  
+        return imageEntries.map((image, index) => (
+          <div key={index} style={{ marginBottom: "20px", textAlign: "center" }}>
+            <img
+              src={image.image_url}
+              alt={image.label || "Image"}
+              style={{ maxWidth: "100%", height: "auto", borderRadius: "8px" }}
+            />
+            {image.caption && (
+              <Typography variant="body2" style={{ marginTop: "8px" }}>
+                <strong>{image.label}</strong>: {image.caption}
+              </Typography>
+            )}
+          </div>
+        ));
+      }
+  
+      // Handle nested objects or other content
       if (typeof sectionData === "object") {
         return (
-          <div
-            key={sectionKey}
-            style={{ marginBottom: "20px" }}
-            // onMouseUp={handleMouseUp} // Ensure mouse event is bound here
-          >
+          <div key={sectionKey} style={{ marginBottom: "20px" }}>
             <Typography variant="h6" style={{ fontSize: "18px" }}>
               {capitalizeFirstLetter(cleanedSectionKey)}
             </Typography>
@@ -507,13 +514,9 @@ const ArticlePage = () => {
             ? sectionData
             : JSON.stringify(sectionData);
         const boldtextContent = boldTerm(textContent);
-
+  
         return (
-          <div
-            key={sectionKey}
-            style={{ marginBottom: "10px" }}
-            // onMouseUp={handleMouseUp} // Ensure mouse event is bound here
-          >
+          <div key={sectionKey} style={{ marginBottom: "10px" }}>
             <Typography variant="h6" style={{ fontSize: "18px" }}>
               {capitalizeFirstLetter(cleanedSectionKey)}
             </Typography>
@@ -523,7 +526,7 @@ const ArticlePage = () => {
       }
     });
   };
-
+  
   const getHistoryTitles = () => {
     let storedHistory = JSON.parse(localStorage.getItem("history")) || {};
     // Return the stored history as an array of {pmid, title} objects

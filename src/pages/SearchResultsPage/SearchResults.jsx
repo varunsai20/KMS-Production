@@ -18,6 +18,7 @@ import { faTelegram } from "@fortawesome/free-brands-svg-icons";
 import { useSelector } from "react-redux";
 import { faAnglesUp } from '@fortawesome/free-solid-svg-icons';
 import axios from "axios";  
+import { CiLogin } from "react-icons/ci";
 const ITEMS_PER_PAGE = 10;
 
 const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
@@ -502,6 +503,7 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
   const capitalizeFirstLetter = (text) => {
     return text.replace(/\b\w/g, (char) => char.toUpperCase());
   };
+  console.log(data)
   // Function to italicize the search term in the text
   const italicizeTerm = (text) => {
     if (!text) return "";
@@ -516,9 +518,12 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
         <b
           key={index}
           className="bold"
-          style={{ fontWeight: "bold", display: "inline-flex" }}
+          style={{ }}
         >
-          {part}
+          <i>
+              {part}
+          </i>
+          
         </b>
       ) : (
         part
@@ -1202,36 +1207,55 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
   className="searchresult-description"
   style={{ textAlign: "justify" }}
 >
-  {result.source === "BioRxiv"
+{
+  result.source === "BioRxiv"
     ? italicizeTerm(
         abstractContent.slice(0, openAnnotate || openNotes ? 100 : 400)
       )
-    : result.source === "Public Library of Science (PLOS)" &&
-      result.abstract_content?.Abstract?.[1]
-    ? italicizeTerm(
-        Object.values(result.abstract_content.Abstract[1]||result.abstract_content[1])
-          .join("")
-          .slice(0, openAnnotate || openNotes ? 100 : 400)
-      )
+    : result.source === "Public Library of Science (PLOS)"
+    ? result.abstract_content?.Abstract?.[1]
+      ? italicizeTerm(
+          Object.values(result.abstract_content.Abstract[1] || result.abstract_content[0])
+            .join("")
+            .slice(0, openAnnotate || openNotes ? 100 : 400)
+        )
+      : Object.keys(result.abstract_content || {}).length > 0
+      ? italicizeTerm(
+          Object.values(result.abstract_content)
+            .map(section => Object.values(section).join(" "))
+            .join(" ")
+            .slice(0, openAnnotate || openNotes ? 100 : 400)
+        )
+      : "No abstract available"
     : result.abstract_content?.[1]
     ? italicizeTerm(
         Object.values(result.abstract_content[1])
           .join(" ")
           .slice(0, openAnnotate || openNotes ? 100 : 400)
       )
-    : "No abstract available"}
+    : "No abstract available"
+}
+
 
 {
   result.source === "BioRxiv"
     ? abstractContent.length > 300
       ? "..."
       : ""
-    : result.source === "Public Library of Science (PLOS)" &&
-      result.abstract_content?.Abstract?.[1]
-    ? Object.values(result.abstract_content.Abstract[1] || result.abstract_content[1])
-        .join("")
-        .length > 300
-      ? "..."
+    : result.source === "Public Library of Science (PLOS)"
+    ? result.abstract_content?.Abstract?.[1]
+      ? Object.values(result.abstract_content.Abstract[1] || result.abstract_content[1])
+          .join("")
+          .length > 300
+        ? "..."
+        : ""
+      : Object.keys(result.abstract_content || {}).length > 0
+      ? Object.values(result.abstract_content)
+          .map(section => Object.values(section).join(" "))
+          .join(" ")
+          .length > 300
+        ? "..."
+        : ""
       : ""
     : result.abstract_content?.[1]
     ? Object.values(result.abstract_content[1])
@@ -1240,6 +1264,7 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
       : ""
     : ""
 }
+
 
 </p>
 
