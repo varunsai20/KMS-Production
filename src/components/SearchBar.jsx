@@ -35,7 +35,6 @@ const SearchBar = ({ renderInputContainer, className }) => {
   }, []);
 
   const handleInputChange = (event, value) => {
-    // Only show suggestions when input has 3 or more characters
     if (value.length >= 3) {
       const results = terms.filter((term) =>
         term.toLowerCase().includes(value.toLowerCase())
@@ -44,8 +43,10 @@ const SearchBar = ({ renderInputContainer, className }) => {
     } else {
       setFilteredResults([]); // Clear suggestions if less than 3 characters
     }
+    console.log(value)
     // Keep updating the searchTerm as the user types
     setSearchTerm(value);
+    sessionStorage.setItem("SearchTerm", value);
   };
 
   const handleKeyDown = (event) => {
@@ -61,7 +62,8 @@ const SearchBar = ({ renderInputContainer, className }) => {
     dispatch(clearSearchResults());
     sessionStorage.removeItem("ResultData")
     if (searchTerm) {
-      sessionStorage.setItem("SearchTerm", searchTerm);
+      let searchQuery=sessionStorage.getItem("SearchTerm")
+      console.log("searchTerm :",searchQuery)
       setLoading(true);
       // sessionStorage.setItem("SearchTerm", searchTerm); // Save search term to sessionStorage
       const timeoutId = setTimeout(() => {
@@ -70,7 +72,7 @@ const SearchBar = ({ renderInputContainer, className }) => {
       }, 60000); // 30 seconds
 
       axios
-        .post("http://13.127.207.184:80/query", { query: searchTerm })
+        .post("http://13.127.207.184:80/query", { query: searchQuery })
         .then((response) => {
           // sessionStorage.setItem("SearchTerm", searchTerm); // Update sessionStorage after the response
           const data = response.data; // Assuming the API response contains a 'results' array
@@ -93,8 +95,9 @@ const SearchBar = ({ renderInputContainer, className }) => {
 
   const handleOptionSelect = (event, value) => {
     if (value) {
+      console.log(value)
       setSearchTerm(value); // Set selected option as the search term
-       // Save selected term in sessionStorage
+      sessionStorage.setItem("SearchTerm", value);
       handleButtonClick(); // Trigger the search after selection
     }
   };

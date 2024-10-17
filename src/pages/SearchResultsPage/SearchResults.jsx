@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState,useMemo } from "react";
 import "./SearchResults.css";
 import Header from "../../components/Header-New";
-import Footer from "../../components/Footer";
+import Footer from "../../components/Footer-New";
 import SearchBar from "../../components/SearchBar";
 import Loading from "../../components/Loading";
 import Annotation from "../../components/Annotaions"
@@ -25,8 +25,8 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
   const location = useLocation(); // Access the passed state
   const { data } = location.state || { data: [] };
  
-  
-  const searchTerm = location.state?.searchTerm || "";
+  console.log(data)
+  const searchTerm = sessionStorage.getItem("SearchTerm");
   const navigate = useNavigate();
   const contentRightRef = useRef(null); // Ref for searchContent-right
   const [result, setResults] = useState();
@@ -93,7 +93,7 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
   const topPageRef = useRef(null); 
   const [showFilterPopup, setShowFilterPopup] = useState(false);
   const [showTextAvailability, setShowTextAvailability] = useState(false);
-  const [showArticleType, setShowArticleType] = useState(true);
+  const [showArticleType, setShowArticleType] = useState(false);
   const [showSourceType,setShowSourceType]=useState(true)
   const [showPublicationDate, setShowPublicationDate] = useState(true);
   const [openAnnotate, setOpenAnnotate] = useState(false);
@@ -785,9 +785,10 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
 
   return (
     <div className="Container" ref={contentRightRef}>
-      
-      <Header className="searchResults-Header"/>
-
+      <div style={{position:"sticky",top:0,zIndex:1,background:"white"}}>
+        <Header className="searchResults-Header"/>
+        
+      </div>
       <SearchBar className="searchResults-Bar"></SearchBar>
 
 
@@ -1124,33 +1125,47 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
               {data.articles && data.articles.length > 0 ? (
                 <>
                   <div className="SearchResult-Count-Filters">
+                    <div className="SearchResult-Option-Buttons">
                     <div className="SearchResult-Option-Left"
                       style={{
-                          cursor: selectedArticles.length > 0 ? 'pointer' : '',
-                          opacity: selectedArticles.length > 0 ? 1 : "", // Change opacity for a disabled effect
-                        }}
-                        title={selectedArticles.length === 0 ? 'Select atleast one article to annotate' : 'Annotate selected articles'}
+                        cursor: selectedArticles.length > 0 ? 'pointer' : '',
+                        opacity: selectedArticles.length > 0 ? 1 : "", // Change opacity for a disabled effect
+                      }}
+                      title={selectedArticles.length === 0 ? 'Select at least one article to annotate' : 'Annotate selected articles'}
+                    >
+                      <div style={{ position: 'relative' }}> {/* Wrapper for the button to position loading spinner */}
+                        <button
+                          className={`SearchResult-Annotate ${totalArticles.length > 0 ? "active" : "disabled"}`}
+                          onClick={totalArticles.length > 0 ? handleAnnotateClick : null}
+                          style={{
+                            cursor: totalArticles.length > 0 ? 'pointer' : '',
+                            opacity: annotateLoading ? 0.5 : 1, // Gray out the button when loading
+                            position: 'relative', // Make the button position relative to the wrapper for loader positioning
+                          }}
+                          title={totalArticles.length === 0 ? 'Select an article' : 'Annotate selected articles'}
+                          disabled={annotateLoading} // Disable the button while loading
                         >
-                       
-                            <button 
-                            className={`SearchResult-Annotate ${totalArticles.length > 0 ? "active" : "disabled"}`} 
-                            onClick={totalArticles.length > 0 ? handleAnnotateClick : null} 
-                            style={{ 
-                              cursor: totalArticles.length > 0 ? 'pointer' : '',
-                              opacity: totalArticles.length > 0 ? 1 : ""
-                            }} 
-                            title={totalArticles.length === 0 ? 'Select an article' : 'Annotate selected articles'}
-                          >
-                             Annotate{annotateLoading ? (
-                            <div class="loader"></div>
-                            
-                          ):""}
-                          </button>
-                          
-                          <button className="SearchResult-Share">Share to</button>
-                          <button className="SearchResult-Save">Save</button>
+                          Annotate
+                        </button>
+
+                        {/* Show loading spinner */}
+                        {annotateLoading && (
+                          <div
+                            className="loader" // Applying your loader CSS
+                            style={{
+                              position: 'absolute',
+                              top: '12.5%',
+                              left: '25%',
+                              
+                            }}
+                          ></div>
+                        )}
+                      </div>
                     </div>
 
+                      <button className="SearchResult-Share" title="Share selected articles">Share</button>
+                      <button className="SearchResult-Save" title="Save selected articles">Save</button>
+                    </div>     
                     <div style={{display:"flex",flexDirection:"row",alignItems:"baseline"}}>
                       <div className="SearchResult-count" style={{ marginRight:"15px" }}>
                         <span style={{ color: "blue"}}>
@@ -1316,7 +1331,11 @@ if (!similarityScore && searchResults) {
       <p className="searchresult-authors">{`Published on: ${result.publication_date}`}</p>
       <div className="searchresult-ID">
         <p className="searchresult-pmid">{`ID: ${idType}`}</p>
-        {result.doi?<p className="searchresult-pmid">{`DOI: ${result.doi}`}</p>:""}
+        {result.doi ? (
+          <p className="searchresult-pmid"> DoI:
+            <a href={`https://doi.org/${result.doi}`} target="_blank"rel="noopener noreferrer">{`${result.doi}`}</a>
+          </p>
+          ) : ""}
       </div>
       <p
   className="searchresult-description"

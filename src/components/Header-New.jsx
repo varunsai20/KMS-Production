@@ -47,8 +47,8 @@ const Header = () => {
         {isLoggedIn ? (
           // If user is logged in, show profile icon and logout button
           <>
-            <Link to="/profile">
-              <img src={ProfileIcon} alt="Profile" className="profile-icon" />
+            <Link to="/profile" style={{display:"flex"}}>
+              <img src={ProfileIcon} style={{width:"35px"}}alt="Profile" className="profile-icon" />
             </Link>
             <Button text="Logout" className="logout-btn" onClick={handleLogout} />
           </>
