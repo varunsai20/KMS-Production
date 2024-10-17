@@ -199,6 +199,7 @@ const SearchBar = ({ renderInputContainer, className }) => {
   </div>
 ) : (
   <div className={`Search-Bar ${className}`}>
+    
     <div className="input-container">
       <img src={Search} alt="search-icon" className="search-icon" />
       <Autocomplete

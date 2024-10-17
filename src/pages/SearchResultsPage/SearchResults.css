@@ -4,7 +4,6 @@ button {
 .Container {
   display: flex;
   flex-direction: column;
-  margin: 1%;
 }
 
 .Content {
@@ -13,6 +12,18 @@ button {
   /* height: 20vh; */
   border-radius: 20px;
   padding: 0;
+}
+.searchResults-Header{
+  width: 60%;
+  background-color: #ffffff;
+  height: 50px;
+  /* border: 1px solid black; */
+  box-shadow: none;
+  /* border: 1px solid #e0e0e0; */
+  position: -webkit-sticky; /* For Safari */
+  position: sticky;
+  top: 0;
+  z-index: 1000; /* Stay above the content */
 }
 .searchResults-Bar {
   width: 60%;
@@ -62,8 +73,8 @@ button {
   background-color: #fff;
   height: fit-content;
   flex-shrink: 0;
-  max-height: 500px;
-  height: 500px;
+  max-height: 800px;
+  /* height: 500px; */
 }
 .searchContent-left-header {
   display: flex;
@@ -93,7 +104,7 @@ button {
 }
 .searchfilter-section {
   width: 100%;
-  border-bottom: 1px solid rgba(235, 235, 243, 1);
+  /* border-bottom: 1px solid rgba(235, 235, 243, 1); */
 }
 .searchfilter-section h5 {
   margin-bottom: 5px;

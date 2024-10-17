@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState,useMemo } from "react";
 import "./SearchResults.css";
-import Header from "../../components/Header";
+import Header from "../../components/Header-New";
 import Footer from "../../components/Footer";
 import SearchBar from "../../components/SearchBar";
 import Loading from "../../components/Loading";
@@ -77,9 +77,8 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
   
 
   const [filters, setFilters] = useState(() => {
-    // Get initial state from localStorage, if available
     const savedFilters = localStorage.getItem("filters");
-    return savedFilters ? JSON.parse(savedFilters) : { articleType: [] };
+    return savedFilters ? JSON.parse(savedFilters) : { articleType: [], sourceType: [] }; // Add sourceType to initial state
   });
   // Save filters to localStorage whenever they change
   useEffect(() => {
@@ -95,6 +94,7 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
   const [showFilterPopup, setShowFilterPopup] = useState(false);
   const [showTextAvailability, setShowTextAvailability] = useState(false);
   const [showArticleType, setShowArticleType] = useState(true);
+  const [showSourceType,setShowSourceType]=useState(true)
   const [showPublicationDate, setShowPublicationDate] = useState(true);
   const [openAnnotate, setOpenAnnotate] = useState(false);
   const [annotateData, setAnnotateData] = useState();
@@ -131,11 +131,12 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
     // Clean up event listener
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-  const sortedPublicationData = [...data.articles].sort((a, b) => {
+  const sortedPublicationData = data && data.articles ? [...data.articles].sort((a, b) => {
     const dateA = parseDate(a.publication_date);
     const dateB = parseDate(b.publication_date);
     return dateB - dateA; // Sort in descending order (newest first)
-  });
+  }) : [];
+  
   useEffect(() => {
     // If the selected sort is neither "publication_date" nor "Ratings", default to "best_match"
     if (selectedSort !== "publication_date" && selectedSort !== "Ratings") {
@@ -276,12 +277,24 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
     };
 
     setFilters(updatedFilters);
-
+    setLoading(false);
     // Making API request with the updated filters and search term when a filter changes
-    handleButtonClick(updatedFilters);
+    // handleButtonClick(updatedFilters);
   };
   
-
+  const handleSourceTypeChange = (event) => {
+    const { value, checked } = event.target;
+  
+    const updatedFilters = {
+      ...filters,
+      sourceType: checked
+        ? [...filters.sourceType, value]
+        : filters.sourceType.filter((type) => type !== value),
+    };
+  
+    setFilters(updatedFilters);
+  };
+  
 
 
      // Function to handle radio button change
@@ -485,7 +498,7 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
   
     if (storedData) {
       try {
-        // Parse the stored JSON string back into an object or array
+        
         const parsedData = JSON.parse(storedData);
         setAnnotateData(parsedData);
       } catch (error) {
@@ -497,24 +510,34 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
     }
     setOpenAnnotate(false);
   }, []);
+
   const searchResults = useSelector((state) => state.search.searchResults);
   console.log(searchResults)
   useEffect(() => {
     if (searchResults) {
       const pmidList = searchResults.articles.map((article) => {
         if (article.source === "BioRxiv") {
-          return `BioRxiv_${article.bioRxiv_id}`; // Include 'BioRxiv_' prefix to avoid confusion
+          return `BioRxiv_${article.bioRxiv_id}`; 
         } else if (article.source === "Public Library of Science (PLOS)") {
-          return `Public Library of Science (PLOS)_${article.plos_id}`; // Include 'PLOS_' prefix
+          return `Public Library of Science (PLOS)_${article.plos_id}`; 
         } else {
-          return `PubMed_${article.pmid}`; // Include 'PubMed_' prefix
+          return `PubMed_${article.pmid}`; 
         }
       });
-      console.log(pmidList)
-      // Set the state with the flattened article list
+      sessionStorage.setItem("completePMID", JSON.stringify(pmidList));
       setCompletePMID(pmidList);
+    } else {
+      const storedData = sessionStorage.getItem("completePMID");
+    
+      if (storedData) {
+        const parsedData = JSON.parse(storedData);
+        console.log( parsedData); 
+        setCompletePMID(parsedData);
+      }
     }
+    
   }, [searchResults]);
+  
   useEffect(() => {
     // Clear session storage for chatHistory when the location changes
     sessionStorage.removeItem("chatHistory");
@@ -551,7 +574,7 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
   };
   const handleResetAll = () => {
     // Clear the filters from state
-    setFilters({ articleType: [] });
+    setFilters({ articleType: [],sourceType:[] });
     setAnnotateData([])
     setSelectedArticles([])
     setOpenAnnotate(false)
@@ -564,11 +587,12 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
     localStorage.removeItem("publicationDate");
     // Optionally, you can also trigger the API call without any filters
     // const storeddata=sessionStorage.getItem("ResultData")
-
+    console.log(searchResults)
+    console.log(location.state)
     // const parseddata=JSON.parse(storeddata)
     // const data=parseddata
 
-    navigate("/search", { state: { data, searchTerm } });
+    navigate("/search", { state: { data:searchResults, searchTerm } });
   };
   const getIdType = (article) => {
     return article.source === "BioRxiv" ? article.bioRxiv_id :article.source ===  "Public Library of Science (PLOS)" ? article.plos_id:article.pmid;
@@ -608,7 +632,7 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
   useEffect(() => {
     setCurrentPage(1); // Reset currentPage to 1 whenever new search results are loaded
     setPageInput(1); // Reset the input field to 1 as well
-    scrollToTop();
+    
 
   }, [data.articles]);
   useEffect(() => {
@@ -761,13 +785,13 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
 
   return (
     <div className="Container" ref={contentRightRef}>
-      {/* Heade */}
-      <Header />
-      {/* Search-Bar */}
-      <SearchBar className="searchResults-Bar"></SearchBar>
-      {/* Content-Section */}
+      
+      <Header className="searchResults-Header"/>
 
-      <div className="Content" >
+      <SearchBar className="searchResults-Bar"></SearchBar>
+
+
+      
         <div id="Search-Content-Container">
           <div className="searchContent-left">
             <div className="searchContent-left-header">
@@ -822,7 +846,7 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
                         checked={filters.articleType.includes(
                           "Books and Documents"
                         )}
-                        // onChange={handleFilterChange}//FiltersComments
+                        onChange={handleFilterChange}//FiltersComments
                         //checked={isChecked} // Controlled checkbox state
                       />{" "}
                       Books & Documents
@@ -835,7 +859,7 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
                         checked={filters.articleType.includes(
                           "Clinical Trials"
                         )}
-                        //FiltersComments // onChange={handleFilterChange}
+                        onChange={handleFilterChange} //FiltersComments 
                       />{" "}
                       Clinical Trials
                     </label>
@@ -844,7 +868,7 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
                         type="checkbox"
                         value="Meta Analysis"
                         checked={filters.articleType.includes("Meta Analysis")}
-                        //FiltersComments// onChange={handleFilterChange}
+                        onChange={handleFilterChange}   //FiltersComments
                       />{" "}
                       Meta Analysis
                     </label>
@@ -853,13 +877,83 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
                         type="checkbox"
                         value="Review"
                         checked={filters.articleType.includes("Review")}
-                        //FiltersComments onChange={handleFilterChange}
+                         onChange={handleFilterChange} //FiltersComments
                       />{" "}
                       Review
                     </label>
                   </div>
                 )}
               </div>
+              
+              {/* Source type section */}
+              <div className="searchfilter-section">
+                <h5 onClick={() => setShowSourceType(!showSourceType)}>
+                  Source Type{" "}
+                  {showSourceType ? (
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 20 20"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      transform="rotate(0)"
+                    >
+                      <path
+                        d="M3.72603 6.64009C3.94792 6.4182 4.29514 6.39803 4.53981 6.57957L4.60991 6.64009L10.0013 12.0312L15.3927 6.64009C15.6146 6.4182 15.9618 6.39803 16.2065 6.57957L16.2766 6.64009C16.4985 6.86198 16.5186 7.2092 16.3371 7.45387L16.2766 7.52397L10.4432 13.3573C10.2214 13.5792 9.87414 13.5994 9.62946 13.4178L9.55936 13.3573L3.72603 7.52397C3.48195 7.2799 3.48195 6.88417 3.72603 6.64009Z"
+                        fill="#4A4B53"
+                      />
+                    </svg>
+                  ) : (
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 20 20"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      transform="rotate(180)"
+                    >
+                      <path
+                        d="M3.72603 6.64009C3.94792 6.4182 4.29514 6.39803 4.53981 6.57957L4.60991 6.64009L10.0013 12.0312L15.3927 6.64009C15.6146 6.4182 15.9618 6.39803 16.2065 6.57957L16.2766 6.64009C16.4985 6.86198 16.5186 7.2092 16.3371 7.45387L16.2766 7.52397L10.4432 13.3573C10.2214 13.5792 9.87414 13.5994 9.62946 13.4178L9.55936 13.3573L3.72603 7.52397C3.48195 7.2799 3.48195 6.88417 3.72603 6.64009Z"
+                        fill="#4A4B53"
+                      />
+                    </svg>
+                  )}
+                </h5>
+
+                {showSourceType && (
+                  <div className="searchfilter-options-dropdown">
+                    <label>
+                      <input
+                        type="checkbox"
+                        value="BioRxiv"
+                        checked={filters.sourceType.includes("BioRxiv")}
+                        onChange={handleSourceTypeChange}
+                      />{" "}
+                      BioRxiv
+                    </label>
+                    <label>
+                      <input
+                        type="checkbox"
+                        value="Public Library of Science (PLOS)"
+                        checked={filters.sourceType.includes("Public Library of Science (PLOS)")}
+                        onChange={handleSourceTypeChange}
+                      />{" "}
+                      PLOS
+                    </label>
+                    <label>
+                      <input
+                        type="checkbox"
+                        value="PubMed"
+                        checked={filters.sourceType.includes("PubMed")}
+                        onChange={handleSourceTypeChange}
+                      />{" "}
+                      PubMed
+                    </label>
+                  </div>
+                )}
+              </div>
+
+
 
               {/* Publication date section */}
               <div className="searchfilter-section">
@@ -868,7 +962,7 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
                 >
                   Publication date{" "}
                   <span>
-                    {showTextAvailability ? (
+                    {showPublicationDate ? (
                       <svg
                         width="20"
                         height="20"
@@ -1142,7 +1236,7 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
 
         </div>
 
-                  <div className="searchContent-articles" ref={contentRightRef}>
+                  <div className="searchContent-articles" >
   <div className="searchresults-list">
   {paginatedArticles.map((result, index) => {
   // Assuming you already have access to Redux searchResults
@@ -1484,7 +1578,7 @@ if (!similarityScore && searchResults) {
             </>
           
         </div>
-      </div>
+
       
       <Footer />
       <div className="ScrollTop">
