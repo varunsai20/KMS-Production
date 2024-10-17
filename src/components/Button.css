@@ -6,7 +6,7 @@
   border-radius: 36.49px;
   opacity: 0px;
   background: #ffffff;
-  border: 1px solid #fff;
+  border: 1px solid #000000;
   font-family: Manrope;
   font-size: 14px;
   font-weight: 600;
@@ -14,11 +14,11 @@
   text-align: left;
   color: var(--color-text-blue);
 }
-.signup-btn:hover,
+/* .signup-btn:hover,
 .login-btn:hover {
   background-color: var(--color-btn-blue);
   color: var(--primary-color);
-}
+} */
 .login-btn {
   padding: 8px 16px; /* Adjust padding as needed */
   border: none;
@@ -26,14 +26,30 @@
   gap: 0px;
   border-radius: 36.49px;
   opacity: 0px;
-  background: #ffffff;
+  background: var(--color-btn-blue);
   border: 1px solid #fff;
   font-family: Manrope;
   font-size: 14px;
   font-weight: 600;
   line-height: 19.12px;
   text-align: left;
-  color: var(--color-text-blue);
+  color: #fff;
+}
+.logout-btn {
+  padding: 8px 16px; /* Adjust padding as needed */
+  border: none;
+  cursor: pointer;
+  gap: 0px;
+  border-radius: 36.49px;
+  opacity: 0px;
+  background: var(--color-btn-blue);
+  border: 1px solid #fff;
+  font-family: Manrope;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 19.12px;
+  text-align: left;
+  color: #fff;
 }
 .searchbar-loader {
   width: 24px;

@@ -1,5 +1,5 @@
 import "./App.css";
-import LandingPage from "./pages/LandingPage/LandingPage";
+import Lander from "./pages/LandingPage/Lander-Logedin";
 import ArticlePage from "./pages/ArticlePage/ArticlePage";
 import SearchResults from "./pages/SearchResultsPage/SearchResults";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
@@ -8,11 +8,11 @@ function App() {
     <Router>
       <div className="App">
         <Routes>
-          <Route path="/" element={<LandingPage />} />
+          <Route path="/" element={<Lander />} />
           <Route path="/search" element={<SearchResults />} />
           <Route path="/article/:pmid" element={<ArticlePage />} />
         </Routes>
-      </div>
+        </div>  
     </Router>
   );
 }

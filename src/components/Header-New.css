@@ -1,0 +1,46 @@
+.Navbar-Header {
+    height: 70px;
+    display: flex;
+    justify-content: space-between;
+    color: black;
+    border-bottom: 1px solid #555;
+}
+
+.Navbar-Header-Items {
+    display: flex;
+    gap: 20px;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 32px;
+}
+
+.Navbar-Header-Link {
+    position: relative;
+    text-decoration: none;
+    color: black;
+}
+
+.Navbar-Header-Link.active-link::after {
+    content: "";
+    position: absolute;
+    left: 5%;
+    bottom: -5px;
+    width: 50%;
+    height: 2px;
+    background-color: #007BFF;
+}
+
+.Search-nav-logo {
+    display: flex;
+    width: 90px;
+    height: 34.66px;
+    border-right: 1px solid rgba(0, 0, 0, 1);
+}
+
+.Search-nav-login {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 20px;
+    padding: 20px 32px;
+}

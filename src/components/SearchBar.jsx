@@ -67,7 +67,7 @@ const SearchBar = ({ renderInputContainer, className }) => {
       const timeoutId = setTimeout(() => {
         setLoading(false);
         navigate("/search", { state: { data: [], searchTerm } });
-      }, 30000); // 30 seconds
+      }, 60000); // 30 seconds
 
       axios
         .post("http://13.127.207.184:80/query", { query: searchTerm })

@@ -339,22 +339,30 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
         const formattedStartDate = formatDate(startDate);
         const formattedEndDate = formatDate(endDate);
     
-        const requestBody = {
-          pmids: completePMID,
-          filter_type: "Custom Range",
-          from_date: formattedStartDate,
-          to_date: formattedEndDate,
-        };
-    
+        const pubmedArticles = completePMID.filter((id) => id.startsWith('PubMed_')).map((id) => parseInt(id.split('_')[1]));
+  const biorxivArticles = completePMID.filter((id) => id.startsWith('BioRxiv_')).map((id) => parseInt(id.split('_')[1]));
+  const plosArticles = completePMID.filter((id) => id.startsWith('Public Library of Science (PLOS)_')).map((id) => parseInt(id.split('_')[1]));
+    console.log(pubmedArticles)
+    console.log(completePMID)
+    const requestBody = {
+      pubmed_articles: pubmedArticles,
+      biorxiv_articles: biorxivArticles,
+      plos_articles: plosArticles,
+      filter_type: "Custom Range",
+      from_date: formattedStartDate,
+      to_date: formattedEndDate,
+    };
+    console.log(requestBody)
         const apiUrl = "http://13.127.207.184:80/filterdate";
         setLoading(true);
         axios
           .post(apiUrl, requestBody)
           .then((response) => {
+            console.log(response)
             const data = response.data;
             setResults(data);
             setLoading(false);
-
+            console.log(data)
             localStorage.setItem('publicationDate', JSON.stringify({
               selectedDateRange,
               customStartDate: startDate,
@@ -373,17 +381,24 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
     };
     const handleYearFilter = (selectedDateRange) => {
       const filterType = selectedDateRange === "5" ? "5 years" : "1 year";
-    
-      const requestBody = {
-        pmids: completePMID,
-        filter_type: filterType,
-      };
-    
+      console.log(completePMID)
+      const pubmedArticles = completePMID.filter((id) => id.startsWith('PubMed_')).map((id) => parseInt(id.split('_')[1]));
+  const biorxivArticles = completePMID.filter((id) => id.startsWith('BioRxiv_')).map((id) => parseInt(id.split('_')[1]));
+  const plosArticles = completePMID.filter((id) => id.startsWith('Public Library of Science (PLOS)_')).map((id) => parseInt(id.split('_')[1]));
+    console.log(pubmedArticles)
+  const requestBody = {
+    pubmed_articles: pubmedArticles,
+    biorxiv_articles: biorxivArticles,
+    plos_articles: plosArticles,
+    filter_type: filterType,
+  };
+      console.log(requestBody)
       const apiUrl = "http://13.127.207.184:80/filterdate";
       setLoading(true);
       axios
         .post(apiUrl, requestBody)
         .then((response) => {
+          console.log(response)
           const data = response.data;
           setResults(data);   
           setLoading(false);
@@ -483,19 +498,23 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
     setOpenAnnotate(false);
   }, []);
   const searchResults = useSelector((state) => state.search.searchResults);
-    useEffect(() => {
-      if (searchResults) {
-        // const parsedPmid = JSON.parse(searchResults);
-        // Flatten the nested arrays in 'articles'
-        // const allArticles = searchResults.articles.flat();  // This will merge all nested arrays into a single array
-    
-        // Extract the PMID list from the articles
-        const pmidList = searchResults.articles.map((article) => article.pmid);
-    
-        // Set the state with the flattened article list
-        setCompletePMID(pmidList);
-      }
-    }, [searchResults]);
+  console.log(searchResults)
+  useEffect(() => {
+    if (searchResults) {
+      const pmidList = searchResults.articles.map((article) => {
+        if (article.source === "BioRxiv") {
+          return `BioRxiv_${article.bioRxiv_id}`; // Include 'BioRxiv_' prefix to avoid confusion
+        } else if (article.source === "Public Library of Science (PLOS)") {
+          return `Public Library of Science (PLOS)_${article.plos_id}`; // Include 'PLOS_' prefix
+        } else {
+          return `PubMed_${article.pmid}`; // Include 'PubMed_' prefix
+        }
+      });
+      console.log(pmidList)
+      // Set the state with the flattened article list
+      setCompletePMID(pmidList);
+    }
+  }, [searchResults]);
   useEffect(() => {
     // Clear session storage for chatHistory when the location changes
     sessionStorage.removeItem("chatHistory");
@@ -503,7 +522,7 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
   const capitalizeFirstLetter = (text) => {
     return text.replace(/\b\w/g, (char) => char.toUpperCase());
   };
-  console.log(data)
+  // console.log(data)
   // Function to italicize the search term in the text
   const italicizeTerm = (text) => {
     if (!text) return "";
@@ -803,7 +822,7 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
                         checked={filters.articleType.includes(
                           "Books and Documents"
                         )}
-                        //FiltersComments// onChange={handleFilterChange}
+                        // onChange={handleFilterChange}//FiltersComments
                         //checked={isChecked} // Controlled checkbox state
                       />{" "}
                       Books & Documents
@@ -889,7 +908,7 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
           name="date"
           value="1"
           checked={selectedDateRange === '1'}
-         //FiltersComments // onChange={handleDateRangeChange}
+          onChange={handleDateRangeChange}//FiltersComments
         />{' '}
         1 year
       </label>
@@ -899,7 +918,7 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
           name="date"
           value="5"
           checked={selectedDateRange === '5'}
-          //FiltersComments // onChange={handleDateRangeChange}
+           onChange={handleDateRangeChange}//FiltersComments
         />{' '}
         5 years
       </label>
@@ -909,7 +928,7 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
           name="date"
           value="custom"
           checked={selectedDateRange === 'custom'}
-          //FiltersComments // onChange={handleDateRangeChange}
+          onChange={handleDateRangeChange}//FiltersComments 
         />{' '}
         Custom range
       </label>
@@ -924,7 +943,7 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
                 type="date"
                 name="startDate"
                 value={customStartDate}
-                //FiltersComments // onChange={handleCustomDateChange}
+                onChange={handleCustomDateChange}//FiltersComments 
               />
             </label>
           </div>
@@ -936,7 +955,7 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
                 type="date"
                 name="endDate"
                 value={customEndDate}
-                //FiltersComments // onChange={handleCustomDateChange}
+                onChange={handleCustomDateChange}//FiltersComments 
               />
             </label>
           </div>
@@ -1126,24 +1145,26 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
                   <div className="searchContent-articles" ref={contentRightRef}>
   <div className="searchresults-list">
   {paginatedArticles.map((result, index) => {
-  // Check if the similarity_score is available in the result or session storage
-  let similarityScore = result.similarity_score;
-    
-  // If similarity score is not present in the result, retrieve it from session storage
-  if (!similarityScore) {
-    const storedData = sessionStorage.getItem('ResultData');
-    if (storedData) {
-      const parsedData = JSON.parse(storedData);
-      const articles = parsedData.articles;
+  // Assuming you already have access to Redux searchResults
 
-      // Find the article with the matching pmid in session storage and get similarity score
-      articles.forEach((article) => {
-        if (article.pmid === result.pmid) {
-          similarityScore = article.similarity_score || 'N/A';
-        }
-      });
-    }
+
+// Assuming you already have access to Redux searchResult
+
+// Define the logic to get similarity_score from Redux (searchResults)
+let similarityScore = result.similarity_score;
+
+if (!similarityScore && searchResults) {
+  const articles = searchResults.articles;
+
+  // Find the article with the matching pmid in Redux store and get similarity score
+  const matchingArticle = articles.find((article) => article.pmid === result.pmid);
+
+  if (matchingArticle) {
+    similarityScore = matchingArticle.similarity_score || 'N/A'; // Get similarity_score or fallback to 'N/A'
   }
+}
+
+
   const idType = getIdType(result);
   // Safely handle abstract_content based on its type
   let abstractContent = '';
