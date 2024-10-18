@@ -72,7 +72,19 @@ const ArticlePage = () => {
   const [selectedText, setSelectedText] = useState("");
   const [editingPmid, setEditingPmid] = useState(null);
   const [editedTitle, setEditedTitle] = useState("");
-  const [bookmarkedPmids, setBookmarkedPmids] = useState({});
+  const [collections, setCollections] = useState(() => {
+    const storedCollections = JSON.parse(localStorage.getItem('collections')) || [];
+    return storedCollections;
+  });
+  const [currentIdType, setCurrentIdType] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newCollectionName, setNewCollectionName] = useState('');
+  console.log(collections)
+  const isBookmarked = (idType) => {
+    return collections.some((collection) =>
+      collection.articles.includes(idType)
+    );
+  };
   // const handleResize = (event) => {
   //   const newWidth = event.target.value; // Get the new width from user interaction
   //   setWidth1(newWidth);
@@ -123,12 +135,55 @@ const ArticlePage = () => {
       setShowPopup(false);
     }
   };
-  const handleBookmarkClick = (pmid) => {
-    setBookmarkedPmids((prevState) => ({
-      ...prevState,
-      [pmid]: !prevState[pmid], // Toggle the bookmark state for the specific pmid
-    }));
-    
+  const modalRef = useRef(null); // Ref for modal content
+
+  // Handle clicks outside the modal to close it
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (modalRef.current && !modalRef.current.contains(event.target)) {
+        setIsModalOpen(false); // Close modal if clicked outside
+      }
+    };
+
+    if (isModalOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside); // Clean up the event listener
+    };
+  }, [isModalOpen]);
+
+  const handleBookmarkClick = (idType) => {
+    setCurrentIdType(idType);
+    setIsModalOpen(true); // Open the modal for collection selection
+  };
+
+  const handleSaveToExisting = (collectionName) => {
+    const updatedCollections = collections.map((collection) => {
+      if (collection.name === collectionName) {
+        // Only add the idType if it doesn't already exist in the collection
+        if (!collection.articles.includes(currentIdType)) {
+          return { ...collection, articles: [...collection.articles, currentIdType] };
+        }
+      }
+      return collection;
+    });
+    setCollections(updatedCollections);
+    localStorage.setItem('collections', JSON.stringify(updatedCollections));
+    setIsModalOpen(false);
+  };
+  
+
+  const handleCreateNewCollection = () => {
+    const newCollection = { name: newCollectionName, articles: [currentIdType] };
+    const updatedCollections = [...collections, newCollection];
+    setCollections(updatedCollections);
+    localStorage.setItem('collections', JSON.stringify(updatedCollections));
+    setNewCollectionName('');
+    setIsModalOpen(false);
   };
  
   const handleSaveToNote = () => {
@@ -529,6 +584,8 @@ const ArticlePage = () => {
   
   const getHistoryTitles = () => {
     let storedHistory = JSON.parse(localStorage.getItem("history")) || {};
+    console.log(storedHistory)
+    console.log(typeof(storedHistory))
     // Return the stored history as an array of {pmid, title} objects
     return storedHistory;
   };
@@ -545,9 +602,9 @@ const ArticlePage = () => {
     const updatedHistory = getHistoryTitles().map((item) =>
       item.pmid === pmid ? { ...item, title: editedTitle } : item
     );
-
+    console.log(updatedHistory)
     // Save the updated history back to localStorage without changing the pmid
-    localStorage.setItem("history", updatedHistory);
+    localStorage.setItem("history", JSON.stringify(updatedHistory));
 
     // Reset the editing state
     setEditingPmid(null);
@@ -701,13 +758,57 @@ const ArticlePage = () => {
                   {articleData.article_title}
                 </p>
                 <FontAwesomeIcon
-                icon={regularBookmark}
-                size="l"
-            
-                style={{ color: bookmarkedPmids[id] ? 'blue' : 'black', cursor: 'pointer',width:"20px",height:"20px" }}
-                onClick={() => handleBookmarkClick(id)}
-                title={bookmarkedPmids[id] ? 'Bookmarked' : 'Bookmark this article'}
-              />
+                      icon={regularBookmark}
+                      size="l"
+                      style={{
+                        color: isBookmarked(id) ? 'blue' : 'black',
+                        cursor: 'pointer',
+                      }}
+                      onClick={() => handleBookmarkClick(id)}
+                      title={isBookmarked(id) ? 'Bookmarked' : 'Bookmark this article'}
+                    />
+
+                    {isModalOpen && (
+                        <div className="modal-overlay">
+                          <div className="modal-content" ref={modalRef}>
+                            <h3>Save Bookmark</h3>
+
+                            {/* Existing Collections */}
+                            {collections.length > 0 && (
+                              <>
+                                <h4>Save to existing collection:</h4>
+                                <ul>
+                                  {collections.map((collection) => (
+                                    <li key={collection.name}>
+                                      <button onClick={() => handleSaveToExisting(collection.name)}>
+                                        {collection.name}
+                                      </button>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </>
+                            )}
+
+                            {/* Create New Collection */}
+                            <h4>Create a new collection:</h4>
+                            <input
+                              type="text"
+                              value={newCollectionName}
+                              onChange={(e) => setNewCollectionName(e.target.value)}
+                              placeholder="New collection name"
+                            />
+                            <div style={{display:"flex",gap:"20px"}}>
+
+                            <button onClick={handleCreateNewCollection} disabled={!newCollectionName}>
+                              Create
+                            </button>
+
+                            <button onClick={() => setIsModalOpen(false)}>Cancel</button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
                 </div>
               </div>
 
