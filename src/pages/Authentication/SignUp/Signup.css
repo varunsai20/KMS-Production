@@ -1,0 +1,60 @@
+.signup-form-container {
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .progress-indicator {
+    width: 30%;
+    padding: 20px;
+  }
+  
+  .progress-indicator ul {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .progress-indicator ul li {
+    padding: 10px 0;
+    font-size: 18px;
+    color: gray;
+  }
+  
+  .progress-indicator ul li.active {
+    font-weight: bold;
+    color: blue;
+  }
+  
+  .form-content {
+    width: 60%;
+    padding: 20px;
+    background-color: white;
+  }
+  
+  input {
+    display: block;
+    width: 100%;
+    margin-bottom: 20px;
+    padding: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  .navigation-buttons {
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    background-color: blue;
+    color: white;
+    cursor: pointer;
+  }
+  
+  button.upload-btn {
+    background-color: #007bff;
+    margin-bottom: 20px;
+  }
+  

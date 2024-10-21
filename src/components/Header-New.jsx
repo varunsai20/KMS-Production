@@ -19,7 +19,7 @@ const Header = () => {
 
   // Handle login click (dummy login button)
   const handleLogin = () => {
-    dispatch(login({ username: "dummyUser" })); // Dispatch login action with a dummy username
+    navigate("/Login")
   };
 
   // Handle logout click
