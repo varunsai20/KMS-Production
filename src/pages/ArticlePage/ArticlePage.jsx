@@ -10,7 +10,7 @@ import ReactMarkdown from "react-markdown";
 import { CircularProgress } from "@mui/material";
 import { Autocomplete, InputAdornment, TextField } from "@mui/material";
 import Annotation from "../../components/Annotaions";
-import { faBookmark as regularBookmark } from '@fortawesome/free-regular-svg-icons';
+import { faBookmark as regularBookmark } from "@fortawesome/free-regular-svg-icons";
 
 import Button from "../../components/Buttons";
 //import edit from "../../assets/images/16px.svg";
@@ -41,7 +41,7 @@ const ArticlePage = () => {
   const [response, setResponse] = useState("");
   const [loading, setLoading] = useState(false);
   const annotateData = location.state.annotateData || { annotateData: [] };
-  console.log(annotateData)
+  console.log(annotateData);
   const endOfMessagesRef = useRef(null); // Ref to scroll to the last message
   const [chatHistory, setChatHistory] = useState(() => {
     const storedHistory = sessionStorage.getItem("chatHistory");
@@ -73,6 +73,8 @@ const ArticlePage = () => {
   const [editingPmid, setEditingPmid] = useState(null);
   const [editedTitle, setEditedTitle] = useState("");
   const [bookmarkedPmids, setBookmarkedPmids] = useState({});
+  const [savedText, setSavedText] = useState("");
+
   // const handleResize = (event) => {
   //   const newWidth = event.target.value; // Get the new width from user interaction
   //   setWidth1(newWidth);
@@ -114,36 +116,54 @@ const ArticlePage = () => {
     sessionStorage.setItem("ratingsList", JSON.stringify(updatedRatings));
   };
   const handleMouseUp = (event) => {
-    const selection = window.getSelection().toString().trim();
-    if (selection) {
-      setSelectedText(selection); // Store selected text
-      setPopupPosition({ x: event.pageX, y: event.pageY }); // Set popup position
-      setShowPopup(true); // Show the popup for saving the selection
+    const selection = window.getSelection();
+
+    if (selection.rangeCount > 0) {
+      const range = selection.getRangeAt(0); // Get the selected range
+      const rect = range.getBoundingClientRect(); // Get the bounding box of the selection
+      const selectedText = selection.toString().trim();
+      console.log("Type of selected text:", typeof selectedText);
+      if (selectedText) {
+        setSelectedText(selectedText); // Store selected text
+      }
+      setPopupPosition({
+        x: rect.left + window.scrollX, // Position popup at the selection's left edge
+        y: rect.top + window.scrollY, // Position popup at the selection's top edge
+      });
+      // setPopupPosition({ x: event.pageX, y: event.pageY });
+      setShowPopup(true);
     } else {
       setShowPopup(false);
     }
   };
+  console.log(selectedText);
+  console.log("openNotes", openNotes);
+
+  const handleSaveToNote = () => {
+    const textToSave = selectedText;
+    console.log(selectedText);
+
+    if (textToSave) {
+      console.log(textToSave);
+      setSavedText(textToSave);
+      setShowPopup(false);
+
+      if (!openNotes) {
+        setOpenNotes(true);
+      }
+      window.getSelection().removeAllRanges();
+    }
+  };
+
+  console.log("open Notes", openNotes);
+  console.log(typeof selectedText);
+
   const handleBookmarkClick = (pmid) => {
     setBookmarkedPmids((prevState) => ({
       ...prevState,
       [pmid]: !prevState[pmid], // Toggle the bookmark state for the specific pmid
     }));
-    
   };
- 
-  const handleSaveToNote = () => {
-
-    if (selectedText) {
-      setOpenNotes(true); // Open Notes when the "Save to Notes" button is clicked
-      setShowPopup(false); // Hide the popup
-    }
-  };
-  useEffect(() => {
-    if (selectedText && openNotes === true) {
-      setOpenNotes(true);
-    }
-  }, [selectedText]);
-
 
   const getIdType = () => {
     return `${source}_${id}`;
@@ -424,13 +444,15 @@ const ArticlePage = () => {
     if (!text) return text; // Return if the text is empty
     return text.charAt(0).toUpperCase() + text.slice(1);
   };
-  const MyMarkdownComponent = ({ markdownContent }) => {
+  const MyMarkdownComponent = ({ markdownContent, handleMouseUp }) => {
     return (
-      <ReactMarkdown
-        rehypePlugins={[rehypeRaw]} // Enables HTML parsing
-      >
-        {markdownContent}
-      </ReactMarkdown>
+      <div onMouseUp={handleMouseUp}>
+        <ReactMarkdown
+          rehypePlugins={[rehypeRaw]} // Enables HTML parsing
+        >
+          {markdownContent}
+        </ReactMarkdown>
+      </div>
     );
   };
 
@@ -438,13 +460,13 @@ const ArticlePage = () => {
     const sortedKeys = Object.keys(content).sort(
       (a, b) => parseInt(a) - parseInt(b)
     );
-  
+
     return sortedKeys.map((sectionKey) => {
       const sectionData = content[sectionKey];
-  
+
       // Remove numbers from the section key
       const cleanedSectionKey = sectionKey.replace(/^\d+[:.]?\s*/, "");
-  
+
       // Handle paragraphs
       if (cleanedSectionKey.toLowerCase() === "paragraph") {
         const textContent =
@@ -452,14 +474,18 @@ const ArticlePage = () => {
             ? sectionData
             : JSON.stringify(sectionData);
         const boldtextContent = boldTerm(textContent);
-  
+
         return (
-          <div key={sectionKey} style={{ marginBottom: "10px" }}>
+          <div
+            key={sectionKey}
+            style={{ marginBottom: "10px" }}
+            onMouseUp={handleMouseUp}
+          >
             <MyMarkdownComponent markdownContent={boldtextContent} />
           </div>
         );
       }
-  
+
       // Handle keywords
       if (cleanedSectionKey.toLowerCase() === "keywords") {
         let keywords = Array.isArray(sectionData)
@@ -467,7 +493,7 @@ const ArticlePage = () => {
           : sectionData;
         keywords = capitalizeFirstLetter(keywords);
         const boldKeywords = boldTerm(keywords);
-  
+
         return (
           <div key={sectionKey} style={{ marginBottom: "10px" }}>
             <Typography variant="h6" style={{ fontSize: "18px" }}>
@@ -477,13 +503,16 @@ const ArticlePage = () => {
           </div>
         );
       }
-  
+
       // Handle Images Section
       if (cleanedSectionKey.toLowerCase() === "images") {
         const imageEntries = Object.values(sectionData); // Extract image objects
-  
+
         return imageEntries.map((image, index) => (
-          <div key={index} style={{ marginBottom: "20px", textAlign: "center" }}>
+          <div
+            key={index}
+            style={{ marginBottom: "20px", textAlign: "center" }}
+          >
             <img
               src={image.image_url}
               alt={image.label || "Image"}
@@ -497,7 +526,7 @@ const ArticlePage = () => {
           </div>
         ));
       }
-  
+
       // Handle nested objects or other content
       if (typeof sectionData === "object") {
         return (
@@ -514,7 +543,7 @@ const ArticlePage = () => {
             ? sectionData
             : JSON.stringify(sectionData);
         const boldtextContent = boldTerm(textContent);
-  
+
         return (
           <div key={sectionKey} style={{ marginBottom: "10px" }}>
             <Typography variant="h6" style={{ fontSize: "18px" }}>
@@ -526,7 +555,7 @@ const ArticlePage = () => {
       }
     });
   };
-  
+
   const getHistoryTitles = () => {
     let storedHistory = JSON.parse(localStorage.getItem("history")) || {};
     // Return the stored history as an array of {pmid, title} objects
@@ -547,7 +576,7 @@ const ArticlePage = () => {
     );
 
     // Save the updated history back to localStorage without changing the pmid
-    localStorage.setItem("history", updatedHistory);
+    localStorage.setItem("history", JSON.stringify(updatedHistory));
 
     // Reset the editing state
     setEditingPmid(null);
@@ -652,7 +681,7 @@ const ArticlePage = () => {
               // value={searchWidth}
               // onChange={handleWidth}
             >
-              <div className="article-title">
+              <div className="article-title" onMouseUp={handleMouseUp}>
                 {/* <button
                     
                     alt="Arrow-left-icon"
@@ -696,22 +725,37 @@ const ArticlePage = () => {
                     </div>
                   </div>
                 </div>
-                <div className="ArticleTitle-Bookmark">      
-                <p  style={{ marginTop: "0", marginBottom: "0",  color: "#0071bc", fontSize: "20px", }} >
-                  {articleData.article_title}
-                </p>
-                <FontAwesomeIcon
-                icon={regularBookmark}
-                size="l"
-            
-                style={{ color: bookmarkedPmids[id] ? 'blue' : 'black', cursor: 'pointer',width:"20px",height:"20px" }}
-                onClick={() => handleBookmarkClick(id)}
-                title={bookmarkedPmids[id] ? 'Bookmarked' : 'Bookmark this article'}
-              />
+                <div className="ArticleTitle-Bookmark">
+                  <p
+                    style={{
+                      marginTop: "0",
+                      marginBottom: "0",
+                      color: "#0071bc",
+                      fontSize: "20px",
+                    }}
+                  >
+                    {articleData.article_title}
+                  </p>
+                  <FontAwesomeIcon
+                    icon={regularBookmark}
+                    size="l"
+                    style={{
+                      color: bookmarkedPmids[id] ? "blue" : "black",
+                      cursor: "pointer",
+                      width: "20px",
+                      height: "20px",
+                    }}
+                    onClick={() => handleBookmarkClick(id)}
+                    title={
+                      bookmarkedPmids[id]
+                        ? "Bookmarked"
+                        : "Bookmark this article"
+                    }
+                  />
                 </div>
               </div>
 
-              <div className="meta">
+              <div className="meta" onMouseUp={handleMouseUp}>
                 <div
                   style={{
                     display: "flex",
@@ -828,7 +872,7 @@ const ArticlePage = () => {
                 />
               </div>
             )}
-            {openNotes && <Notes selectedText={selectedText} />}
+            {openNotes && <Notes selectedText={savedText} />}
             <div className="icons-group">
               <div
                 className={`search-annotate-icon ${

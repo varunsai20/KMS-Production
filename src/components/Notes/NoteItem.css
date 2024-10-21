@@ -7,7 +7,8 @@
   flex-direction: column;
   gap: 0.5rem;
   cursor: pointer;
-  transition: all 300ms ease;
+  /* transition: all 300ms ease; */
+  transition: background-color 0.3s ease;
   color: var(--color-white);
 }
 
@@ -29,6 +30,14 @@
   color: black;
   text-align: start;
 }
+#details ul {
+  margin: 0 0 0 16px;
+  padding: 0;
+}
+#details ol {
+  margin: 0 0 0 16px;
+  padding: 0;
+}
 #date {
   font-size: 12px;
   margin: 0;
@@ -37,4 +46,93 @@
 }
 .detail-box {
   width: 100%;
+}
+/* Menu Button */
+.menu-button:hover {
+  color: #1a82ff; /* Change color on hover if desired */
+}
+
+/* Popup Menu */
+.popup-menu {
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Popup Menu Items */
+.popup-menu-item:hover {
+  background-color: #f0f0f0;
+}
+/* Confirmation Popup Overlay */
+.confirm-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1500; /* Higher than popup-menu */
+  border-radius: 10px; /* Match the NoteItem's border radius */
+}
+
+/* Confirmation Popup */
+.confirm-popup {
+  background-color: #fff;
+  padding: 20px 30px;
+  border-radius: 8px;
+  width: 80%;
+  max-width: 300px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  text-align: center;
+}
+
+.confirm-popup p {
+  margin-bottom: 20px;
+  font-size: 14px;
+  color: #333;
+}
+
+.confirm-buttons {
+  display: flex;
+  justify-content: space-around;
+}
+
+.confirm-delete-button,
+.confirm-keep-button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+}
+
+.confirm-delete-button {
+  background-color: #dc3545; /* Bootstrap's danger color */
+  color: #fff;
+}
+
+.confirm-delete-button:hover {
+  background-color: #c82333;
+}
+
+.confirm-keep-button {
+  background-color: #6c757d; /* Bootstrap's secondary color */
+  color: #fff;
+}
+
+.confirm-keep-button:hover {
+  background-color: #5a6268;
 }

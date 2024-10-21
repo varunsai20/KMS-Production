@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { IoIosArrowBack } from "react-icons/io";
-import { RiDeleteBin6Line } from "react-icons/ri";
+// import { RiDeleteBin6Line } from "react-icons/ri";
 import useCreateDate from "./UseCreateDate";
 import { FiBold } from "react-icons/fi";
 import { GoItalic } from "react-icons/go";
@@ -14,7 +14,14 @@ import "./EditNotes.css"; // Import CSS for styling
 const Editnotes = ({ note, setNotes, onClose }) => {
   const [title, setTitle] = useState(note.title);
   const [isPlaceholderVisible, setIsPlaceholderVisible] = useState(false);
-  const [activeFormats, setActiveFormats] = useState([]);
+  const [activeFormats, setActiveFormats] = useState({
+    bold: false,
+    italic: false,
+    underline: false,
+    strikeThrough: false,
+    orderedList: false,
+    unorderedList: false,
+  });
   const [shareMessage, setShareMessage] = useState(""); // State for feedback message
   const editorRef = useRef(null);
   const date = useCreateDate();
@@ -23,28 +30,52 @@ const Editnotes = ({ note, setNotes, onClose }) => {
     // Populate editor with note details and handle placeholder visibility
     if (note.details.trim() === "") {
       setIsPlaceholderVisible(true);
+      setTitle("");
     } else {
-      editorRef.current.innerHTML = note.details;
+      setIsPlaceholderVisible(false);
+      if (editorRef.current) {
+        editorRef.current.innerHTML = note.details;
+      }
     }
   }, [note.details]);
+
+  useEffect(() => {
+    const handleSelectionChange = () => {
+      if (!editorRef.current) return;
+
+      const selection = window.getSelection();
+      if (selection.rangeCount === 0) return;
+
+      const range = selection.getRangeAt(0);
+      if (!editorRef.current.contains(range.commonAncestorContainer)) return;
+
+      setActiveFormats({
+        bold: document.queryCommandState("bold"),
+        italic: document.queryCommandState("italic"),
+        underline: document.queryCommandState("underline"),
+        strikeThrough: document.queryCommandState("strikeThrough"),
+        orderedList: document.queryCommandState("insertOrderedList"),
+        unorderedList: document.queryCommandState("insertUnorderedList"),
+      });
+    };
+
+    document.addEventListener("selectionchange", handleSelectionChange);
+
+    return () => {
+      document.removeEventListener("selectionchange", handleSelectionChange);
+    };
+  }, []);
 
   const handleForm = (e) => {
     e.preventDefault();
     const updatedDetails = editorRef.current.innerHTML;
-    if (title && updatedDetails) {
+    if (title.trim() !== "" && updatedDetails.trim() !== "") {
       const updatedNote = { ...note, title, details: updatedDetails, date };
       setNotes((prevNotes) =>
         prevNotes.map((item) => (item.id === note.id ? updatedNote : item))
       );
       onClose();
     }
-  };
-
-  const handleDelete = () => {
-    const newNotesList = (prevNotes) =>
-      prevNotes.filter((item) => item.id !== note.id);
-    setNotes(newNotesList);
-    onClose();
   };
 
   const handleEditorClick = () => {
@@ -64,24 +95,31 @@ const Editnotes = ({ note, setNotes, onClose }) => {
 
   const handleFormat = (command) => {
     document.execCommand(command, false, null);
-    toggleActiveFormat(command);
 
-    // Add class for numbered list styling
+    // After executing the command, update the activeFormats state
+    setActiveFormats((prevFormats) => ({
+      ...prevFormats,
+      [command]: !prevFormats[command],
+    }));
+
+    // Special handling for lists to toggle between ordered and unordered
     if (command === "insertOrderedList") {
-      const orderedLists = editorRef.current.getElementsByTagName("ol");
-      for (let ol of orderedLists) {
-        ol.classList.add("custom-ordered-list");
-      }
+      setActiveFormats((prevFormats) => ({
+        ...prevFormats,
+        orderedList: !prevFormats.orderedList,
+        unorderedList: false, // Ensure only one list type is active
+      }));
+    }
+
+    if (command === "insertUnorderedList") {
+      setActiveFormats((prevFormats) => ({
+        ...prevFormats,
+        unorderedList: !prevFormats.unorderedList,
+        orderedList: false, // Ensure only one list type is active
+      }));
     }
   };
 
-  const toggleActiveFormat = (command) => {
-    setActiveFormats((prev) =>
-      prev.includes(command)
-        ? prev.filter((format) => format !== command)
-        : [...prev, command]
-    );
-  };
   const handleShare = () => {
     const noteDetails = editorRef.current.innerHTML;
     const noteTitle = title || "Untitled Note";
@@ -107,15 +145,23 @@ const Editnotes = ({ note, setNotes, onClose }) => {
   return (
     <section className="edit-note">
       <header className="edit-note__header">
-        <button className="edit-back-button" onClick={onClose}>
+        <button
+          className="edit-back-button"
+          onClick={onClose}
+          aria-label="Go Back"
+        >
           <IoIosArrowBack />
         </button>
-        <button className="edit-save-button" onClick={handleForm}>
+        <button
+          className="edit-save-button"
+          onClick={handleForm}
+          aria-label="Save Note"
+        >
           save
         </button>
-        <button className="edit-delete-button" onClick={handleDelete}>
+        {/* <button className="edit-delete-button" onClick={handleDelete}>
           <RiDeleteBin6Line />
-        </button>
+        </button> */}
       </header>
       <form className="edit-note__form" onSubmit={handleForm}>
         <input
@@ -133,15 +179,6 @@ const Editnotes = ({ note, setNotes, onClose }) => {
           suppressContentEditableWarning={true}
           onClick={handleEditorClick}
           onBlur={handleBlur}
-          style={{
-            // border: "1px solid #ccc",
-            padding: "10px",
-            minHeight: "150px",
-            marginBottom: "10px",
-            borderRadius: "5px",
-            fontSize: "14px",
-            textAlign: "start",
-          }}
         >
           {isPlaceholderVisible && "Take your note..."}
         </div>
@@ -152,69 +189,65 @@ const Editnotes = ({ note, setNotes, onClose }) => {
         <button
           onClick={() => handleFormat("bold")}
           title="Bold"
-          style={{
-            color: activeFormats.includes("bold") ? "blue" : "black",
-          }}
+          className={`toolbar-button ${activeFormats.bold ? "active" : ""}`}
+          aria-label="Bold"
         >
           <FiBold size={17} />
         </button>
         <button
           onClick={() => handleFormat("italic")}
           title="Italic"
-          style={{
-            color: activeFormats.includes("italic") ? "blue" : "black",
-          }}
+          className={`toolbar-button ${activeFormats.italic ? "active" : ""}`}
+          aria-label="Italic"
         >
           <GoItalic size={17} />
         </button>
         <button
           onClick={() => handleFormat("underline")}
           title="Underline"
-          style={{
-            color: activeFormats.includes("underline") ? "blue" : "black",
-          }}
+          className={`toolbar-button ${
+            activeFormats.underline ? "active" : ""
+          }`}
+          aria-label="Underline"
         >
           <FiUnderline size={17} />
         </button>
         <button
           onClick={() => handleFormat("strikeThrough")}
           title="Strikethrough"
-          style={{
-            color: activeFormats.includes("strikeThrough") ? "blue" : "black",
-          }}
+          className={`toolbar-button ${
+            activeFormats.strikeThrough ? "active" : ""
+          }`}
+          aria-label="Strikethrough"
         >
           <GoStrikethrough size={20} />
         </button>
         <button
           onClick={() => handleFormat("insertUnorderedList")}
           title="Bullets"
-          style={{
-            color: activeFormats.includes("insertUnorderedList")
-              ? "blue"
-              : "black",
-          }}
+          className={`toolbar-button ${
+            activeFormats.unorderedList ? "active" : ""
+          }`}
+          aria-label="Bulleted List"
         >
           <PiListBullets size={20} />
         </button>
         <button
           onClick={() => handleFormat("insertOrderedList")}
           title="Numbered List"
-          style={{
-            color: activeFormats.includes("insertOrderedList")
-              ? "blue"
-              : "black",
-          }}
+          className={`toolbar-button ${
+            activeFormats.orderedList ? "active" : ""
+          }`}
+          aria-label="Numbered List"
         >
           <BsListOl size={20} />
-          {/* You'll need to import this icon */}
         </button>
         {/* Share Button */}
         <button
           onClick={handleShare}
           title="Share"
-          style={{
-            color: shareMessage ? "green" : "black",
-          }}
+          className="share-button"
+          aria-label="Share Note"
         >
           <IoShareSocial size={20} />
         </button>
