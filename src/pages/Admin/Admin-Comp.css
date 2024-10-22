@@ -1,0 +1,165 @@
+.Admin-Admins {
+    width: -webkit-fill-available;
+    margin: 0 2%;
+    display: flex;
+    flex-direction: column;
+    height: 100vh; /* Set the container to take up the full viewport height */
+}
+.AdminsHeading{
+    width: fit-content;
+}
+.Manage-Admins{
+    display: flex;
+    justify-content: space-between;
+}
+.Manage-Admins-Input{
+    position: relative;
+    width: 25%;
+}
+.Manage-Admins input{
+    width: 100%;
+    padding: 13px 0 13px 30px;
+    gap: 10px;
+    border-radius: 38px;
+    border: 1px solid;
+opacity: 0px;
+}
+.Manage-Admins-Input img{
+    position: absolute;
+    top: 25%;
+    left: 2%;
+}
+.Create-Admins{
+    padding: 13px 16px 13px 16px;
+    gap: 10px;
+    border-radius: 33px;
+    opacity: 0px;
+
+}
+.Admins-List {
+    margin-top: 20px;
+    height: 60vh; /* Set a static height for the table container based on viewport */
+    overflow-y: auto; /* Allow vertical scrolling */
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    flex-grow: 1; /* Allow this section to take up the available space */
+    margin-bottom: 3%;
+}
+/* Table container */
+.custom-table {
+    width: 100%;
+    border-collapse: collapse;
+
+    font-family: Arial, sans-serif;
+  }
+  
+
+  
+  /* Table headers */
+  .custom-table thead {
+    position: sticky;
+    top: 0;
+    background-color: #f7f9fc;
+    z-index: 1; /* Ensure header stays above the table body */
+  }
+  
+  .custom-table th,
+  .custom-table td {
+    padding: 12px 15px;
+    text-align: left;
+    font-size: 14px;
+    color: #333;
+  }
+  
+  /* Table rows */
+  .custom-table tbody tr {
+    background-color: #fff;
+    border-bottom: 1px solid #e0e0e0;
+    transition: background-color 0.3s ease;
+  }
+  
+  .custom-table tbody tr:nth-child(even) {
+    background-color: #f7f7f7;
+  }
+  
+  /* Hover effect on rows */
+  .custom-table tbody tr:hover {
+    background-color: #e8efff;
+  }
+  
+/* Container for action dropdown */
+.action-dropdown {
+    position: relative;
+    display: inline-block;
+  }
+  
+  /* Action icon */
+  .action-icon {
+    cursor: pointer;
+    font-size: 18px;
+    color: #333;
+    text-align: right;
+    padding: 5px;
+  }
+  
+  /* Dropdown menu */
+  .dropdown-menu {
+    width: 125px;
+    position: absolute;
+    top: 25px;
+    right: 0;
+    background-color: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    padding: 10px;
+    list-style: none;
+    z-index: 100;
+  }
+  
+  /* Dropdown items */
+  .dropdown-item {
+    padding: 10px 15px;
+    cursor: pointer;
+    color: #333;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+  }
+  
+  .dropdown-item:hover {
+    background-color: #f0f0f0;
+  }
+  
+  .dropdown-item.delete {
+    color: red;
+  }
+  
+  .dropdown-item.delete:hover {
+    background-color: #ffe5e5;
+  }
+  
+  
+  /* Status indicators */
+  .status-indicator {
+    display: flex;
+    align-items: center;
+  }
+  
+  .status-indicator:before {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 8px;
+  }
+  
+  /* Active status */
+  .status-indicator.active:before {
+    background-color: green;
+  }
+  
+  /* Inactive status */
+  .status-indicator.inactive:before {
+    background-color: red;
+  }
+  

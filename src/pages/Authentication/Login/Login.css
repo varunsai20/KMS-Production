@@ -39,6 +39,16 @@
     transition: 0.2s ease-in-out;
   }
   
+  /* Error outline class for invalid inputs */
+  .error-outline {
+    border-color: red !important; /* Red outline for errors */
+  }
+  
+  /* Focus state for input form */
+  .inputForm:focus-within {
+    border: 1.5px solid #2d79f3;
+  }
+  
   .input {
     border-radius: 10px;
     border: none;
