@@ -6,7 +6,7 @@ import Editnotes from "../../components/Notes/EditNotes";
 //import "react-resizable/css/styles.css"; // Required for ResizableBox styles
 import "./Notes.css";
 
-const NotesManager = ({ selectedText }) => {
+const NotesManager = ({ selectedText, notesHeight }) => {
   const [notes, setNotes] = useState(
     JSON.parse(localStorage.getItem("notes")) || []
   );
@@ -85,6 +85,7 @@ const NotesManager = ({ selectedText }) => {
           selectedText={selectedText}
           setNotes={setNotes}
           onClose={handleCloseCreate}
+          notesHeight={notesHeight}
         />
       )}
       {currentView === "edit" && selectedNote && (
@@ -92,6 +93,7 @@ const NotesManager = ({ selectedText }) => {
           note={selectedNote}
           setNotes={setNotes}
           onClose={handleCloseEdit}
+          notesHeight={notesHeight}
         />
       )}
     </div>

@@ -17,7 +17,7 @@ import { CiMail } from "react-icons/ci";
 
 import "./CreateNote.css"; // Ensure you have the necessary CSS
 
-const Createnotes = ({ setNotes, onClose, selectedText }) => {
+const Createnotes = ({ setNotes, onClose, selectedText, notesHeight }) => {
   console.log(selectedText);
   const [title, setTitle] = useState("");
   const [isOpenDropdown, setIsOpenDropdown] = useState(false);
@@ -263,7 +263,11 @@ const Createnotes = ({ setNotes, onClose, selectedText }) => {
           />
         </div>
       </header>
-      <form className="create-note__form" onSubmit={handleSubmit}>
+      <form
+        className="create-note__form"
+        onSubmit={handleSubmit}
+        style={{ height: `${notesHeight - 13.5}vh` }}
+      >
         <input
           className="note-input"
           type="text"
@@ -283,12 +287,14 @@ const Createnotes = ({ setNotes, onClose, selectedText }) => {
           placeholder="Note details..."
           style={{
             padding: "10px",
-            minHeight: "150px",
             marginBottom: "4px",
             borderRadius: "5px",
             fontSize: "14px",
             textAlign: "start",
-            //border: "1px solid #ccc", // Added border for better visibility
+            // height: "auto",
+
+            overflowY: "auto",
+            //color: "skyblue",
           }}
         >
           {/* Placeholder logic can be enhanced if needed */}
@@ -391,14 +397,17 @@ const Createnotes = ({ setNotes, onClose, selectedText }) => {
                   required
                   className="modal-email-input"
                 /> */}
-                <button>
+
+                <button className="Email">
                   {/* ?<SiGmail size={50} /> */}
+                  Email:
                   <CiMail size={50} />
                 </button>
                 {/* <button className="modal-send-butt">
                 </button> */}
               </div>
-              <button onClick={handleCopy}>
+              <button onClick={handleCopy} className="copy">
+                Copy
                 <RxCopy size={50} />
               </button>
               {/* <button onClick={handleCopy} className="modal-copy-button">

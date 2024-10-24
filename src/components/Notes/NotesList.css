@@ -1,239 +1,78 @@
 .Notes-List {
-    width: 349px;
-    height: 70vh;
-    gap: 0px;
-    border-radius: 16px;
-    margi.Notes-List {
-      width: 349px;
-      height: 70vh;
-      gap: 0px;
-      border-radius: 16px;
-      margin: 0 1% 0 0;
-      overflow-y: auto;
-      opacity: 0px;
-      border: 1px solid rgba(235, 235, 243, 1);
-      /* background-color: rgba(235, 235, 243, 0.5); */
-    }
-    .plus-dots {
-      display: flex;
-      justify-content: space-between;
-      border-bottom: 1px solid rgba(235, 235, 243, 1);
-    }
-    .Notes-List-header {
-      display: grid;
-    }
-    .button-plus {
-      padding: 10px 0px 0px 10px;
-      color: #1a82ff;
-      font-size: 20px;
-    }
-    .dots {
-      padding: 15px 10px 0px 0px;
-      color: #1a82ff;
-    }
-    .p {
-      font-family: manrope;
-      font-size: 16px;
-      font-weight: 600;
-      color: #1a82ff;
-    }
-    /* .Notes-List-header p {
-      margin: 0 auto;
-      text-align: center;
-    } */
-    .Search-wrapper {
-      position: relative;
-      width: 100%; /* or desired width */
-      display: flex;
-      align-items: center;
-    }
-    
-    .Search-input {
-      width: 100%;
-      padding-left: 40px; /* Space for the icon */
-      height: 40px;
-      font-size: 16px;
-      border: 1px solid #ccc;
-      outline: none;
-      box-sizing: border-box;
-      margin: 1%;
-    }
-    
-    .Search-icon {
-      position: absolute;
-      left: 10px;
-      width: 20px; /* Adjust size */
-      height: 20px;
-      z-index: 1;
-    }
-    ::-webkit-scrollbar {
-      width: 5px; /* Width of the scrollbar */
-    }
-    
-    /* Track */
-    ::-webkit-scrollbar-track {
-      background: #f1f1f1; /* Background of the scrollbar track */
-      border-radius: 10px; /* Rounding the track corners */
-    }
-    
-    /* Handle */
-    ::-webkit-scrollbar-thumb {
-      background: #ccc; /* Color of the scrollbar handle */
-      border-radius: 20px; /* Rounding the handle corners */
-    }
-    .dropdown-container {
-      position: relative; /* Makes the popup position relative to this container */
-      display: inline-block;
-    }
-    
-    .dots {
-      background: none;
-      border: none;
-      cursor: pointer;
-    }
-    
-    .dots:hover {
-      opacity: 0.8;
-    }
-    
-    .dropdown-delete {
-      width: 100px;
-      position: absolute;
-      top: 40px; /* Adjust this value based on how far above the dots you want the popup */
-      left: -50%;
-      transform: translateX(
-        -50%
-      ); /* Centers the popup horizontally relative to the button */
-      background-color: white;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-      z-index: 999; /* Ensures it stays on top of other elements */
-    }
-    
-    .dropdown-button {
-      color: #1a82ff;
-      background: none;
-      border: none;
-      padding: 8px 12px;
-      cursor: pointer;
-      font-size: 14px;
-    }
-    
-    .dropdown-button:hover {
-      background-color: #f0f0f0;
-    }n: 0 1% 0 0;
-    overflow-y: auto;
-    opacity: 0px;
-    border: 1px solid rgba(235, 235, 243, 1);
-    /* background-color: rgba(235, 235, 243, 0.5); */
-  }
-  .plus-dots {
-    display: flex;
-    justify-content: space-between;
-    border-bottom: 1px solid rgba(235, 235, 243, 1);
-  }
-  .Notes-List-header {
-    display: grid;
-  }
-  .button-plus {
-    padding: 10px 0px 0px 10px;
-    color: #1a82ff;
-    font-size: 20px;
-  }
-  .dots {
-    padding: 15px 10px 0px 0px;
-    color: #1a82ff;
-  }
-  .p {
-    font-family: manrope;
-    font-size: 16px;
-    font-weight: 600;
-    color: #1a82ff;
-  }
-  /* .Notes-List-header p {
-    margin: 0 auto;
-    text-align: center;
-  } */
-  .Search-wrapper {
-    position: relative;
-    width: 100%; /* or desired width */
-    display: flex;
-    align-items: center;
-  }
-  
-  .Search-input {
-    width: 100%;
-    padding-left: 40px; /* Space for the icon */
-    height: 40px;
-    font-size: 16px;
-    border: 1px solid #ccc;
-    outline: none;
-    box-sizing: border-box;
-    margin: 1%;
-  }
-  
-  .Search-icon {
-    position: absolute;
-    left: 10px;
-    width: 20px; /* Adjust size */
-    height: 20px;
-    z-index: 1;
-  }
-  ::-webkit-scrollbar {
-    width: 5px; /* Width of the scrollbar */
-  }
-  
-  /* Track */
-  ::-webkit-scrollbar-track {
-    background: #f1f1f1; /* Background of the scrollbar track */
-    border-radius: 10px; /* Rounding the track corners */
-  }
-  
-  /* Handle */
-  ::-webkit-scrollbar-thumb {
-    background: #ccc; /* Color of the scrollbar handle */
-    border-radius: 20px; /* Rounding the handle corners */
-  }
-  .dropdown-container {
-    position: relative; /* Makes the popup position relative to this container */
-    display: inline-block;
-  }
-  
-  .dots {
-    background: none;
-    border: none;
-    cursor: pointer;
-  }
-  
-  .dots:hover {
-    opacity: 0.8;
-  }
-  
-  .dropdown-delete {
-    width: 100px;
-    position: absolute;
-    top: 40px; /* Adjust this value based on how far above the dots you want the popup */
-    left: -50%;
-    transform: translateX(
-      -50%
-    ); /* Centers the popup horizontally relative to the button */
-    background-color: white;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-    z-index: 999; /* Ensures it stays on top of other elements */
-  }
-  
-  .dropdown-button {
-    color: #1a82ff;
-    background: none;
-    border: none;
-    padding: 8px 12px;
-    cursor: pointer;
-    font-size: 14px;
-  }
-  
-  .dropdown-button:hover {
-    background-color: #f0f0f0;
-  }
+  border-radius: 16px;
+  margin: 0 1% 0 0;
+  overflow-y: auto;
+  opacity: 0px;
+  border: 1px solid rgba(235, 235, 243, 1);
+  /* background-color: rgba(235, 235, 243, 0.5); */
+}
+.plus-dots {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(235, 235, 243, 1);
+  margin: 0%;
+  padding: 0;
+}
+.button-plus {
+  color: #1a82ff;
+  font-size: 20px;
+}
+.Notes-List-header {
+  display: grid;
+}
+.dots {
+  padding: 15px 10px 0px 0px;
+  color: #1a82ff;
+}
+.p {
+  font-family: manrope;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a82ff;
+  margin: 2%;
+  padding: 0%;
+}
+#p {
+  margin: 0;
+  padding: 0;
+}
+.Search-wrapper {
+  position: relative;
+  width: 100%; /* or desired width */
+  display: flex;
+  align-items: center;
+}
+
+.Search-input {
+  width: 100%;
+  padding-left: 40px; /* Space for the icon */
+  height: 40px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  outline: none;
+  box-sizing: border-box;
+  margin: 1%;
+}
+
+.Search-icon {
+  position: absolute;
+  left: 10px;
+  width: 20px; /* Adjust size */
+  height: 20px;
+  z-index: 1;
+}
+::-webkit-scrollbar {
+  width: 5px; /* Width of the scrollbar */
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #f1f1f1; /* Background of the scrollbar track */
+  border-radius: 10px; /* Rounding the track corners */
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #ccc; /* Color of the scrollbar handle */
+  border-radius: 20px; /* Rounding the handle corners */
+}

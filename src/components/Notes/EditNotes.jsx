@@ -11,7 +11,7 @@ import { BsListOl } from "react-icons/bs";
 import { IoShareSocial } from "react-icons/io5";
 import "./EditNotes.css"; // Import CSS for styling
 
-const Editnotes = ({ note, setNotes, onClose }) => {
+const Editnotes = ({ note, setNotes, onClose, notesHeight }) => {
   const [title, setTitle] = useState(note.title);
   const [isPlaceholderVisible, setIsPlaceholderVisible] = useState(false);
   const [activeFormats, setActiveFormats] = useState({
@@ -141,6 +141,7 @@ const Editnotes = ({ note, setNotes, onClose }) => {
       }
     );
   };
+  console.log(notesHeight);
 
   return (
     <section className="edit-note">
@@ -163,7 +164,11 @@ const Editnotes = ({ note, setNotes, onClose }) => {
           <RiDeleteBin6Line />
         </button> */}
       </header>
-      <form className="edit-note__form" onSubmit={handleForm}>
+      <form
+        className="edit-note__form"
+        onSubmit={handleForm}
+        style={{ height: `${notesHeight - 14}vh` }}
+      >
         <input
           type="text"
           placeholder="Title"

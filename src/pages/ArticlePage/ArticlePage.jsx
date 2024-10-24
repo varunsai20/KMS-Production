@@ -8,41 +8,36 @@ import annotate from "../../assets/images/task-square.svg";
 import { useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import { CircularProgress } from "@mui/material";
-import { Autocomplete, InputAdornment, TextField } from "@mui/material";
+import { TextField } from "@mui/material";
 import Annotation from "../../components/Annotaions";
 import { faBookmark as regularBookmark } from "@fortawesome/free-regular-svg-icons";
-
-import Button from "../../components/Buttons";
-//import edit from "../../assets/images/16px.svg";
-//import annotate from "../../assets/images/task-square.svg";
+//import Button from "../../components/Buttons";
 import notesicon from "../../assets/images/note-2.svg";
 import rehypeRaw from "rehype-raw";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-//import sendicon from "../../assets/images/sendicon.svg";
 import { faTelegram } from "@fortawesome/free-brands-svg-icons";
 import { faPen } from "@fortawesome/free-solid-svg-icons";
 import { faAnglesUp } from "@fortawesome/free-solid-svg-icons";
-//import { TextContext } from "../../components/Notes/TextProvider";
 import { IoSaveOutline } from "react-icons/io5";
+import { BsSend } from "react-icons/bs";
 import Notes from "../NotesPage/Notes";
+
 const ArticlePage = () => {
   const { pmid } = useParams();
   const [type, id1] = pmid.split(":");
   const id = Number(id1);
   const [source, setSource] = useState();
-
   const location = useLocation();
   const { data } = location.state || { data: [] };
-
   const [searchTerm, setSearchTerm] = useState("");
   const [articleData, setArticleData] = useState(null);
   const navigate = useNavigate();
-  const [query, setQuery] = useState(""); // Initialize with empty string
+  const [query, setQuery] = useState("");
   const [response, setResponse] = useState("");
   const [loading, setLoading] = useState(false);
   const annotateData = location.state.annotateData || { annotateData: [] };
   console.log(annotateData);
-  const endOfMessagesRef = useRef(null); // Ref to scroll to the last message
+  const endOfMessagesRef = useRef(null);
   const [chatHistory, setChatHistory] = useState(() => {
     const storedHistory = sessionStorage.getItem("chatHistory");
     return storedHistory ? JSON.parse(storedHistory) : [];
@@ -67,20 +62,21 @@ const ArticlePage = () => {
     return JSON.parse(sessionStorage.getItem("ratingsList")) || [];
   });
   const [triggerAskClick, setTriggerAskClick] = useState(false);
-  const [showPopup, setShowPopup] = useState(false);
-  const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
-  const [selectedText, setSelectedText] = useState("");
+  //const [showPopup, setShowPopup] = useState(false);
+  //const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
+  //const [selectedText, setSelectedText] = useState("");
   const [editingPmid, setEditingPmid] = useState(null);
   const [editedTitle, setEditedTitle] = useState("");
 
   const [collections, setCollections] = useState(() => {
-    const storedCollections = JSON.parse(localStorage.getItem('collections')) || [];
+    const storedCollections =
+      JSON.parse(localStorage.getItem("collections")) || [];
     return storedCollections;
   });
   const [currentIdType, setCurrentIdType] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [newCollectionName, setNewCollectionName] = useState('');
-  console.log(collections)
+  const [newCollectionName, setNewCollectionName] = useState("");
+  console.log(collections);
   const isBookmarked = (idType) => {
     return collections.some((collection) =>
       collection.articles.includes(idType)
@@ -89,7 +85,71 @@ const ArticlePage = () => {
 
   const [bookmarkedPmids, setBookmarkedPmids] = useState({});
   const [savedText, setSavedText] = useState("");
+  const selectedTextRef = useRef(""); // Store selected text
+  const popupRef = useRef(null); // Reference to the popup button
+  const popupPositionRef = useRef({ x: 0, y: 0 }); // Store popup position
+  //const selectedTextRef = useRef("");
+  //const popupPositionRef = useRef({ x: 0, y: 0 });
 
+  const [annotateHeight, setAnnotateHeight] = useState(35); // initial height of annotate in vh
+  const [notesHeight, setNotesHeight] = useState(35); // initial height of notes in vh
+  const minHeight = 15; // minimum height in vh
+  const maxHeight = 60; // maximum height in vh
+
+  // Handle mouse drag for annotate (bottom border)
+  const handleAnnotateResize = (e) => {
+    e.preventDefault();
+    const startY = e.clientY;
+    const startHeight = annotateHeight;
+
+    const onMouseMove = (moveEvent) => {
+      const delta = ((moveEvent.clientY - startY) / window.innerHeight) * 100;
+      const newAnnotateHeight = Math.max(
+        minHeight,
+        Math.min(maxHeight, startHeight + delta)
+      );
+      const newNotesHeight = 70 - newAnnotateHeight; // adjust notes height dynamically
+
+      setAnnotateHeight(newAnnotateHeight);
+      setNotesHeight(newNotesHeight);
+    };
+
+    const onMouseUp = () => {
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
+    };
+
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
+  };
+
+  // Handle mouse drag for notes (top border)
+  const handleNotesResize = (e) => {
+    e.preventDefault();
+    const startY = e.clientY;
+    const startHeight = notesHeight;
+
+    const onMouseMove = (moveEvent) => {
+      const delta = ((startY - moveEvent.clientY) / window.innerHeight) * 100;
+      const newNotesHeight = Math.max(
+        minHeight,
+        Math.min(maxHeight, startHeight + delta)
+      );
+      //const newAnnotateHeight = 70 - newNotesHeight; // adjust annotate height dynamically
+      const newAnnotateHeight = Math.max(minHeight, 70 - newNotesHeight); // ensure annotateHeight is at least minHeight
+
+      setNotesHeight(newNotesHeight);
+      setAnnotateHeight(newAnnotateHeight);
+    };
+
+    const onMouseUp = () => {
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
+    };
+
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
+  };
 
   // const handleResize = (event) => {
   //   const newWidth = event.target.value; // Get the new width from user interaction
@@ -131,25 +191,85 @@ const ArticlePage = () => {
     setRatingsList(updatedRatings);
     sessionStorage.setItem("ratingsList", JSON.stringify(updatedRatings));
   };
+  // const handleMouseUp = (event) => {
+  //   const selection = window.getSelection();
+
+  //   if (selection.rangeCount > 0) {
+  //     const range = selection.getRangeAt(0);
+  //     const rect = range.getBoundingClientRect();
+  //     const selectedText = selection.toString().trim();
+  //     console.log("Type of selected text:", typeof selectedText);
+  //     if (selectedText) {
+  //       setSelectedText(selectedText);
+  //     }
+  //     setPopupPosition({
+  //       x: rect.left + window.scrollX,
+  //       y: rect.top + window.scrollY,
+  //     });
+  //     // setPopupPosition({ x: event.pageX, y: event.pageY });
+  //     setShowPopup(true);
+  //   } else {
+  //     setShowPopup(false);
+  //   }
+  // };
+  // const handleMouseUp = (event) => {
+  //   const selection = window.getSelection();
+
+  //   if (selection.rangeCount > 0) {
+  //     const range = selection.getRangeAt(0);
+  //     const selectedText = selection.toString().trim();
+
+  //     if (selectedText) {
+  //       const rect = range.getBoundingClientRect();
+  //       selectedTextRef.current = selectedText; // Store selected text in ref
+  //       popupPositionRef.current = {
+  //         x: rect.left + window.scrollX,
+  //         y: rect.top + window.scrollY,
+  //       };
+
+  //       // Position the popup without triggering re-render
+  //       if (popupRef.current) {
+  //         popupRef.current.style.left = `${popupPositionRef.current.x}px`;
+  //         popupRef.current.style.top = `${popupPositionRef.current.y + 20}px`;
+  //         popupRef.current.style.display = "block"; // Show the popup
+  //       }
+  //     } else {
+  //       if (popupRef.current) {
+  //         popupRef.current.style.display = "none"; // Hide the popup if no selection
+  //       }
+  //     }
+  //   }
+  // };
+
+  //console.log(selectedText);
   const handleMouseUp = (event) => {
     const selection = window.getSelection();
 
     if (selection.rangeCount > 0) {
-      const range = selection.getRangeAt(0); // Get the selected range
-      const rect = range.getBoundingClientRect(); // Get the bounding box of the selection
+      const range = selection.getRangeAt(0);
       const selectedText = selection.toString().trim();
-      console.log("Type of selected text:", typeof selectedText);
+
       if (selectedText) {
-        setSelectedText(selectedText); // Store selected text
+        const rect = range.getClientRects();
+        const lastRect = rect[rect.length - 1];
+
+        selectedTextRef.current = selectedText;
+        popupPositionRef.current = {
+          x: lastRect.right + window.scrollX,
+          y: lastRect.bottom + window.scrollY,
+        };
+
+        // Position the popup without triggering re-render
+        if (popupRef.current) {
+          popupRef.current.style.left = `${popupPositionRef.current.x}px`;
+          popupRef.current.style.top = `${popupPositionRef.current.y + 5}px`; // Adjust offset for better visibility
+          popupRef.current.style.display = "block"; // Show the popup
+        }
+      } else {
+        if (popupRef.current) {
+          popupRef.current.style.display = "none"; // Hide the popup if no selection
+        }
       }
-      setPopupPosition({
-        x: rect.left + window.scrollX, // Position popup at the selection's left edge
-        y: rect.top + window.scrollY, // Position popup at the selection's top edge
-      });
-      // setPopupPosition({ x: event.pageX, y: event.pageY });
-      setShowPopup(true);
-    } else {
-      setShowPopup(false);
     }
   };
 
@@ -184,44 +304,73 @@ const ArticlePage = () => {
       if (collection.name === collectionName) {
         // Only add the idType if it doesn't already exist in the collection
         if (!collection.articles.includes(currentIdType)) {
-          return { ...collection, articles: [...collection.articles, currentIdType] };
+          return {
+            ...collection,
+            articles: [...collection.articles, currentIdType],
+          };
         }
       }
       return collection;
     });
     setCollections(updatedCollections);
-    localStorage.setItem('collections', JSON.stringify(updatedCollections));
+    localStorage.setItem("collections", JSON.stringify(updatedCollections));
     setIsModalOpen(false);
   };
-  
 
   const handleCreateNewCollection = () => {
-    const newCollection = { name: newCollectionName, articles: [currentIdType] };
+    const newCollection = {
+      name: newCollectionName,
+      articles: [currentIdType],
+    };
     const updatedCollections = [...collections, newCollection];
     setCollections(updatedCollections);
-    localStorage.setItem('collections', JSON.stringify(updatedCollections));
-    setNewCollectionName('');
+    localStorage.setItem("collections", JSON.stringify(updatedCollections));
+    setNewCollectionName("");
     setIsModalOpen(false);
-  }
+  };
 
   console.log(selectedText);
   console.log("openNotes", openNotes);
 
   const handleSaveToNote = () => {
-    const textToSave = selectedText;
-    console.log(selectedText);
-
+    const textToSave = selectedTextRef.current; // Get the selected text from ref
     if (textToSave) {
-      console.log(textToSave);
+      console.log("Text to save:", textToSave);
       setSavedText(textToSave);
-      setShowPopup(false);
+      // You can save the text to notes or perform any other action here.
+    }
+    if (!openNotes) {
+      setOpenNotes(true);
+    }
 
-      if (!openNotes) {
-        setOpenNotes(true);
-      }
-      window.getSelection().removeAllRanges();
+    // Hide the popup after saving
+    if (popupRef.current) {
+      popupRef.current.style.display = "none";
     }
   };
+  useEffect(() => {
+    document.addEventListener("mouseup", handleMouseUp);
+
+    return () => {
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, []);
+
+  // const handleSaveToNote = () => {
+  //   const textToSave = selectedText;
+  //   console.log(selectedText);
+
+  //   if (textToSave) {
+  //     console.log(textToSave);
+  //     setSavedText(textToSave);
+  //     setShowPopup(false);
+
+  //     if (!openNotes) {
+  //       setOpenNotes(true);
+  //     }
+  //     window.getSelection().removeAllRanges();
+  //   }
+  // };
 
   console.log("open Notes", openNotes);
   console.log(typeof selectedText);
@@ -229,9 +378,8 @@ const ArticlePage = () => {
   const handleBookmarkClick = (pmid) => {
     setBookmarkedPmids((prevState) => ({
       ...prevState,
-      [pmid]: !prevState[pmid], // Toggle the bookmark state for the specific pmid
+      [pmid]: !prevState[pmid],
     }));
-
   };
 
   const getIdType = () => {
@@ -485,26 +633,33 @@ const ArticlePage = () => {
   //   //const newWidth = parseInt(event.target.value);
   //   setSearchWidth(newWidth);
   // };
+  // const handleAnnotate = () => {
+  //   if (openAnnotate) {
+  //     setOpenAnnotate(false);
+  //   } else {
+  //     setOpenAnnotate(true);
+  //     setOpenNotes(false);
+  //   }
+  // };
+  // const handleNotes = () => {
+  //   if (openNotes) {
+  //     setOpenNotes(false);
+  //   } else {
+  //     setOpenAnnotate(false);
+  //     setOpenNotes(true);
+  //   }
+  // };
   const handleAnnotate = () => {
-    if (openAnnotate) {
-      setOpenAnnotate(false);
-    } else {
-      setOpenAnnotate(true);
-      setOpenNotes(false);
-    }
+    setOpenAnnotate((prevOpenAnnotate) => !prevOpenAnnotate); // Toggle annotate
+    // No need to close Notes when Annotate is toggled
   };
-  const handleNotes = () => {
-    if (openNotes) {
-      setOpenNotes(false);
-    } else {
-      setOpenAnnotate(false);
-      setOpenNotes(true);
-    }
-  };
-  // Dynamically render the nested content in order, removing numbers, and using keys as side headings
-  // Dynamically render the nested content in order, removing numbers, and using keys as side headings
 
-  // Helper function to capitalize the first letter of each word
+  const handleNotes = () => {
+    setOpenNotes((prevOpenNotes) => !prevOpenNotes); // Toggle notes
+    // No need to close Annotate when Notes is toggled
+  };
+
+  // Dynamically render the nested content in order, removing numbers, and using keys as side headings
   // Helper function to capitalize the first letter of each word
   const capitalizeFirstLetter = (text) => {
     return text.replace(/\b\w/g, (char) => char.toUpperCase());
@@ -548,7 +703,7 @@ const ArticlePage = () => {
           <div
             key={sectionKey}
             style={{ marginBottom: "10px" }}
-            onMouseUp={handleMouseUp}
+            //onMouseUp={handleMouseUp}
           >
             <MyMarkdownComponent markdownContent={boldtextContent} />
           </div>
@@ -627,8 +782,8 @@ const ArticlePage = () => {
 
   const getHistoryTitles = () => {
     let storedHistory = JSON.parse(localStorage.getItem("history")) || {};
-    console.log(storedHistory)
-    console.log(typeof(storedHistory))
+    console.log(storedHistory);
+    console.log(typeof storedHistory);
     // Return the stored history as an array of {pmid, title} objects
     return storedHistory;
   };
@@ -645,7 +800,7 @@ const ArticlePage = () => {
     const updatedHistory = getHistoryTitles().map((item) =>
       item.pmid === pmid ? { ...item, title: editedTitle } : item
     );
-    console.log(updatedHistory)
+    console.log(updatedHistory);
     // Save the updated history back to localStorage without changing the pmid
     localStorage.setItem("history", JSON.stringify(updatedHistory));
 
@@ -752,7 +907,7 @@ const ArticlePage = () => {
               // value={searchWidth}
               // onChange={handleWidth}
             >
-              <div className="article-title" onMouseUp={handleMouseUp}>
+              <div className="article-title">
                 {/* <button
                     
                     alt="Arrow-left-icon"
@@ -769,7 +924,11 @@ const ArticlePage = () => {
                   }}
                 >
                   <div style={{ display: "flex" }} onClick={handleBackClick}>
-                    <img src={Arrow} style={{ width: "14px" }}></img>
+                    <img
+                      src={Arrow}
+                      style={{ width: "14px" }}
+                      alt="arrow-icon"
+                    ></img>
                     <button className="back-button">Back</button>
                   </div>
                   <div className="Rate-Article">
@@ -797,68 +956,82 @@ const ArticlePage = () => {
                   </div>
                 </div>
 
-                <div className="ArticleTitle-Bookmark">      
-                <p  style={{ marginTop: "0", marginBottom: "0",  color: "#0071bc", fontSize: "20px", }} >
-                  {articleData.article_title}
-                </p>
-                <FontAwesomeIcon
-                      icon={regularBookmark}
-                      size="l"
-                      style={{
-                        color: isBookmarked(id) ? 'blue' : 'black',
-                        cursor: 'pointer',
-                      }}
-                      onClick={() => handleBookmarkClick(id)}
-                      title={isBookmarked(id) ? 'Bookmarked' : 'Bookmark this article'}
-                    />
+                <div className="ArticleTitle-Bookmark">
+                  <p
+                    style={{
+                      marginTop: "0",
+                      marginBottom: "0",
+                      color: "#0071bc",
+                      fontSize: "20px",
+                    }}
+                  >
+                    {articleData.article_title}
+                  </p>
+                  <FontAwesomeIcon
+                    icon={regularBookmark}
+                    size="l"
+                    style={{
+                      color: isBookmarked(id) ? "blue" : "black",
+                      cursor: "pointer",
+                    }}
+                    onClick={() => handleBookmarkClick(id)}
+                    title={
+                      isBookmarked(id) ? "Bookmarked" : "Bookmark this article"
+                    }
+                  />
 
-                    {isModalOpen && (
-                        <div className="modal-overlay">
-                          <div className="modal-content" ref={modalRef}>
-                            <h3>Save Bookmark</h3>
+                  {isModalOpen && (
+                    <div className="modal-overlay">
+                      <div className="modal-content" ref={modalRef}>
+                        <h3>Save Bookmark</h3>
 
-                            {/* Existing Collections */}
-                            {collections.length > 0 && (
-                              <>
-                                <h4>Save to existing collection:</h4>
-                                <ul>
-                                  {collections.map((collection) => (
-                                    <li key={collection.name}>
-                                      <button onClick={() => handleSaveToExisting(collection.name)}>
-                                        {collection.name}
-                                      </button>
-                                    </li>
-                                  ))}
-                                </ul>
-                              </>
-                            )}
+                        {/* Existing Collections */}
+                        {collections.length > 0 && (
+                          <>
+                            <h4>Save to existing collection:</h4>
+                            <ul>
+                              {collections.map((collection) => (
+                                <li key={collection.name}>
+                                  <button
+                                    onClick={() =>
+                                      handleSaveToExisting(collection.name)
+                                    }
+                                  >
+                                    {collection.name}
+                                  </button>
+                                </li>
+                              ))}
+                            </ul>
+                          </>
+                        )}
 
-                            {/* Create New Collection */}
-                            <h4>Create a new collection:</h4>
-                            <input
-                              type="text"
-                              value={newCollectionName}
-                              onChange={(e) => setNewCollectionName(e.target.value)}
-                              placeholder="New collection name"
-                            />
-                            <div style={{display:"flex",gap:"20px"}}>
+                        {/* Create New Collection */}
+                        <h4>Create a new collection:</h4>
+                        <input
+                          type="text"
+                          value={newCollectionName}
+                          onChange={(e) => setNewCollectionName(e.target.value)}
+                          placeholder="New collection name"
+                        />
+                        <div style={{ display: "flex", gap: "20px" }}>
+                          <button
+                            onClick={handleCreateNewCollection}
+                            disabled={!newCollectionName}
+                          >
+                            Create
+                          </button>
 
-                            <button onClick={handleCreateNewCollection} disabled={!newCollectionName}>
-                              Create
-                            </button>
-
-                            <button onClick={() => setIsModalOpen(false)}>Cancel</button>
-                            </div>
-                          </div>
+                          <button onClick={() => setIsModalOpen(false)}>
+                            Cancel
+                          </button>
                         </div>
-                      )}
-
-
-
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
-              <div className="meta" onMouseUp={handleMouseUp}>
+              <div className="meta">
                 <div
                   style={{
                     display: "flex",
@@ -894,9 +1067,9 @@ const ArticlePage = () => {
                     >
                       Abstract
                     </Typography>
-                    <div onMouseUp={handleMouseUp}>
+                    <p>
                       {renderContentInOrder(articleData.abstract_content, true)}
-                    </div>
+                    </p>
                   </>
                 )}
                 {/* <div className="content-brake"></div>  */}
@@ -937,7 +1110,32 @@ const ArticlePage = () => {
                     </div>
                   </div>
                 )}
-                {showPopup && (
+                <div
+                  ref={popupRef}
+                  className="popup-button"
+                  // className="Popup"
+                  style={{
+                    position: "absolute",
+                    display: "none", // Initially hidden
+                    backgroundColor: "#1A82ff",
+                    // padding: "5px",
+                    color: "white",
+                    borderRadius: "5px",
+                    cursor: "pointer",
+                  }}
+                  //onClick={handleSaveToNote}
+                >
+                  <button onClick={handleSaveToNote} className="Popup-buttons">
+                    <div className="save-icon">
+                      {/* <IoSaveOutline fontSize={"15px"} color="black" /> */}
+                      <BsSend size={20} color="white" title="Send to Notes" />
+                    </div>
+                    {/* <span style={{ color: "black", fontSize: "17px" }}>
+                      send to notes
+                    </span> */}
+                  </button>
+                </div>
+                {/* {showPopup && (
                   <div
                     className="Popup"
                     style={{
@@ -953,11 +1151,15 @@ const ArticlePage = () => {
                       onClick={handleSaveToNote}
                       className="Popup-buttons"
                     >
-                      <IoSaveOutline fontSize={"20px"} color="#1A82ff" />
-                      <span style={{ color: "#1A82FF" }}>Save to notes</span>
+                      <div className="save-icon">
+                        <IoSaveOutline fontSize={"20px"} color="#1A82ff" />
+                      </div>
+                      <span style={{ color: "#1A82FF", fontSize: "20px" }}>
+                        Save to notes
+                      </span>
                     </button>
                   </div>
-                )}
+                )} */}
               </div>
             </div>
           ) : (
@@ -967,15 +1169,43 @@ const ArticlePage = () => {
           )}
 
           <div className="right-aside">
-            {openAnnotate && (
-              <div className="search-annotate">
-                <Annotation
-                  openAnnotate={openAnnotate}
-                  annotateData={annotateData}
-                />
-              </div>
-            )}
-            {openNotes && <Notes selectedText={savedText} />}
+            <div className="annotate-note">
+              {openAnnotate && (
+                <div
+                  className="annotate-height"
+                  style={{
+                    height: `${annotateHeight}vh`,
+                  }}
+                >
+                  <Annotation
+                    openAnnotate={openAnnotate}
+                    annotateData={annotateData}
+                    annotateHeight={annotateHeight}
+                  />
+                  {/* <div
+                    className="annotate-line1"
+                    
+                  /> */}
+                  <div
+                    className="annotate-line2"
+                    onMouseDown={handleAnnotateResize}
+                  />
+                </div>
+              )}
+              {openNotes && (
+                <div
+                  className="notes-height"
+                  style={{ height: `${notesHeight}vh` }}
+                >
+                  <Notes selectedText={savedText} notesHeight={notesHeight} />
+                  <div className="notes-line1" />
+                  <div
+                    className="notes-line2"
+                    onMouseDown={handleNotesResize}
+                  />
+                </div>
+              )}
+            </div>
             <div className="icons-group">
               <div
                 className={`search-annotate-icon ${
