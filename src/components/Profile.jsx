@@ -93,9 +93,7 @@ const Profile = () => {
     
               {/* Action Buttons */}
               <div className="form-actions">
-                {/* <button type="button" className="cancel-button" onClick={handleBackClick}>
-                  Cancel
-                </button> */}
+
                 <button type="submit" className="create-button">
                   Continue
                 </button>

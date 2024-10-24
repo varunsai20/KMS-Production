@@ -329,7 +329,6 @@ const ArticlePage = () => {
     setIsModalOpen(false);
   };
 
-  console.log(selectedText);
   console.log("openNotes", openNotes);
 
   const handleSaveToNote = () => {
@@ -375,12 +374,7 @@ const ArticlePage = () => {
   console.log("open Notes", openNotes);
   console.log(typeof selectedText);
 
-  const handleBookmarkClick = (pmid) => {
-    setBookmarkedPmids((prevState) => ({
-      ...prevState,
-      [pmid]: !prevState[pmid],
-    }));
-  };
+
 
   const getIdType = () => {
     return `${source}_${id}`;
@@ -981,7 +975,7 @@ const ArticlePage = () => {
                   />
 
                   {isModalOpen && (
-                    <div className="modal-overlay">
+                    <div className="bookmark-modal-overlay">
                       <div className="modal-content" ref={modalRef}>
                         <h3>Save Bookmark</h3>
 

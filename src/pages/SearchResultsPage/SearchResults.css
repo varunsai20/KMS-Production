@@ -477,7 +477,7 @@ button {
   overflow: hidden; /* Prevent background scrolling when modal is open */
 }
 
-.modal-overlay {
+.bookmark-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
