@@ -882,9 +882,35 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   return (
     <div className="Container" ref={contentRightRef}>
       <div
-        style={{ position: "sticky", top: 0, zIndex: 1, background: "white" }}
+        style={{ position: "sticky", top: 0, zIndex: 1, background: "white",margin:".5% 0 1% 0" }}
       >
-        <Header className="searchResults-Header" />
+        <header className="search-header">
+          <div className="search-header-logo" style={{ margin: "20px 0" }}>
+            <a href="/">
+              <img
+                href="/"
+                src="https://www.infersol.com/wp-content/uploads/2020/02/logo.png"
+                alt="Infer Logo"
+              />
+            </a>
+          </div>
+          <nav className="nav-menu">
+            <ul>
+              {/* <li>
+                <a href="/">Home</a>
+              </li> */}
+              {/* <li>
+                <a href="#why-infer">Why Infer?</a>
+              </li> */}
+              {/* <li>
+                <a href="#FAQ's">FAQs</a>
+              </li> */}
+            </ul>
+          </nav>
+          <div className="search-header-auth-buttons" style={{ margin: "20px 26px 20px 0" }}>
+            <button className="login">Login</button>
+          </div>
+        </header>
       </div>
       <SearchBar className="searchResults-Bar"></SearchBar>
 

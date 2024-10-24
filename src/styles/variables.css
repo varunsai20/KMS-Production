@@ -1,7 +1,8 @@
 :root {
   /* colors */
   --primary-color: #ffff;
-  --secondary-color: linear-gradient(90deg, #24d3fa, #000000, #00FFE8);
+  --secondary-color:linear-gradient(90deg, rgba(254, 118, 117, 0.2) 0%, rgba(204, 129, 185, 0.2) 34.2%, rgba(26, 168, 210, 0.2) 68.81%, rgba(76, 210, 217, 0.2) 100%);
+
   --color-btn-blue: rgba(26, 130, 255, 1);
   --color-text-ftr: #1a1a1a;
   --color-icon-blue: #1a82ff;
