@@ -1,8 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import "./Annotations.css"
-const Annotation = ({ openAnnotate, annotateData, searchTerm,source: passedSource }) => {
-
+import "./Annotations.css";
+const Annotation = ({
+  openAnnotate,
+  annotateData,
+  searchTerm,
+  source: passedSource,
+  annotateHeight,
+}) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { pmid: pmidFromUrl } = useParams(); // Extract pmid from the URL
@@ -13,7 +18,7 @@ const Annotation = ({ openAnnotate, annotateData, searchTerm,source: passedSourc
   useEffect(() => {
     // Check if the source is available in sessionStorage if not passed as props
     if (!passedSource) {
-      const storedSource = sessionStorage.getItem('source');
+      const storedSource = sessionStorage.getItem("source");
       if (storedSource) {
         setSource(JSON.parse(storedSource));
       } else {
@@ -21,7 +26,7 @@ const Annotation = ({ openAnnotate, annotateData, searchTerm,source: passedSourc
       }
     } else {
       // Store the passed source in sessionStorage
-      sessionStorage.setItem('source', JSON.stringify(passedSource));
+      sessionStorage.setItem("source", JSON.stringify(passedSource));
     }
   }, [passedSource]);
   useEffect(() => {
@@ -40,7 +45,7 @@ const Annotation = ({ openAnnotate, annotateData, searchTerm,source: passedSourc
 
     if (article) {
       const { source: articleSource } = article;
-      const type = 
+      const type =
         articleSource === "BioRxiv"
           ? "bioRxiv_id"
           : articleSource === "Public Library of Science (PLOS)"
@@ -54,7 +59,7 @@ const Annotation = ({ openAnnotate, annotateData, searchTerm,source: passedSourc
       console.error(`Article with ID ${articleId} not found in the source.`);
     }
   };
-  
+
   const capitalizeFirstLetter = (string) => {
     return string.charAt(0).toUpperCase() + string.slice(1);
   };
@@ -78,64 +83,68 @@ const Annotation = ({ openAnnotate, annotateData, searchTerm,source: passedSourc
       };
     });
   };
-
+  console.log(annotateHeight);
   const toggleExpandText = (key) => {
     setExpandedTexts((prevState) => ({
       ...prevState,
       [key]: !prevState[key], // Toggle between full text and sliced text for a specific row
     }));
   };
-  
+
   const renderAnnotations = () => {
     let filteredAnnotateData = annotateData;
-  
+
     // Check if the URL path matches the expected pattern (e.g., "/article/pmid:19230162")
     const urlPath = location.pathname;
     const typeMatch = urlPath.match(/^\/article\/(\w+):(\d+)$/);
-  
+
     if (typeMatch) {
       const [_, type, pmidFromUrl] = typeMatch;
-  
+
       // Ensure filteredAnnotateData is always an array
       filteredAnnotateData = annotateData
-        .filter(entry => entry.hasOwnProperty(pmidFromUrl))
-        .map(entry => ({ [pmidFromUrl]: entry[pmidFromUrl] }));
+        .filter((entry) => entry.hasOwnProperty(pmidFromUrl))
+        .map((entry) => ({ [pmidFromUrl]: entry[pmidFromUrl] }));
     }
-  
+
     // If filteredAnnotateData is not an array, default it to an empty array
     if (!Array.isArray(filteredAnnotateData)) {
       filteredAnnotateData = [];
     }
-  
+
     // Render the annotations
     return filteredAnnotateData.map((entry) =>
       Object.entries(entry).flatMap(([pmid, types]) => {
         const rows = [];
         const isExpanded = expandedPmids[pmid];
-  
+
         // Sort types by annotation score in descending order
         const sortedTypes = Object.entries(types).sort(
-          ([_, a], [__, b]) => (b.annotation_score || 0) - (a.annotation_score || 0)
+          ([_, a], [__, b]) =>
+            (b.annotation_score || 0) - (a.annotation_score || 0)
         );
-  
+
         const [firstType, firstTypeData] = sortedTypes[0] || [];
         const annotationScore = firstTypeData
           ? `${firstTypeData.annotation_score.toFixed(2)}%`
-          : '0%';
-  
+          : "0%";
+
         const firstTypeValues = Object.entries(firstTypeData || {})
-          .filter(([key]) => key !== 'annotation_score')
+          .filter(([key]) => key !== "annotation_score")
           .map(([key]) => key)
-          .join(', ');
-  
+          .join(", ");
+
         const isFirstTypeExpanded = expandedTexts[`${pmid}-firstType`];
-  
+
         // First row
         rows.push(
           <tr className="search-table-body" key={`${pmid}-first`}>
             <td style={{ paddingLeft: 0 }}>
-              <button onClick={() => toggleExpandPmid(pmid)} style={{ paddingLeft: 4 }}>
-                {isExpanded ? '▼' : '▶'}
+              <button
+                onClick={() => toggleExpandPmid(pmid)}
+                style={{ paddingLeft: 4 }}
+              >
+                {isExpanded ? "▼" : "▶"}
               </button>
               <a
                 style={{ color: "#1a82ff", fontWeight: 600, cursor: "pointer" }}
@@ -147,30 +156,36 @@ const Annotation = ({ openAnnotate, annotateData, searchTerm,source: passedSourc
             <td>{annotationScore}</td>
             <td>{capitalizeFirstLetter(firstType)}</td>
             <td>
-              {isFirstTypeExpanded ? firstTypeValues : `${firstTypeValues.slice(0, 20)}`}
+              {isFirstTypeExpanded
+                ? firstTypeValues
+                : `${firstTypeValues.slice(0, 20)}`}
               {firstTypeValues.length > 30 && (
                 <span
-                  style={{ color: 'blue', cursor: 'pointer', marginLeft: '5px' }}
+                  style={{
+                    color: "blue",
+                    cursor: "pointer",
+                    marginLeft: "5px",
+                  }}
                   onClick={() => toggleExpandText(`${pmid}-firstType`)}
                 >
-                  {isFirstTypeExpanded ? '' : '...'}
+                  {isFirstTypeExpanded ? "" : "..."}
                 </span>
               )}
             </td>
           </tr>
         );
-  
+
         // Additional rows for other types
         const typeRows = sortedTypes.slice(1).map(([type, values]) => {
           const valueEntries = Object.entries(values)
-            .filter(([key]) => key !== 'annotation_score')
+            .filter(([key]) => key !== "annotation_score")
             .map(([key]) => key);
-  
+
           const annotationScore = values.annotation_score
             ? `${values.annotation_score.toFixed(2)}%`
-            : '0%';
-  
-          const valueText = valueEntries.join(', ');
+            : "0%";
+
+          const valueText = valueEntries.join(", ");
           const typeKey = `${pmid}-${type}`;
           const isTypeTextExpanded = expandedTexts[typeKey];
           const displayText = isTypeTextExpanded
@@ -178,10 +193,10 @@ const Annotation = ({ openAnnotate, annotateData, searchTerm,source: passedSourc
             : valueText.length > 30
             ? `${valueText.slice(0, 20)}`
             : valueText;
-  
+
           return (
             <tr className="search-table-body" key={typeKey}>
-              <td style={{ paddingLeft: '30px' }}></td>
+              <td style={{ paddingLeft: "30px" }}></td>
               <td>{annotationScore}</td>
               <td>{capitalizeFirstLetter(type)}</td>
               <td>
@@ -189,7 +204,11 @@ const Annotation = ({ openAnnotate, annotateData, searchTerm,source: passedSourc
                 {valueText.length > 30 && !isTypeTextExpanded && (
                   <span
                     onClick={() => toggleExpandText(typeKey)}
-                    style={{ color: 'blue', cursor: 'pointer', marginLeft: '5px' }}
+                    style={{
+                      color: "blue",
+                      cursor: "pointer",
+                      marginLeft: "5px",
+                    }}
                   >
                     ...
                   </span>
@@ -198,36 +217,35 @@ const Annotation = ({ openAnnotate, annotateData, searchTerm,source: passedSourc
             </tr>
           );
         });
-  
+
         if (isExpanded) {
           rows.push(...typeRows);
         }
-  
+
         return rows;
       })
     );
   };
-  
-  
 
   return (
-    <div className="search-tables">
-      <div style={{ padding: "1%", background: "#fff", borderRadius: "16px 16px 0 0" }}>
+    <div
+      className="search-tables"
+      style={{ height: `${annotateHeight}vh`, overflowY: "auto" }}
+    >
+      <div style={{ background: "#fff", borderRadius: "16px 16px 0 0" }}>
         <p style={{ textAlign: "start" }}>Annotations</p>
       </div>
       <div className="search-Annotate-tables">
         <table>
           <thead>
             <tr className="search-table-head">
-              <th style={{ width: '23%',textAlign:"center" }}>ID</th>
-              <th style={{ width: '12%',textAlign:"center" }}>Score</th>
-              <th style={{ width: '20%',textAlign:"center" }}>Type</th>
-              <th style={{ width: '40%',textAlign:"center" }}>Text</th>
+              <th style={{ width: "23%", textAlign: "center" }}>ID</th>
+              <th style={{ width: "12%", textAlign: "center" }}>Score</th>
+              <th style={{ width: "20%", textAlign: "center" }}>Type</th>
+              <th style={{ width: "40%", textAlign: "center" }}>Text</th>
             </tr>
           </thead>
-          <tbody>
-            {renderAnnotations()}
-          </tbody>
+          <tbody>{renderAnnotations()}</tbody>
         </table>
       </div>
     </div>

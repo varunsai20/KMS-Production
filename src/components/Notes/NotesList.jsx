@@ -50,7 +50,7 @@ const NotesList = ({
             <LuPlus />
           </button>
           <div className="p">
-            <p>Notes</p>
+            <p id="p">Notes</p>
           </div>
           {/* <div className="dropdown-container">
             <button className="dots" onClick={handleToggleDropdown}>
