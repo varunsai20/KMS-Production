@@ -40,8 +40,24 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
   }, [bioRxivArticles, plosArticles, selectedArticles]);
   const [showPopup, setShowPopup] = useState(false);
   const [hoveredRow, setHoveredRow] = useState(null);
-  const [isBookmarked, setIsBookmarked] = useState(false);
+ 
+
   const [bookmarkedPmids, setBookmarkedPmids] = useState({});
+  const [currentIdType, setCurrentIdType] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [collections, setCollections] = useState(() => {
+    const storedCollections = JSON.parse(localStorage.getItem('collections')) || [];
+    return storedCollections;
+  });
+  console.log(collections)
+  const isBookmarked = (idType) => {
+    return collections.some((collection) =>
+      collection.articles.includes(idType)
+    );
+  };
+  
+  console.log(isBookmarked)
+  const [newCollectionName, setNewCollectionName] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [pageInput, setPageInput] = useState(1); // Separate state for the page input
   const [selectedDateRange, setSelectedDateRange] = useState('');
@@ -251,13 +267,61 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
       document.body.style.overflow = "auto";
     };
   }, [annotateLoading]);
-  const handleBookmarkClick = (pmid) => {
-    setBookmarkedPmids((prevState) => ({
-      ...prevState,
-      [pmid]: !prevState[pmid], // Toggle the bookmark state for the specific pmid
-    }));
-    
+
+  const modalRef = useRef(null); // Ref for modal content
+
+  // Handle clicks outside the modal to close it
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (modalRef.current && !modalRef.current.contains(event.target)) {
+        setIsModalOpen(false); // Close modal if clicked outside
+      }
+    };
+
+    if (isModalOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside); // Clean up the event listener
+    };
+  }, [isModalOpen]);
+
+  const handleBookmarkClick = (idType) => {
+    setCurrentIdType(idType);
+    setIsModalOpen(true); // Open the modal for collection selection
   };
+
+  const handleSaveToExisting = (collectionName) => {
+    const updatedCollections = collections.map((collection) => {
+      if (collection.name === collectionName) {
+        // Only add the idType if it doesn't already exist in the collection
+        if (!collection.articles.includes(currentIdType)) {
+          return { ...collection, articles: [...collection.articles, currentIdType] };
+        }
+      }
+      return collection;
+    });
+    setCollections(updatedCollections);
+    localStorage.setItem('collections', JSON.stringify(updatedCollections));
+    setIsModalOpen(false);
+  };
+  
+
+  const handleCreateNewCollection = () => {
+    const newCollection = { name: newCollectionName, articles: [currentIdType] };
+    const updatedCollections = [...collections, newCollection];
+    setCollections(updatedCollections);
+    localStorage.setItem('collections', JSON.stringify(updatedCollections));
+    setNewCollectionName('');
+    setIsModalOpen(false);
+  };
+  
+
+  
+
  
   const handleFilterChange = async (event) => {
     setLoading(true);
@@ -809,18 +873,18 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
                   Article type{" "}
                   {showArticleType ? (
                     <svg
-                      width="20"
-                      height="20"
-                      viewBox="0 0 20 20"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                      transform="rotate(0)"
-                    >
-                      <path
-                        d="M3.72603 6.64009C3.94792 6.4182 4.29514 6.39803 4.53981 6.57957L4.60991 6.64009L10.0013 12.0312L15.3927 6.64009C15.6146 6.4182 15.9618 6.39803 16.2065 6.57957L16.2766 6.64009C16.4985 6.86198 16.5186 7.2092 16.3371 7.45387L16.2766 7.52397L10.4432 13.3573C10.2214 13.5792 9.87414 13.5994 9.62946 13.4178L9.55936 13.3573L3.72603 7.52397C3.48195 7.2799 3.48195 6.88417 3.72603 6.64009Z"
-                        fill="#4A4B53"
-                      />
-                    </svg>
+                    width="20"
+                    height="20"
+                    viewBox="0 0 20 20"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    transform="rotate(180)"
+                  >
+                    <path
+                      d="M3.72603 6.64009C3.94792 6.4182 4.29514 6.39803 4.53981 6.57957L4.60991 6.64009L10.0013 12.0312L15.3927 6.64009C15.6146 6.4182 15.9618 6.39803 16.2065 6.57957L16.2766 6.64009C16.4985 6.86198 16.5186 7.2092 16.3371 7.45387L16.2766 7.52397L10.4432 13.3573C10.2214 13.5792 9.87414 13.5994 9.62946 13.4178L9.55936 13.3573L3.72603 7.52397C3.48195 7.2799 3.48195 6.88417 3.72603 6.64009Z"
+                      fill="#4A4B53"
+                    />
+                  </svg>
                   ) : (
                     <svg
                       width="20"
@@ -828,7 +892,7 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
                       viewBox="0 0 20 20"
                       fill="none"
                       xmlns="http://www.w3.org/2000/svg"
-                      transform="rotate(180)"
+                      transform="rotate(0)"
                     >
                       <path
                         d="M3.72603 6.64009C3.94792 6.4182 4.29514 6.39803 4.53981 6.57957L4.60991 6.64009L10.0013 12.0312L15.3927 6.64009C15.6146 6.4182 15.9618 6.39803 16.2065 6.57957L16.2766 6.64009C16.4985 6.86198 16.5186 7.2092 16.3371 7.45387L16.2766 7.52397L10.4432 13.3573C10.2214 13.5792 9.87414 13.5994 9.62946 13.4178L9.55936 13.3573L3.72603 7.52397C3.48195 7.2799 3.48195 6.88417 3.72603 6.64009Z"
@@ -892,18 +956,18 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
                   Source Type{" "}
                   {showSourceType ? (
                     <svg
-                      width="20"
-                      height="20"
-                      viewBox="0 0 20 20"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                      transform="rotate(0)"
-                    >
-                      <path
-                        d="M3.72603 6.64009C3.94792 6.4182 4.29514 6.39803 4.53981 6.57957L4.60991 6.64009L10.0013 12.0312L15.3927 6.64009C15.6146 6.4182 15.9618 6.39803 16.2065 6.57957L16.2766 6.64009C16.4985 6.86198 16.5186 7.2092 16.3371 7.45387L16.2766 7.52397L10.4432 13.3573C10.2214 13.5792 9.87414 13.5994 9.62946 13.4178L9.55936 13.3573L3.72603 7.52397C3.48195 7.2799 3.48195 6.88417 3.72603 6.64009Z"
-                        fill="#4A4B53"
-                      />
-                    </svg>
+                    width="20"
+                    height="20"
+                    viewBox="0 0 20 20"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    transform="rotate(180)"
+                  >
+                    <path
+                      d="M3.72603 6.64009C3.94792 6.4182 4.29514 6.39803 4.53981 6.57957L4.60991 6.64009L10.0013 12.0312L15.3927 6.64009C15.6146 6.4182 15.9618 6.39803 16.2065 6.57957L16.2766 6.64009C16.4985 6.86198 16.5186 7.2092 16.3371 7.45387L16.2766 7.52397L10.4432 13.3573C10.2214 13.5792 9.87414 13.5994 9.62946 13.4178L9.55936 13.3573L3.72603 7.52397C3.48195 7.2799 3.48195 6.88417 3.72603 6.64009Z"
+                      fill="#4A4B53"
+                    />
+                  </svg>
                   ) : (
                     <svg
                       width="20"
@@ -911,7 +975,7 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
                       viewBox="0 0 20 20"
                       fill="none"
                       xmlns="http://www.w3.org/2000/svg"
-                      transform="rotate(180)"
+                      transform="rotate(0)"
                     >
                       <path
                         d="M3.72603 6.64009C3.94792 6.4182 4.29514 6.39803 4.53981 6.57957L4.60991 6.64009L10.0013 12.0312L15.3927 6.64009C15.6146 6.4182 15.9618 6.39803 16.2065 6.57957L16.2766 6.64009C16.4985 6.86198 16.5186 7.2092 16.3371 7.45387L16.2766 7.52397L10.4432 13.3573C10.2214 13.5792 9.87414 13.5994 9.62946 13.4178L9.55936 13.3573L3.72603 7.52397C3.48195 7.2799 3.48195 6.88417 3.72603 6.64009Z"
@@ -965,18 +1029,18 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
                   <span>
                     {showPublicationDate ? (
                       <svg
-                        width="20"
-                        height="20"
-                        viewBox="0 0 20 20"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                        transform="rotate(0)"
-                      >
-                        <path
-                          d="M3.72603 6.64009C3.94792 6.4182 4.29514 6.39803 4.53981 6.57957L4.60991 6.64009L10.0013 12.0312L15.3927 6.64009C15.6146 6.4182 15.9618 6.39803 16.2065 6.57957L16.2766 6.64009C16.4985 6.86198 16.5186 7.2092 16.3371 7.45387L16.2766 7.52397L10.4432 13.3573C10.2214 13.5792 9.87414 13.5994 9.62946 13.4178L9.55936 13.3573L3.72603 7.52397C3.48195 7.2799 3.48195 6.88417 3.72603 6.64009Z"
-                          fill="#4A4B53"
-                        />
-                      </svg>
+                      width="20"
+                      height="20"
+                      viewBox="0 0 20 20"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      transform="rotate(180)"
+                    >
+                      <path
+                        d="M3.72603 6.64009C3.94792 6.4182 4.29514 6.39803 4.53981 6.57957L4.60991 6.64009L10.0013 12.0312L15.3927 6.64009C15.6146 6.4182 15.9618 6.39803 16.2065 6.57957L16.2766 6.64009C16.4985 6.86198 16.5186 7.2092 16.3371 7.45387L16.2766 7.52397L10.4432 13.3573C10.2214 13.5792 9.87414 13.5994 9.62946 13.4178L9.55936 13.3573L3.72603 7.52397C3.48195 7.2799 3.48195 6.88417 3.72603 6.64009Z"
+                        fill="#4A4B53"
+                      />
+                    </svg>
                     ) : (
                       <svg
                         width="20"
@@ -984,7 +1048,7 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
                         viewBox="0 0 20 20"
                         fill="none"
                         xmlns="http://www.w3.org/2000/svg"
-                        transform="rotate(180)"
+                        transform="rotate(0)"
                       >
                         <path
                           d="M3.72603 6.64009C3.94792 6.4182 4.29514 6.39803 4.53981 6.57957L4.60991 6.64009L10.0013 12.0312L15.3927 6.64009C15.6146 6.4182 15.9618 6.39803 16.2065 6.57957L16.2766 6.64009C16.4985 6.86198 16.5186 7.2092 16.3371 7.45387L16.2766 7.52397L10.4432 13.3573C10.2214 13.5792 9.87414 13.5994 9.62946 13.4178L9.55936 13.3573L3.72603 7.52397C3.48195 7.2799 3.48195 6.88417 3.72603 6.64009Z"
@@ -1073,18 +1137,18 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
                   <span>
                     {showTextAvailability ? (
                       <svg
-                        width="20"
-                        height="20"
-                        viewBox="0 0 20 20"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                        transform="rotate(0)"
-                      >
-                        <path
-                          d="M3.72603 6.64009C3.94792 6.4182 4.29514 6.39803 4.53981 6.57957L4.60991 6.64009L10.0013 12.0312L15.3927 6.64009C15.6146 6.4182 15.9618 6.39803 16.2065 6.57957L16.2766 6.64009C16.4985 6.86198 16.5186 7.2092 16.3371 7.45387L16.2766 7.52397L10.4432 13.3573C10.2214 13.5792 9.87414 13.5994 9.62946 13.4178L9.55936 13.3573L3.72603 7.52397C3.48195 7.2799 3.48195 6.88417 3.72603 6.64009Z"
-                          fill="#4A4B53"
-                        />
-                      </svg>
+                      width="20"
+                      height="20"
+                      viewBox="0 0 20 20"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      transform="rotate(180)"
+                    >
+                      <path
+                        d="M3.72603 6.64009C3.94792 6.4182 4.29514 6.39803 4.53981 6.57957L4.60991 6.64009L10.0013 12.0312L15.3927 6.64009C15.6146 6.4182 15.9618 6.39803 16.2065 6.57957L16.2766 6.64009C16.4985 6.86198 16.5186 7.2092 16.3371 7.45387L16.2766 7.52397L10.4432 13.3573C10.2214 13.5792 9.87414 13.5994 9.62946 13.4178L9.55936 13.3573L3.72603 7.52397C3.48195 7.2799 3.48195 6.88417 3.72603 6.64009Z"
+                        fill="#4A4B53"
+                      />
+                    </svg>
                     ) : (
                       <svg
                         width="20"
@@ -1092,7 +1156,7 @@ const SearchResults = ({ open, onClose, applyFilters,dateloading }) => {
                         viewBox="0 0 20 20"
                         fill="none"
                         xmlns="http://www.w3.org/2000/svg"
-                        transform="rotate(180)"
+                        transform="rotate(0)"
                       >
                         <path
                           d="M3.72603 6.64009C3.94792 6.4182 4.29514 6.39803 4.53981 6.57957L4.60991 6.64009L10.0013 12.0312L15.3927 6.64009C15.6146 6.4182 15.9618 6.39803 16.2065 6.57957L16.2766 6.64009C16.4985 6.86198 16.5186 7.2092 16.3371 7.45387L16.2766 7.52397L10.4432 13.3573C10.2214 13.5792 9.87414 13.5994 9.62946 13.4178L9.55936 13.3573L3.72603 7.52397C3.48195 7.2799 3.48195 6.88417 3.72603 6.64009Z"
@@ -1321,12 +1385,57 @@ if (!similarityScore && searchResults) {
                     </h3>  
                 </div>
                 <FontAwesomeIcon
-                icon={regularBookmark}
-                size="l"
-                style={{ color: bookmarkedPmids[idType] ? 'blue' : 'black', cursor: 'pointer' }}
-                onClick={() => handleBookmarkClick(idType)}
-                title={bookmarkedPmids[idType] ? 'Bookmarked' : 'Bookmark this article'}
-              />
+                      icon={regularBookmark}
+                      size="l"
+                      style={{
+                        color: isBookmarked(idType) ? 'blue' : 'black',
+                        cursor: 'pointer',
+                      }}
+                      onClick={() => handleBookmarkClick(idType)}
+                      title={isBookmarked(idType) ? 'Bookmarked' : 'Bookmark this article'}
+                    />
+
+                    {isModalOpen && (
+                        <div className="modal-overlay">
+                          <div className="modal-content" ref={modalRef}>
+                            <h3>Save Bookmark</h3>
+
+                            {/* Existing Collections */}
+                            {collections.length > 0 && (
+                              <>
+                                <h4>Save to existing collection:</h4>
+                                <ul>
+                                  {collections.map((collection) => (
+                                    <li key={collection.name}>
+                                      <button onClick={() => handleSaveToExisting(collection.name)}>
+                                        {collection.name}
+                                      </button>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </>
+                            )}
+
+                            {/* Create New Collection */}
+                            <h4>Create a new collection:</h4>
+                            <input
+                              type="text"
+                              value={newCollectionName}
+                              onChange={(e) => setNewCollectionName(e.target.value)}
+                              placeholder="New collection name"
+                            />
+                            <div style={{display:"flex",gap:"20px"}}>
+
+                            <button onClick={handleCreateNewCollection} disabled={!newCollectionName}>
+                              Create
+                            </button>
+
+                            <button onClick={() => setIsModalOpen(false)}>Cancel</button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
             </div>
       <p className="searchresult-authors">{`Published on: ${result.publication_date}`}</p>
       <div className="searchresult-ID">

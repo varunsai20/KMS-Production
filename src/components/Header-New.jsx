@@ -19,9 +19,11 @@ const Header = () => {
 
   // Handle login click (dummy login button)
   const handleLogin = () => {
-    dispatch(login({ username: "dummyUser" })); // Dispatch login action with a dummy username
+    navigate("/Login")
   };
-
+  const handleSignup = () => {
+    navigate("/Signup")
+  };
   // Handle logout click
   const handleLogout = () => {
     dispatch(logout());
@@ -55,7 +57,7 @@ const Header = () => {
         ) : (
           // If not logged in, show login and signup buttons
           <>
-            <Button text="SignUp" className="signup-btn" />
+            <Button text="SignUp" onClick={handleSignup} className="signup-btn" />
             <Button
               text="Login"
               className="login-btn"
