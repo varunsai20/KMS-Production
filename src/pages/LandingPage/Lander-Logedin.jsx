@@ -17,7 +17,7 @@ import Help from "../../assets/images/Lander-Help.svg";
 import Utilities from "../../assets/images/Lander-Utilities.svg";
 import Analytics from "../../assets/images/Lander-Analytics.svg";
 import "./Lander-Logedin.css";
-
+import Notes from "../NotesPage/Notes"
 const Lander = () => {
   // Access logged-in status from Redux
   const isLoggedIn = useSelector(state => state.auth?.isLoggedIn); // Assuming you have an `auth` reducer managing login

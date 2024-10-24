@@ -6,6 +6,7 @@
     height: 100vh; /* Set the container to take up the full viewport height */
 }
 .ResearcherHeading{
+    margin-top: 0;
     width: fit-content;
 }
 .Manage-Researchers{

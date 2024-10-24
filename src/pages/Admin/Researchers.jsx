@@ -20,12 +20,12 @@ const Researchers = () => {
   };
 
   const handleCreateClick = () => {
-    navigate('/admin/researchers/create'); // Navigate to Create Researcher page
+    navigate('/admin/users/create'); // Navigate to Create Researcher page
   };
 
   return (
-    <div style={{ margin: '2%' }}>
-      <h2 className="ResearcherHeading">Manage Researchers</h2>
+    <div style={{ margin: '0 2%' }}>
+      <h2 className="ResearcherHeading">Manage Users</h2>
       <div className="Manage-Researchers">
         <div className="Manage-Researcher-Input">
           <input placeholder="Search by name or ID" />
@@ -33,7 +33,7 @@ const Researchers = () => {
         </div>
 
         <button onClick={handleCreateClick} className="Admin-create">
-          Create Researcher
+          Add User
         </button>
       </div>
       <div className="Researcher-List">
@@ -64,6 +64,7 @@ const Researchers = () => {
                     {isOpen === row.email && (
                       <ul className="dropdown-menu">
                         <li className="dropdown-item">Edit</li>
+                        <li className="dropdown-item delete">Suspend</li>
                         <li className="dropdown-item delete">Delete</li>
                       </ul>
                     )}
