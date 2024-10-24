@@ -2,12 +2,18 @@ import React, { useState, useEffect } from "react";
 import NoteItem from "./NoteItem";
 import SearchIcon from "../../assets/images/Search.svg";
 import { LuPlus } from "react-icons/lu";
-import { RxDotsHorizontal } from "react-icons/rx";
-import { IoShareSocial } from "react-icons/io5";
-import { RiDeleteBin6Line } from "react-icons/ri";
+//import { RxDotsHorizontal } from "react-icons/rx";
+//import { IoShareSocial } from "react-icons/io5";
+//import { RiDeleteBin6Line } from "react-icons/ri";
 import "./NotesList.css"; // Import CSS for styling
 
-const NotesList = ({ notes, onAddNewNote, onEditNote, onDeleteAllNotes }) => {
+const NotesList = ({
+  notes,
+  onAddNewNote,
+  onEditNote,
+  onDeleteNote,
+  //onDeleteAllNotes,
+}) => {
   const [text, setText] = useState("");
   const [filteredNotes, setFilteredNotes] = useState(notes);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -28,9 +34,9 @@ const NotesList = ({ notes, onAddNewNote, onEditNote, onDeleteAllNotes }) => {
     setText(e.target.value);
   };
 
-  const handleToggleDropdown = () => {
-    setShowDropdown(!showDropdown);
-  };
+  // const handleToggleDropdown = () => {
+  //   setShowDropdown(!showDropdown);
+  // };
 
   return (
     <section className="Notes-List">
@@ -46,7 +52,7 @@ const NotesList = ({ notes, onAddNewNote, onEditNote, onDeleteAllNotes }) => {
           <div className="p">
             <p>Notes</p>
           </div>
-          <div className="dropdown-container">
+          {/* <div className="dropdown-container">
             <button className="dots" onClick={handleToggleDropdown}>
               <RxDotsHorizontal color="#1a82ff" />
             </button>
@@ -65,18 +71,9 @@ const NotesList = ({ notes, onAddNewNote, onEditNote, onDeleteAllNotes }) => {
                   </div>
                   Delete All
                 </button>
-                <button
-                  className="dropdown-button"
-                  style={{ display: "flex", gap: "4px" }}
-                >
-                  <div className="share-icon">
-                    <IoShareSocial size={15} />
-                  </div>
-                  Share All
-                </button>
               </div>
             )}
-          </div>
+          </div> */}
         </div>
         <div className="Search-wrapper">
           <img src={SearchIcon} alt="search" className="Search-icon" />
@@ -95,7 +92,12 @@ const NotesList = ({ notes, onAddNewNote, onEditNote, onDeleteAllNotes }) => {
           <p className="empty__notes">No Notes Found.</p>
         )}
         {filteredNotes.map((note) => (
-          <NoteItem key={note.id} note={note} onEdit={onEditNote} />
+          <NoteItem
+            key={note.id}
+            note={note}
+            onEdit={onEditNote}
+            onDelete={onDeleteNote}
+          />
         ))}
       </div>
     </section>

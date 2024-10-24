@@ -13,7 +13,7 @@ button {
   border-radius: 20px;
   padding: 0;
 }
-.searchResults-Header{
+.searchResults-Header {
   width: 60%;
   background-color: #ffffff;
   height: 50px;
@@ -36,15 +36,15 @@ button {
   top: 1.5%;
   z-index: 1000; /* Stay above the content */
 }
-.searchResults-Bar .input-container{
+.searchResults-Bar .input-container {
   width: 100%;
   align-items: normal;
 }
-.searchResults-Bar .search-icon{
+.searchResults-Bar .search-icon {
   top: 25%;
   left: 0;
 }
-.searchResults-Bar .search-button{
+.searchResults-Bar .search-button {
   top: 7%;
 }
 #Search-Content-Container {
@@ -236,12 +236,11 @@ button {
   overflow-y: hidden;
   background-color: #ffffff;
 }
-.SearchResult-Option-Buttons{
+.SearchResult-Option-Buttons {
   display: flex;
   height: fit-content;
   gap: 8px;
   height: 5vh;
-
 }
 
 .SearchResult-Option-Left {
@@ -251,38 +250,36 @@ button {
   height: 5vh;
   /* border: 1px solid #e0e0e0; */
   border-radius: 25px;
-
 }
 
 .SearchResult-Annotate {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    border-radius: 40px;
-    border: 1px solid;
-    opacity: 0px;
-    color: rgba(26, 26, 26, 1);
-    width: 75px;
-    height: -webkit-fill-available;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-radius: 40px;
+  border: 1px solid;
+  opacity: 0px;
+  color: rgba(26, 26, 26, 1);
+  width: 75px;
+  height: -webkit-fill-available;
 }
-.SearchResult-Annotate .loader{
+.SearchResult-Annotate .loader {
 }
 .SearchResult-Share {
-    width: 75px;
-    gap: 10px;
-    border-radius: 40px;
-    border: 1px solid;
-    opacity: 0px;
-    color: rgba(26, 26, 26, 1);
-
-}.SearchResult-Save {
   width: 75px;
-    gap: 10px;
-    border-radius: 40px;
-    border: 1px solid;
-    opacity: 0px;
-    color: rgba(26, 26, 26, 1);
-
+  gap: 10px;
+  border-radius: 40px;
+  border: 1px solid;
+  opacity: 0px;
+  color: rgba(26, 26, 26, 1);
+}
+.SearchResult-Save {
+  width: 75px;
+  gap: 10px;
+  border-radius: 40px;
+  border: 1px solid;
+  opacity: 0px;
+  color: rgba(26, 26, 26, 1);
 }
 .SearchResult-Annotate {
   /* opacity: 0.3; */
@@ -327,8 +324,6 @@ button {
   display: flex; /* Flexbox to stack buttons vertically */
 }
 
-
-
 /* Popup buttons */
 .popup-btn {
   padding: 10px;
@@ -364,7 +359,9 @@ button {
 }
 
 @keyframes l3 {
-  to { transform: rotate(1turn); }
+  to {
+    transform: rotate(1turn);
+  }
 }
 
 .SearchResult-count {
@@ -426,7 +423,7 @@ button {
   background-color: #fff;
   border: 1px solid #dbd7d7;
   overflow: hidden;
-  justify-content:space-between
+  justify-content: space-between;
 }
 .searchresult-item :hover {
   /* text-decoration: underline; */
@@ -440,19 +437,21 @@ button {
 }
 .result-checkbox {
 }
+
 .searchresult-ArticleTitle{
   width: 90%;
+
   display: flex;
 }
 .searchresult-title-container {
   display: flex;
-    align-items: center;
-    justify-content:space-between;
-    gap: 5px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 5px;
 }
 .searchresult-title-container:hover {
   text-decoration: underline;
-  text-decoration-color:#0071bc ;
+  text-decoration-color: #0071bc;
 }
 .gradient-text {
   /* background: linear-gradient(90deg, #cc81b9 0%, #1aa8d2 100%); */
@@ -460,11 +459,9 @@ button {
   /* -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text; */
-
 }
 .gradient-text:hover {
 }
-
 
 .searchresult-title {
   width: 100%;
@@ -549,38 +546,37 @@ button {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
 }
-.searchresult-ID{
+.searchresult-ID {
   display: flex;
-  flex-direction: row ;
-  gap:20px
+  flex-direction: row;
+  gap: 20px;
 }
 .searchresult-pmid {
   font-size: 14px;
   color: #2b9247;
   margin: 0px;
 }
-.searchresult-similarity_score{
+.searchresult-similarity_score {
   font-size: 14px;
   color: #2b9247;
   margin: 0px;
 }
-.Article-Options{
+.Article-Options {
   min-height: 10%;
   width: 100%;
   display: flex;
   flex-direction: row;
   gap: 20px;
-    align-items: center;
+  align-items: center;
 }
-.Article-Options-Left{
+.Article-Options-Left {
   display: flex;
   flex-wrap: wrap;
-  flex-direction: row;  
+  flex-direction: row;
   gap: 10px;
   align-items: center;
 }
-.Article-Rating{
-
+.Article-Rating {
 }
 
 .searchResult-rate {
@@ -626,11 +622,10 @@ button {
   color: #ffc700;
 }
 
-
-.Ask-Question{
+.Ask-Question {
   cursor: pointer;
-    margin: 0;
-    font-size: 14px;
+  margin: 0;
+  font-size: 14px;
 }
 .searchresult-description {
   font-family: Manrope;
@@ -689,8 +684,8 @@ button {
   /* gap: 8px; */
   align-items: center;
 }
-.MuiButtonBase-root .MuiButton-root{
-  min-width:30px
+.MuiButtonBase-root .MuiButton-root {
+  min-width: 30px;
 }
 .pagination-controls button {
   /* background-color: #f1f3f4; */
@@ -873,7 +868,6 @@ td {
   border-left: 1px solid #ddd;
 }
 
-
 /*Chat*/
 .search-notes {
   width: 349px;
@@ -889,7 +883,7 @@ td {
   border: 1px solid rgba(235, 235, 243, 1);
   background-color: #fff;
 }
-.search-stream-input{
+.search-stream-input {
   width: 90%;
   display: flex;
   border: 1px solid #ccc;
@@ -907,7 +901,7 @@ td {
   font-size: 14px;
   box-shadow: 500px;
   width: 85%;
-  border:none;
+  border: none;
   outline: none;
 }
 
@@ -960,7 +954,8 @@ td {
   resize: none;
   font-size: 14px;
   font-family: Manrope;
-}.search-notes p {
+}
+.search-notes p {
   color: black;
   width: 40px;
   height: 20px;
@@ -1019,26 +1014,26 @@ td {
   background-color: white;
 }
 
-.custom-date-range{
+.custom-date-range {
   display: flex;
-    flex-direction: column;
+  flex-direction: column;
 }
-.custom-date-input label{
+.custom-date-input label {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
-.custom-date-input label input{
- width: 60%;
- padding: 2%; 
- border:1px solid #b6b6b6;
- border-radius: 24px;
- color: #000;
+.custom-date-input label input {
+  width: 60%;
+  padding: 2%;
+  border: 1px solid #b6b6b6;
+  border-radius: 24px;
+  color: #000;
 }
-.ApplyFilters{
+.ApplyFilters {
   margin: 0 0 0 auto;
   border: 1px solid #b6b6b6;
-  color: #1A82FF;
+  color: #1a82ff;
   padding: 3% 10%;
   margin-bottom: 5%;
   border-radius: 40px;
