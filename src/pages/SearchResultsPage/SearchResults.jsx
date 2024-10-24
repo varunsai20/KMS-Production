@@ -40,8 +40,24 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   }, [bioRxivArticles, plosArticles, selectedArticles]);
   const [showPopup, setShowPopup] = useState(false);
   const [hoveredRow, setHoveredRow] = useState(null);
-  const [isBookmarked, setIsBookmarked] = useState(false);
+
   const [bookmarkedPmids, setBookmarkedPmids] = useState({});
+  const [currentIdType, setCurrentIdType] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [collections, setCollections] = useState(() => {
+    const storedCollections =
+      JSON.parse(localStorage.getItem("collections")) || [];
+    return storedCollections;
+  });
+  console.log(collections);
+  const isBookmarked = (idType) => {
+    return collections.some((collection) =>
+      collection.articles.includes(idType)
+    );
+  };
+
+  console.log(isBookmarked);
+  const [newCollectionName, setNewCollectionName] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageInput, setPageInput] = useState(1); // Separate state for the page input
   const [selectedDateRange, setSelectedDateRange] = useState("");
@@ -262,6 +278,62 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       ...prevState,
       [pmid]: !prevState[pmid], // Toggle the bookmark state for the specific pmid
     }));
+  };
+
+  const modalRef = useRef(null); // Ref for modal content
+
+  // Handle clicks outside the modal to close it
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (modalRef.current && !modalRef.current.contains(event.target)) {
+        setIsModalOpen(false); // Close modal if clicked outside
+      }
+    };
+
+    if (isModalOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside); // Clean up the event listener
+    };
+  }, [isModalOpen]);
+
+  const handleBookmarkClick = (idType) => {
+    setCurrentIdType(idType);
+    setIsModalOpen(true); // Open the modal for collection selection
+  };
+
+  const handleSaveToExisting = (collectionName) => {
+    const updatedCollections = collections.map((collection) => {
+      if (collection.name === collectionName) {
+        // Only add the idType if it doesn't already exist in the collection
+        if (!collection.articles.includes(currentIdType)) {
+          return {
+            ...collection,
+            articles: [...collection.articles, currentIdType],
+          };
+        }
+      }
+      return collection;
+    });
+    setCollections(updatedCollections);
+    localStorage.setItem("collections", JSON.stringify(updatedCollections));
+    setIsModalOpen(false);
+  };
+
+  const handleCreateNewCollection = () => {
+    const newCollection = {
+      name: newCollectionName,
+      articles: [currentIdType],
+    };
+    const updatedCollections = [...collections, newCollection];
+    setCollections(updatedCollections);
+    localStorage.setItem("collections", JSON.stringify(updatedCollections));
+    setNewCollectionName("");
+    setIsModalOpen(false);
   };
 
   const handleFilterChange = async (event) => {

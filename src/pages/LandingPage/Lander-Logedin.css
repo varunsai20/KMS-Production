@@ -49,7 +49,7 @@
     position: absolute;
     top: 30%;
     left: 20%;
-    width: 60%;
+    width: 75%;
     margin: auto;
 }
 
@@ -73,6 +73,7 @@
 }
 
 .Landing-Welcome-desc {
+    width: 80%;
     margin: 0;
     text-align: justify;
     margin: 0;

@@ -64,4 +64,21 @@
   mask-composite: subtract;
   animation: l3 1s infinite linear;
 }
+.Admin-create {
+  padding: 8px 16px; /* Adjust padding as needed */
+  border: none;
+  cursor: pointer;
+  gap: 0px;
+  border-radius: 36.49px;
+  opacity: 0px;
+  background: var(--color-btn-blue);
+  border: 1px solid #fff;
+  font-family: Manrope;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 19.12px;
+  text-align: left;
+  color: #fff;
+}
+
 @keyframes l3 {to{transform: rotate(1turn)}}
