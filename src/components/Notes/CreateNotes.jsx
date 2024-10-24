@@ -1,281 +1,3 @@
-// import React, { useState, useEffect, useRef } from "react";
-// import { v4 as uuid } from "uuid";
-// import useCreateDate from "./UseCreateDate";
-// import { CiMenuFries } from "react-icons/ci";
-// import { IoCloseOutline, IoShareSocial } from "react-icons/io5";
-// import { RiDeleteBin6Line } from "react-icons/ri";
-// import { RxDotsHorizontal } from "react-icons/rx";
-// import Button from "../Buttons";
-// import { FiBold, FiUnderline } from "react-icons/fi";
-// import { GoItalic, GoStrikethrough } from "react-icons/go";
-// import { PiListBullets } from "react-icons/pi";
-// import { BsListOl } from "react-icons/bs";
-// import DOMPurify from "dompurify"; // Import DOMPurify
-
-// import "./CreateNote.css";
-
-// const Createnotes = ({ setNotes, onClose, selectedText }) => {
-//   const [title, setTitle] = useState("");
-//   const [isOpenDropdown, setIsOpenDropdown] = useState(false);
-//   const [activeFormats, setActiveFormats] = useState([]);
-//   const date = useCreateDate();
-//   const editorRef = useRef(null);
-//   const [noteContent, setNoteContent] = useState(""); // Initialize as empty
-//   const [shareMessage, setShareMessage] = useState(""); // State for feedback message
-//   const sanitizedText = DOMPurify.sanitize(selectedText); // Sanitize selectedText
-
-//   console.log("Selected Text:", selectedText);
-
-//   // Only append `selectedText` when it changes, not on every render.
-//   useEffect(() => {
-//     if (selectedText) {
-//       const sanitizedText = DOMPurify.sanitize(selectedText);
-//       setNoteContent((prevContent) => prevContent + " " + sanitizedText); // Append without overwriting
-//     }
-//   }, [selectedText]);
-
-//   const handleEditorClick = () => {
-//     editorRef.current.focus(); // Set focus on the editor
-//   };
-
-//   const handleFormat = (command) => {
-//     document.execCommand(command, false, null);
-//     toggleActiveFormat(command);
-
-//     // Add class for numbered list styling
-//     if (command === "insertOrderedList") {
-//       const orderedLists = editorRef.current.getElementsByTagName("ol");
-//       for (let ol of orderedLists) {
-//         ol.classList.add("custom-ordered-list");
-//       }
-//     }
-//   };
-//   const toggleActiveFormat = (command) => {
-//     setActiveFormats((prev) =>
-//       prev.includes(command)
-//         ? prev.filter((format) => format !== command)
-//         : [...prev, command]
-//     );
-//   };
-
-//   const handleToggleDropdown = () => {
-//     setIsOpenDropdown(!isOpenDropdown);
-//   };
-
-//   const handleClickOutside = (event) => {
-//     if (editorRef.current && !editorRef.current.contains(event.target)) {
-//       setIsOpenDropdown(false); // Close the dropdown if clicked outside
-//     }
-//   };
-
-//   useEffect(() => {
-//     document.addEventListener("mousedown", handleClickOutside);
-//     return () => {
-//       document.removeEventListener("mousedown", handleClickOutside);
-//     };
-//   }, []);
-
-//   const handleSubmit = (e) => {
-//     e.preventDefault();
-//     const noteDetails = editorRef.current.innerHTML; // Get the content of the editor
-
-//     if (title && noteDetails) {
-//       const note = { id: uuid(), title, details: noteDetails, date };
-//       setNotes((prevNotes) => [note, ...prevNotes]);
-//       onClose(); // Return to Notes list
-//     }
-//   };
-
-//   const handleDeleteNotes = () => {
-//     const confirmDelete = window.confirm(
-//       "Are you sure you want to delete all notes?"
-//     );
-//     if (confirmDelete) {
-//       setNotes([]); // Clear all notes
-//       onClose(); // Return to Notes list
-//     }
-//   };
-
-//   const handleShare = () => {
-//     const noteDetails = editorRef.current.innerHTML;
-//     const noteTitle = title || "Untitled Note";
-
-//     // Create a shareable text (you can customize this as needed)
-//     const shareText = `${noteTitle}\n\n${noteDetails.replace(/<[^>]+>/g, "")}`; // Stripping HTML tags
-
-//     // Copy to clipboard
-//     navigator.clipboard.writeText(shareText).then(
-//       () => {
-//         setShareMessage("Note copied to clipboard!");
-//         // Remove the message after 3 seconds
-//         setTimeout(() => setShareMessage(""), 3000);
-//       },
-//       (err) => {
-//         console.error("Could not copy text: ", err);
-//         setShareMessage("Failed to copy note.");
-//         setTimeout(() => setShareMessage(""), 3000);
-//       }
-//     );
-//   };
-
-//   return (
-//     <section className="notes">
-//       <header
-//         className="note-header"
-//         style={{
-//           display: "flex",
-//           justifyContent: "space-between",
-//           width: "100%",
-//         }}
-//         ref={editorRef}
-//       >
-//         {isOpenDropdown && (
-//           <div
-//             className="dropdown"
-//             style={{ position: "absolute", width: "26.1%", zIndex: 1000 }}
-//           >
-//             <div className="open-header-dropdown">
-//               <div className="dropdown-button-group">
-//                 <button onClick={onClose} className="dropdown-button">
-//                   <CiMenuFries style={{ marginRight: "7px" }} /> Notes List
-//                 </button>
-//                 <button onClick={handleDeleteNotes} className="dropdown-button">
-//                   <RiDeleteBin6Line style={{ marginRight: "8px" }} /> Delete
-//                   Notes
-//                 </button>
-//               </div>
-//             </div>
-//           </div>
-//         )}
-//         <Button
-//           className="note-save-button"
-//           text="Save"
-//           onClick={handleSubmit}
-//         />
-//         <div className="create-note__actions">
-//           <button
-//             className="dropdown-toggle"
-//             onClick={handleToggleDropdown}
-//             title="Options"
-//           >
-//             <RxDotsHorizontal color="#1a82ff" size={20} />
-//           </button>
-//           <Button
-//             text={<IoCloseOutline color="#1a82ff" size={20} />}
-//             className="cancel-button"
-//             onClick={onClose}
-//           />
-//         </div>
-//       </header>
-//       <form className="create-note__form" onSubmit={handleSubmit}>
-//         <input
-//           className="note-input"
-//           type="text"
-//           placeholder="Title"
-//           value={title}
-//           onChange={(e) => setTitle(e.target.value)}
-//           autoFocus
-//         />
-//         <div
-//           className="note-taking"
-//           ref={editorRef}
-//           contentEditable={true}
-//           suppressContentEditableWarning={true}
-//           onClick={handleEditorClick}
-//           onInput={(e) => setNoteContent(e.target.innerHTML)} // Updated to onInput
-//           placeholder="Note details..."
-//           style={{
-//             padding: "10px",
-//             minHeight: "150px",
-//             marginBottom: "4px",
-//             borderRadius: "5px",
-//             fontSize: "14px",
-//             textAlign: "start",
-//           }}
-//         >
-//           {noteContent}
-//         </div>
-//       </form>
-
-//       {/* Feedback Message */}
-//       {shareMessage && <div className="share-message">{shareMessage}</div>}
-
-//       <div className="toolbar">
-//         <button
-//           onClick={() => handleFormat("bold")}
-//           title="Bold"
-//           style={{
-//             color: activeFormats.includes("bold") ? "blue" : "black",
-//           }}
-//         >
-//           <FiBold size={17} />
-//         </button>
-//         <button
-//           onClick={() => handleFormat("italic")}
-//           title="Italic"
-//           style={{
-//             color: activeFormats.includes("italic") ? "blue" : "black",
-//           }}
-//         >
-//           <GoItalic size={17} />
-//         </button>
-//         <button
-//           onClick={() => handleFormat("underline")}
-//           title="Underline"
-//           style={{
-//             color: activeFormats.includes("underline") ? "blue" : "black",
-//           }}
-//         >
-//           <FiUnderline size={17} />
-//         </button>
-//         <button
-//           onClick={() => handleFormat("strikeThrough")}
-//           title="Strikethrough"
-//           style={{
-//             color: activeFormats.includes("strikeThrough") ? "blue" : "black",
-//           }}
-//         >
-//           <GoStrikethrough size={20} />
-//         </button>
-//         <button
-//           onClick={() => handleFormat("insertUnorderedList")}
-//           title="Bullets"
-//           style={{
-//             color: activeFormats.includes("insertUnorderedList")
-//               ? "blue"
-//               : "black",
-//           }}
-//         >
-//           <PiListBullets size={20} />
-//         </button>
-//         <button
-//           onClick={() => handleFormat("insertOrderedList")}
-//           title="Numbered List"
-//           style={{
-//             color: activeFormats.includes("insertOrderedList")
-//               ? "blue"
-//               : "black",
-//           }}
-//         >
-//           <BsListOl size={20} />
-//         </button>
-
-//         {/* Share Button */}
-//         <button
-//           onClick={handleShare}
-//           title="Share"
-//           style={{
-//             color: shareMessage ? "green" : "black",
-//           }}
-//         >
-//           <IoShareSocial size={20} />
-//         </button>
-//       </div>
-//     </section>
-//   );
-// };
-
-// export default Createnotes;
 import React, { useState, useEffect, useRef } from "react";
 import { v4 as uuid } from "uuid";
 import useCreateDate from "./UseCreateDate";
@@ -289,90 +11,115 @@ import { GoItalic, GoStrikethrough } from "react-icons/go";
 import { PiListBullets } from "react-icons/pi";
 import { BsListOl } from "react-icons/bs";
 import DOMPurify from "dompurify"; // Import DOMPurify
+//import { SiGmail } from "react-icons/si";
+import { RxCopy } from "react-icons/rx";
+import { CiMail } from "react-icons/ci";
 
-import "./CreateNote.css";
-//import { TextContext } from "./TextProvider";
+import "./CreateNote.css"; // Ensure you have the necessary CSS
 
 const Createnotes = ({ setNotes, onClose, selectedText }) => {
+  console.log(selectedText);
   const [title, setTitle] = useState("");
   const [isOpenDropdown, setIsOpenDropdown] = useState(false);
   const date = useCreateDate();
   const headerRef = useRef(null); // Ref to detect clicks outside
-  //const [isPlaceholderVisible, setIsPlaceholderVisible] = useState(true);
-  const [activeFormats, setActiveFormats] = useState([]); // Track active toolbar formats
+
+  const [activeFormats, setActiveFormats] = useState({
+    bold: false,
+    italic: false,
+    underline: false,
+    strikeThrough: false,
+    orderedList: false,
+    unorderedList: false,
+  });
   const editorRef = useRef(null);
   const [noteContent, setNoteContent] = useState(selectedText || ""); // Initialize with selectedText
   const [shareMessage, setShareMessage] = useState(""); // State for feedback message
-  //console.log("Selected Text:", selectedText);
+
+  // New States for Modal
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  //const [shareEmail, setShareEmail] = useState("");
+
+  console.log("Selected Text:", selectedText);
+  console.log("note content", noteContent);
 
   useEffect(() => {
+    const handleSelectionChange = () => {
+      if (!editorRef.current) return;
+
+      const selection = window.getSelection();
+      if (selection.rangeCount === 0) return;
+
+      const range = selection.getRangeAt(0);
+      if (!editorRef.current.contains(range.commonAncestorContainer)) return;
+
+      setActiveFormats({
+        bold: document.queryCommandState("bold"),
+        italic: document.queryCommandState("italic"),
+        underline: document.queryCommandState("underline"),
+        strikeThrough: document.queryCommandState("strikeThrough"),
+        orderedList: document.queryCommandState("insertOrderedList"),
+        unorderedList: document.queryCommandState("insertUnorderedList"),
+      });
+    };
+
+    document.addEventListener("selectionchange", handleSelectionChange);
+
+    return () => {
+      document.removeEventListener("selectionchange", handleSelectionChange);
+    };
+  }, []);
+
+  // Effect to handle incoming selectedText
+  useEffect(() => {
     if (selectedText && editorRef.current) {
-      const sanitizedText = DOMPurify.sanitize(selectedText); // Sanitize selectedText
-      editorRef.current.innerHTML = sanitizedText;
-      setNoteContent((prevContent) => prevContent + "" + sanitizedText);
+      const sanitizedText = DOMPurify.sanitize(selectedText.trim()); // Sanitize input
+
+      // Prevent duplication on the first render or if the same text is selected again
+      const currentContent = editorRef.current.innerText.trim();
+      if (!currentContent.includes(sanitizedText)) {
+        editorRef.current.innerHTML = currentContent
+          ? currentContent + " " + sanitizedText
+          : sanitizedText; // Add text only if it's not already present
+        console.log(selectedText);
+        setNoteContent(editorRef.current.innerHTML.trim());
+      }
     }
   }, [selectedText]);
-  // Append the selectedText to the existing content when new text is selected and passed.
-  // useEffect(() => {
-  //   if (selectedText && editorRef.current) {
-  //     const sanitizedText = DOMPurify.sanitize(selectedText); // Sanitize selectedText
-  //     // Append the selected text rather than overwriting
-  //     //editorRef.current.innerHTML += sanitizedText;
-  //     setNoteContent((prevContent) => prevContent + " " + sanitizedText);
-  //   }
-  // }, [selectedText]);
-  // useEffect(() => {
-  //   if (selectedText) {
-  //     const sanitizedText = DOMPurify.sanitize(selectedText.trim());
-  //     if (!noteContent.includes(sanitizedText)) {
-  //       setNoteContent(
-  //         (prevContent) =>
-  //           prevContent + (prevContent ? " " : "") + sanitizedText
-  //       );
-  //     }
-  //   }
-  // }, [selectedText]);
-  // Ensure the cursor stays in place for normal backspacing behavior
+
   const handleInput = (e) => {
     setNoteContent(e.target.innerText); // Set the content as plain text (ignoring HTML)
   };
-
-  console.log("CreateNote page: ", selectedText);
 
   const handleEditorClick = () => {
     editorRef.current.focus(); // Set focus on the editor
   };
 
-  // const handleBlur = () => {
-  //   // If the editor becomes empty again after losing focus, show the placeholder again
-  //   if (editorRef.current.innerText.trim() === "") {
-  //     setIsPlaceholderVisible(true);
-  //     editorRef.current.innerHTML = "Take your note..."; // Placeholder text
-  //   }
-  // };
-
   const handleFormat = (command) => {
     document.execCommand(command, false, null);
-    toggleActiveFormat(command);
 
-    // Add class for numbered list styling
+    // After executing the command, update the activeFormats state
+    setActiveFormats((prevFormats) => ({
+      ...prevFormats,
+      [command]: !prevFormats[command],
+    }));
+
+    // Special handling for lists to toggle between ordered and unordered
     if (command === "insertOrderedList") {
-      const orderedLists = editorRef.current.getElementsByTagName("ol");
-      for (let ol of orderedLists) {
-        ol.classList.add("custom-ordered-list");
-      }
+      setActiveFormats((prevFormats) => ({
+        ...prevFormats,
+        orderedList: !prevFormats.orderedList,
+        unorderedList: false, // Ensure only one list type is active
+      }));
     }
-  };
 
-  // Toggle the active state of the toolbar buttons
-  const toggleActiveFormat = (command) => {
-    setActiveFormats((prev) => {
-      if (prev.includes(command)) {
-        return prev.filter((format) => format !== command);
-      } else {
-        return [...prev, command];
-      }
-    });
+    if (command === "insertUnorderedList") {
+      setActiveFormats((prevFormats) => ({
+        ...prevFormats,
+        unorderedList: !prevFormats.unorderedList,
+        orderedList: false, // Ensure only one list type is active
+      }));
+    }
   };
 
   const handleToggleDropdown = () => {
@@ -402,6 +149,10 @@ const Createnotes = ({ setNotes, onClose, selectedText }) => {
       setNotes((prevNotes) => [note, ...prevNotes]);
       console.log(note);
       onClose(); // Return to Notes list
+
+      setNoteContent(""); // Clear the note content
+      setTitle(""); // Clear the title
+      editorRef.current.innerHTML = ""; // Clear the editor content
     }
   };
 
@@ -420,7 +171,13 @@ const Createnotes = ({ setNotes, onClose, selectedText }) => {
     onClose(); // Return to Notes list
   };
 
+  // Modified handleShare to open the modal
   const handleShare = () => {
+    setIsShareModalOpen(true);
+  };
+
+  // Handle the copy action inside the modal
+  const handleCopy = () => {
     const noteDetails = editorRef.current.innerHTML;
     const noteTitle = title || "Untitled Note";
 
@@ -440,6 +197,14 @@ const Createnotes = ({ setNotes, onClose, selectedText }) => {
         setTimeout(() => setShareMessage(""), 3000);
       }
     );
+
+    // Optionally, close the modal after copying
+    setIsShareModalOpen(false);
+  };
+
+  // Handle closing the modal
+  const handleCloseModal = () => {
+    setIsShareModalOpen(false);
   };
 
   return (
@@ -464,33 +229,35 @@ const Createnotes = ({ setNotes, onClose, selectedText }) => {
               <div className="dropdown-button-group">
                 <button
                   onClick={handleOpenNotesList}
-                  className="dropdown-button"
+                  className="dropdown-button-noteslist"
                 >
-                  <CiMenuFries style={{ marginRight: "7px" }} /> Notes List
+                  <CiMenuFries style={{ marginRight: "10px" }} />
+                  <span>Notes List</span>
                 </button>
-                <button onClick={handleDeleteNotes} className="dropdown-button">
-                  <RiDeleteBin6Line style={{ marginRight: "8px" }} /> Delete
+                <button
+                  onClick={handleDeleteNotes}
+                  className="dropdown-button-deletenotes"
+                >
+                  <RiDeleteBin6Line style={{ marginRight: "5px" }} /> Delete
                   Notes
                 </button>
               </div>
             </div>
           </div>
         )}
-        <Button
-          className="note-save-button"
-          text="Save"
-          onClick={handleSubmit}
-        />
+        <button className="note-save-button" text="Save" onClick={handleSubmit}>
+          save
+        </button>
         <div className="create-note__actions">
           <button
             className="dropdown-toggle"
             onClick={handleToggleDropdown}
             title="Options"
           >
-            <RxDotsHorizontal color="#1a82ff" size={20} />
+            <RxDotsHorizontal color="#1a82ff" size={25} />
           </button>
           <Button
-            text={<IoCloseOutline color="#1a82ff" size={20} />}
+            text={<IoCloseOutline color="#1a82ff" size={25} />}
             className="cancel-button"
             onClick={onClose}
           />
@@ -521,11 +288,10 @@ const Createnotes = ({ setNotes, onClose, selectedText }) => {
             borderRadius: "5px",
             fontSize: "14px",
             textAlign: "start",
+            //border: "1px solid #ccc", // Added border for better visibility
           }}
         >
-          {/* {isPlaceholderVisible && "Take your note..."} */}
-          {/* {noteContent} */}
-          {/* {selectedText} */}
+          {/* Placeholder logic can be enhanced if needed */}
         </div>
       </form>
 
@@ -536,73 +302,112 @@ const Createnotes = ({ setNotes, onClose, selectedText }) => {
         <button
           onClick={() => handleFormat("bold")}
           title="Bold"
-          style={{
-            color: activeFormats.includes("bold") ? "blue" : "black",
-          }}
+          className={`toolbar-button ${activeFormats.bold ? "active" : ""}`}
+          aria-label="Bold"
         >
           <FiBold size={17} />
         </button>
         <button
           onClick={() => handleFormat("italic")}
           title="Italic"
-          style={{
-            color: activeFormats.includes("italic") ? "blue" : "black",
-          }}
+          className={`toolbar-button ${activeFormats.italic ? "active" : ""}`}
+          aria-label="Italic"
         >
           <GoItalic size={17} />
         </button>
         <button
           onClick={() => handleFormat("underline")}
           title="Underline"
-          style={{
-            color: activeFormats.includes("underline") ? "blue" : "black",
-          }}
+          className={`toolbar-button ${
+            activeFormats.underline ? "active" : ""
+          }`}
+          aria-label="Underline"
         >
           <FiUnderline size={17} />
         </button>
         <button
           onClick={() => handleFormat("strikeThrough")}
           title="Strikethrough"
-          style={{
-            color: activeFormats.includes("strikeThrough") ? "blue" : "black",
-          }}
+          className={`toolbar-button ${
+            activeFormats.strikeThrough ? "active" : ""
+          }`}
+          aria-label="Strikethrough"
         >
           <GoStrikethrough size={20} />
         </button>
         <button
           onClick={() => handleFormat("insertUnorderedList")}
           title="Bullets"
-          style={{
-            color: activeFormats.includes("insertUnorderedList")
-              ? "blue"
-              : "black",
-          }}
+          className={`toolbar-button ${
+            activeFormats.unorderedList ? "active" : ""
+          }`}
+          aria-label="Bulleted List"
         >
           <PiListBullets size={20} />
         </button>
         <button
           onClick={() => handleFormat("insertOrderedList")}
           title="Numbered List"
-          style={{
-            color: activeFormats.includes("insertOrderedList")
-              ? "blue"
-              : "black",
-          }}
+          className={`toolbar-button ${
+            activeFormats.orderedList ? "active" : ""
+          }`}
+          aria-label="Numbered List"
         >
           <BsListOl size={20} />
         </button>
-
         {/* Share Button */}
         <button
           onClick={handleShare}
           title="Share"
-          style={{
-            color: shareMessage ? "green" : "black",
-          }}
+          className="share-button"
+          aria-label="Share Note"
         >
           <IoShareSocial size={20} />
         </button>
       </div>
+
+      {/* Share Modal */}
+      {isShareModalOpen && (
+        <div className="modal-overlay" onClick={handleCloseModal}>
+          <div
+            className="modal-content"
+            onClick={(e) => e.stopPropagation()} // Prevent modal from closing when clicking inside
+          >
+            <div className="modal-header">
+              <h3>Share Note</h3>
+              <button className="modal-close-button" onClick={handleCloseModal}>
+                <IoCloseOutline size={20} />
+              </button>
+            </div>
+            <div className="modal-body">
+              {/* <label htmlFor="share-email">Email:</label> */}
+              <div className="email">
+                {/* <input
+                  type="email"
+                  id="share-email"
+                  value={shareEmail}
+                  onChange={(e) => setShareEmail(e.target.value)}
+                  placeholder="Enter email address"
+                  required
+                  className="modal-email-input"
+                /> */}
+                <button>
+                  {/* ?<SiGmail size={50} /> */}
+                  <CiMail size={50} />
+                </button>
+                {/* <button className="modal-send-butt">
+                </button> */}
+              </div>
+              <button onClick={handleCopy}>
+                <RxCopy size={50} />
+              </button>
+              {/* <button onClick={handleCopy} className="modal-copy-button">
+                Copy
+              </button> */}
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 };
