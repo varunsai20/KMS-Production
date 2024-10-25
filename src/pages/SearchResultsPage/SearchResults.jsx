@@ -274,6 +274,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
     };
   }, [annotateLoading]);
 
+
   const modalRef = useRef(null); // Ref for modal content
 
   // Handle clicks outside the modal to close it
@@ -881,9 +882,35 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   return (
     <div className="Container" ref={contentRightRef}>
       <div
-        style={{ position: "sticky", top: 0, zIndex: 1, background: "white" }}
+        style={{ position: "sticky", top: 0, zIndex: 1, background: "white",margin:".5% 0 1% 0" }}
       >
-        <Header className="searchResults-Header" />
+        <header className="search-header">
+          <div className="search-header-logo" style={{ margin: "20px 0" }}>
+            <a href="/">
+              <img
+                href="/"
+                src="https://www.infersol.com/wp-content/uploads/2020/02/logo.png"
+                alt="Infer Logo"
+              />
+            </a>
+          </div>
+          <nav className="nav-menu">
+            <ul>
+              {/* <li>
+                <a href="/">Home</a>
+              </li> */}
+              {/* <li>
+                <a href="#why-infer">Why Infer?</a>
+              </li> */}
+              {/* <li>
+                <a href="#FAQ's">FAQs</a>
+              </li> */}
+            </ul>
+          </nav>
+          <div className="search-header-auth-buttons" style={{ margin: "20px 26px 20px 0" }}>
+            <button className="login">Login</button>
+          </div>
+        </header>
       </div>
       <SearchBar className="searchResults-Bar"></SearchBar>
 
@@ -1487,21 +1514,55 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                                 </h3>
                               </div>
                               <FontAwesomeIcon
-                                icon={regularBookmark}
-                                size="l"
-                                style={{
-                                  color: bookmarkedPmids[idType]
-                                    ? "blue"
-                                    : "black",
-                                  cursor: "pointer",
-                                }}
-                                onClick={() => handleBookmarkClick(idType)}
-                                title={
-                                  bookmarkedPmids[idType]
-                                    ? "Bookmarked"
-                                    : "Bookmark this article"
-                                }
-                              />
+                      icon={regularBookmark}
+                      size="l"
+                      style={{
+                        color: isBookmarked(idType) ? 'blue' : 'black',
+                        cursor: 'pointer',
+                      }}
+                      onClick={() => handleBookmarkClick(idType)}
+                      title={isBookmarked(idType) ? 'Bookmarked' : 'Bookmark this article'}
+                    />
+                    {isModalOpen && (
+                        <div className="bookmark-modal-overlay">
+                          <div className="modal-content" ref={modalRef}>
+                            <h3>Save Bookmark</h3>
+
+                            {/* Existing Collections */}
+                            {collections.length > 0 && (
+                              <>
+                                <h4>Save to existing collection:</h4>
+                                <ul>
+                                  {collections.map((collection) => (
+                                    <li key={collection.name}>
+                                      <button onClick={() => handleSaveToExisting(collection.name)}>
+                                        {collection.name}
+                                      </button>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </>
+                            )}
+
+                            {/* Create New Collection */}
+                            <h4>Create a new collection:</h4>
+                            <input
+                              type="text"
+                              value={newCollectionName}
+                              onChange={(e) => setNewCollectionName(e.target.value)}
+                              placeholder="New collection name"
+                            />
+                            <div style={{display:"flex",gap:"20px"}}>
+
+                            <button onClick={handleCreateNewCollection} disabled={!newCollectionName}>
+                              Create
+                            </button>
+
+                            <button onClick={() => setIsModalOpen(false)}>Cancel</button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                             </div>
                             <p className="searchresult-authors">{`Published on: ${result.publication_date}`}</p>
                             <div className="searchresult-ID">

@@ -18,7 +18,8 @@ import Utilities from "../../assets/images/Lander-Utilities.svg";
 import Analytics from "../../assets/images/Lander-Analytics.svg";
 import { IoCloseOutline } from "react-icons/io5";
 import "./Lander-Logedin.css";
-import Notes from "../NotesPage/Notes";
+
+import Notes from "../NotesPage/Notes"
 
 const Lander = () => {
   // Access logged-in status from Redux

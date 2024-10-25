@@ -6,7 +6,8 @@ import Button from "./Buttons";
 import "../styles/variables.css";
 import "./Header-New.css";
 import Logo from "../assets/images/Logo_New.svg";
-import ProfileIcon from "../assets/images/profile-circle.svg"; // Profile icon for logged-in users
+import ProfileIcon from "../assets/images/Profile-dummy.svg"; // Profile icon for logged-in users
+
 
 const Header = () => {
   const location = useLocation();
@@ -49,7 +50,7 @@ const Header = () => {
         {isLoggedIn ? (
           // If user is logged in, show profile icon and logout button
           <>
-            <Link to="/profile" style={{display:"flex"}}>
+            <Link to="/admin/users/profile" style={{display:"flex"}}>
               <img src={ProfileIcon} style={{width:"35px"}}alt="Profile" className="profile-icon" />
             </Link>
             <Button text="Logout" className="logout-btn" onClick={handleLogout} />
@@ -57,7 +58,7 @@ const Header = () => {
         ) : (
           // If not logged in, show login and signup buttons
           <>
-            <Button text="SignUp" onClick={handleSignup} className="signup-btn" />
+            {/* <Button text="SignUp" onClick={handleSignup} className="signup-btn" /> */}
             <Button
               text="Login"
               className="login-btn"

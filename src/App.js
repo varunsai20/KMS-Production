@@ -12,7 +12,7 @@ import Admin from './pages/Admin/Admin'; // Admin layout wrapper
 import Dashboard from './pages/Admin/Dashboard'; // Dashboard component
 import Researchers from './pages/Admin/Researchers'; // Researchers component
 import AdminComp from './pages/Admin/Admin-Comp';
-
+import Profile from './components/Profile';
 function App() {
   return (
     <Router>
@@ -26,11 +26,9 @@ function App() {
 
           {/* Admin Routes */}
           <Route path="/admin" element={<Admin />}>
-            <Route path="dashboard" element={<Dashboard />} />
-            <Route path="researchers" element={<Researchers />} />
-            <Route path="researchers/create" element={<CreateResearcher />} />
-            <Route path="admins/create" element={<CreateAdmin />} />
-            <Route path="admins" element={<AdminComp/>}/>
+            <Route path="users" element={<Researchers />} />
+            <Route path="users/create" element={<CreateResearcher />} />
+            <Route path="users/profile" element={<Profile/>}/>
             {/* Add more admin-related routes here */}
           </Route>
         </Routes>

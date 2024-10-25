@@ -6,44 +6,83 @@ const CreateResearcher = () => {
   const navigate = useNavigate();
 
   const handleBackClick = () => {
-    navigate('/admin/researchers'); // Go back to the researchers list
+    navigate('/admin/users'); // Go back to the researchers list
   };
 
   return (
-    <div style={{ margin: '2%' }}>
+    <div style={{ margin: '0 2%' }}>
       <div className="create-researcher-header">
         <button className="back-button" onClick={handleBackClick}>
           ←
         </button>
-        <h2>Create Researcher</h2>
+        <h2 style={{ margin: 0 }}>Create User</h2>
       </div>
+
       <form className="create-researcher-form">
-        <label>Full Name</label>
-        <input type="text" placeholder="Enter full name" />
+        {/* Row 1 */}
+        <div className='User-Form-Row'>
+          <div className='User-Form-Row-Items'>
+            <label>Full Name</label>
+            <input type="text" placeholder="Enter full name" />
+          </div>
 
-        <label>Email ID</label>
-        <input type="email" placeholder="Enter email ID" />
+          <div className='User-Form-Row-Items'>
+            <label>Email ID</label>
+            <input type="email" placeholder="Enter email ID" />
+          </div>
+        </div>
 
-        <label>Contact</label>
-        <input type="text" placeholder="Enter contact" />
+        {/* Row 2 */}
+        <div className='User-Form-Row'>
+          <div className='User-Form-Row-Items'>
+          <label>Department</label>
+            <select>
+              <option>Select Department</option>
+              <option>IT</option>
+              <option>HR</option>
+            </select>
+          </div>
 
-        <label>Role</label>
-        <input type="text" value="Researcher" disabled />
+          <div className='User-Form-Row-Items'>
+            <label>Job Title</label>
+            <input type="text" placeholder="Enter Job Title"  />
+          </div>
+        </div>
 
-        <label>Department</label>
-        <select>
-          <option>Select Department</option>
-          <option>IT</option>
-          <option>HR</option>
-        </select>
+        {/* Row 3 */}
+        <div className='User-Form-Row'>
+          <div className='User-Form-Row-Items'>
+            <label>Organization</label>
+            <input type="text" placeholder="Enter organization name"  />
+          </div>
 
-        <label>Area of Expertise</label>
-        <select>
-          <option>Select Expertise</option>
-          <option>Software Development</option>
-          <option>Data Science</option>
-        </select>
+          <div className='User-Form-Row-Items'>
+            <label>Primary Research Area</label>
+            <select>
+              <option>Select Expertise</option>
+              <option>DNA</option>
+              <option>Cancer</option>
+            </select>
+          </div>
+        </div>
+        {/* Row 4 */}
+        <div className='User-Form-Row'>
+          <div className='User-Form-Row-Items'>
+            <label>Technical Skills</label>
+            <input type="text" placeholder="Enter relevant software, lab techniques etc"  />
+          </div>
 
+          <div className='User-Form-Row-Items'>
+            <label>Research Interests</label>
+            <select>
+              <option>Select Research Interests</option>
+              <option>Gene</option>
+              <option>Cell Biology</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Action Buttons */}
         <div className="form-actions">
           <button type="button" className="cancel-button" onClick={handleBackClick}>
             Cancel

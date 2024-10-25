@@ -3,6 +3,7 @@ import { useParams, useLocation } from "react-router-dom";
 import "./ArticlePage.css";
 import { Typography } from "@mui/material";
 import flag from "../../assets/images/flash.svg";
+import Header from "../../components/Header-New";
 import Arrow from "../../assets/images/back-arrow.svg";
 import annotate from "../../assets/images/task-square.svg";
 import { useNavigate } from "react-router-dom";
@@ -265,7 +266,7 @@ const ArticlePage = () => {
     setIsModalOpen(false);
   };
 
-  // console.log(selectedText);
+
   console.log("openNotes", openNotes);
 
   const handleSaveToNote = () => {
@@ -310,6 +311,7 @@ const ArticlePage = () => {
 
   console.log("open Notes", openNotes);
   console.log(typeof selectedText);
+
 
   const getIdType = () => {
     return `${source}_${id}`;
@@ -769,7 +771,6 @@ const ArticlePage = () => {
             </ul>
           </nav>
           <div className="auth-buttons" style={{ margin: "20px 26px 20px 0" }}>
-            <button className="signup">Sign up</button>
             <button className="login">Login</button>
           </div>
         </header>
@@ -900,7 +901,7 @@ const ArticlePage = () => {
                   />
 
                   {isModalOpen && (
-                    <div className="modal-overlay">
+                    <div className="bookmark-modal-overlay">
                       <div className="modal-content" ref={modalRef}>
                         <h3>Save Bookmark</h3>
 

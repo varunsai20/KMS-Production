@@ -67,17 +67,17 @@ const Login = () => {
   };
   return (
 <div className='Login-Form'>
-
 <form class="form" >
 
+<h2>Login</h2>
 
 <div className="flex-column">
-  <label>Email</label>
+  <label>Username</label>
   <div className={`inputForm ${emailError ? 'error-outline' : ''}`}>
     <input
       type="text"
       className="input"
-      placeholder="Enter your Email"
+      placeholder="Enter username"
       value={email}
       onChange={handleEmailChange}
     />

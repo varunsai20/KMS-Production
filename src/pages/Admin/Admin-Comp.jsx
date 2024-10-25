@@ -60,7 +60,6 @@ const AdminComp = () => {
                                         {isOpen === row.email && (
                                             <ul className="dropdown-menu">
                                                 <li className="dropdown-item">Edit</li>
-                                                <li className="dropdown-item">Make Admin</li>
                                                 <li className="dropdown-item delete">Delete</li>
                                             </ul>
                                         )}
