@@ -232,7 +232,13 @@ const Annotation = ({
       className="search-tables"
       style={{ height: `${annotateHeight}vh`, overflowY: "auto" }}
     >
-      <div style={{ background: "#fff", borderRadius: "16px 16px 0 0" }}>
+      <div
+        style={{
+          background: "#fff",
+          borderRadius: "16px 16px 0 0",
+          padding: "5px",
+        }}
+      >
         <p style={{ textAlign: "start" }}>Annotations</p>
       </div>
       <div className="search-Annotate-tables">

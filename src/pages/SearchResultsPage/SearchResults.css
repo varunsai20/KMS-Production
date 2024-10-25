@@ -438,7 +438,7 @@ button {
 .result-checkbox {
 }
 
-.searchresult-ArticleTitle{
+.searchresult-ArticleTitle {
   width: 90%;
 
   display: flex;
@@ -500,7 +500,8 @@ button {
   z-index: 1001;
 }
 
-.modal-content h3, .modal-content p {
+.modal-content h3,
+.modal-content p {
   margin-bottom: 15px;
 }
 
@@ -536,8 +537,6 @@ button {
 .modal-content ul li {
   margin-bottom: 10px;
 }
-
-
 
 .searchresult-authors {
   font-size: 14px;
@@ -791,7 +790,7 @@ button {
 
 .search-annotate-icon {
   border: 1px solid rgba(235, 235, 243, 1);
-  border-radius: 8px;
+  border-radius: 8px 8px 0px 0px;
   padding: 10px;
 }
 

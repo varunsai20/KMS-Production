@@ -273,12 +273,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       document.body.style.overflow = "auto";
     };
   }, [annotateLoading]);
-  const handleBookmarkClick = (pmid) => {
-    setBookmarkedPmids((prevState) => ({
-      ...prevState,
-      [pmid]: !prevState[pmid], // Toggle the bookmark state for the specific pmid
-    }));
-  };
 
   const modalRef = useRef(null); // Ref for modal content
 

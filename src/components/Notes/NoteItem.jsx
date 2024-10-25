@@ -43,7 +43,7 @@ const NoteItem = ({ note, onEdit, onDelete }) => {
     onDelete(note.id);
     setShowConfirmDelete(false);
   };
-
+  console.log(note.id);
   // Handle cancelling the deletion
   const cancelDelete = (e) => {
     e.stopPropagation();

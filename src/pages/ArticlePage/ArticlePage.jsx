@@ -11,14 +11,13 @@ import { CircularProgress } from "@mui/material";
 import { TextField } from "@mui/material";
 import Annotation from "../../components/Annotaions";
 import { faBookmark as regularBookmark } from "@fortawesome/free-regular-svg-icons";
-//import Button from "../../components/Buttons";
 import notesicon from "../../assets/images/note-2.svg";
 import rehypeRaw from "rehype-raw";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTelegram } from "@fortawesome/free-brands-svg-icons";
 import { faPen } from "@fortawesome/free-solid-svg-icons";
 import { faAnglesUp } from "@fortawesome/free-solid-svg-icons";
-import { IoSaveOutline } from "react-icons/io5";
+//import { IoSaveOutline } from "react-icons/io5";
 import { BsSend } from "react-icons/bs";
 import Notes from "../NotesPage/Notes";
 
@@ -62,12 +61,8 @@ const ArticlePage = () => {
     return JSON.parse(sessionStorage.getItem("ratingsList")) || [];
   });
   const [triggerAskClick, setTriggerAskClick] = useState(false);
-  //const [showPopup, setShowPopup] = useState(false);
-  //const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
-  //const [selectedText, setSelectedText] = useState("");
   const [editingPmid, setEditingPmid] = useState(null);
   const [editedTitle, setEditedTitle] = useState("");
-
   const [collections, setCollections] = useState(() => {
     const storedCollections =
       JSON.parse(localStorage.getItem("collections")) || [];
@@ -85,16 +80,13 @@ const ArticlePage = () => {
 
   const [bookmarkedPmids, setBookmarkedPmids] = useState({});
   const [savedText, setSavedText] = useState("");
-  const selectedTextRef = useRef(""); // Store selected text
-  const popupRef = useRef(null); // Reference to the popup button
-  const popupPositionRef = useRef({ x: 0, y: 0 }); // Store popup position
-  //const selectedTextRef = useRef("");
-  //const popupPositionRef = useRef({ x: 0, y: 0 });
-
-  const [annotateHeight, setAnnotateHeight] = useState(35); // initial height of annotate in vh
-  const [notesHeight, setNotesHeight] = useState(35); // initial height of notes in vh
-  const minHeight = 15; // minimum height in vh
-  const maxHeight = 60; // maximum height in vh
+  const selectedTextRef = useRef("");
+  const popupRef = useRef(null);
+  const popupPositionRef = useRef({ x: 0, y: 0 });
+  const [annotateHeight, setAnnotateHeight] = useState(35);
+  const [notesHeight, setNotesHeight] = useState(35);
+  const minHeight = 15;
+  const maxHeight = 60;
 
   // Handle mouse drag for annotate (bottom border)
   const handleAnnotateResize = (e) => {
@@ -151,11 +143,6 @@ const ArticlePage = () => {
     window.addEventListener("mouseup", onMouseUp);
   };
 
-  // const handleResize = (event) => {
-  //   const newWidth = event.target.value; // Get the new width from user interaction
-  //   setWidth1(newWidth);
-  //   setWidth2(100 - newWidth); // Second div takes up the remaining width
-  // };
   useEffect(() => {
     // Access the computed width of the content div
     if (contentRef.current) {
@@ -191,57 +178,6 @@ const ArticlePage = () => {
     setRatingsList(updatedRatings);
     sessionStorage.setItem("ratingsList", JSON.stringify(updatedRatings));
   };
-  // const handleMouseUp = (event) => {
-  //   const selection = window.getSelection();
-
-  //   if (selection.rangeCount > 0) {
-  //     const range = selection.getRangeAt(0);
-  //     const rect = range.getBoundingClientRect();
-  //     const selectedText = selection.toString().trim();
-  //     console.log("Type of selected text:", typeof selectedText);
-  //     if (selectedText) {
-  //       setSelectedText(selectedText);
-  //     }
-  //     setPopupPosition({
-  //       x: rect.left + window.scrollX,
-  //       y: rect.top + window.scrollY,
-  //     });
-  //     // setPopupPosition({ x: event.pageX, y: event.pageY });
-  //     setShowPopup(true);
-  //   } else {
-  //     setShowPopup(false);
-  //   }
-  // };
-  // const handleMouseUp = (event) => {
-  //   const selection = window.getSelection();
-
-  //   if (selection.rangeCount > 0) {
-  //     const range = selection.getRangeAt(0);
-  //     const selectedText = selection.toString().trim();
-
-  //     if (selectedText) {
-  //       const rect = range.getBoundingClientRect();
-  //       selectedTextRef.current = selectedText; // Store selected text in ref
-  //       popupPositionRef.current = {
-  //         x: rect.left + window.scrollX,
-  //         y: rect.top + window.scrollY,
-  //       };
-
-  //       // Position the popup without triggering re-render
-  //       if (popupRef.current) {
-  //         popupRef.current.style.left = `${popupPositionRef.current.x}px`;
-  //         popupRef.current.style.top = `${popupPositionRef.current.y + 20}px`;
-  //         popupRef.current.style.display = "block"; // Show the popup
-  //       }
-  //     } else {
-  //       if (popupRef.current) {
-  //         popupRef.current.style.display = "none"; // Hide the popup if no selection
-  //       }
-  //     }
-  //   }
-  // };
-
-  //console.log(selectedText);
   const handleMouseUp = (event) => {
     const selection = window.getSelection();
 
@@ -329,7 +265,7 @@ const ArticlePage = () => {
     setIsModalOpen(false);
   };
 
-  console.log(selectedText);
+  // console.log(selectedText);
   console.log("openNotes", openNotes);
 
   const handleSaveToNote = () => {
@@ -374,13 +310,6 @@ const ArticlePage = () => {
 
   console.log("open Notes", openNotes);
   console.log(typeof selectedText);
-
-  const handleBookmarkClick = (pmid) => {
-    setBookmarkedPmids((prevState) => ({
-      ...prevState,
-      [pmid]: !prevState[pmid],
-    }));
-  };
 
   const getIdType = () => {
     return `${source}_${id}`;
@@ -903,18 +832,8 @@ const ArticlePage = () => {
               className="article-content"
               onMouseUp={handleMouseUp}
               ref={contentRef}
-              // style={{ width: `43.61%` }}
-              // value={searchWidth}
-              // onChange={handleWidth}
             >
               <div className="article-title">
-                {/* <button
-                    
-                    alt="Arrow-left-icon"
-                    onClick={handleBackClick}
-                    style={{cursor:"pointer"}}
-                  >Back</button> */}
-
                 <div
                   style={{
                     display: "flex",
@@ -1128,38 +1047,18 @@ const ArticlePage = () => {
                   <button onClick={handleSaveToNote} className="Popup-buttons">
                     <div className="save-icon">
                       {/* <IoSaveOutline fontSize={"15px"} color="black" /> */}
-                      <BsSend size={20} color="white" title="Send to Notes" />
+                      <BsSend
+                        size={17}
+                        color="white"
+                        title="Send to Notes"
+                        style={{ paddingTop: "3px" }}
+                      />
                     </div>
-                    {/* <span style={{ color: "black", fontSize: "17px" }}>
+                    <span style={{ color: "white", fontSize: "17px" }}>
                       send to notes
-                    </span> */}
+                    </span>
                   </button>
                 </div>
-                {/* {showPopup && (
-                  <div
-                    className="Popup"
-                    style={{
-                      position: "absolute",
-                      top: popupPosition.y + 10,
-                      left: popupPosition.x + 10,
-                      backgroundColor: "#f1f1f1",
-                      // gridTemplateColumns: "1fr",
-                      zindex: "1000",
-                    }}
-                  >
-                    <button
-                      onClick={handleSaveToNote}
-                      className="Popup-buttons"
-                    >
-                      <div className="save-icon">
-                        <IoSaveOutline fontSize={"20px"} color="#1A82ff" />
-                      </div>
-                      <span style={{ color: "#1A82FF", fontSize: "20px" }}>
-                        Save to notes
-                      </span>
-                    </button>
-                  </div>
-                )} */}
               </div>
             </div>
           ) : (
@@ -1182,10 +1081,6 @@ const ArticlePage = () => {
                     annotateData={annotateData}
                     annotateHeight={annotateHeight}
                   />
-                  {/* <div
-                    className="annotate-line1"
-                    
-                  /> */}
                   <div
                     className="annotate-line2"
                     onMouseDown={handleAnnotateResize}

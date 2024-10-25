@@ -167,7 +167,7 @@ const Editnotes = ({ note, setNotes, onClose, notesHeight }) => {
       <form
         className="edit-note__form"
         onSubmit={handleForm}
-        style={{ height: `${notesHeight - 14}vh` }}
+        style={{ height: `${notesHeight - 11.6}vh` }}
       >
         <input
           type="text"
