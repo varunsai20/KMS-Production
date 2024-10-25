@@ -10,19 +10,30 @@ import { FiBold, FiUnderline } from "react-icons/fi";
 import { GoItalic, GoStrikethrough } from "react-icons/go";
 import { PiListBullets } from "react-icons/pi";
 import { BsListOl } from "react-icons/bs";
-import DOMPurify from "dompurify"; // Import DOMPurify
+import DOMPurify from "dompurify";
 //import { SiGmail } from "react-icons/si";
-import { RxCopy } from "react-icons/rx";
-import { CiMail } from "react-icons/ci";
+// import { RxCopy } from "react-icons/rx";
+//import { VscCopy } from "react-icons/vsc";
+import { MdEmail } from "react-icons/md";
+import { IoCopyOutline } from "react-icons/io5";
+// import { CiMail } from "react-icons/ci";
 
-import "./CreateNote.css"; // Ensure you have the necessary CSS
+import "./CreateNote.css";
 
-const Createnotes = ({ setNotes, onClose, selectedText, notesHeight }) => {
+const Createnotes = ({
+  setNotes,
+  onClose,
+  selectedText,
+  notesHeight,
+  onDelete,
+  note,
+}) => {
   console.log(selectedText);
   const [title, setTitle] = useState("");
   const [isOpenDropdown, setIsOpenDropdown] = useState(false);
   const date = useCreateDate();
-  const headerRef = useRef(null); // Ref to detect clicks outside
+  const headerRef = useRef(null);
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
 
   const [activeFormats, setActiveFormats] = useState({
     bold: false,
@@ -33,15 +44,12 @@ const Createnotes = ({ setNotes, onClose, selectedText, notesHeight }) => {
     unorderedList: false,
   });
   const editorRef = useRef(null);
-  const [noteContent, setNoteContent] = useState(selectedText || ""); // Initialize with selectedText
-  const [shareMessage, setShareMessage] = useState(""); // State for feedback message
-
-  // New States for Modal
+  const [noteContent, setNoteContent] = useState(selectedText || "");
+  const [shareMessage, setShareMessage] = useState("");
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
-  //const [shareEmail, setShareEmail] = useState("");
-
   console.log("Selected Text:", selectedText);
   console.log("note content", noteContent);
+  //console.log("noteid", note.id);
 
   useEffect(() => {
     const handleSelectionChange = () => {
@@ -156,17 +164,30 @@ const Createnotes = ({ setNotes, onClose, selectedText, notesHeight }) => {
     }
   };
 
-  const handleDeleteNotes = () => {
-    // Confirm before deleting all notes
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete all notes?"
-    );
-    if (confirmDelete) {
-      setNotes([]); // Clear all notes
-      onClose(); // Return to Notes list
-    }
+  const initiateDelete = (e) => {
+    e.stopPropagation(); // Prevent triggering onEdit
+    //setIsMenuOpen(false); // Close the menu
+    setShowConfirmDelete(true); // Show confirmation popup
   };
 
+  // const confirmDelete = (e) => {
+  //   // e.stopPropagation();
+  //   onDelete(note.id);
+  //   console.log(note.id);
+  //   setShowConfirmDelete(false);
+  // };
+  const confirmDelete = (e) => {
+    if (note && note.id) {
+      // Check if the note and its ID are valid
+      onDelete(note.id); // Call the onDelete handler with the note ID
+    }
+    setShowConfirmDelete(false); // Close confirmation popup
+  };
+
+  const cancelDelete = (e) => {
+    e.stopPropagation();
+    setShowConfirmDelete(false);
+  };
   const handleOpenNotesList = () => {
     onClose(); // Return to Notes list
   };
@@ -221,7 +242,7 @@ const Createnotes = ({ setNotes, onClose, selectedText, notesHeight }) => {
         {isOpenDropdown && (
           <div
             className="dropdown"
-            style={{ position: "absolute", width: "26.1%", zIndex: 1000 }}
+            style={{ position: "absolute", zIndex: 1000 }}
           >
             <div className="open-header-dropdown">
               {/* Include your dropdown content here, such as other buttons or options */}
@@ -235,12 +256,34 @@ const Createnotes = ({ setNotes, onClose, selectedText, notesHeight }) => {
                   <span>Notes List</span>
                 </button>
                 <button
-                  onClick={handleDeleteNotes}
+                  // onClick={handleDeleteNotes}
+                  onClick={initiateDelete}
                   className="dropdown-button-deletenotes"
                 >
                   <RiDeleteBin6Line style={{ marginRight: "5px" }} /> Delete
                   Notes
                 </button>
+                {showConfirmDelete && (
+                  <div className="confirm-overlay">
+                    <div className="confirm-popup">
+                      <p>Are you sure you want to delete this note?</p>
+                      <div className="confirm-buttons">
+                        <button
+                          className="confirm-delete-button"
+                          onClick={confirmDelete}
+                        >
+                          Delete
+                        </button>
+                        <button
+                          className="confirm-keep-button"
+                          onClick={cancelDelete}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -258,7 +301,7 @@ const Createnotes = ({ setNotes, onClose, selectedText, notesHeight }) => {
           </button>
           <Button
             text={<IoCloseOutline color="#1a82ff" size={25} />}
-            className="cancel-button"
+            className="notes-cancel-button"
             onClick={onClose}
           />
         </div>
@@ -266,7 +309,7 @@ const Createnotes = ({ setNotes, onClose, selectedText, notesHeight }) => {
       <form
         className="create-note__form"
         onSubmit={handleSubmit}
-        style={{ height: `${notesHeight - 13.5}vh` }}
+        style={{ height: `${notesHeight - 11.85}vh` }}
       >
         <input
           className="note-input"
@@ -283,7 +326,6 @@ const Createnotes = ({ setNotes, onClose, selectedText, notesHeight }) => {
           suppressContentEditableWarning={true}
           onClick={handleEditorClick}
           onInput={handleInput}
-          //onInput={(e) => setNoteContent(e.target.innerHTML)} // Updated to onInput
           placeholder="Note details..."
           style={{
             padding: "10px",
@@ -291,10 +333,7 @@ const Createnotes = ({ setNotes, onClose, selectedText, notesHeight }) => {
             borderRadius: "5px",
             fontSize: "14px",
             textAlign: "start",
-            // height: "auto",
-
             overflowY: "auto",
-            //color: "skyblue",
           }}
         >
           {/* Placeholder logic can be enhanced if needed */}
@@ -374,45 +413,58 @@ const Createnotes = ({ setNotes, onClose, selectedText, notesHeight }) => {
 
       {/* Share Modal */}
       {isShareModalOpen && (
-        <div className="modal-overlay" onClick={handleCloseModal}>
+        <div className="createNotes-modal-overlay" onClick={handleCloseModal}>
           <div
-            className="modal-content"
+            className="createNotes-modal-content"
             onClick={(e) => e.stopPropagation()} // Prevent modal from closing when clicking inside
           >
-            <div className="modal-header">
+            <div className="createNotes-modal-header">
               <h3>Share Note</h3>
-              <button className="modal-close-button" onClick={handleCloseModal}>
+              <button
+                className="createNotes-modal-close-button"
+                onClick={handleCloseModal}
+              >
                 <IoCloseOutline size={20} />
               </button>
             </div>
-            <div className="modal-body">
-              {/* <label htmlFor="share-email">Email:</label> */}
-              <div className="email">
-                {/* <input
-                  type="email"
-                  id="share-email"
-                  value={shareEmail}
-                  onChange={(e) => setShareEmail(e.target.value)}
-                  placeholder="Enter email address"
-                  required
-                  className="modal-email-input"
-                /> */}
-
-                <button className="Email">
-                  {/* ?<SiGmail size={50} /> */}
-                  Email:
-                  <CiMail size={50} />
+            <div className="createNotes-modal-body">
+              <div className="createNotes-email">
+                <button className="createNotes-Email">
+                  <div
+                    style={{
+                      backgroundColor: "#A5A5A5",
+                      padding: "5px 10px",
+                      borderRadius: "10px",
+                    }}
+                  >
+                    {/* <CiMail size={50} color="#1A82FF" />
+                     */}
+                    <MdEmail size={40} color="white" />
+                  </div>
+                  <span
+                    style={{ fontSize: "16px", color: "black", padding: "3px" }}
+                  >
+                    Email
+                  </span>
                 </button>
-                {/* <button className="modal-send-butt">
-                </button> */}
               </div>
-              <button onClick={handleCopy} className="copy">
-                Copy
-                <RxCopy size={50} />
+              <button onClick={handleCopy} className="createNotes-copy">
+                {/* <RxCopy size={50} /> */}
+                <div
+                  style={{
+                    backgroundColor: "#A5A5A5",
+                    padding: "5px 10px",
+                    borderRadius: "10px",
+                  }}
+                >
+                  <IoCopyOutline size={40} color="white" />
+                </div>
+                <span
+                  style={{ fontSize: "16px", color: "black", padding: "3px" }}
+                >
+                  Copy
+                </span>
               </button>
-              {/* <button onClick={handleCopy} className="modal-copy-button">
-                Copy
-              </button> */}
             </div>
           </div>
         </div>

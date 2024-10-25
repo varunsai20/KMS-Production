@@ -16,7 +16,7 @@ const NotesList = ({
 }) => {
   const [text, setText] = useState("");
   const [filteredNotes, setFilteredNotes] = useState(notes);
-  const [showDropdown, setShowDropdown] = useState(false);
+  //const [showDropdown, setShowDropdown] = useState(false);
 
   useEffect(() => {
     if (text.trim() === "") {
@@ -52,28 +52,6 @@ const NotesList = ({
           <div className="p">
             <p id="p">Notes</p>
           </div>
-          {/* <div className="dropdown-container">
-            <button className="dots" onClick={handleToggleDropdown}>
-              <RxDotsHorizontal color="#1a82ff" />
-            </button>
-            {showDropdown && (
-              <div className="dropdown-delete">
-                <button
-                  onClick={onDeleteAllNotes}
-                  className="dropdown-button"
-                  style={{ display: "flex", gap: "3px" }}
-                >
-                  <div className="delete-icon">
-                    <RiDeleteBin6Line
-                      size={13}
-                      style={{ marginLeft: "0", padding: "0" }}
-                    />
-                  </div>
-                  Delete All
-                </button>
-              </div>
-            )}
-          </div> */}
         </div>
         <div className="Search-wrapper">
           <img src={SearchIcon} alt="search" className="Search-icon" />

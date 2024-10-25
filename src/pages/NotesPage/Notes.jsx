@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from "react";
-//import { ResizableBox } from "react-resizable";
 import NotesList from "../../components/Notes/NotesList";
 import Createnotes from "../../components/Notes/CreateNotes";
 import Editnotes from "../../components/Notes/EditNotes";
-//import "react-resizable/css/styles.css"; // Required for ResizableBox styles
 import "./Notes.css";
 
 const NotesManager = ({ selectedText, notesHeight }) => {
@@ -62,13 +60,6 @@ const NotesManager = ({ selectedText, notesHeight }) => {
   };
 
   return (
-    // <ResizableBox
-    //   width={Infinity}
-    //   height={(35 * window.innerHeight) / 100}
-    //   minConstraints={[Infinity, (20 * window.innerHeight) / 100]}
-    //   maxConstraints={[Infinity, (70 * window.innerHeight) / 100]}
-    //   resizeHandles={["n"]} // Ensure this matches correctly
-    // >
     <div className="notes-manager-content">
       {/* Ensure there are valid child elements here */}
       {currentView === "list" && (
@@ -82,9 +73,11 @@ const NotesManager = ({ selectedText, notesHeight }) => {
       )}
       {currentView === "create" && (
         <Createnotes
+          notes={notes}
           selectedText={selectedText}
           setNotes={setNotes}
           onClose={handleCloseCreate}
+          onDelete={handleDeleteNote}
           notesHeight={notesHeight}
         />
       )}
@@ -97,7 +90,6 @@ const NotesManager = ({ selectedText, notesHeight }) => {
         />
       )}
     </div>
-    // </ResizableBox>
   );
 };
 
