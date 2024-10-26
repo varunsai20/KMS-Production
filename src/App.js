@@ -13,6 +13,7 @@ import Dashboard from './pages/Admin/Dashboard'; // Dashboard component
 import Researchers from './pages/Admin/Researchers'; // Researchers component
 import AdminComp from './pages/Admin/Admin-Comp';
 import Profile from './components/Profile';
+import EditResearcher from './pages/Admin/EditResearcher';
 function App() {
   return (
     <Router>
@@ -28,7 +29,8 @@ function App() {
           <Route path="/admin" element={<Admin />}>
             <Route path="users" element={<Researchers />} />
             <Route path="users/create" element={<CreateResearcher />} />
-            <Route path="users/profile" element={<Profile/>}/>
+            <Route path="users/edit/:user_id" element={<EditResearcher />} />
+            <Route path="users/profile/:user_id" element={<Profile/>}/>
             {/* Add more admin-related routes here */}
           </Route>
         </Routes>

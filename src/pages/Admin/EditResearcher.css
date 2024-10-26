@@ -1,4 +1,4 @@
-.create-researcher-header {
+.edit-researcher-header {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -13,7 +13,7 @@
     cursor: pointer;
   }
   
-  .create-researcher-form {
+  .edit-researcher-form {
     width: 60%;
     display: flex;
     flex-direction: column;
@@ -31,28 +31,28 @@
     gap: 10px;
   }
 
-  .create-researcher-form label {
+  .edit-researcher-form label {
     display: flex;
     font-weight: 600;
   }
   
-  .create-researcher-form input,
-  .create-researcher-form select {
+  .edit-researcher-form input,
+  .edit-researcher-form select {
     width: 96%;
     padding: 12px 0 12px 12px;
     border: 1px solid #ccc;
     border-radius: 8px;
     outline: none;
   }
-  .create-researcher-form select{
+  .edit-researcher-form select{
     width: 100%;
   }
-  .create-researcher-form .password-field {
+  .edit-researcher-form .password-field {
     display: flex;
     border: 1px solid #ccc;
     border-radius: 8px;
   }
-  .create-researcher-form .password-field input{
+  .edit-researcher-form .password-field input{
     border: none;
     outline: none;
   }
@@ -71,7 +71,7 @@
     border-radius: 5px;
   }
   
-  .create-button {
+  .edit-button {
     background-color: #2d79f3;
     border: none;
     color: #fff;

@@ -39,7 +39,7 @@
               <Link to="/admin/users" >
               <li className={`nav-item ${activeItem === 'Researchers' ? 'active' : ''}`} onClick={() => setActiveItem('Researchers')}>
               <img src={Researcher} alt="Researchers" className="nav-icon" />
-                <span>Researchers</span>
+                <span>Users</span>
                 </li>
               </Link>
 

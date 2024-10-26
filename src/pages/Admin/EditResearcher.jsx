@@ -1,20 +1,19 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import './CreateResearcher.css';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import axios from 'axios';
+import './EditResearcher.css';
 
-const CreateResearcher = () => {
+const EditResearcher = () => {
+  const { user_id } = useParams();
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
-  const user_id = user?.user_id;
   const token = user?.access_token;
 
   const [formData, setFormData] = useState({
     fullname: '',
     email: '',
     role: '',
-    password: '',
     department: '',
     job_title: '',
     organization_name: '',
@@ -26,10 +25,28 @@ const CreateResearcher = () => {
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleBackClick = () => {
-    navigate('/admin/users');
-  };
+  // Fetch user details on mount
+  useEffect(() => {
+    const fetchUserDetails = async () => {
+      try {
+        const response = await axios.get(`http://13.127.207.184:80/user/profile/${user_id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        console.log(response)
+        setFormData(response.data.user_profile);
+      } catch (error) {
+        console.error('Error fetching user details:', error);
+      }
+    };
 
+    if (user_id) {
+      fetchUserDetails();
+    }
+  }, [user_id, token]);
+
+  // Update form data state on input change
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({
@@ -38,18 +55,12 @@ const CreateResearcher = () => {
     });
   };
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
-
+  // Validate form before submission
   const validateForm = () => {
     const newErrors = {};
     if (!formData.fullname) newErrors.fullname = 'Full Name is required';
     if (!formData.email) newErrors.email = 'Email is required';
     if (!formData.role) newErrors.role = 'Role is required';
-    if (!formData.password || formData.password.length < 8) {
-      newErrors.password = 'Password must be at least 8 characters long';
-    }
     if (!formData.department) newErrors.department = 'Department is required';
     if (!formData.job_title) newErrors.job_title = 'Job Title is required';
     if (!formData.organization_name) newErrors.organization_name = 'Organization is required';
@@ -70,45 +81,49 @@ const CreateResearcher = () => {
     return Object.keys(newErrors).length === 0;
   };
 
+  // Handle form submission for editing
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (validateForm()) {
-      const apiData = {
-        ...formData,
-        technical_skills: formData.technical_skills.split(',').map(skill => skill.trim()),
-        research_interests: formData.research_interests.split(',').map(interest => interest.trim()),
-      };
-
       try {
-        const response = await axios.post(
-          `http://13.127.207.184:80/admin/create-user/${user_id}`,
-          apiData,
+        // Ensure user_id is part of the formData before sending
+        const updatedFormData = { ...formData, user_id };
+        const response = await axios.put(
+          `http://13.127.207.184:80/admin/edit_user`,
+          updatedFormData,
           {
             headers: {
               Authorization: `Bearer ${token}`,
             },
           }
         );
-
+        console.log(response)
+        // Check for response status and navigate if successful
         if (response.status === 200) {
-          navigate('/admin');
+          navigate('/admin/users');
         }
       } catch (error) {
-        console.error('Error creating user:', error);
+        console.error('Error updating user:', error);
       }
     }
   };
 
+  
+
+  const handleBackClick = () => {
+    navigate('/admin/users');
+  };
+
   return (
     <div style={{ margin: '0 2%' }}>
-      <div className="create-researcher-header">
+      <div className="edit-researcher-header">
         <button className="back-button" onClick={handleBackClick}>
           ←
         </button>
-        <h2 style={{ margin: 0 }}>Add User</h2>
+        <h2 style={{ margin: 0 }}>Edit User</h2>
       </div>
 
-      <form className="create-researcher-form" onSubmit={handleSubmit}>
+      <form className="edit-researcher-form" onSubmit={handleSubmit}>
         {/* Row 1 */}
         <div className='User-Form-Row'>
           <div className='User-Form-Row-Items'>
@@ -136,7 +151,7 @@ const CreateResearcher = () => {
           </div>
         </div>
 
-        {/* Row 2 (New Role and Password Row) */}
+        {/* Row 2 */}
         <div className='User-Form-Row'>
           <div className='User-Form-Row-Items'>
             <label>Role</label>
@@ -154,19 +169,21 @@ const CreateResearcher = () => {
 
           <div className='User-Form-Row-Items'>
             <label>Set Password</label>
-            <div className="password-field" style={{ borderColor: errors.password ? 'red' : '' }}>
+            <div className="password-field">
               <input
                 type={showPassword ? "text" : "password"}
                 name="password"
                 value={formData.password}
                 onChange={handleInputChange}
                 placeholder="Enter password"
-                
+                disabled
+                style={{ borderColor: errors.password ? 'red' : '' }}
               />
               <button
                 type="button"
                 className="show-password-btn"
-                onClick={togglePasswordVisibility}
+                
+                disabled
               >
                 {showPassword ? "Hide" : "Show"}
               </button>
@@ -266,8 +283,8 @@ const CreateResearcher = () => {
           <button type="button" className="cancel-button" onClick={handleBackClick}>
             Cancel
           </button>
-          <button type="submit" className="create-button">
-            Add
+          <button type="submit" className="edit-button">
+            Save
           </button>
         </div>
       </form>
@@ -275,4 +292,4 @@ const CreateResearcher = () => {
   );
 };
 
-export default CreateResearcher;
+export default EditResearcher;

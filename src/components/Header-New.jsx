@@ -8,27 +8,34 @@ import "./Header-New.css";
 import Logo from "../assets/images/Logo_New.svg";
 import ProfileIcon from "../assets/images/Profile-dummy.svg"; // Profile icon for logged-in users
 
-
 const Header = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn); // Access login status from Redux
+  const userId = useSelector((state) => state.auth.user?.user_id); // Fetch user_id from Redux
 
   // Function to check if the current path matches the link's href
   const isActive = (path) => location.pathname === path;
 
-  // Handle login click (dummy login button)
+  // Handle login click
   const handleLogin = () => {
-    navigate("/Login")
+    navigate("/Login");
   };
-  const handleSignup = () => {
-    navigate("/Signup")
-  };
+
   // Handle logout click
   const handleLogout = () => {
     dispatch(logout());
     navigate("/"); // Redirect to home after logout
+  };
+
+  // Handle profile click
+  const handleProfileClick = () => {
+    if (userId) {
+      navigate(`/admin/users/profile/${userId}`); // Navigate to /profile with user_id as a parameter
+    } else {
+      console.warn("User ID not found in Redux state"); // Log if userId is not available
+    }
   };
 
   return (
@@ -50,21 +57,18 @@ const Header = () => {
         {isLoggedIn ? (
           // If user is logged in, show profile icon and logout button
           <>
-            <Link to="/admin/users/profile" style={{display:"flex"}}>
-              <img src={ProfileIcon} style={{width:"35px"}}alt="Profile" className="profile-icon" />
-            </Link>
+            <div onClick={handleProfileClick} style={{ cursor: "pointer" }}>
+              <img src={ProfileIcon} style={{ width: "35px" }} alt="Profile" className="profile-icon" />
+            </div>
             <Button text="Logout" className="logout-btn" onClick={handleLogout} />
           </>
         ) : (
-          // If not logged in, show login and signup buttons
-          <>
-            {/* <Button text="SignUp" onClick={handleSignup} className="signup-btn" /> */}
-            <Button
-              text="Login"
-              className="login-btn"
-              onClick={handleLogin} // Call dummy login on click
-            />
-          </>
+          // If not logged in, show login button
+          <Button
+            text="Login"
+            className="login-btn"
+            onClick={handleLogin}
+          />
         )}
       </section>
     </div>
