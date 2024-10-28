@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
+import axios from "axios";
+import { useSelector } from "react-redux";
 import { useParams, useLocation } from "react-router-dom";
 import "./ArticlePage.css";
 import { Typography } from "@mui/material";
@@ -24,6 +26,9 @@ import Notes from "../NotesPage/Notes";
 
 const ArticlePage = () => {
   const { pmid } = useParams();
+  const { user } = useSelector((state) => state.auth);
+  const token=user?.access_token;
+  const user_id=user?.user_id;
   const [type, id1] = pmid.split(":");
   const id = Number(id1);
   const [source, setSource] = useState();
@@ -36,7 +41,6 @@ const ArticlePage = () => {
   const [response, setResponse] = useState("");
   const [loading, setLoading] = useState(false);
   const annotateData = location.state.annotateData || { annotateData: [] };
-  console.log(annotateData);
   const endOfMessagesRef = useRef(null);
   const [chatHistory, setChatHistory] = useState(() => {
     const storedHistory = sessionStorage.getItem("chatHistory");
@@ -72,7 +76,6 @@ const ArticlePage = () => {
   const [currentIdType, setCurrentIdType] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newCollectionName, setNewCollectionName] = useState("");
-  console.log(collections);
   const isBookmarked = (idType) => {
     return collections.some((collection) =>
       collection.articles.includes(idType)
@@ -89,6 +92,44 @@ const ArticlePage = () => {
   const minHeight = 15;
   const maxHeight = 60;
 
+
+
+  useEffect(() => {
+    // Determine the source based on `type`
+    if (type === "bioRxiv_id") {
+      setSource("biorxiv");
+    } else if (type === "pmid") {
+      setSource("pubmed");
+    } else if (type === "plos_id") {
+      setSource("plos");
+    }
+
+    // Perform GET request to fetch article data
+    if (source && id) {
+      const fetchArticleData = async () => {
+        try {
+          const response = await axios.get(
+            `http://13.127.207.184/view_article/get_article/${id}?source=${source}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`, // Include Bearer token
+              },
+            }
+          );
+          const article = response.data; // Assuming response contains article data directly
+          setArticleData(article);
+
+          // Retrieve saved search term from session storage
+          const savedTerm = sessionStorage.getItem("SearchTerm");
+          setSearchTerm(savedTerm);
+        } catch (error) {
+          console.error("Error fetching article data:", error);
+        }
+      };
+
+      fetchArticleData();
+    }
+  }, [id, source, token]);
   // Handle mouse drag for annotate (bottom border)
   const handleAnnotateResize = (e) => {
     e.preventDefault();
@@ -267,12 +308,9 @@ const ArticlePage = () => {
   };
 
 
-  console.log("openNotes", openNotes);
-
   const handleSaveToNote = () => {
     const textToSave = selectedTextRef.current; // Get the selected text from ref
     if (textToSave) {
-      console.log("Text to save:", textToSave);
       setSavedText(textToSave);
       // You can save the text to notes or perform any other action here.
     }
@@ -309,8 +347,6 @@ const ArticlePage = () => {
   //   }
   // };
 
-  console.log("open Notes", openNotes);
-  console.log(typeof selectedText);
 
 
   const getIdType = () => {
@@ -319,32 +355,7 @@ const ArticlePage = () => {
 
   const uniqueId = getIdType();
 
-  useEffect(() => {
-    if (type === "bioRxiv_id") {
-      setSource("biorxiv");
-    } else if (type === "pmid") {
-      setSource("pubmed");
-    } else if (type === "plos_id") {
-      setSource("plos");
-    }
 
-    if (data && data.articles) {
-      const savedTerm = sessionStorage.getItem("SearchTerm");
-      setSearchTerm(savedTerm);
-      const article = data.articles.find((article) => {
-        const articlePmid =
-          article.pmid || article.bioRxiv_id || article.plos_id;
-        return String(articlePmid) === String(id);
-      });
-      if (article) {
-        setArticleData(article);
-      } else {
-        console.error("Article not found for the given PMID");
-      }
-    } else {
-      console.error("Data or articles not available");
-    }
-  }, [pmid, data]);
 
   useEffect(() => {
     const articleContent = document.querySelector(".article-content");
@@ -392,109 +403,102 @@ const ArticlePage = () => {
       alert("Please enter a query");
       return;
     }
-
+    
     setShowStreamingSection(true);
     setLoading(true);
-
+  
     const newChatEntry = { query, response: "", showDot: true };
     setChatHistory((prevChatHistory) => [...prevChatHistory, newChatEntry]);
-
+  
+    // Create a unique key for the session based on the source and article id
+    const sessionKey = `${source}_${id}`;
+    const storedSessionId = JSON.parse(sessionStorage.getItem("articleSessions"))?.[sessionKey] || "";
+  
     const bodyData = JSON.stringify({
       question: query,
-      id: id,
+      user_id: user_id,
+      session_id: storedSessionId || undefined, // Use stored session_id if available
       source: source,
+      article_id: Number(id),
     });
+  
     try {
-      const response = await fetch("http://13.127.207.184:80/generateanswer", {
+      const response = await fetch("http://13.127.207.184:80/view_article/generateanswer", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // Add the Bearer token here
         },
         body: bodyData,
       });
-
+      console.log("API Response:", response);
+  
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let buffer = "";
       setQuery("");
-
+  
       const readStream = async () => {
         let done = false;
         const delay = 100; // Delay between words
-
+  
         while (!done) {
           const { value, done: streamDone } = await reader.read();
           done = streamDone;
-
+  
           if (value) {
             buffer += decoder.decode(value, { stream: true });
-            if (articleData) {
-              let storedHistory =
-                JSON.parse(localStorage.getItem("history")) || [];
-
-              // Check if the pmid is already present in the history
-              const pmidExists = storedHistory.some(
-                (item) => item.pmid === pmid
-              );
-
-              // Only add the entry if the pmid is not already in the history
-              if (!pmidExists) {
-                const newHistoryEntry = {
-                  pmid: pmid,
-                  title: articleData.article_title.toLowerCase(),
-                };
-
-                // Add the new entry to the beginning of the history
-                storedHistory = [newHistoryEntry, ...storedHistory];
-
-                // Update localStorage
-                localStorage.setItem("history", JSON.stringify(storedHistory));
-              }
-            }
-            // Process chunks
+  
             while (buffer.indexOf("{") !== -1 && buffer.indexOf("}") !== -1) {
               let start = buffer.indexOf("{");
               let end = buffer.indexOf("}", start);
               if (start !== -1 && end !== -1) {
                 const jsonChunk = buffer.slice(start, end + 1);
                 buffer = buffer.slice(end + 1);
-
+  
                 try {
                   const parsedData = JSON.parse(jsonChunk);
+                  console.log("Received Data Chunk:", parsedData); // Log each parsed data chunk
+  
+                  // Store session_id for the specific article and source in sessionStorage if it exists
+                  if (parsedData.session_id) {
+                    const articleSessions = JSON.parse(sessionStorage.getItem("articleSessions")) || {};
+                    articleSessions[sessionKey] = parsedData.session_id; // Store session_id under source_id key
+                    sessionStorage.setItem("articleSessions", JSON.stringify(articleSessions));
+                  }
+  
                   const answer = parsedData.answer;
                   const words = answer.split(" ");
-
+  
                   for (const word of words) {
                     await new Promise((resolve) => setTimeout(resolve, delay));
-
+  
                     setChatHistory((chatHistory) => {
                       const updatedChatHistory = [...chatHistory];
                       const lastEntryIndex = updatedChatHistory.length - 1;
-
+  
                       if (lastEntryIndex >= 0) {
                         updatedChatHistory[lastEntryIndex] = {
                           ...updatedChatHistory[lastEntryIndex],
                           response:
-                            (updatedChatHistory[lastEntryIndex].response ||
-                              "") +
+                            (updatedChatHistory[lastEntryIndex].response || "") +
                             " " +
                             word,
-                          showDot: true, // Show dot while streaming
+                          showDot: true,
                         };
                       }
-
+  
                       return updatedChatHistory;
                     });
-
+  
                     setResponse((prev) => prev + " " + word);
-
+  
                     if (endOfMessagesRef.current) {
                       endOfMessagesRef.current.scrollIntoView({
                         behavior: "smooth",
                       });
                     }
                   }
-                  // Hide dot after last word
                   setChatHistory((chatHistory) => {
                     const updatedChatHistory = [...chatHistory];
                     const lastEntryIndex = updatedChatHistory.length - 1;
@@ -510,17 +514,19 @@ const ArticlePage = () => {
             }
           }
         }
-
+  
         setLoading(false);
         sessionStorage.setItem("chatHistory", JSON.stringify(chatHistory));
       };
-
+  
       readStream();
     } catch (error) {
       console.error("Error fetching or reading stream:", error);
       setLoading(false);
     }
   };
+  
+  
 
   const handlePromptClick = (queryText) => {
     setQuery(queryText);
@@ -660,27 +666,27 @@ const ArticlePage = () => {
       }
 
       // Handle Images Section
-      if (cleanedSectionKey.toLowerCase() === "images") {
-        const imageEntries = Object.values(sectionData); // Extract image objects
+      // if (cleanedSectionKey.toLowerCase() === "images") {
+      //   const imageEntries = Object.values(sectionData); // Extract image objects
 
-        return imageEntries.map((image, index) => (
-          <div
-            key={index}
-            style={{ marginBottom: "20px", textAlign: "center" }}
-          >
-            <img
-              src={image.image_url}
-              alt={image.label || "Image"}
-              style={{ maxWidth: "100%", height: "auto", borderRadius: "8px" }}
-            />
-            {image.caption && (
-              <Typography variant="body2" style={{ marginTop: "8px" }}>
-                <strong>{image.label}</strong>: {image.caption}
-              </Typography>
-            )}
-          </div>
-        ));
-      }
+      //   return imageEntries.map((image, index) => (
+      //     <div
+      //       key={index}
+      //       style={{ marginBottom: "20px", textAlign: "center" }}
+      //     >
+      //       <img
+      //         src={image.image_url}
+      //         alt={image.label || "Image"}
+      //         style={{ maxWidth: "100%", height: "auto", borderRadius: "8px" }}
+      //       />
+      //       {image.caption && (
+      //         <Typography variant="body2" style={{ marginTop: "8px" }}>
+      //           <strong>{image.label}</strong>: {image.caption}
+      //         </Typography>
+      //       )}
+      //     </div>
+      //   ));
+      // }
 
       // Handle nested objects or other content
       if (typeof sectionData === "object") {
@@ -713,8 +719,6 @@ const ArticlePage = () => {
 
   const getHistoryTitles = () => {
     let storedHistory = JSON.parse(localStorage.getItem("history")) || {};
-    console.log(storedHistory);
-    console.log(typeof storedHistory);
     // Return the stored history as an array of {pmid, title} objects
     return storedHistory;
   };
@@ -731,7 +735,6 @@ const ArticlePage = () => {
     const updatedHistory = getHistoryTitles().map((item) =>
       item.pmid === pmid ? { ...item, title: editedTitle } : item
     );
-    console.log(updatedHistory);
     // Save the updated history back to localStorage without changing the pmid
     localStorage.setItem("history", JSON.stringify(updatedHistory));
 
@@ -885,7 +888,7 @@ const ArticlePage = () => {
                       fontSize: "20px",
                     }}
                   >
-                    {articleData.article_title}
+                    {articleData.article.article_title}
                   </p>
                   <FontAwesomeIcon
                     icon={regularBookmark}
@@ -961,11 +964,11 @@ const ArticlePage = () => {
                     marginBottom: "5px",
                   }}
                 >
-                  {articleData.publication_type ? (
+                  {articleData.article.publication_type ? (
                     <span>
                       Publication Type :
                       <strong style={{ color: "black" }}>
-                        {articleData.publication_type.join(", ")}
+                        {articleData.article.publication_type.join(", ")}
                       </strong>
                     </span>
                   ) : (
@@ -974,7 +977,7 @@ const ArticlePage = () => {
                   <span style={{ color: "#2b9247" }}>PMID : {id}</span>
                 </div>
 
-                {articleData.abstract_content && (
+                {articleData.article.abstract_content && (
                   <>
                     <Typography
                       variant="h4"
@@ -988,13 +991,13 @@ const ArticlePage = () => {
                       Abstract
                     </Typography>
                     <p>
-                      {renderContentInOrder(articleData.abstract_content, true)}
+                      {renderContentInOrder(articleData.article.abstract_content, true)}
                     </p>
                   </>
                 )}
                 {/* <div className="content-brake"></div>  */}
-                {articleData.body_content &&
-                  renderContentInOrder(articleData.body_content, true)}
+                {articleData.article.body_content &&
+                  renderContentInOrder(articleData.article.body_content, true)}
 
                 {showStreamingSection && (
                   <div className="streaming-section">

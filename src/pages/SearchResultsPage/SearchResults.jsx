@@ -15,7 +15,8 @@ const ITEMS_PER_PAGE = 10;
 const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   const location = useLocation(); // Access the passed state
   const { data } = location.state || { data: [] };
-
+  const { user } = useSelector((state) => state.auth);
+  const token=user?.access_token;
   console.log(data);
   const searchTerm = sessionStorage.getItem("SearchTerm");
   const navigate = useNavigate();
@@ -784,56 +785,55 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       sessionStorage.setItem("AnnotateSource", "");
       setAnnotateData([]);
       setAnnotateLoading(true);
+  
       const extractIdType = (uniqueId) => {
         console.log(uniqueId);
         return uniqueId.split("_")[1]; // This splits "source_idType" and returns only the idType
       };
       const extractIdSource = (uniqueId) => uniqueId.split("_")[0];
+  
       const annotatedArticles = totalArticles.map((id) => ({
         source: extractIdSource(id),
         idType: extractIdType(id),
       }));
       console.log(annotatedArticles);
+  
       // Prepare the data by removing the "source_" part from uniqueId
-      const pubmedIds = selectedArticles.map((id) =>
-        parseInt(extractIdType(id), 10)
-      );
-      const biorxivIds = bioRxivArticles.map((id) =>
-        parseInt(extractIdType(id), 10)
-      );
+      const pubmedIds = selectedArticles.map((id) => parseInt(extractIdType(id), 10));
+      const biorxivIds = bioRxivArticles.map((id) => parseInt(extractIdType(id), 10));
       const plosIds = plosArticles.map((id) => parseInt(extractIdType(id), 10));
+
+  
       axios
-        .post("http://13.127.207.184:80/annotate", {
-          pubmed: pubmedIds,
-          biorxiv: biorxivIds,
-          plos: plosIds, // Sending the selected PMIDs in the request body
-        })
+        .post(
+          "http://13.127.207.184:80/core_search/annotate",
+          {
+            pubmed: pubmedIds,
+            biorxiv: biorxivIds,
+            plos: plosIds,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`, // Add the Bearer token here
+            },
+          }
+        )
         .then((response) => {
-          //setIsChecked((prev) => !prev);
-          //localStorage.setItem("checkboxState", JSON.stringify(!isChecked));
           const data = response.data;
           sessionStorage.setItem("AnnotateData", JSON.stringify(data));
-          sessionStorage.setItem(
-            "AnnotateSource",
-            JSON.stringify(annotatedArticles)
-          );
+          sessionStorage.setItem("AnnotateSource", JSON.stringify(annotatedArticles));
           setAnnotateData(data);
           setAnnotateSource(annotatedArticles);
           setOpenAnnotate(true);
-          // setResults(data);
-          // Navigate to SearchPage and pass data via state
-          // navigate("/search", { state: { data, searchTerm } });
-          // clearTimeout(timeoutId);
-          // setLoading(false);
           setAnnotateLoading(false);
         })
         .catch((error) => {
           console.error("Error fetching data from the API", error);
+          setAnnotateLoading(false);
         });
     }
-
-    // Handle success response (e.g., show a success message or update the UI)
   };
+  
   const [expandedPmids, setExpandedPmids] = useState({}); // Track which PMIDs are expanded
   const [expandedTexts, setExpandedTexts] = useState({});
   // Function to toggle the expansion for all rows associated with a given PMID

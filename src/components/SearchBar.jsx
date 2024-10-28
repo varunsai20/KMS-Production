@@ -6,6 +6,7 @@ import { Autocomplete,InputAdornment, TextField } from "@mui/material";
 import terms from "../assets/Data/final_cleaned_terms_only.json";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
+import { useSelector } from 'react-redux';
 import { useDispatch } from "react-redux";
 import { setSearchResults, clearSearchResults } from "../redux/actions/actions";
 const SearchBar = ({ renderInputContainer, className }) => {
@@ -16,6 +17,8 @@ const SearchBar = ({ renderInputContainer, className }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch=useDispatch();
+  const { user } = useSelector((state) => state.auth);
+  const token=user?.access_token;
   useEffect(() => {
     if (location.pathname === "/search") {
       // Check if searchTerm is present in sessionStorage
@@ -60,28 +63,30 @@ const SearchBar = ({ renderInputContainer, className }) => {
   };
   const handleButtonClick = () => {
     dispatch(clearSearchResults());
-    sessionStorage.removeItem("ResultData")
+    sessionStorage.removeItem("ResultData");
     if (searchTerm) {
-      let searchQuery=sessionStorage.getItem("SearchTerm")
-      console.log("searchTerm :",searchQuery)
+      let searchQuery = sessionStorage.getItem("SearchTerm");
+      console.log("searchTerm:", searchQuery);
       setLoading(true);
-      // sessionStorage.setItem("SearchTerm", searchTerm); // Save search term to sessionStorage
+  
       const timeoutId = setTimeout(() => {
         setLoading(false);
         navigate("/search", { state: { data: [], searchTerm } });
-      }, 60000); // 30 seconds
-
+      }, 60000); // 60 seconds
+  
       axios
-        .post("http://13.127.207.184:80/query", { query: searchQuery })
+        .get(`http://13.127.207.184:80/core_search/?term=${searchQuery}`, {
+          headers: {
+            Authorization: `Bearer ${token}`, // Add your Bearer token here
+          },
+        })
         .then((response) => {
-          // sessionStorage.setItem("SearchTerm", searchTerm); // Update sessionStorage after the response
-          const data = response.data; // Assuming the API response contains a 'results' array
+          const data = response.data;
           setResults(data);
           dispatch(setSearchResults(data));
           clearTimeout(timeoutId);
           setLoading(false);
           navigate("/search", { state: { data, searchTerm } });
-          
         })
         .catch((error) => {
           console.log(error);
@@ -92,6 +97,7 @@ const SearchBar = ({ renderInputContainer, className }) => {
         });
     }
   };
+  
 
   const handleOptionSelect = (event, value) => {
     if (value) {
