@@ -1,26 +1,19 @@
-/* Main Container */
 .Landing-Container {
   display: flex;
   flex-direction: column;
 }
-
-/* Content Section */
 .Landing-Content {
   display: flex;
   justify-content: space-between;
   margin: 1% 7%;
   min-height: 60%;
 }
-
-/* Left Section */
 .Landing-Content-Left {
   position: relative;
   width: 70%;
   min-width: 40%;
   max-width: 70%;
 }
-
-/* Image Positions */
 .Left1,
 .Left2,
 .Right1,
@@ -28,8 +21,6 @@
   position: absolute;
   width: 10%;
 }
-
-/* Individual Image Positions */
 .Left1 {
   top: 12.5%;
   left: 12.5%;
@@ -46,8 +37,6 @@
   top: 75%;
   left: 75%;
 }
-
-/* Center Content on Large Screens */
 .Landing-Content-Left-Content {
   position: absolute;
   top: 30%;
@@ -117,7 +106,7 @@
   position: static;
   width: 100%;
 }
-/* Right Section */
+
 .Landing-Content-Right {
   width: 30%;
   min-width: 20%;
@@ -128,7 +117,6 @@
   width: 80%;
 }
 
-/* Styling for the new sections */
 .Landing-Features {
   display: flex;
   width: 60%;
@@ -142,16 +130,6 @@
   opacity: 0px;
   justify-content: space-around;
 }
-/* .Landing-Features {
-    display: flex;
-    justify-content: space-around;
-    margin: auto;
-    max-width: 80%;
-    width: 60%;
-    padding: 20px 0;
-    border: 1px solid #e0e0e0;
-} */
-
 .Feature-Item {
   text-align: center;
   margin: 2%;
@@ -173,9 +151,6 @@
   text-align: center;
 
   display: block;
-  /*font-family: Manrope;
-    font-size: 1rem;
-    font-weight: 500; */
   margin: 8px 0;
   color: #007bff;
   text-decoration: none;
@@ -186,13 +161,9 @@
 }
 
 .WhyInfer-points {
-  /* position: absolute; */
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 20px;
-  /* max-width: 800px;
-    margin-top: 5%;
-    margin: auto; */
 }
 
 .Landing-Features-card {
@@ -201,11 +172,10 @@
   padding: 20px;
   text-align: center;
   transition: box-shadow 0.3s ease;
-  /* box-shadow: horizontal-offset vertical-offset blur-radius spread-radius color */
   box-shadow: 0 -6px 8px rgba(0, 0, 0, 0.2),
     /* Top shadow */ 0 6px 8px rgba(0, 0, 0, 0.2),
     /* Bottom shadow */ -2px 0 6px rgba(0, 0, 0, 0.1),
-    /* Left shadow */ 2px 0 6px rgba(0, 0, 0, 0.1); /* Right shadow */
+    /* Left shadow */ 2px 0 6px rgba(0, 0, 0, 0.1);
 }
 
 .Landing-Features-card:hover {
@@ -232,8 +202,6 @@
   color: #333;
 }
 .card-title {
-  /* font-size: 18px;
-    margin-bottom: 10px; */
   background: linear-gradient(
     90.5deg,
     #fe7675 30.57%,
@@ -242,8 +210,8 @@
   );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  background-clip: text; /* For non-WebKit browsers */
-  text-fill-color: transparent; /* For other browsers if supported */
+  background-clip: text;
+  text-fill-color: transparent;
   font-family: Manrope;
   font-size: 20px;
   font-weight: 600;
@@ -262,11 +230,24 @@
   letter-spacing: 0.02em;
   text-align: center;
 }
+.Notes-modal-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.5);
+}
 .notes-modal {
   position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  top: 10%;
+  left: 30%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   background-color: white;
   padding: 20px;
   box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
@@ -275,32 +256,17 @@
   height: 70vh;
   width: 40%;
 }
-
-.close-modal {
-  /* background-color: #007bff; */
-  color: black;
-  /* padding: 10px 20px; */
+.close-modal-notes {
+  position: absolute;
+  top: -40px;
+  right: 0px;
+  color: white;
+  background-color: transparent;
   border: none;
-  border-radius: 5px;
   cursor: pointer;
-  text-align: end;
+  font-size: 20px;
+  z-index: 10;
 }
-
-
-/* Modal Styles */
-.modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
 .modal-content {
   background: white;
   padding: 20px;
@@ -308,6 +274,7 @@
   width: 50%;
   max-width: 600px;
   position: relative;
+  backdrop-filter: blur(1px);
 }
 
 .close-button {
@@ -321,4 +288,84 @@
   border-radius: 5px;
   cursor: pointer;
 }
+.blur-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(1px);
+  z-index: 998;
+}
+.collection-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: white;
+  padding: 20px;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  border-radius: 8px;
+  height: 70vh;
+  width: 80%;
+  overflow-y: auto;
+}
+.close-collection {
+  position: absolute;
+  top: calc(42% - 35vh);
+  right: calc(10% - 20px);
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  z-index: 1001;
+}
 
+.close-collection:hover {
+  color: #1a82ff;
+}
+
+.close-collection:hover {
+  background-color: rgba(235, 235, 247, 0.5);
+}
+.close-modal-notes:hover {
+  background-color: rgba(235, 235, 247, 0.5);
+}
+/* Resizer styling */
+.resizer {
+  position: absolute;
+  background: transparent;
+}
+
+.resizer-top,
+.resizer-bottom {
+  left: 0;
+  right: 0;
+  height: 8px;
+  cursor: ns-resize;
+}
+
+.resizer-top {
+  top: -4px;
+}
+
+.resizer-bottom {
+  bottom: -4px;
+}
+
+.resizer-right,
+.resizer-left {
+  top: 0;
+  bottom: 0;
+  width: 8px;
+  cursor: ew-resize;
+}
+
+.resizer-right {
+  right: -4px;
+}
+
+.resizer-left {
+  left: -4px;
+}

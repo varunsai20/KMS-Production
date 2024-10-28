@@ -1,26 +1,17 @@
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import "./SearchResults.css";
-import Header from "../../components/Header-New";
 import Footer from "../../components/Footer-New";
 import SearchBar from "../../components/SearchBar";
 import Loading from "../../components/Loading";
 import Annotation from "../../components/Annotaions";
-import { Button, CircularProgress } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
 import annotate from "../../assets/images/task-square.svg";
-import notesicon from "../../assets/images/note-2.svg";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBookmark as regularBookmark } from "@fortawesome/free-regular-svg-icons";
-import { faComment } from "@fortawesome/free-regular-svg-icons";
-import flag from "../../assets/images/flash.svg";
-//import sendicon from "../../assets/images/sendicon.svg";
-import { faTelegram } from "@fortawesome/free-brands-svg-icons";
 import { useSelector } from "react-redux";
 import { faAnglesUp } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
-import { CiLogin } from "react-icons/ci";
 const ITEMS_PER_PAGE = 10;
-
 const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   const location = useLocation(); // Access the passed state
   const { data } = location.state || { data: [] };
@@ -273,7 +264,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       document.body.style.overflow = "auto";
     };
   }, [annotateLoading]);
-
 
   const modalRef = useRef(null); // Ref for modal content
 
@@ -882,7 +872,13 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   return (
     <div className="Container" ref={contentRightRef}>
       <div
-        style={{ position: "sticky", top: 0, zIndex: 1, background: "white",margin:".5% 0 1% 0" }}
+        style={{
+          position: "sticky",
+          top: 0,
+          zIndex: 1,
+          background: "white",
+          margin: ".5% 0 1% 0",
+        }}
       >
         <header className="search-header">
           <div className="search-header-logo" style={{ margin: "20px 0" }}>
@@ -907,7 +903,10 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
               </li> */}
             </ul>
           </nav>
-          <div className="search-header-auth-buttons" style={{ margin: "20px 26px 20px 0" }}>
+          <div
+            className="search-header-auth-buttons"
+            style={{ margin: "20px 26px 20px 0" }}
+          >
             <button className="login">Login</button>
           </div>
         </header>
@@ -1514,55 +1513,77 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                                 </h3>
                               </div>
                               <FontAwesomeIcon
-                      icon={regularBookmark}
-                      size="l"
-                      style={{
-                        color: isBookmarked(idType) ? 'blue' : 'black',
-                        cursor: 'pointer',
-                      }}
-                      onClick={() => handleBookmarkClick(idType)}
-                      title={isBookmarked(idType) ? 'Bookmarked' : 'Bookmark this article'}
-                    />
-                    {isModalOpen && (
-                        <div className="bookmark-modal-overlay">
-                          <div className="modal-content" ref={modalRef}>
-                            <h3>Save Bookmark</h3>
+                                icon={regularBookmark}
+                                size="l"
+                                style={{
+                                  color: isBookmarked(idType)
+                                    ? "blue"
+                                    : "black",
+                                  cursor: "pointer",
+                                }}
+                                onClick={() => handleBookmarkClick(idType)}
+                                title={
+                                  isBookmarked(idType)
+                                    ? "Bookmarked"
+                                    : "Bookmark this article"
+                                }
+                              />
+                              {isModalOpen && (
+                                <div className="bookmark-modal-overlay">
+                                  <div className="modal-content" ref={modalRef}>
+                                    <h3>Save Bookmark</h3>
 
-                            {/* Existing Collections */}
-                            {collections.length > 0 && (
-                              <>
-                                <h4>Save to existing collection:</h4>
-                                <ul>
-                                  {collections.map((collection) => (
-                                    <li key={collection.name}>
-                                      <button onClick={() => handleSaveToExisting(collection.name)}>
-                                        {collection.name}
+                                    {/* Existing Collections */}
+                                    {collections.length > 0 && (
+                                      <>
+                                        <h4>Save to existing collection:</h4>
+                                        <ul>
+                                          {collections.map((collection) => (
+                                            <li key={collection.name}>
+                                              <button
+                                                onClick={() =>
+                                                  handleSaveToExisting(
+                                                    collection.name
+                                                  )
+                                                }
+                                              >
+                                                {collection.name}
+                                              </button>
+                                            </li>
+                                          ))}
+                                        </ul>
+                                      </>
+                                    )}
+
+                                    {/* Create New Collection */}
+                                    <h4>Create a new collection:</h4>
+                                    <input
+                                      type="text"
+                                      value={newCollectionName}
+                                      onChange={(e) =>
+                                        setNewCollectionName(e.target.value)
+                                      }
+                                      placeholder="New collection name"
+                                    />
+                                    <div
+                                      style={{ display: "flex", gap: "20px" }}
+                                    >
+                                      <button
+                                        onClick={handleCreateNewCollection}
+                                        disabled={!newCollectionName}
+                                      >
+                                        Create
                                       </button>
-                                    </li>
-                                  ))}
-                                </ul>
-                              </>
-                            )}
 
-                            {/* Create New Collection */}
-                            <h4>Create a new collection:</h4>
-                            <input
-                              type="text"
-                              value={newCollectionName}
-                              onChange={(e) => setNewCollectionName(e.target.value)}
-                              placeholder="New collection name"
-                            />
-                            <div style={{display:"flex",gap:"20px"}}>
-
-                            <button onClick={handleCreateNewCollection} disabled={!newCollectionName}>
-                              Create
-                            </button>
-
-                            <button onClick={() => setIsModalOpen(false)}>Cancel</button>
-                            </div>
-                          </div>
-                        </div>
-                      )}
+                                      <button
+                                        onClick={() => setIsModalOpen(false)}
+                                      >
+                                        Cancel
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
                             </div>
                             <p className="searchresult-authors">{`Published on: ${result.publication_date}`}</p>
                             <div className="searchresult-ID">
