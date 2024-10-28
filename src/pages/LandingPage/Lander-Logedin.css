@@ -243,15 +243,15 @@
 }
 .notes-modal {
   position: fixed;
-  top: 10%;
+  /* top: 10%;
   left: 30%;
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: center; */
   background-color: white;
-  padding: 20px;
+  /* padding: 20px; */
   box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
-  z-index: 1000;
+  /* z-index: 1000; */
   border-radius: 8px;
   height: 70vh;
   width: 40%;
@@ -332,40 +332,54 @@
 .close-modal-notes:hover {
   background-color: rgba(235, 235, 247, 0.5);
 }
-/* Resizer styling */
 .resizer {
   position: absolute;
   background: transparent;
-}
-
-.resizer-top,
-.resizer-bottom {
-  left: 0;
-  right: 0;
-  height: 8px;
-  cursor: ns-resize;
+  z-index: 1000;
 }
 
 .resizer-top {
-  top: -4px;
-}
-
-.resizer-bottom {
-  bottom: -4px;
-}
-
-.resizer-right,
-.resizer-left {
+  cursor: ns-resize;
+  height: 5px;
   top: 0;
-  bottom: 0;
-  width: 8px;
-  cursor: ew-resize;
+  left: 0;
+  right: 0;
 }
 
 .resizer-right {
-  right: -4px;
+  cursor: ew-resize;
+  width: 5px;
+  top: 0;
+  bottom: 0;
+  right: 0;
+}
+
+.resizer-bottom {
+  cursor: ns-resize;
+  height: 5px;
+  bottom: 0;
+  left: 0;
+  right: 0;
 }
 
 .resizer-left {
-  left: -4px;
+  cursor: ew-resize;
+  width: 5px;
+  top: 0;
+  bottom: 0;
+  left: 0;
+}
+.draggable-header {
+  cursor: move;
+  padding: 10px;
+  background-color: #1a82ff;
+  color: #fff;
+  /* display: flex;
+  justify-content: space-between;
+  align-items: center; */
+}
+.Notes {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
 }
