@@ -3,7 +3,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import axios from 'axios';
 import './EditResearcher.css';
-
+import departments from "../../assets/Data/Departments.json"
+import primaryResearchAreas from "../../assets/Data/PrimaryResearchAreas.json";
+import researchInterests from "../../assets/Data/ResearchInterests.json";
 const EditResearcher = () => {
   const { user_id } = useParams();
   const navigate = useNavigate();
@@ -56,48 +58,64 @@ const EditResearcher = () => {
   };
 
   // Validate form before submission
-  const validateForm = () => {
-    const newErrors = {};
-    if (!formData.fullname) newErrors.fullname = 'Full Name is required';
-    if (!formData.email) newErrors.email = 'Email is required';
-    if (!formData.role) newErrors.role = 'Role is required';
-    if (!formData.department) newErrors.department = 'Department is required';
-    if (!formData.job_title) newErrors.job_title = 'Job Title is required';
-    if (!formData.organization_name) newErrors.organization_name = 'Organization is required';
-    if (!formData.primary_research_area || formData.primary_research_area === 'Select Expertise') {
-      newErrors.primary_research_area = 'Research Area is required';
-    }
-    if (!formData.technical_skills) newErrors.technical_skills = 'Technical Skills are required';
-    if (!formData.research_interests || formData.research_interests === 'Select Research Interests') {
-      newErrors.research_interests = 'Research Interests are required';
-    }
+  // const validateForm = () => {
+  //   const newErrors = {};
+  //   if (!formData.fullname) newErrors.fullname = 'Full Name is required';
+  //   if (!formData.email) newErrors.email = 'Email is required';
+  //   if (!formData.role) newErrors.role = 'Role is required';
+  //   if (!formData.department) newErrors.department = 'Department is required';
+  //   if (!formData.job_title) newErrors.job_title = 'Job Title is required';
+  //   if (!formData.organization_name) newErrors.organization_name = 'Organization is required';
+  //   if (!formData.primary_research_area || formData.primary_research_area === 'Select Expertise') {
+  //     newErrors.primary_research_area = 'Research Area is required';
+  //   }
+  //   if (!formData.technical_skills) newErrors.technical_skills = 'Technical Skills are required';
+  //   if (!formData.research_interests || formData.research_interests === 'Select Research Interests') {
+  //     newErrors.research_interests = 'Research Interests are required';
+  //   }
 
-    const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    if (formData.email && !emailPattern.test(formData.email)) {
-      newErrors.email = 'Invalid email format';
-    }
+  //   const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  //   if (formData.email && !emailPattern.test(formData.email)) {
+  //     newErrors.email = 'Invalid email format';
+  //   }
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+  //   setErrors(newErrors);
+  //   return Object.keys(newErrors).length === 0;
+  // };
 
+  // Handle form submission for editing
   // Handle form submission for editing
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (validateForm()) {
       try {
-        // Ensure user_id is part of the formData before sending
-        const updatedFormData = { ...formData, user_id };
+        const requestBody = {
+          user_id: user_id,
+          fullname: formData.fullname,
+          department: formData.department,
+          new_email: formData.email,
+          new_status: "",  // Populate if you have a status field or leave empty
+          new_role: formData.role,
+          new_job_title: formData.job_title,
+          new_primary_research_area: formData.primary_research_area,
+          new_organization_name: formData.organization_name,
+          new_technical_skills: Array.isArray(formData.technical_skills)
+            ? formData.technical_skills
+            : formData.technical_skills.split(',').map(skill => skill.trim()),
+          new_research_interests: Array.isArray(formData.research_interests)
+            ? formData.research_interests
+            : formData.research_interests.split(',').map(interest => interest.trim())
+        };
+  
         const response = await axios.put(
           `http://13.127.207.184:80/admin/edit_user`,
-          updatedFormData,
+          requestBody,
           {
             headers: {
               Authorization: `Bearer ${token}`,
             },
           }
         );
-        console.log(response)
+  
         // Check for response status and navigate if successful
         if (response.status === 200) {
           navigate('/admin/users');
@@ -105,11 +123,9 @@ const EditResearcher = () => {
       } catch (error) {
         console.error('Error updating user:', error);
       }
-    }
+    
   };
-
   
-
   const handleBackClick = () => {
     navigate('/admin/users');
   };
@@ -193,17 +209,21 @@ const EditResearcher = () => {
 
         {/* Row 3 */}
         <div className='User-Form-Row'>
-          <div className='User-Form-Row-Items'>
+        <div className='User-Form-Row-Items'>
             <label>Department</label>
             <select 
               name="department" 
               value={formData.department} 
               onChange={handleInputChange} 
+              className="select-box"
               style={{ borderColor: errors.department ? 'red' : '' }}
             >
               <option>Select Department</option>
-              <option>IT</option>
-              <option>HR</option>
+              {departments.map((dept, index) => (
+                <option key={index} value={dept}>
+                  {dept}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -229,24 +249,28 @@ const EditResearcher = () => {
               name="organization_name" 
               value={formData.organization_name} 
               onChange={handleInputChange} 
+
               placeholder="Enter organization name" 
               style={{ borderColor: errors.organization_name ? 'red' : '' }}
             />
           </div>
 
           <div className='User-Form-Row-Items'>
-            <label>Primary Research Area</label>
-            <select 
-              name="primary_research_area" 
-              value={formData.primary_research_area} 
-              onChange={handleInputChange} 
-              style={{ borderColor: errors.primary_research_area ? 'red' : '' }}
-            >
-              <option>Select Expertise</option>
-              <option>DNA</option>
-              <option>Cancer</option>
-            </select>
-          </div>
+          <label>Primary Research Area</label>
+          <select 
+            name="primary_research_area" 
+            value={formData.primary_research_area} 
+            onChange={handleInputChange} 
+            style={{ borderColor: errors.primary_research_area ? 'red' : '' }}
+          >
+            <option>Select Expertise</option>
+            {primaryResearchAreas.map((area, index) => (
+              <option key={index} value={area}>
+                {area}
+              </option>
+            ))}
+          </select>
+        </div>
         </div>
 
         {/* Row 5 */}
@@ -264,18 +288,21 @@ const EditResearcher = () => {
           </div>
 
           <div className='User-Form-Row-Items'>
-            <label>Research Interests</label>
-            <select 
-              name="research_interests" 
-              value={formData.research_interests} 
-              onChange={handleInputChange} 
-              style={{ borderColor: errors.research_interests ? 'red' : '' }}
-            >
-              <option>Select Research Interests</option>
-              <option>Gene</option>
-              <option>Cell Biology</option>
-            </select>
-          </div>
+          <label>Research Interests</label>
+          <select 
+            name="research_interests" 
+            value={formData.research_interests} 
+            onChange={handleInputChange} 
+            style={{ borderColor: errors.research_interests ? 'red' : '' }}
+          >
+            <option>Select Research Interests</option>
+            {researchInterests.map((interest, index) => (
+              <option key={index} value={interest}>
+                {interest}
+              </option>
+            ))}
+          </select>
+        </div>
         </div>
 
         {/* Action Buttons */}

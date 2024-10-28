@@ -4,24 +4,32 @@ import { useSelector } from 'react-redux';
 import './Profile.css';
 import profile from '../assets/images/Profile-start.svg';
 import upload from '../assets/images/Upload.svg';
-
+import Header from './Header-New';
+import departments from "../assets/Data/Departments.json"
+import primaryResearchAreas from "../assets/Data/PrimaryResearchAreas.json";
+import researchInterests from "../assets/Data/ResearchInterests.json";
 const Profile = () => {
   const { user } = useSelector((state) => state.auth);
   const user_id = user?.user_id;
   const token = user?.access_token;
+  const userRole = user?.role;
 
   const [profileImage, setProfileImage] = useState(profile);
   const [formData, setFormData] = useState({
+    user_id: '',
     fullname: '',
-    email: '',
-    role: 'User',
     department: '',
-    job_title: '',
-    organization_name: '',
-    primary_research_area: '',
-    technical_skills: '',
-    research_interests: '',
+    new_email: '',
+    new_status: '',
+    new_role: '',
+    new_job_title: '',
+    new_primary_research_area: '',
+    new_organization_name: '',
+    new_technical_skills: [],
+    new_research_interests: [],
   });
+
+  const isUser = userRole === 'User'; // Check if the role is 'User'
 
   // Fetch user details on component mount
   useEffect(() => {
@@ -32,7 +40,6 @@ const Profile = () => {
             Authorization: `Bearer ${token}`,
           },
         });
-        console.log(response)
         const userDetails = response.data.user_profile;
         setFormData({
           fullname: userDetails.fullname,
@@ -46,8 +53,8 @@ const Profile = () => {
           research_interests: userDetails.research_interests.join(', '),
         });
         if (userDetails.profile_picture_url) {
-            setProfileImage(userDetails.profile_picture_url);
-          }
+          setProfileImage(userDetails.profile_picture_url);
+        }
       } catch (error) {
         console.error('Error fetching user details:', error);
       }
@@ -64,11 +71,10 @@ const Profile = () => {
     if (file) {
       const imageUrl = URL.createObjectURL(file);
       setProfileImage(imageUrl);
-        console.log(imageUrl)
+
       const formData = new FormData();
       formData.append("file", file);
-      console.log("File in FormData:", file);
-        
+
       try {
         await axios.post(
           `http://13.127.207.184/user/upload_profile_picture?user_id=${user_id}`,
@@ -83,8 +89,6 @@ const Profile = () => {
       }
     }
   };
-  
-  
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -104,7 +108,7 @@ const Profile = () => {
       };
 
       await axios.put(
-        "http://13.127.207.184:80/user/edit_user_profile",
+        "http://13.127.207.184:80/admin/edit_user",
         updatedData,
         {
           headers: {
@@ -117,8 +121,14 @@ const Profile = () => {
       console.error("Error saving profile data:", error);
     }
   };
+
   return (
+    <>
+    
+      {isUser && <Header />}
     <div className="profile-container">
+      {/* Render Header if the user role is User */}
+
       <div className="profile-body">
         {/* Form Section */}
         <form className="profile-form" onSubmit={handleSave}>
@@ -134,8 +144,9 @@ const Profile = () => {
                   value={formData.fullname}
                   onChange={handleInputChange}
                   placeholder="Enter full name"
-                />   
-                           </div>
+                  disabled={isUser} // Disable if role is User
+                />
+              </div>
               <div className="form-row-item">
                 <label>Email ID</label>
                 <input
@@ -144,8 +155,9 @@ const Profile = () => {
                   value={formData.email}
                   onChange={handleInputChange}
                   placeholder="Enter email ID"
+                  disabled={isUser} // Disable if role is User
                 />
-                              </div>
+              </div>
             </div>
           </div>
 
@@ -156,10 +168,15 @@ const Profile = () => {
               <div className="form-row-item">
                 <label>Role</label>
                 <input type="text" value={formData.role} disabled />
-                              </div>
+              </div>
               <div className="form-row-item">
                 <label>Department</label>
-                <select name="department" value={formData.department} onChange={handleInputChange}>
+                <select
+                  name="department"
+                  value={formData.department}
+                  onChange={handleInputChange}
+                  disabled={isUser} // Disable if role is User
+                >
                   <option>Select Department</option>
                   <option>IT</option>
                   <option>HR</option>
@@ -181,14 +198,16 @@ const Profile = () => {
                     value={formData.job_title}
                     onChange={handleInputChange}
                     placeholder="Enter Job Title"
+                    disabled={isUser} // Disable if role is User
                   />
-                                  </div>
+                </div>
                 <div className="form-row-item">
                   <label>Primary Research Area</label>
                   <select
                     name="primary_research_area"
                     value={formData.primary_research_area}
                     onChange={handleInputChange}
+                    disabled={isUser} // Disable if role is User
                   >
                     <option>Select Research Area</option>
                     <option>DNA</option>
@@ -200,15 +219,16 @@ const Profile = () => {
                 <div className="form-row-item">
                   <label>Organization</label>
                   <input
-                  className='org'
+                    className='org'
                     type="text"
                     name="organization_name"
                     value={formData.organization_name}
                     onChange={handleInputChange}
                     placeholder="Enter organization name"
-                  /></div>
+                    disabled={isUser} // Disable if role is User
+                  />
+                </div>
               </div>
-              
             </div>
           </div>
 
@@ -224,8 +244,9 @@ const Profile = () => {
                   value={formData.technical_skills}
                   onChange={handleInputChange}
                   placeholder="Enter relevant software, lab techniques, etc."
+                  disabled={isUser} // Disable if role is User
                 />
-                              </div>
+              </div>
               <div className="form-row-item">
                 <label>User Interests</label>
                 <input
@@ -234,6 +255,7 @@ const Profile = () => {
                   value={formData.research_interests}
                   onChange={handleInputChange}
                   placeholder="Enter user interests"
+                  disabled={isUser} // Disable if role is User
                 />
               </div>
             </div>
@@ -241,7 +263,7 @@ const Profile = () => {
 
           {/* Action Buttons */}
           <div className="form-actions">
-            <button type="submit" className="create-button">
+            <button type="submit" className="create-button" disabled={isUser}>
               Save
             </button>
           </div>
@@ -268,6 +290,7 @@ const Profile = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

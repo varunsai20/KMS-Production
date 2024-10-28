@@ -12,6 +12,7 @@ const Researchers = () => {
 
   // Access admin data from Redux
   const { user } = useSelector((state) => state.auth);
+  console.log(user)
   const adminId = user?.user_id;
   const organizationName = user?.organization_name;
   const userRole = user?.role;
@@ -38,7 +39,6 @@ const Researchers = () => {
             },
           }
         );
-        console.log(response)
         setUserData(response.data.users); // Assuming API returns a `users` array
       } catch (error) {
         console.error('Error fetching users:', error);
@@ -59,7 +59,56 @@ const Researchers = () => {
   const handleEditClick = (userId) => {
     navigate(`/admin/users/edit/${userId}`);
   };
-
+  const handleSuspendClick = async (userId, currentStatus) => {
+    const normalizedStatus = currentStatus.toLowerCase();
+    const newStatus = normalizedStatus === "active" ? "Inactive" : "active";
+  
+    try {
+      const response = await axios.put(
+        `http://13.127.207.184:80/admin/update_user_status`,
+        {
+          admin_id: adminId,
+          user_id: userId,
+          status: newStatus,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      if (response.status === 200) {
+        // Update userData to reflect the new status
+        setUserData((prevData) =>
+          prevData.map((user) =>
+            user.user_id === userId ? { ...user, user_status: newStatus } : user
+          )
+        );
+      }
+    } catch (error) {
+      console.error('Error updating user status:', error);
+    }
+  };
+  
+  const handleDeleteClick = async (userId) => {
+    if (window.confirm("Are you sure you want to delete this user?")) {
+      try {
+        await axios.delete(
+          `http://13.127.207.184:80/admin/delete_user/${userId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        // Refresh the user list after successful deletion
+        setUserData(userData.filter(user => user.user_id !== userId));
+      } catch (error) {
+        console.error('Error deleting user:', error);
+      }
+    }
+  };
   return (
     <div style={{ margin: '0 2%' }}>
       <h2 className="ResearcherHeading">Manage Users</h2>
@@ -82,7 +131,7 @@ const Researchers = () => {
               <th>Status</th>
               <th>Role</th>
               <th></th>
-            </tr>
+            </tr> 
           </thead>
           <tbody>
             {userData.map((user) => (
@@ -102,8 +151,13 @@ const Researchers = () => {
                     {isOpen === user.email && (
                       <ul className="dropdown-menu">
                         <li className="dropdown-item" onClick={() => handleEditClick(user.user_id)}>Edit</li>
-                        <li className="dropdown-item delete">Suspend</li>
-                        <li className="dropdown-item delete">Delete</li>
+                        <li
+                          className="dropdown-item delete"
+                          onClick={() => handleSuspendClick(user.user_id, user.user_status)}
+                        >
+                          {user.user_status.toLowerCase() === "active" ? "Suspend" : "Activate"}
+                        </li>
+                        <li className="dropdown-item delete" onClick={()=>handleDeleteClick(user.user_id)}>Delete</li>
                       </ul>
                     )}
                   </div>

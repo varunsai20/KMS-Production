@@ -54,12 +54,10 @@ const Login = () => {
         });
   
         // Check the login response and ensure token, userId, and other fields are received
-        console.log('Login API response:', response.data);
-  
+        
         if (response.status === 200) {
           const token = response.data.access_token;
           const userId = response.data.user_id;
-          console.log(response) 
           // Fetch user profile with token
           const profileResponse = await axios.get(`http://13.127.207.184:80/user/profile/${userId}`, {
             headers: {
@@ -67,7 +65,6 @@ const Login = () => {
             },
           });
   
-          console.log('Profile API response:', profileResponse.data);
   
           const userProfile = profileResponse.data.user_profile;
   

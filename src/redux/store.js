@@ -1,17 +1,29 @@
 import { createStore, combineReducers } from 'redux';
-import searchReducer from './reducers/searchReducer';  // Existing reducer
-import authReducer from './reducers/LoginAuth';  // Import your authReducer
+import { persistStore, persistReducer } from 'redux-persist';
+import storage from 'redux-persist/lib/storage'; // Default storage is localStorage for web
+import searchReducer from './reducers/searchReducer';
+import authReducer from './reducers/LoginAuth';
 
-// Combine the reducers (search and auth reducers)
+// Combine the reducers
 const rootReducer = combineReducers({
-  search: searchReducer,  // Your existing search reducer
-  auth: authReducer,      // Add the auth reducer here
+  search: searchReducer,
+  auth: authReducer,
 });
 
-// Create the Redux store
+// Config for redux-persist
+const persistConfig = {
+  key: 'root',
+  storage,
+};
+
+// Wrap rootReducer with persistReducer
+const persistedReducer = persistReducer(persistConfig, rootReducer);
+
+// Create the Redux store with the persisted reducer
 const store = createStore(
-  rootReducer,
-  window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()  // Optional for Redux DevTools
+  persistedReducer,
+  window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()
 );
 
+export const persistor = persistStore(store); // Export the persistor
 export default store;

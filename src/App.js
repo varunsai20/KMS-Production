@@ -7,13 +7,13 @@ import SearchResults from "./pages/SearchResultsPage/SearchResults";
 import ArticlePage from "./pages/ArticlePage/ArticlePage";
 import CreateResearcher from './pages/Admin/CreateResearcher';
 import CreateAdmin from './pages/Admin/CreateAdmins';
-// Import Admin Pages
-import Admin from './pages/Admin/Admin'; // Admin layout wrapper
-import Dashboard from './pages/Admin/Dashboard'; // Dashboard component
-import Researchers from './pages/Admin/Researchers'; // Researchers component
+import Admin from './pages/Admin/Admin';
+import Dashboard from './pages/Admin/Dashboard';
+import Researchers from './pages/Admin/Researchers';
 import AdminComp from './pages/Admin/Admin-Comp';
 import Profile from './components/Profile';
 import EditResearcher from './pages/Admin/EditResearcher';
+
 function App() {
   return (
     <Router>
@@ -30,9 +30,11 @@ function App() {
             <Route path="users" element={<Researchers />} />
             <Route path="users/create" element={<CreateResearcher />} />
             <Route path="users/edit/:user_id" element={<EditResearcher />} />
-            <Route path="users/profile/:user_id" element={<Profile/>}/>
-            {/* Add more admin-related routes here */}
+            <Route path="users/profile/:user_id" element={<Profile />} />
           </Route>
+
+          {/* User Profile Route */}
+          <Route path="/users/profile/:user_id" element={<Profile />} />
         </Routes>
       </div>
     </Router>

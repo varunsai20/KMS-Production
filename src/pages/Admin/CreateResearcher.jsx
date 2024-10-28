@@ -3,7 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import './CreateResearcher.css';
 import { useSelector } from 'react-redux';
 import axios from 'axios';
-
+import departments from "../../assets/Data/Departments.json"
+import primaryResearchAreas from "../../assets/Data/PrimaryResearchAreas.json";
+import researchInterests from "../../assets/Data/ResearchInterests.json";
 const CreateResearcher = () => {
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
@@ -90,8 +92,8 @@ const CreateResearcher = () => {
           }
         );
 
-        if (response.status === 200) {
-          navigate('/admin');
+        if (response.status === 201) {
+          navigate('/admin/users');
         }
       } catch (error) {
         console.error('Error creating user:', error);
@@ -176,7 +178,7 @@ const CreateResearcher = () => {
 
         {/* Row 3 */}
         <div className='User-Form-Row'>
-          <div className='User-Form-Row-Items'>
+        <div className='User-Form-Row-Items'>
             <label>Department</label>
             <select 
               name="department" 
@@ -185,8 +187,11 @@ const CreateResearcher = () => {
               style={{ borderColor: errors.department ? 'red' : '' }}
             >
               <option>Select Department</option>
-              <option>IT</option>
-              <option>HR</option>
+              {departments.map((dept, index) => (
+                <option key={index} value={dept}>
+                  {dept}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -218,18 +223,21 @@ const CreateResearcher = () => {
           </div>
 
           <div className='User-Form-Row-Items'>
-            <label>Primary Research Area</label>
-            <select 
-              name="primary_research_area" 
-              value={formData.primary_research_area} 
-              onChange={handleInputChange} 
-              style={{ borderColor: errors.primary_research_area ? 'red' : '' }}
-            >
-              <option>Select Expertise</option>
-              <option>DNA</option>
-              <option>Cancer</option>
-            </select>
-          </div>
+          <label>Primary Research Area</label>
+          <select 
+            name="primary_research_area" 
+            value={formData.primary_research_area} 
+            onChange={handleInputChange} 
+            style={{ borderColor: errors.primary_research_area ? 'red' : '' }}
+          >
+            <option>Select Expertise</option>
+            {primaryResearchAreas.map((area, index) => (
+              <option key={index} value={area}>
+                {area}
+              </option>
+            ))}
+          </select>
+        </div>
         </div>
 
         {/* Row 5 */}
@@ -247,18 +255,21 @@ const CreateResearcher = () => {
           </div>
 
           <div className='User-Form-Row-Items'>
-            <label>Research Interests</label>
-            <select 
-              name="research_interests" 
-              value={formData.research_interests} 
-              onChange={handleInputChange} 
-              style={{ borderColor: errors.research_interests ? 'red' : '' }}
-            >
-              <option>Select Research Interests</option>
-              <option>Gene</option>
-              <option>Cell Biology</option>
-            </select>
-          </div>
+          <label>Research Interests</label>
+          <select 
+            name="research_interests" 
+            value={formData.research_interests} 
+            onChange={handleInputChange} 
+            style={{ borderColor: errors.research_interests ? 'red' : '' }}
+          >
+            <option>Select Research Interests</option>
+            {researchInterests.map((interest, index) => (
+              <option key={index} value={interest}>
+                {interest}
+              </option>
+            ))}
+          </select>
+        </div>
         </div>
 
         {/* Action Buttons */}
