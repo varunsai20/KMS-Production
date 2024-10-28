@@ -18,6 +18,7 @@ import Utilities from "../../assets/images/Lander-Utilities.svg";
 import Analytics from "../../assets/images/Lander-Analytics.svg";
 import { IoCloseOutline } from "react-icons/io5";
 import "./Lander-Logedin.css";
+
 import Draggable from "react-draggable";
 import Collection from "../../components/Collection";
 
@@ -28,7 +29,12 @@ const Lander = () => {
   const isLoggedIn = useSelector((state) => state.auth?.isLoggedIn);
 
   const [isNotesOpen, setIsNotesOpen] = useState(false);
+
   const [isCollectionOpen, setIsCollectionOpen] = useState(false);
+
+  const { user } = useSelector((state) => state.auth);
+  console.log(user)
+  // Function to open the Notes modal
 
   const handleOpenNotes = () => {
     setIsNotesOpen(true);
