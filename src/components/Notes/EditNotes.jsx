@@ -8,7 +8,9 @@ import { FiUnderline } from "react-icons/fi";
 import { GoStrikethrough } from "react-icons/go";
 import { PiListBullets } from "react-icons/pi";
 import { BsListOl } from "react-icons/bs";
-import { IoShareSocial } from "react-icons/io5";
+import { IoCloseOutline, IoShareSocial } from "react-icons/io5";
+import { MdEmail } from "react-icons/md";
+import { IoCopyOutline } from "react-icons/io5";
 import "./EditNotes.css"; // Import CSS for styling
 
 const Editnotes = ({ note, setNotes, onClose, notesHeight }) => {
@@ -25,6 +27,35 @@ const Editnotes = ({ note, setNotes, onClose, notesHeight }) => {
   const [shareMessage, setShareMessage] = useState(""); // State for feedback message
   const editorRef = useRef(null);
   const date = useCreateDate();
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+  const [email, setEmail] = useState("");
+  const [subject, setSubject] = useState("");
+
+  const handleShare = () => {
+    setIsShareModalOpen(true);
+  };
+
+  const handleCopy = () => {
+    const noteDetails = editorRef.current.innerHTML;
+    const noteTitle = title || "Untitled Note";
+    const shareText = `${noteTitle}\n\n${noteDetails.replace(/<[^>]+>/g, "")}`;
+    navigator.clipboard.writeText(shareText).then(
+      () => setShareMessage("Note copied to clipboard!"),
+      (err) => setShareMessage("Failed to copy note.")
+    );
+    setTimeout(() => setShareMessage(""), 3000);
+    setIsShareModalOpen(false);
+  };
+  const handleSendEmail = () => {
+    // Handle sending email logic here, e.g., make an API call
+    console.log("Sending email to:", email, "with subject:", subject);
+    handleCloseEmailModal(); // Close the modal after sending
+  };
+
+  const handleEmailClick = () => setIsEmailModalOpen(true);
+  const handleCloseModal = () => setIsShareModalOpen(false);
+  const handleCloseEmailModal = () => setIsEmailModalOpen(false);
 
   useEffect(() => {
     // Populate editor with note details and handle placeholder visibility
@@ -120,27 +151,27 @@ const Editnotes = ({ note, setNotes, onClose, notesHeight }) => {
     }
   };
 
-  const handleShare = () => {
-    const noteDetails = editorRef.current.innerHTML;
-    const noteTitle = title || "Untitled Note";
+  // const handleShare = () => {
+  //   const noteDetails = editorRef.current.innerHTML;
+  //   const noteTitle = title || "Untitled Note";
 
-    // Create a shareable text (you can customize this as needed)
-    const shareText = `${noteTitle}\n\n${noteDetails.replace(/<[^>]+>/g, "")}`; // Stripping HTML tags
+  //   // Create a shareable text (you can customize this as needed)
+  //   const shareText = `${noteTitle}\n\n${noteDetails.replace(/<[^>]+>/g, "")}`; // Stripping HTML tags
 
-    // Copy to clipboard
-    navigator.clipboard.writeText(shareText).then(
-      () => {
-        setShareMessage("Note copied to clipboard!");
-        // Remove the message after 3 seconds
-        setTimeout(() => setShareMessage(""), 3000);
-      },
-      (err) => {
-        console.error("Could not copy text: ", err);
-        setShareMessage("Failed to copy note.");
-        setTimeout(() => setShareMessage(""), 3000);
-      }
-    );
-  };
+  //   // Copy to clipboard
+  //   navigator.clipboard.writeText(shareText).then(
+  //     () => {
+  //       setShareMessage("Note copied to clipboard!");
+  //       // Remove the message after 3 seconds
+  //       setTimeout(() => setShareMessage(""), 3000);
+  //     },
+  //     (err) => {
+  //       console.error("Could not copy text: ", err);
+  //       setShareMessage("Failed to copy note.");
+  //       setTimeout(() => setShareMessage(""), 3000);
+  //     }
+  //   );
+  // };
   console.log(notesHeight);
 
   return (
@@ -257,6 +288,99 @@ const Editnotes = ({ note, setNotes, onClose, notesHeight }) => {
           <IoShareSocial size={20} />
         </button>
       </div>
+      {isShareModalOpen && (
+        <div className="createNotes-modal-overlay" onClick={handleCloseModal}>
+          <div
+            className="createNotes-modal-content"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="createNotes-modal-header">
+              <h3>Share Note</h3>
+              <button
+                className="createNotes-modal-close-button"
+                onClick={handleCloseModal}
+              >
+                <IoCloseOutline size={20} />
+              </button>
+            </div>
+            <div className="createNotes-modal-body">
+              <div className="createNotes-email">
+                <button className="createNotes-Email">
+                  <div
+                    style={{
+                      backgroundColor: "#A5A5A5",
+                      padding: "5px 10px",
+                      borderRadius: "10px",
+                    }}
+                    onClick={handleEmailClick}
+                  >
+                    <MdEmail size={40} color="white" />
+                  </div>
+                  <span
+                    style={{ fontSize: "16px", color: "black", padding: "3px" }}
+                  >
+                    Email
+                  </span>
+                </button>
+              </div>
+              <button onClick={handleCopy} className="createNotes-copy">
+                <div
+                  style={{
+                    backgroundColor: "#A5A5A5",
+                    padding: "5px 10px",
+                    borderRadius: "10px",
+                  }}
+                >
+                  <IoCopyOutline size={40} color="white" />
+                </div>
+                <span
+                  style={{ fontSize: "16px", color: "black", padding: "3px" }}
+                >
+                  Copy
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isEmailModalOpen && (
+        <div className="email-modal-overlay" onClick={handleCloseEmailModal}>
+          <div
+            className="email-modal-content"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="email-modal-header">
+              <h3>Send to</h3>
+              <button
+                className="email-modal-close-button"
+                onClick={handleCloseEmailModal}
+              >
+                <IoCloseOutline size={20} />
+              </button>
+            </div>
+            <div className="email-modal-body">
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Email"
+                className="email-input"
+              />
+              <textarea
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+                placeholder="Subject"
+                className="subject-input"
+                rows="1"
+              />
+              <button onClick={handleSendEmail} className="send-button">
+                Send
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 };

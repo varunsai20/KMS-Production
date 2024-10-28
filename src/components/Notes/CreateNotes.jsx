@@ -47,6 +47,27 @@ const Createnotes = ({
   const [noteContent, setNoteContent] = useState(selectedText || "");
   const [shareMessage, setShareMessage] = useState("");
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+  const [email, setEmail] = useState("");
+  const [subject, setSubject] = useState("");
+
+  const handleEmailClick = () => {
+    setIsEmailModalOpen(true); // Open the email popup modal
+  };
+
+  const handleCloseEmailModal = () => {
+    setIsEmailModalOpen(false); // Close the email popup modal
+    setEmail("");
+    setSubject("");
+  };
+
+  const handleSendEmail = () => {
+    // Handle sending email logic here, e.g., make an API call
+    console.log("Sending email to:", email, "with subject:", subject);
+    handleCloseEmailModal(); // Close the modal after sending
+  };
+
   console.log("Selected Text:", selectedText);
   console.log("note content", noteContent);
   //console.log("noteid", note.id);
@@ -436,9 +457,8 @@ const Createnotes = ({
                       padding: "5px 10px",
                       borderRadius: "10px",
                     }}
+                    onClick={handleEmailClick}
                   >
-                    {/* <CiMail size={50} color="#1A82FF" />
-                     */}
                     <MdEmail size={40} color="white" />
                   </div>
                   <span
@@ -464,6 +484,45 @@ const Createnotes = ({
                 >
                   Copy
                 </span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Email Modal */}
+      {isEmailModalOpen && (
+        <div className="email-modal-overlay" onClick={handleCloseEmailModal}>
+          <div
+            className="email-modal-content"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="email-modal-header">
+              <h3>Send to</h3>
+              <button
+                className="email-modal-close-button"
+                onClick={handleCloseEmailModal}
+              >
+                <IoCloseOutline size={20} />
+              </button>
+            </div>
+            <div className="email-modal-body">
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Email"
+                className="email-input"
+              />
+              <textarea
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+                placeholder="Subject"
+                className="subject-input"
+                rows="1"
+              />
+              <button onClick={handleSendEmail} className="send-button">
+                Send
               </button>
             </div>
           </div>
