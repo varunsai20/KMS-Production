@@ -1,0 +1,14 @@
+FROM node:alpine
+
+WORKDIR /app
+
+RUN apk update && apk add git
+
+RUN git clone https://github.com/varunsai20/KMS.git .
+
+COPY package*.json ./
+RUN npm install
+RUN npm run build
+EXPOSE 3000
+
+CMD ["npm", "start"]
