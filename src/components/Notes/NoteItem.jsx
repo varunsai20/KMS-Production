@@ -40,7 +40,7 @@ const NoteItem = ({ note, onEdit, onDelete }) => {
   // Handle confirming the deletion
   const confirmDelete = (e) => {
     e.stopPropagation();
-    onDelete(note.id);
+    onDelete(note.note_id);
     setShowConfirmDelete(false);
   };
   // Handle cancelling the deletion

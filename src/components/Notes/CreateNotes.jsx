@@ -474,7 +474,7 @@ const Createnotes = ({
                 <IoCloseOutline size={20} />
               </button>
             </div>
-            <div className="createNotes-modal-body">
+            <div className="createNotes-modal-body" >
               <div className="createNotes-email">
                 <button className="createNotes-Email">
                   <div
@@ -532,7 +532,7 @@ const Createnotes = ({
                 <IoCloseOutline size={20} />
               </button>
             </div>
-            <div className="email-modal-body">
+            <div className="email-modal-body" style={{width:"80%"}}>
               <input
                 type="email"
                 value={email}
@@ -540,13 +540,7 @@ const Createnotes = ({
                 placeholder="Email"
                 className="email-input"
               />
-              <textarea
-                value={subject}
-                onChange={(e) => setSubject(e.target.value)}
-                placeholder="Subject"
-                className="subject-input"
-                rows="1"
-              />
+              
               <button onClick={handleSendEmail} className="send-button">
                 Send
               </button>

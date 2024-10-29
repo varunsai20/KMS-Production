@@ -26,7 +26,7 @@ const NotesManager = ({ selectedText, notesHeight }) => {
         const notesArray = Array.isArray(response.data.data) 
           ? response.data.data 
           : Object.values(response.data.data); // Convert object to array
-  
+        
         // Set notes and save to localStorage
         setNotes(notesArray);
         localStorage.setItem("notes", JSON.stringify(notesArray));
@@ -40,7 +40,7 @@ const NotesManager = ({ selectedText, notesHeight }) => {
     }
   }, [user_id, token]);
   
-  console.log(typeof(notes))
+  console.log(notes)
   const [currentView, setCurrentView] = useState("list"); // 'list', 'create', 'edit'
   const [selectedNote, setSelectedNote] = useState(null);
   const [textToSave, setTextToSave] = useState([]); // Store the passed selected text
@@ -88,9 +88,29 @@ const NotesManager = ({ selectedText, notesHeight }) => {
     }
   };
 
-  const handleDeleteNote = (id) => {
-    setNotes((prevNotes) => prevNotes.filter((note) => note.id !== id));
+  const handleDeleteNote = async (noteId) => {
+    try {
+      const response = await axios.delete(
+        `http://13.127.207.184:80/notes/deletenote/${user_id}/${noteId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, // Ensure token is available in component's state or context
+          },
+        }
+      );
+  
+      if (response.status === 200) {
+        // Update local notes state to reflect deletion
+        setNotes((prevNotes) => prevNotes.filter((note) => note.note_id !== noteId));
+        console.log("Note deleted successfully");
+      } else {
+        console.error("Failed to delete note:", response);
+      }
+    } catch (error) {
+      console.error("Error deleting note:", error);
+    }
   };
+  
 
   return (
     <div className="notes-manager-content">

@@ -53,11 +53,35 @@ const Editnotes = ({ note, setNotes, onClose, notesHeight }) => {
     setTimeout(() => setShareMessage(""), 3000);
     setIsShareModalOpen(false);
   };
-  const handleSendEmail = () => {
-    // Handle sending email logic here, e.g., make an API call
-    console.log("Sending email to:", email, "with subject:", subject);
-    handleCloseEmailModal(); // Close the modal after sending
+  const handleSendEmail = async () => {
+    const requestData = {
+      user_id: user_id, // make sure user_id is accessible from your component's state or props
+      note_id: note_id,  // replace noteId with the actual note ID you want to share
+      email: email,     // assuming `email` is the recipient's email in your component's state
+    };
+  
+    try {
+      const response = await axios.post(
+        "http://13.127.207.184:80/notes/sharenotes",
+        requestData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, // make sure token is available in component's state
+          },
+        }
+      );
+  
+      if (response.status === 200) {
+        console.log("Email sent successfully to:", email);
+        handleCloseEmailModal(); // Close the modal after sending
+      } else {
+        console.error("Failed to send email:", response);
+      }
+    } catch (error) {
+      console.error("Error sending email:", error);
+    }
   };
+  
 
   const handleEmailClick = () => setIsEmailModalOpen(true);
   const handleCloseModal = () => setIsShareModalOpen(false);
@@ -391,7 +415,7 @@ const Editnotes = ({ note, setNotes, onClose, notesHeight }) => {
                 <IoCloseOutline size={20} />
               </button>
             </div>
-            <div className="email-modal-body">
+            <div className="email-modal-body" style={{display:"flex",gap:"10px"}}>
               <input
                 type="email"
                 value={email}
@@ -399,13 +423,7 @@ const Editnotes = ({ note, setNotes, onClose, notesHeight }) => {
                 placeholder="Email"
                 className="email-input"
               />
-              <textarea
-                value={subject}
-                onChange={(e) => setSubject(e.target.value)}
-                placeholder="Subject"
-                className="subject-input"
-                rows="1"
-              />
+             
               <button onClick={handleSendEmail} className="send-button">
                 Send
               </button>
