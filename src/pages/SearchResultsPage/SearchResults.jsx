@@ -19,7 +19,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
 
   const user_id=user?.user_id;
   const token=user?.access_token;
-  console.log(data);
   const searchTerm = sessionStorage.getItem("SearchTerm");
   const navigate = useNavigate();
   const contentRightRef = useRef(null); // Ref for searchContent-right
@@ -50,7 +49,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
             },
           }
         );
-        console.log(response)
         if (response.data) {
           setCollections(response.data.collections);
           if (response.data.collections.length > 0) {
@@ -66,7 +64,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       fetchCollections();
     }
   }, []);
-  console.log(collections);
   const isBookmarked = (idType) => {
     // Convert idType to a number for comparison
     const numericIdType = Number(idType);
@@ -107,7 +104,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   const getRatingForArticle = (id, source) => {
     // Ensure `rated_articles` is an array within `ratingsList`
     const ratingsArray = Array.isArray(ratingsList?.rated_articles) ? ratingsList.rated_articles : [];
-    console.log(ratingsList)
     // Log id, source, and ratingsArray
     // console.log("ID:", id);
     // console.log("Source:", source);
@@ -125,7 +121,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
 
     // Log if only `article_id` matches but `article_source` does not
     if (idOnlyMatch) {
-      console.log("ID-only Match Found:", idOnlyMatch);
+      // console.log("ID-only Match Found:", idOnlyMatch);
     }
 
     // Return the saved rating or default to 3 if not found
@@ -135,8 +131,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
 
 
 
-  console.log(ratingsList)
-  console.log(typeof(ratingsList))
   // Use effect to fetch ratings only once on page load or reload
   useEffect(() => {
     const fetchRatedArticles = async () => {
@@ -146,9 +140,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
             Authorization: `Bearer ${token}`,
           },
         });
-        console.log(response)
         const ratedArticles = response.data || [];
-        console.log("Rated Articles:", ratedArticles);
         
         // Store ratings list in sessionStorage and state
         sessionStorage.setItem("ratingsList", JSON.stringify(ratedArticles));
@@ -500,16 +492,45 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
 
   const handleSourceTypeChange = (event) => {
     const { value, checked } = event.target;
-
+  
+    const updatedSourceTypes = checked
+      ? [...filters.sourceType, value]
+      : filters.sourceType.filter((type) => type !== value);
+  
     const updatedFilters = {
       ...filters,
-      sourceType: checked
-        ? [...filters.sourceType, value]
-        : filters.sourceType.filter((type) => type !== value),
+      sourceType: updatedSourceTypes,
     };
-
+  
     setFilters(updatedFilters);
+    fetchFilteredResults(updatedSourceTypes);
   };
+  
+  const fetchFilteredResults = (sourceTypes) => {
+    const sourceParam = sourceTypes.join(','); // Join multiple source types with commas for the query
+    const apiUrl = `http://13.127.207.184:80/core_search/?term=${searchTerm}&source=${sourceParam}`;
+    setLoading(true);
+  
+    axios
+      .get(apiUrl, {
+        headers: {
+          Authorization: `Bearer ${token}`, // Add Bearer token here
+        },
+      })
+      .then((response) => {
+        const data = response.data;
+        setResults(data);
+        setLoading(false);
+        localStorage.setItem("sourceFilters", JSON.stringify(sourceTypes));
+        navigate("/search", { state: { data, searchTerm } });
+      })
+      .catch((error) => {
+        console.error("Error fetching data from the API", error);
+        setLoading(false);
+        navigate("/search", { state: { data: [], searchTerm } });
+      });
+  };
+  
 
   // Function to handle radio button change
   const handleDateRangeChange = (event) => {
@@ -561,45 +582,28 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
     }
   };
 
-  const handleCustomDateFilter = (startDate, endDate) => {
+ const handleCustomDateFilter = (startDate, endDate) => {
     if (startDate && endDate) {
       const formattedStartDate = formatDate(startDate);
       const formattedEndDate = formatDate(endDate);
-
-      const pubmedArticles = completePMID
-        .filter((id) => id.startsWith("PubMed_"))
-        .map((id) => parseInt(id.split("_")[1]));
-      const biorxivArticles = completePMID
-        .filter((id) => id.startsWith("BioRxiv_"))
-        .map((id) => parseInt(id.split("_")[1]));
-      const plosArticles = completePMID
-        .filter((id) => id.startsWith("Public Library of Science (PLOS)_"))
-        .map((id) => parseInt(id.split("_")[1]));
-      console.log(pubmedArticles);
-      console.log(completePMID);
-      const requestBody = {
-        pubmed_articles: pubmedArticles,
-        biorxiv_articles: biorxivArticles,
-        plos_articles: plosArticles,
-        filter_type: "Custom Range",
-        from_date: formattedStartDate,
-        to_date: formattedEndDate,
-      };
-      console.log(requestBody);
-      const apiUrl = "http://13.127.207.184:80/filterdate";
+      const filter_type= "custom"
+      const apiUrl = `http://13.127.207.184:80/core_search/?term=${searchTerm}&date_filter=${filter_type}&from_date=${formattedStartDate}&to_date=${formattedEndDate}`;
       setLoading(true);
+
       axios
-        .post(apiUrl, requestBody)
+        .get(apiUrl, {
+          headers: {
+            Authorization: `Bearer ${token}`, // Add Bearer token here
+          },
+        })
         .then((response) => {
-          console.log(response);
           const data = response.data;
           setResults(data);
           setLoading(false);
-          console.log(data);
           localStorage.setItem(
             "publicationDate",
             JSON.stringify({
-              selectedDateRange,
+              selectedDateRange: "Custom Range",
               customStartDate: startDate,
               customEndDate: endDate,
             })
@@ -612,37 +616,25 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
           navigate("/search", { state: { data: [], searchTerm } });
         });
     } else {
-      console.error(
-        "Please provide both start and end dates for the custom range."
-      );
+      console.error("Please provide both start and end dates for the custom range.");
     }
-  };
+};
+
+  console.log(searchTerm)
   const handleYearFilter = (selectedDateRange) => {
     const filterType = selectedDateRange === "5" ? "5 years" : "1 year";
-    console.log(completePMID);
-    const pubmedArticles = completePMID
-      .filter((id) => id.startsWith("PubMed_"))
-      .map((id) => parseInt(id.split("_")[1]));
-    const biorxivArticles = completePMID
-      .filter((id) => id.startsWith("BioRxiv_"))
-      .map((id) => parseInt(id.split("_")[1]));
-    const plosArticles = completePMID
-      .filter((id) => id.startsWith("Public Library of Science (PLOS)_"))
-      .map((id) => parseInt(id.split("_")[1]));
-    console.log(pubmedArticles);
-    const requestBody = {
-      pubmed_articles: pubmedArticles,
-      biorxiv_articles: biorxivArticles,
-      plos_articles: plosArticles,
-      filter_type: filterType,
-    };
-    console.log(requestBody);
-    const apiUrl = "http://13.127.207.184:80/filterdate";
+
+    const apiUrl = `http://13.127.207.184:80/core_search/?term=${searchTerm}&date_filter=${filterType}`;
     setLoading(true);
+
     axios
-      .post(apiUrl, requestBody)
+      .get(apiUrl, {
+        headers: {
+          Authorization: `Bearer ${token}`, // Add Bearer token here
+        },
+      })
       .then((response) => {
-        console.log(response);
+        console.log("response from api",response);
         const data = response.data;
         setResults(data);
         setLoading(false);
@@ -665,7 +657,8 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
           state: { data: [], searchTerm, dateloading: true },
         });
       });
-  };
+};
+
 
   const formatDate = (dateString) => {
     const [year, month, day] = dateString.split("-");
@@ -748,7 +741,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   }, []);
 
   const searchResults = useSelector((state) => state.search.searchResults);
-  console.log(searchResults);
   useEffect(() => {
     if (searchResults) {
       const pmidList = searchResults.articles.map((article) => {
@@ -767,7 +759,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
 
       if (storedData) {
         const parsedData = JSON.parse(storedData);
-        console.log(parsedData);
         setCompletePMID(parsedData);
       }
     }
@@ -815,8 +806,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
     localStorage.removeItem("publicationDate");
     // Optionally, you can also trigger the API call without any filters
     // const storeddata=sessionStorage.getItem("ResultData")
-    console.log(searchResults);
-    console.log(location.state);
     // const parseddata=JSON.parse(storeddata)
     // const data=parseddata
 
@@ -940,7 +929,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       setAnnotateLoading(true);
   
       const extractIdType = (uniqueId) => {
-        console.log(uniqueId);
         return uniqueId.split("_")[1]; // This splits "source_idType" and returns only the idType
       };
       const extractIdSource = (uniqueId) => uniqueId.split("_")[0];
@@ -949,7 +937,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
         source: extractIdSource(id),
         idType: extractIdType(id),
       }));
-      console.log(annotatedArticles);
   
       // Prepare the data by removing the "source_" part from uniqueId
       const pubmedIds = selectedArticles.map((id) => parseInt(extractIdType(id), 10));
@@ -1217,8 +1204,8 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                   <label>
                     <input
                       type="checkbox"
-                      value="PubMed"
-                      checked={filters.sourceType.includes("PubMed")}
+                      value="pubmed"
+                      checked={filters.sourceType.includes("pubmed")}
                       onChange={handleSourceTypeChange}
                     />{" "}
                     PubMed
@@ -1680,7 +1667,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                                 <div className="bookmark-modal-overlay">
                                   <div className="modal-content" ref={modalRef}>
                                     <h3>Save Bookmark</h3>
-                                    {console.log("Collections data:", collections)}
                                     {/* Existing Collections */}
                                     {Object.keys(collections).length > 0 && (
                                           <>
