@@ -16,6 +16,8 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   const location = useLocation(); // Access the passed state
   const { data } = location.state || { data: [] };
   const { user } = useSelector((state) => state.auth);
+
+  const user_id=user?.user_id;
   const token=user?.access_token;
   console.log(data);
   const searchTerm = sessionStorage.getItem("SearchTerm");
@@ -36,19 +38,43 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   const [bookmarkedPmids, setBookmarkedPmids] = useState({});
   const [currentIdType, setCurrentIdType] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [collections, setCollections] = useState(() => {
-    const storedCollections =
-      JSON.parse(localStorage.getItem("collections")) || [];
-    return storedCollections;
-  });
+  const [collections, setCollections] = useState([]);
+  useEffect(() => {
+    const fetchCollections = async () => {
+      try {
+        const response = await axios.get(
+          `http://13.127.207.184:80/bookmarks/users/${user_id}/collections`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        console.log(response)
+        if (response.data) {
+          setCollections(response.data.collections);
+          if (response.data.collections.length > 0) {
+            localStorage.setItem("collections", JSON.stringify(response.data.collections));
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching collections:", error);
+      }
+    };
+
+    if (user_id && token) {
+      fetchCollections();
+    }
+  }, []);
   console.log(collections);
   const isBookmarked = (idType) => {
-    return collections.some((collection) =>
-      collection.articles.includes(idType)
+    const result = collections.some((collection) =>
+      Array.isArray(collection.articles) && collection.articles.includes(idType)
     );
+    console.log(`isBookmarked for idType ${idType}:`, result);
+    return result;
   };
-
-  console.log(isBookmarked);
+  
   const [newCollectionName, setNewCollectionName] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageInput, setPageInput] = useState(1); // Separate state for the page input
@@ -97,7 +123,8 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   useEffect(() => {
     localStorage.setItem("PublicationDate", selectedDateRange);
   }, [selectedDateRange]);
-
+  const [articleTitle, setArticleTitle] = useState("");
+  const [source, setSource] = useState("");
   const topPageRef = useRef(null);
   const [showFilterPopup, setShowFilterPopup] = useState(false);
   const [showTextAvailability, setShowTextAvailability] = useState(false);
@@ -287,41 +314,92 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
     };
   }, [isModalOpen]);
 
-  const handleBookmarkClick = (idType) => {
+  const handleBookmarkClick = (idType, title, source) => {
     setCurrentIdType(idType);
+    setArticleTitle(title);
+    setSource(source);
     setIsModalOpen(true); // Open the modal for collection selection
   };
 
-  const handleSaveToExisting = (collectionName) => {
-    const updatedCollections = collections.map((collection) => {
-      if (collection.name === collectionName) {
-        // Only add the idType if it doesn't already exist in the collection
-        if (!collection.articles.includes(currentIdType)) {
-          return {
-            ...collection,
-            articles: [...collection.articles, currentIdType],
-          };
-        }
-      }
-      return collection;
-    });
-    setCollections(updatedCollections);
-    localStorage.setItem("collections", JSON.stringify(updatedCollections));
-    setIsModalOpen(false);
-  };
-
-  const handleCreateNewCollection = () => {
-    const newCollection = {
-      name: newCollectionName,
-      articles: [currentIdType],
+  const handleSaveToExisting = async (collectionName) => {
+    const bookmarkData = {
+      user_id,
+      collection_name: collectionName,
+      bookmark: {
+        article_id: String(currentIdType), // Ensure it's a string
+        article_title: articleTitle,
+        article_source: source,
+      },
     };
-    const updatedCollections = [...collections, newCollection];
-    setCollections(updatedCollections);
-    localStorage.setItem("collections", JSON.stringify(updatedCollections));
-    setNewCollectionName("");
-    setIsModalOpen(false);
+  
+    try {
+      const response = await axios.post(
+        "http://13.127.207.184:80/bookmarks/users/collections",
+        bookmarkData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      if (response.status === 201) {
+        const updatedCollections = collections.map((collection) => {
+          if (collection === collectionName) {
+            // Append the new article ID to the articles if it doesn't already exist
+            return {
+              ...collection,
+              articles: [...(collection.articles || []), currentIdType],
+            };
+          }
+          return collection;
+        });
+  
+        setCollections(updatedCollections);
+        localStorage.setItem("collections", JSON.stringify(updatedCollections));
+        setIsModalOpen(false);
+      }
+    } catch (error) {
+      console.error("Error adding bookmark to existing collection:", error);
+    }
   };
+  
 
+  const handleCreateNewCollection = async () => {
+    const newCollection = {
+      user_id,
+      collection_name: newCollectionName,
+      bookmark: {
+        article_id: String(currentIdType), // Convert to string
+        article_title: articleTitle,
+        article_source: source,
+      },
+    };
+  
+    try {
+      const response = await axios.post(
+        "http://13.127.207.184:80/bookmarks/users/collections",
+        newCollection,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      if (response.status === 201) {
+        const updatedCollections = [...collections, response.data];
+        setCollections(updatedCollections);
+        localStorage.setItem("collections", JSON.stringify(updatedCollections));
+        setNewCollectionName("");
+        setIsModalOpen(false);
+      }
+    } catch (error) {
+      console.error("Error creating new collection:", error);
+    }
+  };
+  
+  
   const handleFilterChange = async (event) => {
     setLoading(true);
     setSelectedArticles([]);
@@ -1513,41 +1591,30 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                                 </h3>
                               </div>
                               <FontAwesomeIcon
-                                icon={regularBookmark}
-                                size="l"
-                                style={{
-                                  color: isBookmarked(idType)
-                                    ? "blue"
-                                    : "black",
-                                  cursor: "pointer",
-                                }}
-                                onClick={() => handleBookmarkClick(idType)}
-                                title={
-                                  isBookmarked(idType)
-                                    ? "Bookmarked"
-                                    : "Bookmark this article"
-                                }
-                              />
+  icon={regularBookmark}
+  size="l"
+  style={{
+    color: isBookmarked(idType) ? "blue" : "black",
+    cursor: "pointer",
+  }}
+  onClick={() => handleBookmarkClick(idType, result.article_title, result.source || "PubMed")}
+  title={isBookmarked(idType) ? "Bookmarked" : "Bookmark this article"}
+/>
+
                               {isModalOpen && (
                                 <div className="bookmark-modal-overlay">
                                   <div className="modal-content" ref={modalRef}>
                                     <h3>Save Bookmark</h3>
-
+                                    {console.log("Collections data:", collections)}
                                     {/* Existing Collections */}
                                     {collections.length > 0 && (
                                       <>
                                         <h4>Save to existing collection:</h4>
                                         <ul>
-                                          {collections.map((collection) => (
-                                            <li key={collection.name}>
-                                              <button
-                                                onClick={() =>
-                                                  handleSaveToExisting(
-                                                    collection.name
-                                                  )
-                                                }
-                                              >
-                                                {collection.name}
+                                          {collections.map((collection, index) => (
+                                            <li key={index}> {/* using index if collection is not unique */}
+                                              <button onClick={() => handleSaveToExisting(collection)}>
+                                                {collection}
                                               </button>
                                             </li>
                                           ))}

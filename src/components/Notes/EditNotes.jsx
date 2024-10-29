@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { IoIosArrowBack } from "react-icons/io";
 // import { RiDeleteBin6Line } from "react-icons/ri";
+import axios from "axios";
 import useCreateDate from "./UseCreateDate";
 import { FiBold } from "react-icons/fi";
 import { GoItalic } from "react-icons/go";
@@ -13,8 +14,14 @@ import { MdEmail } from "react-icons/md";
 import { IoCopyOutline } from "react-icons/io5";
 import "./EditNotes.css"; // Import CSS for styling
 
+import { useSelector } from "react-redux";
 const Editnotes = ({ note, setNotes, onClose, notesHeight, isOpenNotes }) => {
+  const { user } = useSelector((state) => state.auth);
+
+  const user_id=user?.user_id;
+  const token=user?.access_token;
   const [title, setTitle] = useState(note.title);
+  const [note_id,setNote_id]=useState(note.note_id)
   const [isPlaceholderVisible, setIsPlaceholderVisible] = useState(false);
   const [activeFormats, setActiveFormats] = useState({
     bold: false,
@@ -47,11 +54,35 @@ const Editnotes = ({ note, setNotes, onClose, notesHeight, isOpenNotes }) => {
     setTimeout(() => setShareMessage(""), 3000);
     setIsShareModalOpen(false);
   };
-  const handleSendEmail = () => {
-    // Handle sending email logic here, e.g., make an API call
-    console.log("Sending email to:", email, "with subject:", subject);
-    handleCloseEmailModal(); // Close the modal after sending
+  const handleSendEmail = async () => {
+    const requestData = {
+      user_id: user_id, // make sure user_id is accessible from your component's state or props
+      note_id: note_id,  // replace noteId with the actual note ID you want to share
+      email: email,     // assuming `email` is the recipient's email in your component's state
+    };
+  
+    try {
+      const response = await axios.post(
+        "http://13.127.207.184:80/notes/sharenotes",
+        requestData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, // make sure token is available in component's state
+          },
+        }
+      );
+  
+      if (response.status === 200) {
+        console.log("Email sent successfully to:", email);
+        handleCloseEmailModal(); // Close the modal after sending
+      } else {
+        console.error("Failed to send email:", response);
+      }
+    } catch (error) {
+      console.error("Error sending email:", error);
+    }
   };
+  
 
   const handleEmailClick = () => setIsEmailModalOpen(true);
   const handleCloseModal = () => setIsShareModalOpen(false);
@@ -59,16 +90,16 @@ const Editnotes = ({ note, setNotes, onClose, notesHeight, isOpenNotes }) => {
 
   useEffect(() => {
     // Populate editor with note details and handle placeholder visibility
-    if (note.details.trim() === "") {
+    if (note.content?.trim() === "") {
       setIsPlaceholderVisible(true);
       setTitle("");
     } else {
       setIsPlaceholderVisible(false);
       if (editorRef.current) {
-        editorRef.current.innerHTML = note.details;
+        editorRef.current.innerHTML = note.content;
       }
     }
-  }, [note.details]);
+  }, [note.content]);
 
   useEffect(() => {
     const handleSelectionChange = () => {
@@ -97,15 +128,41 @@ const Editnotes = ({ note, setNotes, onClose, notesHeight, isOpenNotes }) => {
     };
   }, []);
 
-  const handleForm = (e) => {
+  const handleForm = async(e) => {
     e.preventDefault();
-    const updatedDetails = editorRef.current.innerHTML;
-    if (title.trim() !== "" && updatedDetails.trim() !== "") {
-      const updatedNote = { ...note, title, details: updatedDetails, date };
-      setNotes((prevNotes) =>
-        prevNotes.map((item) => (item.id === note.id ? updatedNote : item))
-      );
-      onClose();
+    const noteDetails = editorRef.current.innerHTML;
+  
+    if (title && noteDetails && noteDetails !== "Take your note...") {
+      const note = { title, details: noteDetails,note_id };
+  
+      try {
+        // Post the note to the server
+        await axios.put(
+          "http://13.127.207.184:80/notes/updatenote",
+          {
+            user_id, // Ensure `user_id` is defined and available in your component
+            title: note.title,
+            content: note.details,
+            note_id:note.note_id,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`, // Ensure `token` is defined
+            },
+          }
+        );
+  
+        // Add this note to the notes array
+        setNotes((prevNotes) => [note, ...prevNotes]);
+        console.log("Note saved:", note);
+        onClose(); // Return to Notes list
+  
+        // Clear inputs
+        setTitle("");
+        editorRef.current.innerHTML = "";
+      } catch (error) {
+        console.error("Error saving note:", error);
+      }
     }
   };
 
@@ -367,7 +424,7 @@ const Editnotes = ({ note, setNotes, onClose, notesHeight, isOpenNotes }) => {
                 <IoCloseOutline size={20} />
               </button>
             </div>
-            <div className="email-modal-body">
+            <div className="email-modal-body" style={{display:"flex",gap:"10px"}}>
               <input
                 type="email"
                 value={email}
@@ -375,13 +432,7 @@ const Editnotes = ({ note, setNotes, onClose, notesHeight, isOpenNotes }) => {
                 placeholder="Email"
                 className="email-input"
               />
-              <textarea
-                value={subject}
-                onChange={(e) => setSubject(e.target.value)}
-                placeholder="Subject"
-                className="subject-input"
-                rows="1"
-              />
+             
               <button onClick={handleSendEmail} className="send-button">
                 Send
               </button>

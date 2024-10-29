@@ -301,8 +301,8 @@
 .email-modal-content {
   background: white;
   padding: 20px;
+  width: 25vw;
   border-radius: 8px;
-  width: 300px;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -325,7 +325,7 @@
 .email-input,
 .subject-input {
   width: 100%;
-  padding: 10px;
+  padding: 10px 0 10px 6px;
   font-size: 16px;
   border-radius: 5px;
   border: 1px solid #ddd;

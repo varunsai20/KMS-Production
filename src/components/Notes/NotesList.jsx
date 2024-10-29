@@ -73,18 +73,18 @@ const NotesList = ({
         </div>
       </header>
       <div className="notes__container">
-        {filteredNotes.length === 0 && (
-          <p className="empty__notes">No Notes Found.</p>
-        )}
-        {filteredNotes.map((note) => (
-          <NoteItem
-            key={note.id}
-            note={note}
-            onEdit={onEditNote}
-            onDelete={onDeleteNote}
-          />
-        ))}
-      </div>
+  {filteredNotes.length === 0 && (
+    <p className="empty__notes">No Notes Found.</p>
+  )}
+  {filteredNotes.map((note) => (
+    <NoteItem
+      key={note.note_id}  // Use note_id instead of id
+      note={note}  // Ensure `note` contains `note_id`, `content`, etc.
+      onEdit={onEditNote}
+      onDelete={onDeleteNote}
+    />
+  ))}
+</div>
     </section>
   );
 };
