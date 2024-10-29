@@ -74,7 +74,7 @@ const ArticlePage = () => {
     const fetchCollections = async () => {
       try {
         const response = await axios.get(
-          `http://13.127.207.184:80/bookmarks/users/${user_id}/collections`,
+          `http://13.127.207.184:80/bookmarks/${user_id}/collections`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -97,14 +97,32 @@ const ArticlePage = () => {
       fetchCollections();
     }
   }, []);
+  console.log(collections);
+  const isBookmarked = (idType) => {
+    // Convert idType to a number for comparison
+    const numericIdType = Number(idType);
+    console.log(`Checking for idType: ${numericIdType}`);
+  
+    // Loop through each collection and log article IDs as numbers
+    Object.entries(collections).forEach(([collectionName, articleArray]) => {
+      console.log(`Collection: ${collectionName}`);
+      articleArray.forEach((article) => {
+        console.log(`article_id: ${Number(article.article_id)}`);
+      });
+    });
+  
+    // Check if the article is bookmarked
+    const result = Object.values(collections).some((articleArray) =>
+      articleArray.some((article) => Number(article.article_id) === numericIdType)
+    );
+  
+    console.log(`isBookmarked for idType ${numericIdType}:`, result);
+    return result;
+  };
   const [currentid, setCurrentid] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newCollectionName, setNewCollectionName] = useState("");
-  const isBookmarked = (id) => {
-    // return collections.some((collection) =>
-    //   collection.articles.includes(id)
-    // );
-  };
+ 
   const [sessions, setSessions] = useState([]);
   const [editingSessionId, setEditingSessionId] = useState(null);
   const [bookmarkedPmids, setBookmarkedPmids] = useState({});
@@ -225,26 +243,77 @@ const ArticlePage = () => {
     }
   }, [openNotes]);
 
-  const getRatingForArticle = (uniqueId) => {
-    const savedRating = ratingsList.find((item) => item.uniqueId === uniqueId);
-    return savedRating ? savedRating.rating : 0; // Default rating is 0 if not found
-  };
+  const getRatingForArticle = async (uniqueId) => {
+    // const [source, article_id] = uniqueId.split("_");
+  
+    // try {
+    //   const response = await axios.get(
+    //     `http://13.127.207.184:80/rating/average-rating/${article_id}/${source}`,
+    //     {
+    //       headers: {
+    //         Authorization: `Bearer ${token}`,
+    //       },
+    //     }
+    //   );
+    //   const avgRating = response.data?.average_rating || 0; // Default to 0 if not found
+  
+    //   // Update the local rating list with the fetched average rating
+    //   setRatingsList((prevRatings) => [
+    //     ...prevRatings.filter((item) => item.uniqueId !== uniqueId),
+    //     { uniqueId, rating: avgRating },
+    //   ]);
+    //   return avgRating;
+    // } catch (error) {
+    //   console.error("Error fetching rating:", error);
+    //   return 0; // Default to 0 if an error occurs
+    // }
+  };  
 
-  const handleRatingChange = (uniqueId, newRating) => {
-    const updatedRatings = [...ratingsList];
+  const handleRatingChange = async (uniqueId, newRating) => {
+    // Ensure ratingsList is an array
+    const currentRatings = Array.isArray(ratingsList) ? ratingsList : [];
+  
+    // Create a copy of ratingsList
+    const updatedRatings = [...currentRatings];
+  
     const existingRatingIndex = updatedRatings.findIndex(
       (item) => item.uniqueId === uniqueId
     );
-
+  
     if (existingRatingIndex !== -1) {
       updatedRatings[existingRatingIndex].rating = newRating;
     } else {
       updatedRatings.push({ uniqueId, rating: newRating });
     }
-
+  
     setRatingsList(updatedRatings);
     sessionStorage.setItem("ratingsList", JSON.stringify(updatedRatings));
+  
+    // Extract source and article_id from uniqueId
+    const [article_source, article_id] = uniqueId.split("_");
+  
+    try {
+      await axios.post(
+        "http://13.127.207.184:80/rating/rate",
+        {
+          user_id, // Assuming `user_id` is available in the component's state or props
+          rating_data: {
+            article_id,
+            rating: newRating,
+            article_source,
+          },
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, // Bearer token authorization
+          },
+        }
+      );
+    } catch (error) {
+      console.error("Error saving rating:", error);
+    }
   };
+  
   const handleMouseUp = (event) => {
     if (!contentRef.current.contains(event.target)) {
       return; // Exit if the selection is outside .article-content
@@ -1024,20 +1093,20 @@ const ArticlePage = () => {
                                     <h3>Save Bookmark</h3>
                                     {console.log("Collections data:", collections)}
                                     {/* Existing Collections */}
-                                    {collections.length > 0 && (
-                                      <>
-                                        <h4>Save to existing collection:</h4>
-                                        <ul>
-                                          {collections.map((collection, index) => (
-                                            <li key={index}> {/* using index if collection is not unique */}
-                                              <button onClick={() => handleSaveToExisting(collection)}>
-                                                {collection}
-                                              </button>
-                                            </li>
-                                          ))}
-                                        </ul>
-                                      </>
-                                    )}
+                                    {Object.keys(collections).length > 0 && (
+                                          <>
+                                            <h4>Save to existing collection:</h4>
+                                            <ul>
+                                              {Object.keys(collections).map((collectionName, index) => (
+                                                <li key={index}> {/* using index as key since collection names are unique */}
+                                                  <button onClick={() => handleSaveToExisting(collectionName)}>
+                                                    {collectionName}
+                                                  </button>
+                                                </li>
+                                              ))}
+                                            </ul>
+                                          </>
+                                        )}
 
                                     {/* Create New Collection */}
                                     <h4>Create a new collection:</h4>
