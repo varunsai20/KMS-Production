@@ -105,17 +105,37 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
 
   // Function to get the rating for a specific article by pmid
   const getRatingForArticle = (id, source) => {
-    // Convert `ratingsList` to an array of entries if it's an object
-    const ratingsArray = Object.values(ratingsList);
-  
-    // Find a matching entry with both article_id and article_source
+    // Ensure `rated_articles` is an array within `ratingsList`
+    const ratingsArray = Array.isArray(ratingsList?.rated_articles) ? ratingsList.rated_articles : [];
+    console.log(ratingsList)
+    // Log id, source, and ratingsArray
+    // console.log("ID:", id);
+    // console.log("Source:", source);
+    // console.log("Ratings Array:", ratingsArray);
+
+    // Find a matching entry with both `article_id` and `article_source`
     const savedRating = ratingsArray.find(
       (item) => item.article_id === String(id) && item.article_source === source
     );
-  
-    return savedRating ? savedRating.rating : 3; // Default rating is 3 if not found
-  };
-  
+
+    // Find entries where only `article_id` matches
+    const idOnlyMatch = ratingsArray.find(
+      (item) => item.article_id === String(id) && item.article_source !== source
+    );
+
+    // Log if only `article_id` matches but `article_source` does not
+    if (idOnlyMatch) {
+      console.log("ID-only Match Found:", idOnlyMatch);
+    }
+
+    // Return the saved rating or default to 3 if not found
+    return savedRating ? savedRating.rating : 3;
+};
+
+
+
+
+  console.log(ratingsList)
   console.log(typeof(ratingsList))
   // Use effect to fetch ratings only once on page load or reload
   useEffect(() => {

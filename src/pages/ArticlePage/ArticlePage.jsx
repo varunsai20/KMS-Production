@@ -244,30 +244,36 @@ const ArticlePage = () => {
   }, [openNotes]);
 
   const getRatingForArticle = async (uniqueId) => {
-    // const [source, article_id] = uniqueId.split("_");
+    // Check if the rating is already available in ratingsList
+    const cachedRating = ratingsList.find((item) => item.uniqueId === uniqueId);
+    if (cachedRating) return cachedRating.rating;
   
-    // try {
-    //   const response = await axios.get(
-    //     `http://13.127.207.184:80/rating/average-rating/${article_id}/${source}`,
-    //     {
-    //       headers: {
-    //         Authorization: `Bearer ${token}`,
-    //       },
-    //     }
-    //   );
-    //   const avgRating = response.data?.average_rating || 0; // Default to 0 if not found
+    const [source, article_id] = uniqueId.split("_");
   
-    //   // Update the local rating list with the fetched average rating
-    //   setRatingsList((prevRatings) => [
-    //     ...prevRatings.filter((item) => item.uniqueId !== uniqueId),
-    //     { uniqueId, rating: avgRating },
-    //   ]);
-    //   return avgRating;
-    // } catch (error) {
-    //   console.error("Error fetching rating:", error);
-    //   return 0; // Default to 0 if an error occurs
-    // }
-  };  
+    try {
+      const response = await axios.get(
+        `http://13.127.207.184:80/rating/user-ratings/${user_id}/${article_id}/${source}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      const avgRating = response.data?.average_rating || 0;
+  
+      // Update the local rating list with the fetched average rating
+      setRatingsList((prevRatings) => [
+        ...prevRatings.filter((item) => item.uniqueId !== uniqueId),
+        { uniqueId, rating: avgRating },
+      ]);
+  
+      return avgRating;
+    } catch (error) {
+      console.error("Error fetching rating:", error);
+      return 0;
+    }
+  };
+  console.log(ratingsList)
 
   const handleRatingChange = async (uniqueId, newRating) => {
     // Ensure ratingsList is an array
@@ -1054,23 +1060,27 @@ const ArticlePage = () => {
                       <span>Rate the article </span>
                     </div>
                     <div className="rate">
-                      {[5, 4, 3, 2, 1].map((value) => (
-                        <React.Fragment key={value}>
-                          <input
-                            type="radio"
-                            id={`star${value}-${uniqueId}`}
-                            name={`rate_${uniqueId}`}
-                            value={value}
-                            checked={getRatingForArticle(uniqueId) === value}
-                            onChange={() => handleRatingChange(uniqueId, value)}
-                          />
-                          <label
-                            htmlFor={`star${value}-${uniqueId}`}
-                            title={`${value} star`}
-                          />
-                        </React.Fragment>
-                      ))}
-                    </div>
+  {[5, 4, 3, 2, 1].map((value) => (
+    <React.Fragment key={value}>
+      <input
+        type="radio"
+        id={`star${value}-${uniqueId}`}
+        name={`rate_${uniqueId}`}
+        value={value}
+        // Check if the cached rating exists and matches the current star value
+        checked={
+          (ratingsList.find((item) => item.uniqueId === uniqueId)?.rating || 0) === value
+        }
+        onChange={() => handleRatingChange(uniqueId, value)}
+      />
+      <label
+        htmlFor={`star${value}-${uniqueId}`}
+        title={`${value} star`}
+      />
+    </React.Fragment>
+  ))}
+</div>
+
                   </div>
                 </div>
 
