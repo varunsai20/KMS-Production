@@ -66,7 +66,7 @@ const ArticlePage = () => {
   const contentRef = useRef(null); // Ref to target the content div
   const [contentWidth, setContentWidth] = useState(); // State for content width
   const [ratingsList, setRatingsList] = useState(() => {
-    return JSON.parse(sessionStorage.getItem("ratingsList")) || [];
+    return JSON.parse(sessionStorage.getItem("ratingsGiven")) || [];
   });
   const [triggerAskClick, setTriggerAskClick] = useState(false);
   const [editingPmid, setEditingPmid] = useState(null);
@@ -301,7 +301,7 @@ useEffect(() => {
     }
   
     setRatingsList(updatedRatings);
-    sessionStorage.setItem("ratingsList", JSON.stringify(updatedRatings));
+    sessionStorage.setItem("ratingsGiven", JSON.stringify(updatedRatings));
   
     // Extract source and article_id from uniqueId
     const [article_source, article_id] = uniqueId.split("_");
