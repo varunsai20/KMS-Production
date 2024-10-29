@@ -46,6 +46,7 @@ const ArticlePage = () => {
     const storedHistory = sessionStorage.getItem("chatHistory");
     return storedHistory ? JSON.parse(storedHistory) : [];
   });
+  const [refreshSessions, setRefreshSessions] = useState(false);
   useEffect(() => {
     // Retrieve chat history from sessionStorage
     const storedChatHistory = sessionStorage.getItem("chatHistory");
@@ -53,7 +54,9 @@ const ArticlePage = () => {
     if (storedChatHistory) {
       // Parse the chat history string back into an array
       setChatHistory(JSON.parse(storedChatHistory));
+      setShowStreamingSection(true);  
     }
+    console.log(storedChatHistory)
   }, []);
   const [showStreamingSection, setShowStreamingSection] = useState(false);
   // const [chatInput, setChatInput] = useState(true);
@@ -137,16 +140,21 @@ const ArticlePage = () => {
   const minHeight = 15;
   const maxHeight = 60;
 
+
+
+console.log(id)
+useEffect(() => {
+  if (type === "bioRxiv_id") {
+    setSource("biorxiv");
+  } else if (type === "pmid") {
+    setSource("pubmed");
+  } else if (type === "plos_id") {
+    setSource("plos");
+  }
+}, [type]);
   useEffect(() => {
     // Determine the source based on `type`
-    if (type === "bioRxiv_id") {
-      setSource("biorxiv");
-    } else if (type === "pmid") {
-      setSource("pubmed");
-    } else if (type === "plos_id") {
-      setSource("plos");
-    }
-
+    
     // Perform GET request to fetch article data
     if (source && id) {
       const fetchArticleData = async () => {
@@ -678,7 +686,7 @@ const ArticlePage = () => {
             }
           }
         }
-
+        setRefreshSessions((prev) => !prev);
         setLoading(false);
         sessionStorage.setItem("chatHistory", JSON.stringify(chatHistory));
       };
@@ -689,6 +697,9 @@ const ArticlePage = () => {
       setLoading(false);
     }
   };
+
+  console.log(chatHistory)
+
 
   const handlePromptClick = (queryText) => {
     setQuery(queryText);
@@ -891,7 +902,7 @@ const ArticlePage = () => {
             },
           }
         );
-        console.log(response)
+        console.log(response);
         if (response.data?.sessions) {
           setSessions(response.data.sessions); // Set the sessions array from the response
         }
@@ -899,11 +910,12 @@ const ArticlePage = () => {
         console.error("Error fetching chat history:", error);
       }
     };
-
+  
     if (user_id && token) {
       fetchSessions();
     }
-  }, []);
+  }, [user_id, token, refreshSessions]); 
+  console.log(sessions)
   console.log(token)
   // Edit functions
   const handleEditClick = (sessionId, title) => {
@@ -949,6 +961,77 @@ const ArticlePage = () => {
       console.error("Error updating session title:", error);
     }
   };
+
+  useEffect(() => {
+    // Retrieve chat history from sessionStorage on component mount or on location state change
+    const storedChatHistory = sessionStorage.getItem("chatHistory");
+    
+    if (storedChatHistory) {
+      setChatHistory(JSON.parse(storedChatHistory));
+      setShowStreamingSection(true);
+    } else {
+      setShowStreamingSection(false); // Default to false if no stored chat history
+    }
+  
+    console.log("Stored Chat History:", storedChatHistory);
+  }, [location.state]); // Add location.state as a dependency to re-run on navigation
+  
+  const handleSessionClick = async (article_id, source, session_id) => {
+    try {
+      const conversationResponse = await axios.get(
+        `http://13.127.207.184:80/history/conversations/history/${user_id}/${session_id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      const formattedChatHistory = [];
+      let currentEntry = {};
+  
+      conversationResponse.data.conversation.forEach((entry) => {
+        if (entry.role === "user") {
+          if (currentEntry.query) {
+            formattedChatHistory.push(currentEntry);
+            currentEntry = {};
+          }
+          currentEntry.query = entry.parts.join(" ");
+        } else if (entry.role === "model") {
+          currentEntry.response = entry.parts.join(" ");
+          formattedChatHistory.push(currentEntry);
+          currentEntry = {};
+        }
+      });
+  
+      if (currentEntry.query) {
+        formattedChatHistory.push(currentEntry);
+      }
+  
+      console.log(formattedChatHistory);
+  
+      sessionStorage.setItem("chatHistory", JSON.stringify(formattedChatHistory));
+  
+      // Update `source` based on its value
+      const sourceType = source === "biorxiv" ? "bioRxiv_id" : source === "plos" ? "plos_id" : "pmid";
+  
+      navigate(`/article/${sourceType}:${article_id}`, {
+        state: {
+          id: article_id,
+          source: sourceType,
+          token: token,
+          user: { access_token: token, user_id: user_id },
+          annotateData: location.state.annotateData,
+          data: location.state.data,
+        },
+      });
+      console.log(conversationResponse);
+    } catch (error) {
+      console.error("Error fetching article or conversation data:", error);
+    }
+  };
+  
+  
   return (
     <>
       <div className="container">
@@ -984,51 +1067,63 @@ const ArticlePage = () => {
             <h5>Recent Interactions</h5>
             <ul>
             {sessions.length > 0 ? (
-        sessions.map((session) => (
-          <li key={session.session_id}>
-            {editingSessionId === session.session_id ? (
-              <TextField
-                type="text"
-                style={{ padding: "0" }}
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    height: "40px",
-                    "& fieldset": {
-                      borderColor: "transparent",
-                    },
-                    "&:hover fieldset": {
-                      borderColor: "transparent",
-                    },
-                    "&.Mui-focused fieldset": {
-                      borderColor: "transparent",
-                    },
-                  },
-                  "& .MuiOutlinedInput-input": {
-                    outline: "none",
-                  },
-                }}
-                value={editedTitle}
-                onChange={handleTitleChange}
-                onBlur={() => handleSaveEdit(session.session_id)} // Save on blur
-                autoFocus
-              />
-            ) : (
-              <a>
-                {session.session_title.slice(0, 35)}
-                {session.session_title.length > 35 ? "..." : ""}
-              </a>
-            )}
-            <FontAwesomeIcon
+  sessions.map((session) => (
+    <li key={session.session_id}>
+      {editingSessionId === session.session_id ? (
+        <TextField
+          type="text"
+          style={{ padding: "0" }}
+          sx={{
+            "& .MuiOutlinedInput-root": {
+              height: "40px",
+              "& fieldset": {
+                borderColor: "transparent",
+              },
+              "&:hover fieldset": {
+                borderColor: "transparent",
+              },
+              "&.Mui-focused fieldset": {
+                borderColor: "transparent",
+              },
+            },
+            "& .MuiOutlinedInput-input": {
+              outline: "none",
+            },
+          }}
+          value={editedTitle}
+          onChange={handleTitleChange}
+          onBlur={() => handleSaveEdit(session.session_id)} // Save on blur
+          autoFocus
+        />
+      ) : (
+        <a
+          onClick={() => {
+            console.log("Session ID:", session.session_id);
+            console.log("Source:", session.source);
+            handleSessionClick(
+              session.article_id,
+              session.source,
+              session.session_id,
+              user_id
+            );
+          }}
+        >
+          {session.session_title.slice(0, 35)}
+          {session.session_title.length > 35 ? "..." : ""}
+        </a>
+      )}
+      <FontAwesomeIcon
               title="Rename the title"
               icon={faPen}
               onClick={() => handleEditClick(session.session_id, session.session_title)}
               style={{ cursor: "pointer", marginLeft: "10px" }}
             />
-          </li>
-        ))
-      ) : (
-        <li>No recent interactions</li>
-      )}
+    </li>
+  ))
+) : (
+  <li>No sessions available</li>
+)}
+
             </ul>
           </div>
 
@@ -1080,6 +1175,7 @@ const ArticlePage = () => {
     />
   </React.Fragment>
 ))}
+
 </div>
 
                   </div>
@@ -1180,8 +1276,11 @@ const ArticlePage = () => {
                   ) : (
                     ""
                   )}
-                  <span style={{ color: "#2b9247" }}>PMID : {id}</span>
-                </div>
+                <span style={{ color: "#2b9247" }}>
+                  {type === "bioRxiv_id" && "BioRxiv ID"} 
+                  {type === "pmid" && "PMID"}
+                  {type === "plos_id" && "PLOS ID"} : {id}
+                </span>                </div>
 
                 {articleData.article.abstract_content && (
                   <>
@@ -1208,14 +1307,15 @@ const ArticlePage = () => {
                 {articleData.article.body_content &&
                   renderContentInOrder(articleData.article.body_content, true)}
 
-                {showStreamingSection && (
-                  <div className="streaming-section">
-                    <div className="streaming-content">
-                      {chatHistory.map((chat, index) => (
-                        <div key={index}>
-                          <div className="query-asked">
-                            <span>{chat.query}</span>
-                          </div>
+                  {showStreamingSection && (
+                    <div className="streaming-section">
+                      <div className="streaming-content">
+                        
+                        {chatHistory.map((chat, index) => (
+                          <div key={index}>
+                            <div className="query-asked">
+                              <span>{chat.query}</span>
+                            </div>
 
                           <div
                             className="response"
