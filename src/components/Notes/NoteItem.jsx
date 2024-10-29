@@ -40,10 +40,9 @@ const NoteItem = ({ note, onEdit, onDelete }) => {
   // Handle confirming the deletion
   const confirmDelete = (e) => {
     e.stopPropagation();
-    onDelete(note.id);
+    onDelete(note.note_id);
     setShowConfirmDelete(false);
   };
-
   // Handle cancelling the deletion
   const cancelDelete = (e) => {
     e.stopPropagation();
@@ -105,7 +104,7 @@ const NoteItem = ({ note, onEdit, onDelete }) => {
           </button>
         ) : (
           <p id="date" style={{ fontSize: "0.9em", color: "#555", margin: 0 }}>
-            {note.date}
+            {note.created_at}
           </p>
         )}
       </div>
@@ -117,12 +116,13 @@ const NoteItem = ({ note, onEdit, onDelete }) => {
           id="details"
           dangerouslySetInnerHTML={{
             __html:
-              note.details.length > 40
-                ? note.details.substring(0, 100) + "..."
-                : note.details,
+              note.content && note.content.length > 40
+                ? note.content.substring(0, 100) + "..."
+                : note.content || "",
           }}
           style={{ color: "#333", margin: 0 }}
         />
+
       </div>
 
       {/* Popup Menu */}

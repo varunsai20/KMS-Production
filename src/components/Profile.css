@@ -1,116 +1,128 @@
 .profile-container {
-  display: flex;
-  flex-direction: column;
-  margin: 0 2%;
-}
-
-.profile-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 1rem;
-}
-
-.back-button {
-  background: none;
-  border: none;
-  font-size: 18px;
-  color: #2d79f3;
-  cursor: pointer;
-}
-
-.profile-body {
-  display: flex;
-  justify-content: space-around;
-  flex-direction: row;
-}
-
-.profile-section {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.profile-section-img{
-    position: absolute;
-    left: 6px;
-    top: 22%;
-}
-.profile-picture {
-    margin-top: 2rem;
-    border-radius: 50%;
-    margin-bottom: 10px;
-}
-
-.upload-button {
-    width: 100%;
-    background-color: #fff;
-    color: #007bff;
-    border: 1px solid #007bff;
-    padding: 8px 8px 8px 20px;
-    border-radius: 34px;
-    cursor: pointer;
-}
-
-.profile-form {
-  width: 60%;
-}
-
-.form-section {
-  margin-bottom: 10px;
-  display: flex;
+    display: flex;
     flex-direction: column;
-    align-items: flex-start;
-}
-
-.form-section h3 {
-  margin-bottom: .5rem;
-}
-
-.form-row {
-    width: 100%;
+    margin: 0 2%;
+  }
+  
+  .profile-header {
     display: flex;
-    gap: 20px;
-}
-
-.form-row-item {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.form-row-item label {
-    width: fit-content;
-  font-weight: bold;
-  margin-bottom: 5px;
-  font-size: 14px;
-}
-
-.form-row-item input, .form-row-item select {
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-}
-.form-section-multiplerow{
-    width: 100%;
-    display: flex;
+    align-items: center;
     gap: 10px;
+    margin-bottom: 1rem;
+  }
+  
+  .back-button {
+    background: none;
+    border: none;
+    font-size: 18px;
+    color: #2d79f3;
+    cursor: pointer;
+  }
+  
+  .profile-body {
+    display: flex;
+    justify-content: space-around;
+    flex-direction: row;
+  }
+  
+  .profile-section {
+    display: flex;
     flex-direction: column;
-}
-.form-section-multiplerow .form-row-item  .org{
-    width: 47%;
-    padding-right: 0;
-}
-.form-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-}
-
-
-.create-button {
-  background-color: #007bff;
-  color: #fff;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 5px;
-}
+  }
+  .profile-section-img{
+  }
+  .profile-picture {
+      margin-top: 2rem;
+      border-radius: 50%;
+      margin-bottom: 10px;
+  }
+  
+  .profile-picture img {
+      width: 100px;
+      height: 100px;
+      object-fit: cover; /* Ensures the image fits within the container */
+      border-radius: 50%; /* Makes the image circular */
+    }
+    .profile-upload-button{
+      display: flex;
+      padding: 8px;
+      border: 1px solid #007bff;
+      border-radius: 34px;
+      gap: 5px;
+  
+    }
+    .upload-button {
+      width: 100%;
+      background-color: #fff;
+      color: #007bff;
+      cursor: pointer;
+    }
+    
+    .upload-button input[type="file"] {
+      display: none; /* Hide the actual file input */
+    }
+    
+  
+  .profile-form {
+    width: 60%;
+  }
+  
+  .form-section {
+    margin-bottom: 10px;
+    display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+  }
+  
+  .form-section h3 {
+    margin-bottom: .5rem;
+  }
+  
+  .form-row {
+      width: 100%;
+      display: flex;
+      gap: 20px;
+  }
+  
+  .form-row-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .form-row-item label {
+      width: fit-content;
+    font-weight: bold;
+    margin-bottom: 5px;
+    font-size: 14px;
+  }
+  
+  .form-row-item input, .form-row-item select {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  .form-section-multiplerow{
+      width: 100%;
+      display: flex;
+      gap: 10px;
+      flex-direction: column;
+  }
+  .form-section-multiplerow .form-row-item  .org{
+      width: 47%;
+      padding-right: 0;
+  }
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+  
+  
+  .create-button {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+  }

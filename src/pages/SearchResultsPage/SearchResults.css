@@ -1,3 +1,52 @@
+.search-header {
+  width: 93.61%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  background: var(--secondary-color);
+  border-radius: 20px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+
+  margin: auto;
+}
+.search-header-logo img {
+  width: 100px;
+  height: 30.66px;
+  margin-left: 26px;
+  gap: 0px;
+  opacity: 0px;
+  border-radius: 10px;
+}
+
+.search-header-auth-buttons {
+  margin-right: 26px;
+}
+
+.search-header-auth-buttons .login {
+  background-color: rgba(255, 255, 255, 1);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 36.49px;
+  cursor: pointer;
+  margin-left: 10px;
+  font-size: 14px;
+  color: rgba(26, 130, 255, 1);
+  font-weight: 600;
+}
+
+.search-header-auth-buttons .login {
+  background: transparent;
+  background-color: rgba(255, 255, 255, 1);
+}
+
+.search-header-auth-buttons .login:hover {
+  background: black;
+  color: white;
+}
+
+
+
 button {
   cursor: pointer;
 }
@@ -438,7 +487,7 @@ button {
 .result-checkbox {
 }
 
-.searchresult-ArticleTitle{
+.searchresult-ArticleTitle {
   width: 90%;
 
   display: flex;
@@ -500,7 +549,8 @@ button {
   z-index: 1001;
 }
 
-.modal-content h3, .modal-content p {
+.modal-content h3,
+.modal-content p {
   margin-bottom: 15px;
 }
 
@@ -536,8 +586,6 @@ button {
 .modal-content ul li {
   margin-bottom: 10px;
 }
-
-
 
 .searchresult-authors {
   font-size: 14px;
@@ -791,7 +839,7 @@ button {
 
 .search-annotate-icon {
   border: 1px solid rgba(235, 235, 243, 1);
-  border-radius: 8px;
+  border-radius: 8px 8px 0px 0px;
   padding: 10px;
 }
 

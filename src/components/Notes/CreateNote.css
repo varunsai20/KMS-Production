@@ -1,7 +1,5 @@
 .notes {
-  gap: 0px;
   border-radius: 16px;
-  margin: 0 1% 0 0;
   opacity: 0px;
   border: 1px solid rgba(235, 235, 243, 1);
 }
@@ -52,7 +50,7 @@
   height: 40px;
 }
 .dropdown {
-  /* width: 100%; */
+  width: 93%;
   background-color: white; /* or your preferred background color */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   border-radius: 4px; /* optional */
@@ -60,20 +58,22 @@
 }
 
 .open-header-dropdown {
-  gap: 10px;
-  text-align: start;
-  display: flex;
-  flex-direction: column;
+  /* gap: 10px; */
+  /* text-align: start; */
+  /* display: flex; */
+  /* flex-direction: column; */
 }
 .dropdown-button-group {
   width: 100%;
-  display: grid;
+  /* display: grid; */
   text-align: start;
-  justify-content: start;
+  margin: 0 auto;
+
+  /* justify-content: start; */
   gap: 5px;
 }
 .dropdown-button-noteslist {
-  /* width: 100%; */
+  width: 100%;
   color: #1a82ff;
   background: none;
   border: none;
@@ -81,6 +81,7 @@
   cursor: pointer;
   font-size: 14px;
   margin-right: 15px;
+  text-align: start;
 }
 .dropdown-button-deletenotes {
   width: 100%;
@@ -90,12 +91,17 @@
   padding: 8px 12px;
   cursor: pointer;
   font-size: 14px;
+  text-align: start;
+}
+.dropdown-button-noteslist:hover,
+.dropdown-button-deletenotes:hover {
+  background-color: rgba(235, 235, 243, 0.5);
 }
 .dots {
   font-size: 28px;
   color: black;
 }
-.cancel-button {
+.notes-cancel-button {
   background-color: transparent;
   border: none;
   /* padding: 8px; */
@@ -121,7 +127,7 @@
   background-color: #f1f1f1;
   padding: 5px;
   border-radius: 4px;
-  margin-bottom: 10px;
+  /* margin-bottom: 10px; */
 }
 
 .toolbar button {
@@ -200,24 +206,21 @@
   }
 }
 
-/* CreateNote.css */
-
-/* Modal Overlay */
-.modal-overlay {
+.createNotes-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+  backdrop-filter: blur(1px);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 2000; /* Ensure it's above other elements */
+  z-index: 2000;
 }
 
 /* Modal Content */
-.modal-content {
+.createNotes-modal-content {
   background-color: #fff;
   padding: 20px 30px;
   border-radius: 8px;
@@ -228,15 +231,15 @@
 }
 
 /* Modal Header */
-.modal-header {
+.createNotes-modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 15px;
+  /* margin-bottom: 15px; */
 }
 
 /* Close Button */
-.modal-close-button {
+.createNotes-modal-close-button {
   background: none;
   border: none;
   cursor: pointer;
@@ -244,30 +247,17 @@
 }
 
 /* Modal Body */
-.modal-body {
+.createNotes-modal-body {
   display: flex;
   justify-content: space-evenly;
   /* flex-direction: column; */
-}
-
-.modal-body label {
-  text-align: start;
-  margin-bottom: 5px;
-  font-weight: bold;
 }
 .share-email {
   text-align: start;
 }
 
-.modal-email-input {
-  padding: 8px;
-  margin-bottom: 15px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
 /* Copy Button */
-.modal-copy-button {
+.createNotes-modal-copy-button {
   padding: 10px;
   /* background-color: #1a82ff; */
   color: #fff;
@@ -277,7 +267,7 @@
   font-size: 16px;
 }
 
-.modal-copy-button:hover {
+.createNotes-modal-copy-button:hover {
   background-color: #1669c1;
 }
 
@@ -289,27 +279,76 @@
   color: #155724;
   border-radius: 4px;
 }
-.email {
+.createNotes-email {
   /* display: flex; */
   gap: 10px;
 }
-.modal-email-input {
-  width: 70%;
+.createNotes-Email {
+  display: grid;
 }
-.modal-send-button {
+.createNotes-copy {
+  display: grid;
+}
+.email-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.email-modal-content {
+  background: white;
+  padding: 20px;
+  width: 25vw;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.email-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.email-modal-close-button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.email-input,
+.subject-input {
+  width: 100%;
+  padding: 10px 0 10px 6px;
+  font-size: 16px;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+}
+
+.subject-input {
+  resize: none; /* Prevent resizing */
+}
+
+.send-button {
   background-color: #1a82ff;
   color: white;
-  padding: 8px;
-  margin-bottom: 15px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  border: none;
+  padding: 10px;
+  border-radius: 5px;
   cursor: pointer;
   font-size: 16px;
-  width: 30%;
 }
-.Email {
-  display: grid;
-}
-.copy {
-  display: grid;
+
+.send-button:hover {
+  background-color: #155bb5;
 }

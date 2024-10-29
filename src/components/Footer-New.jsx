@@ -1,16 +1,18 @@
 import React from "react";
 import { useSelector } from 'react-redux'; // To check logged-in status
+import { useLocation } from "react-router-dom"; // To get the current path
 import "./Footer-New.css";
 
 const Footer = () => {
   const isLoggedIn = useSelector(state => state.auth?.isLoggedIn); // Assuming auth reducer has isLoggedIn
+  const location = useLocation(); // Get the current location
 
   return (
     <div
       className="footer"
       style={{
-        position: isLoggedIn ? "absolute" : "static",
-        bottom: isLoggedIn ? 0 : "auto",
+        position: location.pathname === "/" ? "absolute" : "static",
+        bottom: location.pathname === "/" ? 0 : "auto",
         width: "100%", // Ensure the footer takes up the full width
         textAlign: "center", // Center the content
       }}

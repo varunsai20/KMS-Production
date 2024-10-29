@@ -5,32 +5,6 @@
 
 .notes-manager-content {
   height: 100%;
+  width: 100%;
   overflow-y: auto;
-}
-
-/* Custom style for the resizable handle */
-.react-resizable-handle {
-  position: absolute;
-  width: 30px;
-  height: 10px;
-  top: 0px; /* Adjust to position the handle at the top */
-  left: 50%;
-  transform: translateX(-50%);
-  cursor: ns-resize; /* Vertical resize cursor */
-}
-
-/* Create two lines using pseudo-elements */
-.react-resizable-handle::before,
-.react-resizable-handle::after {
-  content: "";
-  display: block;
-  width: 29px; /* First line width */
-  height: 1px; /* Line height */
-  background-color: #333; /* Line color */
-  margin: 2px auto; /* Space between lines */
-}
-
-/* Adjust the second line's width */
-.react-resizable-handle::after {
-  width: 17px; /* Second line width */
 }

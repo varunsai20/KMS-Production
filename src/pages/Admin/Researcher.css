@@ -160,7 +160,7 @@ opacity: 0px;
   }
   
   /* Inactive status */
-  .status-indicator.inactive:before {
+  .status-indicator.Inactive:before {
     background-color: red;
   }
   
