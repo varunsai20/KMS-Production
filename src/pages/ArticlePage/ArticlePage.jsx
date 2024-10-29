@@ -27,8 +27,8 @@ import Notes from "../NotesPage/Notes";
 const ArticlePage = () => {
   const { pmid } = useParams();
   const { user } = useSelector((state) => state.auth);
-  const token=user?.access_token;
-  const user_id=user?.user_id;
+  const token = user?.access_token;
+  const user_id = user?.user_id;
   const [type, id1] = pmid.split(":");
   const id = Number(id1);
   const [source, setSource] = useState();
@@ -122,9 +122,11 @@ const ArticlePage = () => {
   const [currentid, setCurrentid] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newCollectionName, setNewCollectionName] = useState("");
+
  
   const [sessions, setSessions] = useState([]);
   const [editingSessionId, setEditingSessionId] = useState(null);
+
   const [bookmarkedPmids, setBookmarkedPmids] = useState({});
   const [savedText, setSavedText] = useState("");
   const selectedTextRef = useRef("");
@@ -134,8 +136,6 @@ const ArticlePage = () => {
   const [notesHeight, setNotesHeight] = useState(35);
   const minHeight = 15;
   const maxHeight = 60;
-
-
 
   useEffect(() => {
     // Determine the source based on `type`
@@ -317,7 +317,9 @@ const ArticlePage = () => {
   const handleMouseUp = (event) => {
     if (!contentRef.current.contains(event.target)) {
       return; // Exit if the selection is outside .article-content
+
     }
+
     const selection = window.getSelection();
 
     if (selection.rangeCount > 0) {
@@ -454,7 +456,6 @@ const ArticlePage = () => {
     }
   };
 
-
   const handleSaveToNote = () => {
     const textToSave = selectedTextRef.current; // Get the selected text from ref
     if (textToSave) {
@@ -496,13 +497,13 @@ const ArticlePage = () => {
 
 
 
+
   const getid = () => {
+
     return `${source}_${id}`;
   };
 
   const uniqueId = getid();
-
-
 
   useEffect(() => {
     const articleContent = document.querySelector(".article-content");
@@ -550,17 +551,18 @@ const ArticlePage = () => {
       alert("Please enter a query");
       return;
     }
-    
+
     setShowStreamingSection(true);
     setLoading(true);
-  
+
     const newChatEntry = { query, response: "", showDot: true };
     setChatHistory((prevChatHistory) => [...prevChatHistory, newChatEntry]);
-  
+
     // Create a unique key for the session based on the source and article id
     const sessionKey = `${source}_${id}`;
-    const storedSessionId = JSON.parse(sessionStorage.getItem("articleSessions"))?.[sessionKey] || "";
-  
+    const storedSessionId =
+      JSON.parse(sessionStorage.getItem("articleSessions"))?.[sessionKey] || "";
+
     const bodyData = JSON.stringify({
       question: query,
       user_id: user_id,
@@ -568,78 +570,87 @@ const ArticlePage = () => {
       source: source,
       article_id: Number(id),
     });
-  
+
     try {
-      const response = await fetch("http://13.127.207.184:80/view_article/generateanswer", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`, // Add the Bearer token here
-        },
-        body: bodyData,
-      });
+      const response = await fetch(
+        "http://13.127.207.184:80/view_article/generateanswer",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`, // Add the Bearer token here
+          },
+          body: bodyData,
+        }
+      );
       console.log("API Response:", response);
-  
+
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let buffer = "";
       setQuery("");
-  
+
       const readStream = async () => {
         let done = false;
         const delay = 100; // Delay between words
-  
+
         while (!done) {
           const { value, done: streamDone } = await reader.read();
           done = streamDone;
-  
+
           if (value) {
             buffer += decoder.decode(value, { stream: true });
-  
+
             while (buffer.indexOf("{") !== -1 && buffer.indexOf("}") !== -1) {
               let start = buffer.indexOf("{");
               let end = buffer.indexOf("}", start);
               if (start !== -1 && end !== -1) {
                 const jsonChunk = buffer.slice(start, end + 1);
                 buffer = buffer.slice(end + 1);
-  
+
                 try {
                   const parsedData = JSON.parse(jsonChunk);
                   console.log("Received Data Chunk:", parsedData); // Log each parsed data chunk
-  
+
                   // Store session_id for the specific article and source in sessionStorage if it exists
                   if (parsedData.session_id) {
-                    const articleSessions = JSON.parse(sessionStorage.getItem("articleSessions")) || {};
+                    const articleSessions =
+                      JSON.parse(sessionStorage.getItem("articleSessions")) ||
+                      {};
                     articleSessions[sessionKey] = parsedData.session_id; // Store session_id under source_id key
-                    sessionStorage.setItem("articleSessions", JSON.stringify(articleSessions));
+                    sessionStorage.setItem(
+                      "articleSessions",
+                      JSON.stringify(articleSessions)
+                    );
                   }
-  
+
                   const answer = parsedData.answer;
                   const words = answer.split(" ");
-  
+
                   for (const word of words) {
                     await new Promise((resolve) => setTimeout(resolve, delay));
-  
+
                     setChatHistory((chatHistory) => {
                       const updatedChatHistory = [...chatHistory];
                       const lastEntryIndex = updatedChatHistory.length - 1;
-  
+
                       if (lastEntryIndex >= 0) {
                         updatedChatHistory[lastEntryIndex] = {
                           ...updatedChatHistory[lastEntryIndex],
                           response:
-                            (updatedChatHistory[lastEntryIndex].response || "") +
+                            (updatedChatHistory[lastEntryIndex].response ||
+                              "") +
                             " " +
                             word,
                           showDot: true,
                         };
                       }
-  
+
                       return updatedChatHistory;
                     });
-  
+
                     setResponse((prev) => prev + " " + word);
-  
+
                     if (endOfMessagesRef.current) {
                       endOfMessagesRef.current.scrollIntoView({
                         behavior: "smooth",
@@ -661,19 +672,17 @@ const ArticlePage = () => {
             }
           }
         }
-  
+
         setLoading(false);
         sessionStorage.setItem("chatHistory", JSON.stringify(chatHistory));
       };
-  
+
       readStream();
     } catch (error) {
       console.error("Error fetching or reading stream:", error);
       setLoading(false);
     }
   };
-  
-  
 
   const handlePromptClick = (queryText) => {
     setQuery(queryText);
@@ -864,6 +873,7 @@ const ArticlePage = () => {
     });
   };
 
+
   useEffect(() => {
     const fetchSessions = async () => {
       try {
@@ -893,45 +903,29 @@ const ArticlePage = () => {
   const handleEditClick = (sessionId, title) => {
     setEditingSessionId(sessionId);
     setEditedTitle(title);
+
   };
 
   const handleTitleChange = (e) => {
-    setEditedTitle(e.target.value);
+    setEditedTitle(e.target.value); // Update the state as the user types
   };
 
-  const handleSaveEdit = async (sessionId) => {
-    try {
-      await axios.put(
-        "http://13.127.207.184:80/history/conversations/edit",
-        {
-          user_id,
-          session_id: sessionId,
-          new_title: editedTitle,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      console.log(sessionId)
-      console.log(editedTitle)
-      // Update the local sessions state after a successful edit
-      setSessions((prevSessions) =>
-        prevSessions.map((session) =>
-          session.session_id === sessionId
-            ? { ...session, session_title: editedTitle }
-            : session
-        )
-      );
+  const handleSaveEdit = (pmid) => {
+    const updatedHistory = getHistoryTitles().map((item) =>
+      item.pmid === pmid ? { ...item, title: editedTitle } : item
+    );
+    // Save the updated history back to localStorage without changing the pmid
+    localStorage.setItem("history", JSON.stringify(updatedHistory));
 
-      // Reset editing state
-      setEditingSessionId(null);
-      setEditedTitle("");
-    } catch (error) {
-      console.error("Error updating session title:", error);
-    }
+    // Reset the editing state
+    setEditingPmid(null);
+    setEditedTitle("");
   };
+
+  // const getHistoryTitles = () => {
+  //   let storedHistory = JSON.parse(localStorage.getItem("history")) || [];
+  //   return storedHistory; // No need to reverse, latest items are already at the top
+  // };
   return (
     <>
       <div className="container">
@@ -965,56 +959,55 @@ const ArticlePage = () => {
         <div className="content">
           <div className="history-pagination">
             <h5>Recent Interactions</h5>
-            
             <ul>
-            {sessions.length > 0 ? (
-        sessions.map((session) => (
-          <li key={session.session_id}>
-            {editingSessionId === session.session_id ? (
-              <TextField
-                type="text"
-                style={{ padding: "0" }}
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    height: "40px",
-                    "& fieldset": {
-                      borderColor: "transparent",
-                    },
-                    "&:hover fieldset": {
-                      borderColor: "transparent",
-                    },
-                    "&.Mui-focused fieldset": {
-                      borderColor: "transparent",
-                    },
-                  },
-                  "& .MuiOutlinedInput-input": {
-                    outline: "none",
-                  },
-                }}
-                value={editedTitle}
-                onChange={handleTitleChange}
-                onBlur={() => handleSaveEdit(session.session_id)} // Save on blur
-                autoFocus
-              />
-            ) : (
-              <a>
-                {session.session_title.slice(0, 35)}
-                {session.session_title.length > 35 ? "..." : ""}
-              </a>
-            )}
-            <FontAwesomeIcon
-              title="Rename the title"
-              icon={faPen}
-              onClick={() => handleEditClick(session.session_id, session.session_title)}
-              style={{ cursor: "pointer", marginLeft: "10px" }}
-            />
-          </li>
-        ))
-      ) : (
-        <li>No recent interactions</li>
-      )}
-    </ul>
-            
+              {getHistoryTitles().length > 0 ? (
+                getHistoryTitles().map((item) => (
+                  <li key={item.pmid}>
+                    {editingPmid === item.pmid ? (
+                      <TextField
+                        type="text"
+                        open
+                        style={{ padding: "0" }}
+                        sx={{
+                          "& .MuiOutlinedInput-root": {
+                            height: "40px",
+                            "& fieldset": {
+                              borderColor: "transparent",
+                            },
+                            "&:hover fieldset": {
+                              borderColor: "transparent",
+                            },
+                            "&.Mui-focused fieldset": {
+                              borderColor: "transparent",
+                            },
+                          },
+                          "& .MuiOutlinedInput-input": {
+                            outline: "none",
+                          },
+                        }}
+                        value={editedTitle}
+                        onChange={handleTitleChange}
+                        onBlur={() => handleSaveEdit(item.pmid)} // Save on blur
+                        autoFocus
+                      />
+                    ) : (
+                      <a>
+                        {capitalize(item.title.slice(0, 35))}
+                        {item.title.length > 35 ? "..." : ""}
+                      </a>
+                    )}
+                    <FontAwesomeIcon
+                      title="Rename the title"
+                      icon={faPen}
+                      onClick={() => handleEditClick(item.pmid, item.title)}
+                      style={{ cursor: "pointer", marginLeft: "10px" }}
+                    />
+                  </li>
+                ))
+              ) : (
+                <li>No recent interactions</li>
+              )}
+            </ul>
           </div>
 
           {articleData ? (
@@ -1177,7 +1170,10 @@ const ArticlePage = () => {
                       Abstract
                     </Typography>
                     <p>
-                      {renderContentInOrder(articleData.article.abstract_content, true)}
+                      {renderContentInOrder(
+                        articleData.article.abstract_content,
+                        true
+                      )}
                     </p>
                   </>
                 )}

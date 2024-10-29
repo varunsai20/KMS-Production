@@ -3,9 +3,16 @@ import NotesList from "../../components/Notes/NotesList";
 import Createnotes from "../../components/Notes/CreateNotes";
 import Editnotes from "../../components/Notes/EditNotes";
 import "./Notes.css";
+
+
+
+//   const [notes, setNotes] = useState(
+//     JSON.parse(localStorage.getItem("notes")) || []
+//   );
+
 import { useSelector } from "react-redux";
 import axios from "axios";
-const NotesManager = ({ selectedText, notesHeight }) => {
+const NotesManager = ({ selectedText, notesHeight,isOpenNotes }) => {
   const { user } = useSelector((state) => state.auth);
 
   const user_id=user?.user_id;
@@ -41,6 +48,7 @@ const NotesManager = ({ selectedText, notesHeight }) => {
   }, [user_id, token]);
   
   console.log(notes)
+
   const [currentView, setCurrentView] = useState("list"); // 'list', 'create', 'edit'
   const [selectedNote, setSelectedNote] = useState(null);
   const [textToSave, setTextToSave] = useState([]); // Store the passed selected text
@@ -113,7 +121,7 @@ const NotesManager = ({ selectedText, notesHeight }) => {
   
 
   return (
-    <div className="notes-manager-content">
+    <div className={isOpenNotes ? "Lander-manager" : "notes-manager-content"}>
       {/* Ensure there are valid child elements here */}
       {currentView === "list" && (
         <NotesList
@@ -122,6 +130,7 @@ const NotesManager = ({ selectedText, notesHeight }) => {
           onEditNote={handleEditNote}
           onDeleteNote={handleDeleteNote}
           onDeleteAllNotes={handleDeleteAllNotes}
+          isOpenNotes={isOpenNotes}
         />
       )}
       {currentView === "create" && (
@@ -132,6 +141,7 @@ const NotesManager = ({ selectedText, notesHeight }) => {
           onClose={handleCloseCreate}
           onDelete={handleDeleteNote}
           notesHeight={notesHeight}
+          isOpenNotes={isOpenNotes}
         />
       )}
       {currentView === "edit" && selectedNote && (
@@ -140,6 +150,7 @@ const NotesManager = ({ selectedText, notesHeight }) => {
           setNotes={setNotes}
           onClose={handleCloseEdit}
           notesHeight={notesHeight}
+          isOpenNotes={isOpenNotes}
         />
       )}
     </div>

@@ -12,6 +12,7 @@ const NotesList = ({
   onAddNewNote,
   onEditNote,
   onDeleteNote,
+  isOpenNotes,
   //onDeleteAllNotes,
 }) => {
   const [text, setText] = useState("");
@@ -39,21 +40,27 @@ const NotesList = ({
   // };
 
   return (
-    <section className="Notes-List">
-      <header className="Notes-List-header">
-        <div className="plus-dots">
+    <section className={isOpenNotes ? "Lander-Notes-List" : "Notes-List"}>
+      <header
+        className={
+          isOpenNotes ? "Lander-Notes-List-header" : "Notes-List-header"
+        }
+      >
+        <div className={isOpenNotes ? "lander-plus-dots" : "plus-dots"}>
           <button
             title="New Note"
-            className="button-plus"
+            className={isOpenNotes ? "lander-button-plus" : "button-plus"}
             onClick={onAddNewNote}
           >
             <LuPlus />
           </button>
-          <div className="p">
+          <div className={isOpenNotes ? "lander-p" : "p"}>
             <p id="p">Notes</p>
           </div>
         </div>
-        <div className="Search-wrapper">
+        <div
+          className={isOpenNotes ? "lander-Search-wrapper" : "Search-wrapper"}
+        >
           <img src={SearchIcon} alt="search" className="Search-icon" />
           <input
             type="text"
@@ -61,7 +68,7 @@ const NotesList = ({
             onChange={handleSearch}
             autoFocus
             placeholder="Search..."
-            className="Search-input"
+            className={isOpenNotes ? "lander-Search-input" : "Search-input"}
           />
         </div>
       </header>
