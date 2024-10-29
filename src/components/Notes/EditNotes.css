@@ -1,6 +1,4 @@
 .edit-note {
-  /* width: 349px;
-  height: 70vh; */
   border-radius: 15px;
   border: 1px solid #ebebf3;
 }
@@ -14,15 +12,11 @@
 }
 
 .edit-back-button {
-  /* padding: 5px 0px 0px 0px; */
   color: #1a82ff;
   font-size: 20px;
   background: none;
-  /* border: 1px solid #ebebf3; */
-  /* border-radius: 10px; */
   width: 10%;
   cursor: pointer;
-  /* margin-left: 10px; */
 }
 
 .edit-save-button {
@@ -30,8 +24,6 @@
   color: #1a82ff;
   font-size: 20px;
   background: none;
-  /* border: 1px solid #ebebf3; */
-  /* border-radius: 10px; */
   width: 20%;
   cursor: pointer;
 }
@@ -144,10 +136,9 @@
   }
 }
 
-/* Custom Ordered List Styling */
 .custom-ordered-list {
-  list-style-type: none; /* Remove default numbering */
-  counter-reset: myCounter; /* Reset the counter */
+  list-style-type: none;
+  counter-reset: myCounter;
 }
 
 .custom-ordered-list li {
