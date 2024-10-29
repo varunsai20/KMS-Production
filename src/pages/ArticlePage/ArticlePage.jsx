@@ -81,7 +81,8 @@ const ArticlePage = () => {
       collection.articles.includes(idType)
     );
   };
-
+  const [sessions, setSessions] = useState([]);
+  const [editingSessionId, setEditingSessionId] = useState(null);
   const [bookmarkedPmids, setBookmarkedPmids] = useState({});
   const [savedText, setSavedText] = useState("");
   const selectedTextRef = useRef("");
@@ -717,36 +718,74 @@ const ArticlePage = () => {
     });
   };
 
-  const getHistoryTitles = () => {
-    let storedHistory = JSON.parse(localStorage.getItem("history")) || {};
-    // Return the stored history as an array of {pmid, title} objects
-    return storedHistory;
-  };
-  const handleEditClick = (pmid, title) => {
-    setEditingPmid(pmid); // Set the current pmid being edited
-    setEditedTitle(title); // Set the initial value for editing
+  useEffect(() => {
+    const fetchSessions = async () => {
+      try {
+        const response = await axios.get(
+          `http://13.127.207.184:80/history/conversations/sessions/${user_id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (response.data?.sessions) {
+          setSessions(response.data.sessions); // Set the sessions array from the response
+        }
+      } catch (error) {
+        console.error("Error fetching chat history:", error);
+      }
+    };
+
+    if (user_id && token) {
+      fetchSessions();
+    }
+  }, [handleAskClick]);
+
+  // Edit functions
+  const handleEditClick = (sessionId, title) => {
+    setEditingSessionId(sessionId);
+    setEditedTitle(title);
   };
 
   const handleTitleChange = (e) => {
-    setEditedTitle(e.target.value); // Update the state as the user types
+    setEditedTitle(e.target.value);
   };
 
-  const handleSaveEdit = (pmid) => {
-    const updatedHistory = getHistoryTitles().map((item) =>
-      item.pmid === pmid ? { ...item, title: editedTitle } : item
-    );
-    // Save the updated history back to localStorage without changing the pmid
-    localStorage.setItem("history", JSON.stringify(updatedHistory));
+  const handleSaveEdit = async (sessionId) => {
+    try {
+      await axios.put(
+        "http://13.127.207.184:80/history/conversations/edit",
+        {
+          user_id,
+          session_id: sessionId,
+          new_title: editedTitle,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      console.log(sessionId)
+      console.log(editedTitle)
+      // Update the local sessions state after a successful edit
+      setSessions((prevSessions) =>
+        prevSessions.map((session) =>
+          session.session_id === sessionId
+            ? { ...session, session_title: editedTitle }
+            : session
+        )
+      );
 
-    // Reset the editing state
-    setEditingPmid(null);
-    setEditedTitle("");
+      // Reset editing state
+      setEditingSessionId(null);
+      setEditedTitle("");
+    } catch (error) {
+      console.error("Error updating session title:", error);
+    }
   };
-
-  // const getHistoryTitles = () => {
-  //   let storedHistory = JSON.parse(localStorage.getItem("history")) || [];
-  //   return storedHistory; // No need to reverse, latest items are already at the top
-  // };
   return (
     <>
       <div className="container">
@@ -780,55 +819,56 @@ const ArticlePage = () => {
         <div className="content">
           <div className="history-pagination">
             <h5>Recent Interactions</h5>
+            
             <ul>
-              {getHistoryTitles().length > 0 ? (
-                getHistoryTitles().map((item) => (
-                  <li key={item.pmid}>
-                    {editingPmid === item.pmid ? (
-                      <TextField
-                        type="text"
-                        open
-                        style={{ padding: "0" }}
-                        sx={{
-                          "& .MuiOutlinedInput-root": {
-                            height: "40px",
-                            "& fieldset": {
-                              borderColor: "transparent",
-                            },
-                            "&:hover fieldset": {
-                              borderColor: "transparent",
-                            },
-                            "&.Mui-focused fieldset": {
-                              borderColor: "transparent",
-                            },
-                          },
-                          "& .MuiOutlinedInput-input": {
-                            outline: "none",
-                          },
-                        }}
-                        value={editedTitle}
-                        onChange={handleTitleChange}
-                        onBlur={() => handleSaveEdit(item.pmid)} // Save on blur
-                        autoFocus
-                      />
-                    ) : (
-                      <a>
-                        {capitalize(item.title.slice(0, 35))}
-                        {item.title.length > 35 ? "..." : ""}
-                      </a>
-                    )}
-                    <FontAwesomeIcon
-                      title="Rename the title"
-                      icon={faPen}
-                      onClick={() => handleEditClick(item.pmid, item.title)}
-                      style={{ cursor: "pointer", marginLeft: "10px" }}
-                    />
-                  </li>
-                ))
-              ) : (
-                <li>No recent interactions</li>
-              )}
-            </ul>
+            {sessions.length > 0 ? (
+        sessions.map((session) => (
+          <li key={session.session_id}>
+            {editingSessionId === session.session_id ? (
+              <TextField
+                type="text"
+                style={{ padding: "0" }}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    height: "40px",
+                    "& fieldset": {
+                      borderColor: "transparent",
+                    },
+                    "&:hover fieldset": {
+                      borderColor: "transparent",
+                    },
+                    "&.Mui-focused fieldset": {
+                      borderColor: "transparent",
+                    },
+                  },
+                  "& .MuiOutlinedInput-input": {
+                    outline: "none",
+                  },
+                }}
+                value={editedTitle}
+                onChange={handleTitleChange}
+                onBlur={() => handleSaveEdit(session.session_id)} // Save on blur
+                autoFocus
+              />
+            ) : (
+              <a>
+                {session.session_title.slice(0, 35)}
+                {session.session_title.length > 35 ? "..." : ""}
+              </a>
+            )}
+            <FontAwesomeIcon
+              title="Rename the title"
+              icon={faPen}
+              onClick={() => handleEditClick(session.session_id, session.session_title)}
+              style={{ cursor: "pointer", marginLeft: "10px" }}
+            />
+          </li>
+        ))
+      ) : (
+        <li>No recent interactions</li>
+      )}
+    </ul>
+            
           </div>
 
           {articleData ? (
