@@ -43,7 +43,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
     const fetchCollections = async () => {
       try {
         const response = await axios.get(
-          `http://13.127.207.184:80/bookmarks/users/${user_id}/collections`,
+          `http://13.127.207.184:80/bookmarks/${user_id}/collections`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -68,12 +68,27 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   }, []);
   console.log(collections);
   const isBookmarked = (idType) => {
-    const result = collections.some((collection) =>
-      Array.isArray(collection.articles) && collection.articles.includes(idType)
+    // Convert idType to a number for comparison
+    const numericIdType = Number(idType);
+    // console.log(`Checking for idType: ${numericIdType}`);
+  
+    // Loop through each collection and log article IDs as numbers
+    // Object.entries(collections).forEach(([collectionName, articleArray]) => {
+    //   console.log(`Collection: ${collectionName}`);
+    //   articleArray.forEach((article) => {
+    //     console.log(`article_id: ${Number(article.article_id)}`);
+    //   });
+    // });
+  
+    // Check if the article is bookmarked
+    const result = Object.values(collections).some((articleArray) =>
+      articleArray.some((article) => Number(article.article_id) === numericIdType)
     );
-    console.log(`isBookmarked for idType ${idType}:`, result);
+  
     return result;
   };
+  
+  
   
   const [newCollectionName, setNewCollectionName] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -82,15 +97,55 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   const [customStartDate, setCustomStartDate] = useState("");
   const [customEndDate, setCustomEndDate] = useState("");
   const [completePMID, setCompletePMID] = useState([]);
-  const [ratingsList, setRatingsList] = useState(() => {
-    // Get ratingsList from sessionStorage or initialize an empty array
-    return JSON.parse(sessionStorage.getItem("ratingsList")) || [];
-  });
-  const getRatingForArticle = (pmid) => {
-    const ratingsList = JSON.parse(sessionStorage.getItem("ratingsList")) || [];
-    const savedRating = ratingsList.find((item) => item.pmid === pmid);
+  // const [ratingsList, setRatingsList] = useState(() => {
+  //   // Get ratingsList from sessionStorage or initialize an empty array
+  //   return JSON.parse(sessionStorage.getItem("ratingsList")) || [];
+  // });
+  const [ratingsList, setRatingsList] = useState([]);
+
+  // Function to get the rating for a specific article by pmid
+  const getRatingForArticle = (id, source) => {
+    // Convert `ratingsList` to an array of entries if it's an object
+    const ratingsArray = Object.values(ratingsList);
+  
+    // Find a matching entry with both article_id and article_source
+    const savedRating = ratingsArray.find(
+      (item) => item.article_id === String(id) && item.article_source === source
+    );
+  
     return savedRating ? savedRating.rating : 3; // Default rating is 3 if not found
   };
+  
+  console.log(typeof(ratingsList))
+  // Use effect to fetch ratings only once on page load or reload
+  useEffect(() => {
+    const fetchRatedArticles = async () => {
+      try {
+        const response = await axios.get("http://13.127.207.184:80/rating/rated-articles", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        console.log(response)
+        const ratedArticles = response.data || [];
+        console.log("Rated Articles:", ratedArticles);
+        
+        // Store ratings list in sessionStorage and state
+        sessionStorage.setItem("ratingsList", JSON.stringify(ratedArticles));
+        setRatingsList(ratedArticles);
+      } catch (error) {
+        console.error("Error fetching rated articles:", error);
+      }
+    };
+
+    // Check if ratings are already stored in sessionStorage to avoid duplicate API calls
+    const storedRatings = JSON.parse(sessionStorage.getItem("ratingsList"));
+    if (!storedRatings) {
+      fetchRatedArticles(); // Only fetch if no stored ratings
+    } else {
+      setRatingsList(storedRatings);
+    }
+  }, []);
 
   useEffect(() => {
     const storedDateInfo = localStorage.getItem("publicationDate");
@@ -1607,20 +1662,20 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                                     <h3>Save Bookmark</h3>
                                     {console.log("Collections data:", collections)}
                                     {/* Existing Collections */}
-                                    {collections.length > 0 && (
-                                      <>
-                                        <h4>Save to existing collection:</h4>
-                                        <ul>
-                                          {collections.map((collection, index) => (
-                                            <li key={index}> {/* using index if collection is not unique */}
-                                              <button onClick={() => handleSaveToExisting(collection)}>
-                                                {collection}
-                                              </button>
-                                            </li>
-                                          ))}
-                                        </ul>
-                                      </>
-                                    )}
+                                    {Object.keys(collections).length > 0 && (
+                                          <>
+                                            <h4>Save to existing collection:</h4>
+                                            <ul>
+                                              {Object.keys(collections).map((collectionName, index) => (
+                                                <li key={index}> {/* using index as key since collection names are unique */}
+                                                  <button onClick={() => handleSaveToExisting(collectionName)}>
+                                                    {collectionName}
+                                                  </button>
+                                                </li>
+                                              ))}
+                                            </ul>
+                                          </>
+                                        )}
 
                                     {/* Create New Collection */}
                                     <h4>Create a new collection:</h4>
