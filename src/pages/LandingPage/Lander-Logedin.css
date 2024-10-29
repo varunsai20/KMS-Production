@@ -1,12 +1,16 @@
 .Landing-Container {
   display: flex;
   flex-direction: column;
+  overflow-y: hidden; /* Prevents overflow and layout changes */
+  overflow-x: hidden;
 }
 .Landing-Content {
   display: flex;
   justify-content: space-between;
   margin: 1% 7%;
   min-height: 60%;
+  overflow-y: hidden; /* Prevents overflow and layout changes */
+  overflow-x: hidden;
 }
 .Landing-Content-Left {
   position: relative;
@@ -242,16 +246,9 @@
   background: rgba(0, 0, 0, 0.5);
 }
 .notes-modal {
-  position: fixed;
-  /* top: 10%;
-  left: 30%;
-  display: flex;
-  justify-content: center;
-  align-items: center; */
-  background-color: white;
-  /* padding: 20px; */
+  position: absolute;
+  background-color: #f2f2f2;
   box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
-  /* z-index: 1000; */
   border-radius: 8px;
   height: 70vh;
   width: 40%;
@@ -332,6 +329,7 @@
 .close-modal-notes:hover {
   background-color: rgba(235, 235, 247, 0.5);
 }
+
 .resizer {
   position: absolute;
   background: transparent;
@@ -370,16 +368,342 @@
   left: 0;
 }
 .draggable-header {
+  position: absolute;
+  height: 2.8vh;
   cursor: move;
   padding: 10px;
-  background-color: #1a82ff;
+  width: 96%;
+  background-color: #999999;
+  /* background-color: #1a82ff; */
   color: #fff;
-  /* display: flex;
-  justify-content: space-between;
-  align-items: center; */
 }
 .Notes {
   width: 100%;
   height: 100%;
   overflow: auto;
+}
+.Lander-manager {
+  background-color: #f2f2f2;
+}
+
+/* Notes list as Lander-list */
+.Lander-Notes-List {
+  border-radius: 16px;
+  margin: 0 1% 0 0;
+  overflow-y: auto;
+  opacity: 0px;
+  border: 1px solid rgba(235, 235, 243, 1);
+}
+.lander-plus-dots {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(235, 235, 243, 1);
+  margin: 0%;
+  padding: 0;
+  background-color: #999999;
+}
+.lander-button-plus {
+  color: white;
+  font-size: 20px;
+  z-index: 1;
+}
+.lander-p {
+  font-family: manrope;
+  font-size: 16px;
+  font-weight: 600;
+  color: white;
+  margin: 2%;
+  padding: 0%;
+  z-index: 1;
+}
+#p {
+  margin: 0;
+  padding: 0;
+}
+.lander-Search-wrapper {
+  background-color: #f2f2f2;
+  position: relative;
+  width: 100%; /* or desired width */
+  display: flex;
+  align-items: center;
+}
+
+.lander-Search-input {
+  width: 100%;
+  padding-left: 40px; /* Space for the icon */
+  height: 40px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  outline: none;
+  box-sizing: border-box;
+  margin: 1%;
+  background-color: #f2f2f2;
+  color: white;
+}
+
+.lander-Search-icon {
+  position: absolute;
+  left: 10px;
+  width: 20px; /* Adjust size */
+  height: 20px;
+  z-index: 1;
+}
+/* note-item */
+.Lander-NoteItem {
+  height: 15vh;
+  margin: 1%;
+  /* background: rgba(235, 244, 255, 1); */
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  /* color: var(--color-white); */
+  border-radius: 10px;
+  position: relative;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  margin-bottom: 10px;
+  background-color: #f2f2f2;
+  transition: background-color 0.3s ease;
+}
+
+.NoteItem:hover {
+  box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+#title {
+  font-family: Manrope;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: black;
+  text-align: start;
+}
+#details {
+  margin: 0;
+  font-size: 14px;
+  color: black;
+  text-align: start;
+}
+#details ul {
+  margin: 0 0 0 16px;
+  padding: 0;
+}
+#details ol {
+  margin: 0 0 0 16px;
+  padding: 0;
+}
+#date {
+  font-size: 12px;
+  margin: 0;
+  opacity: 0.85;
+  color: black;
+}
+.detail-box {
+  width: 100%;
+}
+/* Menu Button */
+.menu-button:hover {
+  color: #1a82ff; /* Change color on hover if desired */
+}
+
+/* Popup Menu */
+.popup-menu {
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Popup Menu Items */
+.popup-menu-item:hover {
+  background-color: #f0f0f0;
+}
+/* Confirmation Popup Overlay */
+.confirm-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  /* background-color: rgba(0, 0, 0, 0.5); */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1500; /* Higher than popup-menu */
+  border-radius: 10px; /* Match the NoteItem's border radius */
+}
+
+/* Confirmation Popup */
+.confirm-popup {
+  background-color: #fff;
+  padding: 20px 30px;
+  border-radius: 8px;
+  width: 80%;
+  max-width: 300px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  text-align: center;
+}
+
+.confirm-popup p {
+  margin-bottom: 20px;
+  font-size: 14px;
+  color: #333;
+}
+
+.confirm-buttons {
+  display: flex;
+  justify-content: space-around;
+}
+
+.confirm-delete-button,
+.confirm-keep-button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+}
+
+.confirm-delete-button {
+  background-color: #dc3545; /* Bootstrap's danger color */
+  color: #fff;
+}
+
+.confirm-delete-button:hover {
+  background-color: #c82333;
+}
+
+.confirm-keep-button {
+  background-color: #6c757d; /* Bootstrap's secondary color */
+  color: #fff;
+}
+
+.confirm-keep-button:hover {
+  background-color: #5a6268;
+}
+
+/* edit note */
+.lander-edit-back-button {
+  color: white;
+  font-size: 20px;
+  background: none;
+  width: 10%;
+  cursor: pointer;
+  z-index: 1;
+}
+
+.lander-edit-save-button {
+  padding: 5px 0px 5px 0px;
+  color: white;
+  font-size: 20px;
+  background: none;
+  width: 20%;
+  cursor: pointer;
+  z-index: 1;
+}
+.lander-edit-note__title {
+  width: 100%;
+  box-sizing: border-box;
+  color: black;
+  border: none;
+  padding: 3%;
+  outline: none;
+  font-size: 14px;
+  font-family: "Manrope", sans-serif;
+  border-bottom: 1px solid #ebebf3;
+  background-color: #f2f2f2;
+}
+.lander-edit-note__details {
+  width: 100%;
+  /* height: 100%; */
+  box-sizing: border-box;
+  border: none;
+  padding: 3%;
+  outline: none;
+  resize: none;
+  font-size: 14px;
+  font-family: Manrope;
+  overflow-y: auto;
+  text-align: start;
+  color: black;
+}
+.lander-toolbar {
+  display: flex;
+  justify-content: space-between;
+  padding: 5px 10px;
+  border-top: 1px solid rgba(235, 235, 243, 0.5);
+  background-color: #f2f2f2;
+}
+/* create-notes */
+.lander-create-close-button {
+  background-color: blueviolet;
+}
+.lander-note-save-button {
+  color: white;
+  font-size: 20px;
+  background: none;
+  border-radius: 10px;
+  width: 20%;
+  margin: 3px;
+  height: 40px;
+  z-index: 1;
+}
+.lander-dropdown-toggle {
+  color: white;
+}
+.lander-note-input {
+  width: 100%;
+  box-sizing: border-box;
+  /* background-color: rgba(235, 235, 243, 1); */
+  border: 1px solid #999999;
+  padding: 3%;
+  outline: none;
+  background: transparent;
+  resize: none;
+  font-size: 14px;
+  font-family: Manrope;
+  color: black;
+  background-color: #f2f2f2;
+}
+.lander-note-taking {
+  width: 100%;
+  box-sizing: border-box;
+  background-color: #f2f2f2;
+  border: 1px soild rgba(235, 235, 243, 1);
+  flex: 1;
+  border: none;
+  padding: 3%;
+  outline: none;
+  resize: none;
+  font-size: 14px;
+  font-family: Manrope;
+  overflow-y: auto;
+  color: black;
+  min-height: 200px;
+}
+.lander-toolbar {
+  display: flex;
+  justify-content: space-between;
+  background-color: #f2f2f2;
+  padding: 5px;
+  border-radius: 4px;
+  border: 1px solid #999999;
+}
+.lander-dropdown-toggle {
+  color: white;
+  padding: 10px 0px 0px 10px;
+}
+.lander-create-note__actions {
+  z-index: 1;
 }

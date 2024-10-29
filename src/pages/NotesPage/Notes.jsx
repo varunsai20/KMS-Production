@@ -4,7 +4,7 @@ import Createnotes from "../../components/Notes/CreateNotes";
 import Editnotes from "../../components/Notes/EditNotes";
 import "./Notes.css";
 
-const NotesManager = ({ selectedText, notesHeight }) => {
+const NotesManager = ({ selectedText, notesHeight, isOpenNotes }) => {
   const [notes, setNotes] = useState(
     JSON.parse(localStorage.getItem("notes")) || []
   );
@@ -60,7 +60,7 @@ const NotesManager = ({ selectedText, notesHeight }) => {
   };
 
   return (
-    <div className="notes-manager-content">
+    <div className={isOpenNotes ? "Lander-manager" : "notes-manager-content"}>
       {/* Ensure there are valid child elements here */}
       {currentView === "list" && (
         <NotesList
@@ -69,6 +69,7 @@ const NotesManager = ({ selectedText, notesHeight }) => {
           onEditNote={handleEditNote}
           onDeleteNote={handleDeleteNote}
           onDeleteAllNotes={handleDeleteAllNotes}
+          isOpenNotes={isOpenNotes}
         />
       )}
       {currentView === "create" && (
@@ -79,6 +80,7 @@ const NotesManager = ({ selectedText, notesHeight }) => {
           onClose={handleCloseCreate}
           onDelete={handleDeleteNote}
           notesHeight={notesHeight}
+          isOpenNotes={isOpenNotes}
         />
       )}
       {currentView === "edit" && selectedNote && (
@@ -87,6 +89,7 @@ const NotesManager = ({ selectedText, notesHeight }) => {
           setNotes={setNotes}
           onClose={handleCloseEdit}
           notesHeight={notesHeight}
+          isOpenNotes={isOpenNotes}
         />
       )}
     </div>

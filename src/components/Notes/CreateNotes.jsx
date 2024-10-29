@@ -27,6 +27,7 @@ const Createnotes = ({
   notesHeight,
   onDelete,
   note,
+  isOpenNotes,
 }) => {
   console.log(selectedText);
   const [title, setTitle] = useState("");
@@ -309,19 +310,39 @@ const Createnotes = ({
             </div>
           </div>
         )}
-        <button className="note-save-button" text="Save" onClick={handleSubmit}>
+        <button
+          className={
+            isOpenNotes ? "lander-note-save-button" : "note-save-button"
+          }
+          text="Save"
+          onClick={handleSubmit}
+        >
           save
         </button>
-        <div className="create-note__actions">
+        <div
+          className={
+            isOpenNotes ? "lander-create-note__actions" : "create-note__actions"
+          }
+        >
           <button
-            className="dropdown-toggle"
+            className={
+              isOpenNotes ? "lander-dropdown-toggle" : "dropdown-toggle"
+            }
             onClick={handleToggleDropdown}
             title="Options"
           >
-            <RxDotsHorizontal color="#1a82ff" size={25} />
+            <RxDotsHorizontal
+              color={isOpenNotes ? "white" : "#1a82ff"}
+              size={25}
+            />
           </button>
           <Button
-            text={<IoCloseOutline color="#1a82ff" size={25} />}
+            text={
+              <IoCloseOutline
+                color={isOpenNotes ? "white" : "#1a82ff"}
+                size={25}
+              />
+            }
             className="notes-cancel-button"
             onClick={onClose}
           />
@@ -333,7 +354,7 @@ const Createnotes = ({
         style={{ height: `${notesHeight - 11.85}vh` }}
       >
         <input
-          className="note-input"
+          className={isOpenNotes ? "lander-note-input" : "note-input"}
           type="text"
           placeholder="Title"
           value={title}
@@ -341,7 +362,7 @@ const Createnotes = ({
           autoFocus
         />
         <div
-          className="note-taking"
+          className={isOpenNotes ? "lander-note-taking" : "note-taking"}
           ref={editorRef}
           contentEditable={true}
           suppressContentEditableWarning={true}
@@ -355,6 +376,7 @@ const Createnotes = ({
             fontSize: "14px",
             textAlign: "start",
             overflowY: "auto",
+            // color: "white",
           }}
         >
           {/* Placeholder logic can be enhanced if needed */}
@@ -364,7 +386,7 @@ const Createnotes = ({
       {/* Feedback Message */}
       {shareMessage && <div className="share-message">{shareMessage}</div>}
 
-      <div className="toolbar">
+      <div className={isOpenNotes ? "lander-toolbar" : "toolbar"}>
         <button
           onClick={() => handleFormat("bold")}
           title="Bold"

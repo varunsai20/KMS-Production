@@ -30,7 +30,7 @@ const Lander = () => {
   // Access logged-in status from Redux
   const isLoggedIn = useSelector((state) => state.auth?.isLoggedIn);
 
-  const [isNotesOpen, setIsNotesOpen] = useState(false);
+  const [isLanderNotesOpen, setIsLanderNotesOpen] = useState(false);
 
   const [isCollectionOpen, setIsCollectionOpen] = useState(false);
   const [dimensions, setDimensions] = useState({ width: 500, height: 400 });
@@ -44,11 +44,11 @@ const Lander = () => {
   // Function to open the Notes modal
 
   const handleOpenNotes = () => {
-    setIsNotesOpen(true);
+    setIsLanderNotesOpen(true);
   };
 
   const handleCloseNotes = () => {
-    setIsNotesOpen(false);
+    setIsLanderNotesOpen(false);
   };
   const handleOpenCollection = () => {
     setIsCollectionOpen(true);
@@ -57,7 +57,8 @@ const Lander = () => {
     setIsCollectionOpen(false);
   };
   useEffect(() => {
-    const centerX = (window.innerWidth - dimensions.width) / 2;
+    const centerX =
+      (window.innerWidth - dimensions.width) / 2 + window.innerWidth * 0.3;
     const centerY = (window.innerHeight - dimensions.height) / 2;
     setDefaultPosition({ x: centerX, y: centerY });
   }, [dimensions]);
@@ -239,13 +240,13 @@ const Lander = () => {
           
         </Draggable>
       )} */}
-      {isNotesOpen && (
+      {isLanderNotesOpen && (
         <Draggable handle=".draggable-header" defaultPosition={defaultPosition}>
           <ResizableBox
             width={dimensions.width}
             height={dimensions.height}
             onResize={handleResize}
-            minConstraints={[400, 200]} // Minimum width and height
+            minConstraints={[400, 350]} // Minimum width and height
             maxConstraints={[800, 600]} // Maximum width and height
             resizeHandles={["s", "e", "se", "n", "w", "nw", "sw", "ne"]}
             style={{ position: "absolute" }}
@@ -265,7 +266,7 @@ const Lander = () => {
               </div>
 
               {/* Content */}
-              <Notes />
+              <Notes isOpenNotes={isLanderNotesOpen} />
             </div>
           </ResizableBox>
         </Draggable>

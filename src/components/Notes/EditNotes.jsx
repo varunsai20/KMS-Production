@@ -13,7 +13,7 @@ import { MdEmail } from "react-icons/md";
 import { IoCopyOutline } from "react-icons/io5";
 import "./EditNotes.css"; // Import CSS for styling
 
-const Editnotes = ({ note, setNotes, onClose, notesHeight }) => {
+const Editnotes = ({ note, setNotes, onClose, notesHeight, isOpenNotes }) => {
   const [title, setTitle] = useState(note.title);
   const [isPlaceholderVisible, setIsPlaceholderVisible] = useState(false);
   const [activeFormats, setActiveFormats] = useState({
@@ -178,14 +178,18 @@ const Editnotes = ({ note, setNotes, onClose, notesHeight }) => {
     <section className="edit-note">
       <header className="edit-note__header">
         <button
-          className="edit-back-button"
+          className={
+            isOpenNotes ? "lander-edit-back-button" : "edit-back-button"
+          }
           onClick={onClose}
           aria-label="Go Back"
         >
           <IoIosArrowBack />
         </button>
         <button
-          className="edit-save-button"
+          className={
+            isOpenNotes ? "lander-edit-save-button" : "edit-save-button"
+          }
           onClick={handleForm}
           aria-label="Save Note"
         >
@@ -206,10 +210,14 @@ const Editnotes = ({ note, setNotes, onClose, notesHeight }) => {
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           autoFocus
-          className="edit-note__title"
+          className={
+            isOpenNotes ? "lander-edit-note__title" : "edit-note__title"
+          }
         />
         <div
-          className="edit-note__details"
+          className={
+            isOpenNotes ? "lander-edit-note__details" : "edit-note__details"
+          }
           ref={editorRef}
           contentEditable={true}
           suppressContentEditableWarning={true}
@@ -221,7 +229,7 @@ const Editnotes = ({ note, setNotes, onClose, notesHeight }) => {
       </form>
       {/* Feedback Message */}
       {shareMessage && <div className="share-message">{shareMessage}</div>}
-      <div className="toolbar">
+      <div className={isOpenNotes ? "lander-toolbar" : "toolbar"}>
         <button
           onClick={() => handleFormat("bold")}
           title="Bold"

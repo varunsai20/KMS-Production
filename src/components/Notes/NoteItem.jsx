@@ -4,7 +4,7 @@ import { RxDotsHorizontal } from "react-icons/rx";
 import { RxOpenInNewWindow } from "react-icons/rx";
 import { RiDeleteBin6Line } from "react-icons/ri";
 
-const NoteItem = ({ note, onEdit, onDelete }) => {
+const NoteItem = ({ note, onEdit, onDelete, isOpenNotes }) => {
   const [isHovered, setIsHovered] = useState(false); // Track hover state
   const [isMenuOpen, setIsMenuOpen] = useState(false); // Track menu visibility
   const [showConfirmDelete, setShowConfirmDelete] = useState(false); // Track confirmation popup visibility
@@ -57,20 +57,20 @@ const NoteItem = ({ note, onEdit, onDelete }) => {
 
   return (
     <div
-      className="NoteItem"
+      className={isOpenNotes ? "Lander-NoteItem" : "NoteItem"}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={() => onEdit(note)} // Open note on click
-      style={{
-        cursor: "pointer",
-        borderRadius: "10px",
-        position: "relative", // To position the popup menu
-        padding: "10px",
-        boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
-        marginBottom: "10px",
-        backgroundColor: "#fff", // Background color for better visibility
-        transition: "background-color 0.3s ease",
-      }}
+      // style={{
+      //   cursor: "pointer",
+      //   borderRadius: "10px",
+      //   position: "relative", // To position the popup menu
+      //   padding: "10px",
+      //   boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
+      //   marginBottom: "10px",
+      //   backgroundColor: "#fff", // Background color for better visibility
+      //   transition: "background-color 0.3s ease",
+      // }}
     >
       <div
         className="title-header"

@@ -27,8 +27,6 @@
   box-sizing: border-box;
   background-color: rgba(235, 235, 243, 1);
   border: 1px solid #ebebf3;
-  /* flex: 1; */
-  /* border: none; */
   padding: 3%;
   outline: none;
   background: transparent;
@@ -43,7 +41,6 @@
   color: #1a82ff;
   font-size: 20px;
   background: none;
-  /* border: 1px solid #ebebf3; */
   border-radius: 10px;
   width: 20%;
   margin: 3px;
@@ -127,7 +124,6 @@
   background-color: #f1f1f1;
   padding: 5px;
   border-radius: 4px;
-  /* margin-bottom: 10px; */
 }
 
 .toolbar button {
