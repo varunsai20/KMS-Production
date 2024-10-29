@@ -68,18 +68,42 @@ const ArticlePage = () => {
   const [triggerAskClick, setTriggerAskClick] = useState(false);
   const [editingPmid, setEditingPmid] = useState(null);
   const [editedTitle, setEditedTitle] = useState("");
-  const [collections, setCollections] = useState(() => {
-    const storedCollections =
-      JSON.parse(localStorage.getItem("collections")) || [];
-    return storedCollections;
-  });
-  const [currentIdType, setCurrentIdType] = useState(null);
+  const [articleTitle, setArticleTitle] = useState("");
+  const [collections, setCollections] = useState([]);
+  useEffect(() => {
+    const fetchCollections = async () => {
+      try {
+        const response = await axios.get(
+          `http://13.127.207.184:80/bookmarks/users/${user_id}/collections`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        console.log(response)
+        if (response.data) {
+          setCollections(response.data.collections);
+          if (response.data.collections.length > 0) {
+            localStorage.setItem("collections", JSON.stringify(response.data.collections));
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching collections:", error);
+      }
+    };
+
+    if (user_id && token) {
+      fetchCollections();
+    }
+  }, []);
+  const [currentid, setCurrentid] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newCollectionName, setNewCollectionName] = useState("");
-  const isBookmarked = (idType) => {
-    return collections.some((collection) =>
-      collection.articles.includes(idType)
-    );
+  const isBookmarked = (id) => {
+    // return collections.some((collection) =>
+    //   collection.articles.includes(id)
+    // );
   };
   const [sessions, setSessions] = useState([]);
   const [editingSessionId, setEditingSessionId] = useState(null);
@@ -222,6 +246,9 @@ const ArticlePage = () => {
     sessionStorage.setItem("ratingsList", JSON.stringify(updatedRatings));
   };
   const handleMouseUp = (event) => {
+    if (!contentRef.current.contains(event.target)) {
+      return; // Exit if the selection is outside .article-content
+    }
     const selection = window.getSelection();
 
     if (selection.rangeCount > 0) {
@@ -273,39 +300,89 @@ const ArticlePage = () => {
     };
   }, [isModalOpen]);
 
-  const handleBookmarkClick = (idType) => {
-    setCurrentIdType(idType);
+  const handleBookmarkClick = (id, title, source) => {
+    setCurrentid(id);
+    setArticleTitle(title);
+    setSource(source);
     setIsModalOpen(true); // Open the modal for collection selection
   };
 
-  const handleSaveToExisting = (collectionName) => {
-    const updatedCollections = collections.map((collection) => {
-      if (collection.name === collectionName) {
-        // Only add the idType if it doesn't already exist in the collection
-        if (!collection.articles.includes(currentIdType)) {
-          return {
-            ...collection,
-            articles: [...collection.articles, currentIdType],
-          };
-        }
-      }
-      return collection;
-    });
-    setCollections(updatedCollections);
-    localStorage.setItem("collections", JSON.stringify(updatedCollections));
-    setIsModalOpen(false);
-  };
-
-  const handleCreateNewCollection = () => {
-    const newCollection = {
-      name: newCollectionName,
-      articles: [currentIdType],
+  const handleSaveToExisting = async (collectionName) => {
+    const bookmarkData = {
+      user_id,
+      collection_name: collectionName,
+      bookmark: {
+        article_id: String(currentid), // Ensure it's a string
+        article_title: articleTitle,
+        article_source: source,
+      },
     };
-    const updatedCollections = [...collections, newCollection];
-    setCollections(updatedCollections);
-    localStorage.setItem("collections", JSON.stringify(updatedCollections));
-    setNewCollectionName("");
-    setIsModalOpen(false);
+  
+    try {
+      const response = await axios.post(
+        "http://13.127.207.184:80/bookmarks/users/collections",
+        bookmarkData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      if (response.status === 201) {
+        const updatedCollections = collections.map((collection) => {
+          if (collection === collectionName) {
+            // Append the new article ID to the articles if it doesn't already exist
+            return {
+              ...collection,
+              articles: [...(collection.articles || []), currentid],
+            };
+          }
+          return collection;
+        });
+  
+        setCollections(updatedCollections);
+        localStorage.setItem("collections", JSON.stringify(updatedCollections));
+        setIsModalOpen(false);
+      }
+    } catch (error) {
+      console.error("Error adding bookmark to existing collection:", error);
+    }
+  };
+  
+
+  const handleCreateNewCollection = async () => {
+    const newCollection = {
+      user_id,
+      collection_name: newCollectionName,
+      bookmark: {
+        article_id: String(currentid), // Convert to string
+        article_title: articleTitle,
+        article_source: source,
+      },
+    };
+  
+    try {
+      const response = await axios.post(
+        "http://13.127.207.184:80/bookmarks/users/collections",
+        newCollection,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      if (response.status === 201) {
+        const updatedCollections = [...collections, response.data];
+        setCollections(updatedCollections);
+        localStorage.setItem("collections", JSON.stringify(updatedCollections));
+        setNewCollectionName("");
+        setIsModalOpen(false);
+      }
+    } catch (error) {
+      console.error("Error creating new collection:", error);
+    }
   };
 
 
@@ -350,11 +427,11 @@ const ArticlePage = () => {
 
 
 
-  const getIdType = () => {
+  const getid = () => {
     return `${source}_${id}`;
   };
 
-  const uniqueId = getIdType();
+  const uniqueId = getid();
 
 
 
@@ -729,7 +806,7 @@ const ArticlePage = () => {
             },
           }
         );
-
+        console.log(response)
         if (response.data?.sessions) {
           setSessions(response.data.sessions); // Set the sessions array from the response
         }
@@ -741,8 +818,8 @@ const ArticlePage = () => {
     if (user_id && token) {
       fetchSessions();
     }
-  }, [handleAskClick]);
-
+  }, []);
+  console.log(token)
   // Edit functions
   const handleEditClick = (sessionId, title) => {
     setEditingSessionId(sessionId);
@@ -931,66 +1008,66 @@ const ArticlePage = () => {
                     {articleData.article.article_title}
                   </p>
                   <FontAwesomeIcon
-                    icon={regularBookmark}
-                    size="l"
-                    style={{
-                      color: isBookmarked(id) ? "blue" : "black",
-                      cursor: "pointer",
-                    }}
-                    onClick={() => handleBookmarkClick(id)}
-                    title={
-                      isBookmarked(id) ? "Bookmarked" : "Bookmark this article"
-                    }
-                  />
+  icon={regularBookmark}
+  size="l"
+  style={{
+    color: isBookmarked(id) ? "blue" : "black",
+    cursor: "pointer",
+  }}
+  onClick={() => handleBookmarkClick(id, articleData.article.article_title,source || "PubMed")}
+  title={isBookmarked(id) ? "Bookmarked" : "Bookmark this article"}
+/>
 
-                  {isModalOpen && (
-                    <div className="bookmark-modal-overlay">
-                      <div className="modal-content" ref={modalRef}>
-                        <h3>Save Bookmark</h3>
+                              {isModalOpen && (
+                                <div className="bookmark-modal-overlay">
+                                  <div className="modal-content" ref={modalRef}>
+                                    <h3>Save Bookmark</h3>
+                                    {console.log("Collections data:", collections)}
+                                    {/* Existing Collections */}
+                                    {collections.length > 0 && (
+                                      <>
+                                        <h4>Save to existing collection:</h4>
+                                        <ul>
+                                          {collections.map((collection, index) => (
+                                            <li key={index}> {/* using index if collection is not unique */}
+                                              <button onClick={() => handleSaveToExisting(collection)}>
+                                                {collection}
+                                              </button>
+                                            </li>
+                                          ))}
+                                        </ul>
+                                      </>
+                                    )}
 
-                        {/* Existing Collections */}
-                        {collections.length > 0 && (
-                          <>
-                            <h4>Save to existing collection:</h4>
-                            <ul>
-                              {collections.map((collection) => (
-                                <li key={collection.name}>
-                                  <button
-                                    onClick={() =>
-                                      handleSaveToExisting(collection.name)
-                                    }
-                                  >
-                                    {collection.name}
-                                  </button>
-                                </li>
-                              ))}
-                            </ul>
-                          </>
-                        )}
+                                    {/* Create New Collection */}
+                                    <h4>Create a new collection:</h4>
+                                    <input
+                                      type="text"
+                                      value={newCollectionName}
+                                      onChange={(e) =>
+                                        setNewCollectionName(e.target.value)
+                                      }
+                                      placeholder="New collection name"
+                                    />
+                                    <div
+                                      style={{ display: "flex", gap: "20px" }}
+                                    >
+                                      <button
+                                        onClick={handleCreateNewCollection}
+                                        disabled={!newCollectionName}
+                                      >
+                                        Create
+                                      </button>
 
-                        {/* Create New Collection */}
-                        <h4>Create a new collection:</h4>
-                        <input
-                          type="text"
-                          value={newCollectionName}
-                          onChange={(e) => setNewCollectionName(e.target.value)}
-                          placeholder="New collection name"
-                        />
-                        <div style={{ display: "flex", gap: "20px" }}>
-                          <button
-                            onClick={handleCreateNewCollection}
-                            disabled={!newCollectionName}
-                          >
-                            Create
-                          </button>
-
-                          <button onClick={() => setIsModalOpen(false)}>
-                            Cancel
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
+                                      <button
+                                        onClick={() => setIsModalOpen(false)}
+                                      >
+                                        Cancel
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
                 </div>
               </div>
 

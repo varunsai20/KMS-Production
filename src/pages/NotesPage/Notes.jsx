@@ -3,11 +3,44 @@ import NotesList from "../../components/Notes/NotesList";
 import Createnotes from "../../components/Notes/CreateNotes";
 import Editnotes from "../../components/Notes/EditNotes";
 import "./Notes.css";
-
+import { useSelector } from "react-redux";
+import axios from "axios";
 const NotesManager = ({ selectedText, notesHeight }) => {
-  const [notes, setNotes] = useState(
-    JSON.parse(localStorage.getItem("notes")) || []
-  );
+  const { user } = useSelector((state) => state.auth);
+
+  const user_id=user?.user_id;
+  const token=user?.access_token;
+  const [notes, setNotes] = useState([]);
+
+  useEffect(() => {
+    const fetchNotes = async () => {
+      try {
+        const response = await axios.get(`http://13.127.207.184:80/notes/getnotes/${user_id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        console.log("API response:", response);
+  
+        // Convert response data to an array if it's not already
+        const notesArray = Array.isArray(response.data.data) 
+          ? response.data.data 
+          : Object.values(response.data.data); // Convert object to array
+  
+        // Set notes and save to localStorage
+        setNotes(notesArray);
+        localStorage.setItem("notes", JSON.stringify(notesArray));
+      } catch (error) {
+        console.error("Error fetching notes:", error);
+      }
+    };
+  
+    if (user_id && token) {
+      fetchNotes();
+    }
+  }, [user_id, token]);
+  
+  console.log(typeof(notes))
   const [currentView, setCurrentView] = useState("list"); // 'list', 'create', 'edit'
   const [selectedNote, setSelectedNote] = useState(null);
   const [textToSave, setTextToSave] = useState([]); // Store the passed selected text

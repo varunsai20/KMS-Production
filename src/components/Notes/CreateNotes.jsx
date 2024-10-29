@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { v4 as uuid } from "uuid";
+
 import useCreateDate from "./UseCreateDate";
 import { CiMenuFries } from "react-icons/ci";
 import { IoCloseOutline, IoShareSocial } from "react-icons/io5";
@@ -11,6 +11,8 @@ import { GoItalic, GoStrikethrough } from "react-icons/go";
 import { PiListBullets } from "react-icons/pi";
 import { BsListOl } from "react-icons/bs";
 import DOMPurify from "dompurify";
+import axios from "axios"
+import { useSelector } from "react-redux";
 //import { SiGmail } from "react-icons/si";
 // import { RxCopy } from "react-icons/rx";
 //import { VscCopy } from "react-icons/vsc";
@@ -47,7 +49,10 @@ const Createnotes = ({
   const [noteContent, setNoteContent] = useState(selectedText || "");
   const [shareMessage, setShareMessage] = useState("");
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const { user } = useSelector((state) => state.auth);
 
+  const user_id=user?.user_id;
+  const token=user?.access_token;
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [subject, setSubject] = useState("");
@@ -168,20 +173,41 @@ const Createnotes = ({
     };
   }, []);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const noteDetails = editorRef.current.innerHTML;
-
+  
     if (title && noteDetails && noteDetails !== "Take your note...") {
-      const note = { id: uuid(), title, details: noteDetails, date };
-      // Add this to the notes array
-      setNotes((prevNotes) => [note, ...prevNotes]);
-      console.log(note);
-      onClose(); // Return to Notes list
-
-      setNoteContent(""); // Clear the note content
-      setTitle(""); // Clear the title
-      editorRef.current.innerHTML = ""; // Clear the editor content
+      const note = { title, details: noteDetails };
+  
+      try {
+        // Post the note to the server
+        await axios.post(
+          "http://13.127.207.184:80/notes/createnote",
+          {
+            user_id, // Ensure `user_id` is defined and available in your component
+            title: note.title,
+            content: note.details,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`, // Ensure `token` is defined
+            },
+          }
+        );
+  
+        // Add this note to the notes array
+        setNotes((prevNotes) => [note, ...prevNotes]);
+        console.log("Note saved:", note);
+        onClose(); // Return to Notes list
+  
+        // Clear inputs
+        setNoteContent("");
+        setTitle("");
+        editorRef.current.innerHTML = "";
+      } catch (error) {
+        console.error("Error saving note:", error);
+      }
     }
   };
 
