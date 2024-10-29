@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux"; // Import useSelector from react-redux
 import Header from "../../components/Header-New";
 import Footer from "../../components/Footer-New";
@@ -18,6 +18,8 @@ import Utilities from "../../assets/images/Lander-Utilities.svg";
 import Analytics from "../../assets/images/Lander-Analytics.svg";
 import { IoCloseOutline } from "react-icons/io5";
 import "./Lander-Logedin.css";
+import { ResizableBox } from "react-resizable";
+import "react-resizable/css/styles.css"; // Import the default CSS for resizable
 
 import Draggable from "react-draggable";
 import Collection from "../../components/Collection";
@@ -31,9 +33,14 @@ const Lander = () => {
   const [isNotesOpen, setIsNotesOpen] = useState(false);
 
   const [isCollectionOpen, setIsCollectionOpen] = useState(false);
-
+  const [dimensions, setDimensions] = useState({ width: 500, height: 400 });
+  const [defaultPosition, setDefaultPosition] = useState({ x: 0, y: 0 });
   const { user } = useSelector((state) => state.auth);
-  console.log(user)
+  console.log(user);
+
+  const handleResize = (event, { size }) => {
+    setDimensions(size);
+  };
   // Function to open the Notes modal
 
   const handleOpenNotes = () => {
@@ -49,6 +56,11 @@ const Lander = () => {
   const handleCloseCollection = () => {
     setIsCollectionOpen(false);
   };
+  useEffect(() => {
+    const centerX = (window.innerWidth - dimensions.width) / 2;
+    const centerY = (window.innerHeight - dimensions.height) / 2;
+    setDefaultPosition({ x: centerX, y: centerY });
+  }, [dimensions]);
 
   return (
     <div className="Landing-Container">
@@ -192,18 +204,73 @@ const Lander = () => {
           </section>
         )}
       </div>
-      {isNotesOpen && (
+      {/* {isNotesOpen && (
         <Draggable defaultPosition={{ x: 0, y: 0 }}>
-          {/* <div className="Notes-modal-container"> */}
-          <div className="notes-modal">
+
+          <div
+            className="notes-modal"
+            style={{ width: dimensions.width, height: dimensions.height }}
+            onMouseMove={handleResize}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseUp}
+          >
             <button className="close-modal-notes" onClick={handleCloseNotes}>
               <IoCloseOutline size={30} color="#1A82FF" />
             </button>
             <Notes />
+           
+            <div
+              className="resizer resizer-top"
+              onMouseDown={() => handleMouseDown("top")}
+            />
+            <div
+              className="resizer resizer-right"
+              onMouseDown={() => handleMouseDown("right")}
+            />
+            <div
+              className="resizer resizer-bottom"
+              onMouseDown={() => handleMouseDown("bottom")}
+            />
+            <div
+              className="resizer resizer-left"
+              onMouseDown={() => handleMouseDown("left")}
+            />
           </div>
-          {/* </div> */}
+          
+        </Draggable>
+      )} */}
+      {isNotesOpen && (
+        <Draggable handle=".draggable-header" defaultPosition={defaultPosition}>
+          <ResizableBox
+            width={dimensions.width}
+            height={dimensions.height}
+            onResize={handleResize}
+            minConstraints={[400, 200]} // Minimum width and height
+            maxConstraints={[800, 600]} // Maximum width and height
+            resizeHandles={["s", "e", "se", "n", "w", "nw", "sw", "ne"]}
+            style={{ position: "absolute" }}
+          >
+            <div
+              className="notes-modal"
+              style={{ width: "100%", height: "100%" }}
+            >
+              {/* Draggable Header Only */}
+              <div className="draggable-header">
+                <button
+                  className="close-modal-notes"
+                  onClick={handleCloseNotes}
+                >
+                  <IoCloseOutline size={30} color="#1A82FF" />
+                </button>
+              </div>
+
+              {/* Content */}
+              <Notes />
+            </div>
+          </ResizableBox>
         </Draggable>
       )}
+
       {isCollectionOpen && (
         <>
           <div className="blur-overlay">
