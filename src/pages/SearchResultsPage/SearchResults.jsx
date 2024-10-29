@@ -16,7 +16,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   const location = useLocation(); // Access the passed state
   const { data } = location.state || { data: [] };
   const { user } = useSelector((state) => state.auth);
-
+  
   const user_id=user?.user_id;
   const token=user?.access_token;
   const searchTerm = sessionStorage.getItem("SearchTerm");
@@ -102,31 +102,38 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
 
   // Function to get the rating for a specific article by pmid
   const getRatingForArticle = (id, source) => {
+    // Standardize source values for specific cases
+    let standardizedSource = source;
+    if (source === "BioRxiv") standardizedSource = "biorxiv";
+    if (source === "Public Library of Science (PLOS)") standardizedSource = "plos";
+  
     // Ensure `rated_articles` is an array within `ratingsList`
     const ratingsArray = Array.isArray(ratingsList?.rated_articles) ? ratingsList.rated_articles : [];
-    // Log id, source, and ratingsArray
-    // console.log("ID:", id);
-    // console.log("Source:", source);
-    // console.log("Ratings Array:", ratingsArray);
-
+  
     // Find a matching entry with both `article_id` and `article_source`
     const savedRating = ratingsArray.find(
-      (item) => item.article_id === String(id) && item.article_source === source
+      (item) => item.article_id === String(id) && item.article_source === standardizedSource
     );
-
+  
+    // Log when both `article_id` and `article_source` match
+    if (savedRating) {
+      console.log("Both ID and Source Match Found:", savedRating);
+    }
+  
     // Find entries where only `article_id` matches
     const idOnlyMatch = ratingsArray.find(
-      (item) => item.article_id === String(id) && item.article_source !== source
+      (item) => item.article_id === String(id) && item.article_source !== standardizedSource
     );
-
+  
     // Log if only `article_id` matches but `article_source` does not
     if (idOnlyMatch) {
-      // console.log("ID-only Match Found:", idOnlyMatch);
+      console.log("ID-only Match Found:", idOnlyMatch);
     }
-
+  
     // Return the saved rating or default to 3 if not found
-    return savedRating ? savedRating.rating : 3;
-};
+    return savedRating ? savedRating.average_rating : 3;
+  };
+  
 
 
 
@@ -150,14 +157,13 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       }
     };
 
-    // Check if ratings are already stored in sessionStorage to avoid duplicate API calls
     const storedRatings = JSON.parse(sessionStorage.getItem("ratingsList"));
-    if (!storedRatings) {
-      fetchRatedArticles(); // Only fetch if no stored ratings
+    if (!storedRatings || location.pathname === "/search") {
+      fetchRatedArticles(); 
     } else {
       setRatingsList(storedRatings);
     }
-  }, []);
+}, [location]); // Depend on `location` changes
 
   useEffect(() => {
     const storedDateInfo = localStorage.getItem("publicationDate");
@@ -620,7 +626,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
     }
 };
 
-  console.log(searchTerm)
   const handleYearFilter = (selectedDateRange) => {
     const filterType = selectedDateRange === "5" ? "5 years" : "1 year";
 
@@ -1841,7 +1846,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                                     name={`rate_${idType}`}
                                     value={value}
                                     checked={
-                                      getRatingForArticle(idType) === value
+                                      getRatingForArticle(idType,result.source ? result.source : "PubMed") === value
                                     }
                                     disabled // Disable the input as we don't want to modify it
                                   />

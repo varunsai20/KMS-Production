@@ -63,7 +63,7 @@ const ArticlePage = () => {
   const contentRef = useRef(null); // Ref to target the content div
   const [contentWidth, setContentWidth] = useState(); // State for content width
   const [ratingsList, setRatingsList] = useState(() => {
-    return JSON.parse(sessionStorage.getItem("ratingsList")) || [];
+    return JSON.parse(sessionStorage.getItem("ratingsGiven")) || [];
   });
   const [triggerAskClick, setTriggerAskClick] = useState(false);
   const [editingPmid, setEditingPmid] = useState(null);
@@ -293,7 +293,7 @@ const ArticlePage = () => {
     }
   
     setRatingsList(updatedRatings);
-    sessionStorage.setItem("ratingsList", JSON.stringify(updatedRatings));
+    sessionStorage.setItem("ratingsGiven", JSON.stringify(updatedRatings));
   
     // Extract source and article_id from uniqueId
     const [article_source, article_id] = uniqueId.split("_");
@@ -1060,25 +1060,26 @@ const ArticlePage = () => {
                       <span>Rate the article </span>
                     </div>
                     <div className="rate">
-  {[5, 4, 3, 2, 1].map((value) => (
-    <React.Fragment key={value}>
-      <input
-        type="radio"
-        id={`star${value}-${uniqueId}`}
-        name={`rate_${uniqueId}`}
-        value={value}
-        // Check if the cached rating exists and matches the current star value
-        checked={
-          (ratingsList.find((item) => item.uniqueId === uniqueId)?.rating || 0) === value
-        }
-        onChange={() => handleRatingChange(uniqueId, value)}
-      />
-      <label
-        htmlFor={`star${value}-${uniqueId}`}
-        title={`${value} star`}
-      />
-    </React.Fragment>
-  ))}
+                    {[5, 4, 3, 2, 1].map((value) => (
+  <React.Fragment key={value}>
+    <input
+      type="radio"
+      id={`star${value}-${uniqueId}`}
+      name={`rate_${uniqueId}`}
+      value={value}
+      // Check if ratingsList is an array and find the cached rating if it exists
+      checked={
+        (Array.isArray(ratingsList) &&
+          ratingsList.find((item) => item.uniqueId === uniqueId)?.rating) === value
+      }
+      onChange={() => handleRatingChange(uniqueId, value)}
+    />
+    <label
+      htmlFor={`star${value}-${uniqueId}`}
+      title={`${value} star`}
+    />
+  </React.Fragment>
+))}
 </div>
 
                   </div>
