@@ -53,7 +53,9 @@ const ArticlePage = () => {
     if (storedChatHistory) {
       // Parse the chat history string back into an array
       setChatHistory(JSON.parse(storedChatHistory));
+      setShowStreamingSection(true);  
     }
+    console.log(storedChatHistory)
   }, []);
   const [showStreamingSection, setShowStreamingSection] = useState(false);
   // const [chatInput, setChatInput] = useState(true);
@@ -118,7 +120,7 @@ const ArticlePage = () => {
   const maxHeight = 60;
 
 
-
+console.log(id)
   useEffect(() => {
     // Determine the source based on `type`
     if (type === "bioRxiv_id") {
@@ -603,7 +605,7 @@ const ArticlePage = () => {
       setLoading(false);
     }
   };
-  
+  console.log(chatHistory)
   
 
   const handlePromptClick = (queryText) => {
@@ -799,7 +801,7 @@ const ArticlePage = () => {
     const fetchSessions = async () => {
       try {
         const response = await axios.get(
-          `http://13.127.207.184:80/history/conversations/sessions/${user_id}`,
+          `http://127.0.01:8000/history/conversations/sessions/${user_id}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -819,6 +821,7 @@ const ArticlePage = () => {
       fetchSessions();
     }
   }, []);
+  console.log(sessions)
   console.log(token)
   // Edit functions
   const handleEditClick = (sessionId, title) => {
@@ -863,6 +866,61 @@ const ArticlePage = () => {
       console.error("Error updating session title:", error);
     }
   };
+
+  
+  const handleSessionClick = async (article_id, source, session_id) => {
+    try {
+      const conversationResponse = await axios.get(
+        `http://127.0.01:8000/history/conversations/history/${user_id}/${session_id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      
+      const formattedChatHistory = [];
+      let currentEntry = {};
+      
+      conversationResponse.data.conversation.forEach((entry) => {
+        if (entry.role === "user") {
+          if (currentEntry.query) {
+            formattedChatHistory.push(currentEntry);
+            currentEntry = {};
+          }
+          currentEntry.query = entry.parts.join(" ");
+        } else if (entry.role === "model") {
+          currentEntry.response = entry.parts.join(" ");
+          formattedChatHistory.push(currentEntry);
+          currentEntry = {};
+        }
+      });
+      
+      if (currentEntry.query) {
+        formattedChatHistory.push(currentEntry);
+      }
+      
+      console.log(formattedChatHistory);
+
+      sessionStorage.setItem("chatHistory", JSON.stringify(formattedChatHistory));
+
+      navigate(`/article/${source}:${article_id}`, {
+        state: {
+          id: article_id,
+          source: source,
+          token: token,
+          user: { access_token: token, user_id: user_id },
+          annotateData: location.state.annotateData, 
+          data: location.state.data, 
+          showStreamingSection : true
+        },
+      });
+      console.log(conversationResponse)
+    } catch (error) {
+      console.error("Error fetching article or conversation data:", error);
+    }
+  };
+  
   return (
     <>
       <div className="container">
@@ -928,10 +986,12 @@ const ArticlePage = () => {
                 autoFocus
               />
             ) : (
-              <a>
-                {session.session_title.slice(0, 35)}
-                {session.session_title.length > 35 ? "..." : ""}
-              </a>
+                // console.log(session.ar)
+              <a onClick={() => handleSessionClick(session.article_id, session.source, session.session_id, user_id)}>
+              {session.session_title.slice(0, 35)}
+              {session.session_title.length > 35 ? "..." : ""}
+            </a>
+            
             )}
             <FontAwesomeIcon
               title="Rename the title"
