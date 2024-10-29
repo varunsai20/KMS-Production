@@ -152,7 +152,6 @@ console.log(id)
     } else if (type === "plos_id") {
       setSource("plos");
     }
-
     // Perform GET request to fetch article data
     if (source && id) {
       const fetchArticleData = async () => {
@@ -893,7 +892,7 @@ console.log(id)
     const fetchSessions = async () => {
       try {
         const response = await axios.get(
-          `http://127.0.01:8000/history/conversations/sessions/${user_id}`,
+          `http://13.127.207.184:80/history/conversations/sessions/${user_id}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -964,7 +963,7 @@ console.log(id)
   const handleSessionClick = async (article_id, source, session_id) => {
     try {
       const conversationResponse = await axios.get(
-        `http://127.0.01:8000/history/conversations/history/${user_id}/${session_id}`,
+        `http://13.127.207.184:80/history/conversations/history/${user_id}/${session_id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -996,7 +995,7 @@ console.log(id)
       console.log(formattedChatHistory);
 
       sessionStorage.setItem("chatHistory", JSON.stringify(formattedChatHistory));
-
+      
       navigate(`/article/${source}:${article_id}`, {
         state: {
           id: article_id,
@@ -1005,7 +1004,6 @@ console.log(id)
           user: { access_token: token, user_id: user_id },
           annotateData: location.state.annotateData, 
           data: location.state.data, 
-          showStreamingSection : true
         },
       });
       console.log(conversationResponse)
@@ -1049,53 +1047,63 @@ console.log(id)
             <h5>Recent Interactions</h5>
             <ul>
             {sessions.length > 0 ? (
-        sessions.map((session) => (
-          <li key={session.session_id}>
-            {editingSessionId === session.session_id ? (
-              <TextField
-                type="text"
-                style={{ padding: "0" }}
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    height: "40px",
-                    "& fieldset": {
-                      borderColor: "transparent",
-                    },
-                    "&:hover fieldset": {
-                      borderColor: "transparent",
-                    },
-                    "&.Mui-focused fieldset": {
-                      borderColor: "transparent",
-                    },
-                  },
-                  "& .MuiOutlinedInput-input": {
-                    outline: "none",
-                  },
-                }}
-                value={editedTitle}
-                onChange={handleTitleChange}
-                onBlur={() => handleSaveEdit(session.session_id)} // Save on blur
-                autoFocus
-              />
-            ) : (
-                // console.log(session.ar)
-              <a onClick={() => handleSessionClick(session.article_id, session.source, session.session_id, user_id)}>
-              {session.session_title.slice(0, 35)}
-              {session.session_title.length > 35 ? "..." : ""}
-            </a>
-            
-            )}
-            <FontAwesomeIcon
+  sessions.map((session) => (
+    <li key={session.session_id}>
+      {editingSessionId === session.session_id ? (
+        <TextField
+          type="text"
+          style={{ padding: "0" }}
+          sx={{
+            "& .MuiOutlinedInput-root": {
+              height: "40px",
+              "& fieldset": {
+                borderColor: "transparent",
+              },
+              "&:hover fieldset": {
+                borderColor: "transparent",
+              },
+              "&.Mui-focused fieldset": {
+                borderColor: "transparent",
+              },
+            },
+            "& .MuiOutlinedInput-input": {
+              outline: "none",
+            },
+          }}
+          value={editedTitle}
+          onChange={handleTitleChange}
+          onBlur={() => handleSaveEdit(session.session_id)} // Save on blur
+          autoFocus
+        />
+      ) : (
+        <a
+          onClick={() => {
+            console.log("Session ID:", session.session_id);
+            console.log("Source:", session.source);
+            handleSessionClick(
+              session.article_id,
+              session.source,
+              session.session_id,
+              user_id
+            );
+          }}
+        >
+          {session.session_title.slice(0, 35)}
+          {session.session_title.length > 35 ? "..." : ""}
+        </a>
+      )}
+      <FontAwesomeIcon
               title="Rename the title"
               icon={faPen}
               onClick={() => handleEditClick(session.session_id, session.session_title)}
               style={{ cursor: "pointer", marginLeft: "10px" }}
             />
-          </li>
-        ))
-      ) : (
-        <li>No recent interactions</li>
-      )}
+    </li>
+  ))
+) : (
+  <li>No sessions available</li>
+)}
+
             </ul>
           </div>
 
@@ -1127,25 +1135,27 @@ console.log(id)
                       <span>Rate the article </span>
                     </div>
                     <div className="rate">
-  {[5, 4, 3, 2, 1].map((value) => (
-    <React.Fragment key={value}>
-      <input
-        type="radio"
-        id={`star${value}-${uniqueId}`}
-        name={`rate_${uniqueId}`}
-        value={value}
-        // Check if the cached rating exists and matches the current star value
-        checked={
-          (ratingsList.find((item) => item.uniqueId === uniqueId)?.rating || 0) === value
-        }
-        onChange={() => handleRatingChange(uniqueId, value)}
-      />
-      <label
-        htmlFor={`star${value}-${uniqueId}`}
-        title={`${value} star`}
-      />
-    </React.Fragment>
-  ))}
+                    {[5, 4, 3, 2, 1].map((value) => (
+  <React.Fragment key={value}>
+    <input
+      type="radio"
+      id={`star${value}-${uniqueId}`}
+      name={`rate_${uniqueId}`}
+      value={value}
+      // Check if ratingsList is an array and find the cached rating if it exists
+      checked={
+        (Array.isArray(ratingsList) &&
+          ratingsList.find((item) => item.uniqueId === uniqueId)?.rating) === value
+      }
+      onChange={() => handleRatingChange(uniqueId, value)}
+    />
+    <label
+      htmlFor={`star${value}-${uniqueId}`}
+      title={`${value} star`}
+    />
+  </React.Fragment>
+))}
+
 </div>
 
                   </div>
@@ -1274,14 +1284,15 @@ console.log(id)
                 {articleData.article.body_content &&
                   renderContentInOrder(articleData.article.body_content, true)}
 
-                {showStreamingSection && (
-                  <div className="streaming-section">
-                    <div className="streaming-content">
-                      {chatHistory.map((chat, index) => (
-                        <div key={index}>
-                          <div className="query-asked">
-                            <span>{chat.query}</span>
-                          </div>
+                  {showStreamingSection && (
+                    <div className="streaming-section">
+                      <div className="streaming-content">
+                        
+                        {chatHistory.map((chat, index) => (
+                          <div key={index}>
+                            <div className="query-asked">
+                              <span>{chat.query}</span>
+                            </div>
 
                           <div
                             className="response"
