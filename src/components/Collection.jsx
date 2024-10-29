@@ -152,22 +152,6 @@ import SearchIcon from "../assets/images/Search.svg";
 import "./Collection.css";
 
 const Collection = () => {
-  //   const mockCollections = [
-  //     {
-  //       name: "Science Articles",
-  //       articles: ["001", "002", "003", "004", "005", "006", "007", "008", "009"],
-  //     },
-  //     { name: "Scence Articles", articles: ["001", "002", "003", "004"] },
-  //     { name: "Scence rticles", articles: ["001", "002", "003", "004"] },
-  //     { name: "Technology Insghts", articles: ["005", "006", "007"] },
-  //     { name: "Technology Insights", articles: ["005", "006", "007"] },
-  //     { name: "Technology Isights", articles: ["005", "006", "007"] },
-  //     { name: "Health & Wellness", articles: ["008", "009"] },
-  //     { name: "Health & Welns", articles: ["008", "009"] },
-  //     { name: "Health & Welness", articles: ["008", "009"] },
-  //     { name: "Halth & Welness", articles: ["008", "009"] },
-  //     { name: "Helth & Welness", articles: ["008", "009"] },
-  //   ];
   const mockCollections = [
     {
       name: "Science Articles",

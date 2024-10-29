@@ -27,8 +27,8 @@ import Notes from "../NotesPage/Notes";
 const ArticlePage = () => {
   const { pmid } = useParams();
   const { user } = useSelector((state) => state.auth);
-  const token=user?.access_token;
-  const user_id=user?.user_id;
+  const token = user?.access_token;
+  const user_id = user?.user_id;
   const [type, id1] = pmid.split(":");
   const id = Number(id1);
   const [source, setSource] = useState();
@@ -76,7 +76,7 @@ const ArticlePage = () => {
     const fetchCollections = async () => {
       try {
         const response = await axios.get(
-          `http://13.127.207.184:80/bookmarks/users/${user_id}/collections`,
+          `http://13.127.207.184:80/bookmarks/${user_id}/collections`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -99,16 +99,36 @@ const ArticlePage = () => {
       fetchCollections();
     }
   }, []);
+  console.log(collections);
+  const isBookmarked = (idType) => {
+    // Convert idType to a number for comparison
+    const numericIdType = Number(idType);
+    console.log(`Checking for idType: ${numericIdType}`);
+  
+    // Loop through each collection and log article IDs as numbers
+    Object.entries(collections).forEach(([collectionName, articleArray]) => {
+      console.log(`Collection: ${collectionName}`);
+      articleArray.forEach((article) => {
+        console.log(`article_id: ${Number(article.article_id)}`);
+      });
+    });
+  
+    // Check if the article is bookmarked
+    const result = Object.values(collections).some((articleArray) =>
+      articleArray.some((article) => Number(article.article_id) === numericIdType)
+    );
+  
+    console.log(`isBookmarked for idType ${numericIdType}:`, result);
+    return result;
+  };
   const [currentid, setCurrentid] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newCollectionName, setNewCollectionName] = useState("");
-  const isBookmarked = (id) => {
-    // return collections.some((collection) =>
-    //   collection.articles.includes(id)
-    // );
-  };
+
+ 
   const [sessions, setSessions] = useState([]);
   const [editingSessionId, setEditingSessionId] = useState(null);
+
   const [bookmarkedPmids, setBookmarkedPmids] = useState({});
   const [savedText, setSavedText] = useState("");
   const selectedTextRef = useRef("");
@@ -120,7 +140,9 @@ const ArticlePage = () => {
   const maxHeight = 60;
 
 
+
 console.log(id)
+
   useEffect(() => {
     // Determine the source based on `type`
     if (type === "bioRxiv_id") {
@@ -227,30 +249,89 @@ console.log(id)
     }
   }, [openNotes]);
 
-  const getRatingForArticle = (uniqueId) => {
-    const savedRating = ratingsList.find((item) => item.uniqueId === uniqueId);
-    return savedRating ? savedRating.rating : 0; // Default rating is 0 if not found
+  const getRatingForArticle = async (uniqueId) => {
+    // Check if the rating is already available in ratingsList
+    const cachedRating = ratingsList.find((item) => item.uniqueId === uniqueId);
+    if (cachedRating) return cachedRating.rating;
+  
+    const [source, article_id] = uniqueId.split("_");
+  
+    try {
+      const response = await axios.get(
+        `http://13.127.207.184:80/rating/user-ratings/${user_id}/${article_id}/${source}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      const avgRating = response.data?.average_rating || 0;
+  
+      // Update the local rating list with the fetched average rating
+      setRatingsList((prevRatings) => [
+        ...prevRatings.filter((item) => item.uniqueId !== uniqueId),
+        { uniqueId, rating: avgRating },
+      ]);
+  
+      return avgRating;
+    } catch (error) {
+      console.error("Error fetching rating:", error);
+      return 0;
+    }
   };
+  console.log(ratingsList)
 
-  const handleRatingChange = (uniqueId, newRating) => {
-    const updatedRatings = [...ratingsList];
+  const handleRatingChange = async (uniqueId, newRating) => {
+    // Ensure ratingsList is an array
+    const currentRatings = Array.isArray(ratingsList) ? ratingsList : [];
+  
+    // Create a copy of ratingsList
+    const updatedRatings = [...currentRatings];
+  
     const existingRatingIndex = updatedRatings.findIndex(
       (item) => item.uniqueId === uniqueId
     );
-
+  
     if (existingRatingIndex !== -1) {
       updatedRatings[existingRatingIndex].rating = newRating;
     } else {
       updatedRatings.push({ uniqueId, rating: newRating });
     }
-
+  
     setRatingsList(updatedRatings);
     sessionStorage.setItem("ratingsList", JSON.stringify(updatedRatings));
+  
+    // Extract source and article_id from uniqueId
+    const [article_source, article_id] = uniqueId.split("_");
+  
+    try {
+      await axios.post(
+        "http://13.127.207.184:80/rating/rate",
+        {
+          user_id, // Assuming `user_id` is available in the component's state or props
+          rating_data: {
+            article_id,
+            rating: newRating,
+            article_source,
+          },
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, // Bearer token authorization
+          },
+        }
+      );
+    } catch (error) {
+      console.error("Error saving rating:", error);
+    }
   };
+  
   const handleMouseUp = (event) => {
     if (!contentRef.current.contains(event.target)) {
       return; // Exit if the selection is outside .article-content
+
     }
+
     const selection = window.getSelection();
 
     if (selection.rangeCount > 0) {
@@ -387,7 +468,6 @@ console.log(id)
     }
   };
 
-
   const handleSaveToNote = () => {
     const textToSave = selectedTextRef.current; // Get the selected text from ref
     if (textToSave) {
@@ -429,13 +509,13 @@ console.log(id)
 
 
 
+
   const getid = () => {
+
     return `${source}_${id}`;
   };
 
   const uniqueId = getid();
-
-
 
   useEffect(() => {
     const articleContent = document.querySelector(".article-content");
@@ -483,17 +563,18 @@ console.log(id)
       alert("Please enter a query");
       return;
     }
-    
+
     setShowStreamingSection(true);
     setLoading(true);
-  
+
     const newChatEntry = { query, response: "", showDot: true };
     setChatHistory((prevChatHistory) => [...prevChatHistory, newChatEntry]);
-  
+
     // Create a unique key for the session based on the source and article id
     const sessionKey = `${source}_${id}`;
-    const storedSessionId = JSON.parse(sessionStorage.getItem("articleSessions"))?.[sessionKey] || "";
-  
+    const storedSessionId =
+      JSON.parse(sessionStorage.getItem("articleSessions"))?.[sessionKey] || "";
+
     const bodyData = JSON.stringify({
       question: query,
       user_id: user_id,
@@ -501,78 +582,87 @@ console.log(id)
       source: source,
       article_id: Number(id),
     });
-  
+
     try {
-      const response = await fetch("http://13.127.207.184:80/view_article/generateanswer", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`, // Add the Bearer token here
-        },
-        body: bodyData,
-      });
+      const response = await fetch(
+        "http://13.127.207.184:80/view_article/generateanswer",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`, // Add the Bearer token here
+          },
+          body: bodyData,
+        }
+      );
       console.log("API Response:", response);
-  
+
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let buffer = "";
       setQuery("");
-  
+
       const readStream = async () => {
         let done = false;
         const delay = 100; // Delay between words
-  
+
         while (!done) {
           const { value, done: streamDone } = await reader.read();
           done = streamDone;
-  
+
           if (value) {
             buffer += decoder.decode(value, { stream: true });
-  
+
             while (buffer.indexOf("{") !== -1 && buffer.indexOf("}") !== -1) {
               let start = buffer.indexOf("{");
               let end = buffer.indexOf("}", start);
               if (start !== -1 && end !== -1) {
                 const jsonChunk = buffer.slice(start, end + 1);
                 buffer = buffer.slice(end + 1);
-  
+
                 try {
                   const parsedData = JSON.parse(jsonChunk);
                   console.log("Received Data Chunk:", parsedData); // Log each parsed data chunk
-  
+
                   // Store session_id for the specific article and source in sessionStorage if it exists
                   if (parsedData.session_id) {
-                    const articleSessions = JSON.parse(sessionStorage.getItem("articleSessions")) || {};
+                    const articleSessions =
+                      JSON.parse(sessionStorage.getItem("articleSessions")) ||
+                      {};
                     articleSessions[sessionKey] = parsedData.session_id; // Store session_id under source_id key
-                    sessionStorage.setItem("articleSessions", JSON.stringify(articleSessions));
+                    sessionStorage.setItem(
+                      "articleSessions",
+                      JSON.stringify(articleSessions)
+                    );
                   }
-  
+
                   const answer = parsedData.answer;
                   const words = answer.split(" ");
-  
+
                   for (const word of words) {
                     await new Promise((resolve) => setTimeout(resolve, delay));
-  
+
                     setChatHistory((chatHistory) => {
                       const updatedChatHistory = [...chatHistory];
                       const lastEntryIndex = updatedChatHistory.length - 1;
-  
+
                       if (lastEntryIndex >= 0) {
                         updatedChatHistory[lastEntryIndex] = {
                           ...updatedChatHistory[lastEntryIndex],
                           response:
-                            (updatedChatHistory[lastEntryIndex].response || "") +
+                            (updatedChatHistory[lastEntryIndex].response ||
+                              "") +
                             " " +
                             word,
                           showDot: true,
                         };
                       }
-  
+
                       return updatedChatHistory;
                     });
-  
+
                     setResponse((prev) => prev + " " + word);
-  
+
                     if (endOfMessagesRef.current) {
                       endOfMessagesRef.current.scrollIntoView({
                         behavior: "smooth",
@@ -594,19 +684,20 @@ console.log(id)
             }
           }
         }
-  
+
         setLoading(false);
         sessionStorage.setItem("chatHistory", JSON.stringify(chatHistory));
       };
-  
+
       readStream();
     } catch (error) {
       console.error("Error fetching or reading stream:", error);
       setLoading(false);
     }
   };
+
   console.log(chatHistory)
-  
+
 
   const handlePromptClick = (queryText) => {
     setQuery(queryText);
@@ -797,6 +888,7 @@ console.log(id)
     });
   };
 
+
   useEffect(() => {
     const fetchSessions = async () => {
       try {
@@ -827,10 +919,11 @@ console.log(id)
   const handleEditClick = (sessionId, title) => {
     setEditingSessionId(sessionId);
     setEditedTitle(title);
+
   };
 
   const handleTitleChange = (e) => {
-    setEditedTitle(e.target.value);
+    setEditedTitle(e.target.value); // Update the state as the user types
   };
 
   const handleSaveEdit = async (sessionId) => {
@@ -954,7 +1047,6 @@ console.log(id)
         <div className="content">
           <div className="history-pagination">
             <h5>Recent Interactions</h5>
-            
             <ul>
             {sessions.length > 0 ? (
         sessions.map((session) => (
@@ -1004,8 +1096,7 @@ console.log(id)
       ) : (
         <li>No recent interactions</li>
       )}
-    </ul>
-            
+            </ul>
           </div>
 
           {articleData ? (
@@ -1036,23 +1127,27 @@ console.log(id)
                       <span>Rate the article </span>
                     </div>
                     <div className="rate">
-                      {[5, 4, 3, 2, 1].map((value) => (
-                        <React.Fragment key={value}>
-                          <input
-                            type="radio"
-                            id={`star${value}-${uniqueId}`}
-                            name={`rate_${uniqueId}`}
-                            value={value}
-                            checked={getRatingForArticle(uniqueId) === value}
-                            onChange={() => handleRatingChange(uniqueId, value)}
-                          />
-                          <label
-                            htmlFor={`star${value}-${uniqueId}`}
-                            title={`${value} star`}
-                          />
-                        </React.Fragment>
-                      ))}
-                    </div>
+  {[5, 4, 3, 2, 1].map((value) => (
+    <React.Fragment key={value}>
+      <input
+        type="radio"
+        id={`star${value}-${uniqueId}`}
+        name={`rate_${uniqueId}`}
+        value={value}
+        // Check if the cached rating exists and matches the current star value
+        checked={
+          (ratingsList.find((item) => item.uniqueId === uniqueId)?.rating || 0) === value
+        }
+        onChange={() => handleRatingChange(uniqueId, value)}
+      />
+      <label
+        htmlFor={`star${value}-${uniqueId}`}
+        title={`${value} star`}
+      />
+    </React.Fragment>
+  ))}
+</div>
+
                   </div>
                 </div>
 
@@ -1084,20 +1179,20 @@ console.log(id)
                                     <h3>Save Bookmark</h3>
                                     {console.log("Collections data:", collections)}
                                     {/* Existing Collections */}
-                                    {collections.length > 0 && (
-                                      <>
-                                        <h4>Save to existing collection:</h4>
-                                        <ul>
-                                          {collections.map((collection, index) => (
-                                            <li key={index}> {/* using index if collection is not unique */}
-                                              <button onClick={() => handleSaveToExisting(collection)}>
-                                                {collection}
-                                              </button>
-                                            </li>
-                                          ))}
-                                        </ul>
-                                      </>
-                                    )}
+                                    {Object.keys(collections).length > 0 && (
+                                          <>
+                                            <h4>Save to existing collection:</h4>
+                                            <ul>
+                                              {Object.keys(collections).map((collectionName, index) => (
+                                                <li key={index}> {/* using index as key since collection names are unique */}
+                                                  <button onClick={() => handleSaveToExisting(collectionName)}>
+                                                    {collectionName}
+                                                  </button>
+                                                </li>
+                                              ))}
+                                            </ul>
+                                          </>
+                                        )}
 
                                     {/* Create New Collection */}
                                     <h4>Create a new collection:</h4>
@@ -1168,7 +1263,10 @@ console.log(id)
                       Abstract
                     </Typography>
                     <p>
-                      {renderContentInOrder(articleData.article.abstract_content, true)}
+                      {renderContentInOrder(
+                        articleData.article.abstract_content,
+                        true
+                      )}
                     </p>
                   </>
                 )}

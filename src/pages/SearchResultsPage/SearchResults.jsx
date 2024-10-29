@@ -19,7 +19,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
 
   const user_id=user?.user_id;
   const token=user?.access_token;
-  console.log(data);
   const searchTerm = sessionStorage.getItem("SearchTerm");
   const navigate = useNavigate();
   const contentRightRef = useRef(null); // Ref for searchContent-right
@@ -43,14 +42,13 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
     const fetchCollections = async () => {
       try {
         const response = await axios.get(
-          `http://13.127.207.184:80/bookmarks/users/${user_id}/collections`,
+          `http://13.127.207.184:80/bookmarks/${user_id}/collections`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
             },
           }
         );
-        console.log(response)
         if (response.data) {
           setCollections(response.data.collections);
           if (response.data.collections.length > 0) {
@@ -66,14 +64,28 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       fetchCollections();
     }
   }, []);
-  console.log(collections);
   const isBookmarked = (idType) => {
-    const result = collections.some((collection) =>
-      Array.isArray(collection.articles) && collection.articles.includes(idType)
+    // Convert idType to a number for comparison
+    const numericIdType = Number(idType);
+    // console.log(`Checking for idType: ${numericIdType}`);
+  
+    // Loop through each collection and log article IDs as numbers
+    // Object.entries(collections).forEach(([collectionName, articleArray]) => {
+    //   console.log(`Collection: ${collectionName}`);
+    //   articleArray.forEach((article) => {
+    //     console.log(`article_id: ${Number(article.article_id)}`);
+    //   });
+    // });
+  
+    // Check if the article is bookmarked
+    const result = Object.values(collections).some((articleArray) =>
+      articleArray.some((article) => Number(article.article_id) === numericIdType)
     );
-    console.log(`isBookmarked for idType ${idType}:`, result);
+  
     return result;
   };
+  
+  
   
   const [newCollectionName, setNewCollectionName] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -82,15 +94,70 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   const [customStartDate, setCustomStartDate] = useState("");
   const [customEndDate, setCustomEndDate] = useState("");
   const [completePMID, setCompletePMID] = useState([]);
-  const [ratingsList, setRatingsList] = useState(() => {
-    // Get ratingsList from sessionStorage or initialize an empty array
-    return JSON.parse(sessionStorage.getItem("ratingsList")) || [];
-  });
-  const getRatingForArticle = (pmid) => {
-    const ratingsList = JSON.parse(sessionStorage.getItem("ratingsList")) || [];
-    const savedRating = ratingsList.find((item) => item.pmid === pmid);
-    return savedRating ? savedRating.rating : 3; // Default rating is 3 if not found
-  };
+  // const [ratingsList, setRatingsList] = useState(() => {
+  //   // Get ratingsList from sessionStorage or initialize an empty array
+  //   return JSON.parse(sessionStorage.getItem("ratingsList")) || [];
+  // });
+  const [ratingsList, setRatingsList] = useState([]);
+
+  // Function to get the rating for a specific article by pmid
+  const getRatingForArticle = (id, source) => {
+    // Ensure `rated_articles` is an array within `ratingsList`
+    const ratingsArray = Array.isArray(ratingsList?.rated_articles) ? ratingsList.rated_articles : [];
+    // Log id, source, and ratingsArray
+    // console.log("ID:", id);
+    // console.log("Source:", source);
+    // console.log("Ratings Array:", ratingsArray);
+
+    // Find a matching entry with both `article_id` and `article_source`
+    const savedRating = ratingsArray.find(
+      (item) => item.article_id === String(id) && item.article_source === source
+    );
+
+    // Find entries where only `article_id` matches
+    const idOnlyMatch = ratingsArray.find(
+      (item) => item.article_id === String(id) && item.article_source !== source
+    );
+
+    // Log if only `article_id` matches but `article_source` does not
+    if (idOnlyMatch) {
+      // console.log("ID-only Match Found:", idOnlyMatch);
+    }
+
+    // Return the saved rating or default to 3 if not found
+    return savedRating ? savedRating.rating : 3;
+};
+
+
+
+
+  // Use effect to fetch ratings only once on page load or reload
+  useEffect(() => {
+    const fetchRatedArticles = async () => {
+      try {
+        const response = await axios.get("http://13.127.207.184:80/rating/rated-articles", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const ratedArticles = response.data || [];
+        
+        // Store ratings list in sessionStorage and state
+        sessionStorage.setItem("ratingsList", JSON.stringify(ratedArticles));
+        setRatingsList(ratedArticles);
+      } catch (error) {
+        console.error("Error fetching rated articles:", error);
+      }
+    };
+
+    // Check if ratings are already stored in sessionStorage to avoid duplicate API calls
+    const storedRatings = JSON.parse(sessionStorage.getItem("ratingsList"));
+    if (!storedRatings) {
+      fetchRatedArticles(); // Only fetch if no stored ratings
+    } else {
+      setRatingsList(storedRatings);
+    }
+  }, []);
 
   useEffect(() => {
     const storedDateInfo = localStorage.getItem("publicationDate");
@@ -425,16 +492,45 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
 
   const handleSourceTypeChange = (event) => {
     const { value, checked } = event.target;
-
+  
+    const updatedSourceTypes = checked
+      ? [...filters.sourceType, value]
+      : filters.sourceType.filter((type) => type !== value);
+  
     const updatedFilters = {
       ...filters,
-      sourceType: checked
-        ? [...filters.sourceType, value]
-        : filters.sourceType.filter((type) => type !== value),
+      sourceType: updatedSourceTypes,
     };
-
+  
     setFilters(updatedFilters);
+    fetchFilteredResults(updatedSourceTypes);
   };
+  
+  const fetchFilteredResults = (sourceTypes) => {
+    const sourceParam = sourceTypes.join(','); // Join multiple source types with commas for the query
+    const apiUrl = `http://13.127.207.184:80/core_search/?term=${searchTerm}&source=${sourceParam}`;
+    setLoading(true);
+  
+    axios
+      .get(apiUrl, {
+        headers: {
+          Authorization: `Bearer ${token}`, // Add Bearer token here
+        },
+      })
+      .then((response) => {
+        const data = response.data;
+        setResults(data);
+        setLoading(false);
+        localStorage.setItem("sourceFilters", JSON.stringify(sourceTypes));
+        navigate("/search", { state: { data, searchTerm } });
+      })
+      .catch((error) => {
+        console.error("Error fetching data from the API", error);
+        setLoading(false);
+        navigate("/search", { state: { data: [], searchTerm } });
+      });
+  };
+  
 
   // Function to handle radio button change
   const handleDateRangeChange = (event) => {
@@ -486,45 +582,28 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
     }
   };
 
-  const handleCustomDateFilter = (startDate, endDate) => {
+ const handleCustomDateFilter = (startDate, endDate) => {
     if (startDate && endDate) {
       const formattedStartDate = formatDate(startDate);
       const formattedEndDate = formatDate(endDate);
-
-      const pubmedArticles = completePMID
-        .filter((id) => id.startsWith("PubMed_"))
-        .map((id) => parseInt(id.split("_")[1]));
-      const biorxivArticles = completePMID
-        .filter((id) => id.startsWith("BioRxiv_"))
-        .map((id) => parseInt(id.split("_")[1]));
-      const plosArticles = completePMID
-        .filter((id) => id.startsWith("Public Library of Science (PLOS)_"))
-        .map((id) => parseInt(id.split("_")[1]));
-      console.log(pubmedArticles);
-      console.log(completePMID);
-      const requestBody = {
-        pubmed_articles: pubmedArticles,
-        biorxiv_articles: biorxivArticles,
-        plos_articles: plosArticles,
-        filter_type: "Custom Range",
-        from_date: formattedStartDate,
-        to_date: formattedEndDate,
-      };
-      console.log(requestBody);
-      const apiUrl = "http://13.127.207.184:80/filterdate";
+      const filter_type= "custom"
+      const apiUrl = `http://13.127.207.184:80/core_search/?term=${searchTerm}&date_filter=${filter_type}&from_date=${formattedStartDate}&to_date=${formattedEndDate}`;
       setLoading(true);
+
       axios
-        .post(apiUrl, requestBody)
+        .get(apiUrl, {
+          headers: {
+            Authorization: `Bearer ${token}`, // Add Bearer token here
+          },
+        })
         .then((response) => {
-          console.log(response);
           const data = response.data;
           setResults(data);
           setLoading(false);
-          console.log(data);
           localStorage.setItem(
             "publicationDate",
             JSON.stringify({
-              selectedDateRange,
+              selectedDateRange: "Custom Range",
               customStartDate: startDate,
               customEndDate: endDate,
             })
@@ -537,37 +616,25 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
           navigate("/search", { state: { data: [], searchTerm } });
         });
     } else {
-      console.error(
-        "Please provide both start and end dates for the custom range."
-      );
+      console.error("Please provide both start and end dates for the custom range.");
     }
-  };
+};
+
+  console.log(searchTerm)
   const handleYearFilter = (selectedDateRange) => {
     const filterType = selectedDateRange === "5" ? "5 years" : "1 year";
-    console.log(completePMID);
-    const pubmedArticles = completePMID
-      .filter((id) => id.startsWith("PubMed_"))
-      .map((id) => parseInt(id.split("_")[1]));
-    const biorxivArticles = completePMID
-      .filter((id) => id.startsWith("BioRxiv_"))
-      .map((id) => parseInt(id.split("_")[1]));
-    const plosArticles = completePMID
-      .filter((id) => id.startsWith("Public Library of Science (PLOS)_"))
-      .map((id) => parseInt(id.split("_")[1]));
-    console.log(pubmedArticles);
-    const requestBody = {
-      pubmed_articles: pubmedArticles,
-      biorxiv_articles: biorxivArticles,
-      plos_articles: plosArticles,
-      filter_type: filterType,
-    };
-    console.log(requestBody);
-    const apiUrl = "http://13.127.207.184:80/filterdate";
+
+    const apiUrl = `http://13.127.207.184:80/core_search/?term=${searchTerm}&date_filter=${filterType}`;
     setLoading(true);
+
     axios
-      .post(apiUrl, requestBody)
+      .get(apiUrl, {
+        headers: {
+          Authorization: `Bearer ${token}`, // Add Bearer token here
+        },
+      })
       .then((response) => {
-        console.log(response);
+        console.log("response from api",response);
         const data = response.data;
         setResults(data);
         setLoading(false);
@@ -590,7 +657,8 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
           state: { data: [], searchTerm, dateloading: true },
         });
       });
-  };
+};
+
 
   const formatDate = (dateString) => {
     const [year, month, day] = dateString.split("-");
@@ -673,7 +741,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   }, []);
 
   const searchResults = useSelector((state) => state.search.searchResults);
-  console.log(searchResults);
   useEffect(() => {
     if (searchResults) {
       const pmidList = searchResults.articles.map((article) => {
@@ -692,7 +759,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
 
       if (storedData) {
         const parsedData = JSON.parse(storedData);
-        console.log(parsedData);
         setCompletePMID(parsedData);
       }
     }
@@ -740,8 +806,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
     localStorage.removeItem("publicationDate");
     // Optionally, you can also trigger the API call without any filters
     // const storeddata=sessionStorage.getItem("ResultData")
-    console.log(searchResults);
-    console.log(location.state);
     // const parseddata=JSON.parse(storeddata)
     // const data=parseddata
 
@@ -865,7 +929,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       setAnnotateLoading(true);
   
       const extractIdType = (uniqueId) => {
-        console.log(uniqueId);
         return uniqueId.split("_")[1]; // This splits "source_idType" and returns only the idType
       };
       const extractIdSource = (uniqueId) => uniqueId.split("_")[0];
@@ -874,7 +937,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
         source: extractIdSource(id),
         idType: extractIdType(id),
       }));
-      console.log(annotatedArticles);
   
       // Prepare the data by removing the "source_" part from uniqueId
       const pubmedIds = selectedArticles.map((id) => parseInt(extractIdType(id), 10));
@@ -1142,8 +1204,8 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                   <label>
                     <input
                       type="checkbox"
-                      value="PubMed"
-                      checked={filters.sourceType.includes("PubMed")}
+                      value="pubmed"
+                      checked={filters.sourceType.includes("pubmed")}
                       onChange={handleSourceTypeChange}
                     />{" "}
                     PubMed
@@ -1605,22 +1667,21 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                                 <div className="bookmark-modal-overlay">
                                   <div className="modal-content" ref={modalRef}>
                                     <h3>Save Bookmark</h3>
-                                    {console.log("Collections data:", collections)}
                                     {/* Existing Collections */}
-                                    {collections.length > 0 && (
-                                      <>
-                                        <h4>Save to existing collection:</h4>
-                                        <ul>
-                                          {collections.map((collection, index) => (
-                                            <li key={index}> {/* using index if collection is not unique */}
-                                              <button onClick={() => handleSaveToExisting(collection)}>
-                                                {collection}
-                                              </button>
-                                            </li>
-                                          ))}
-                                        </ul>
-                                      </>
-                                    )}
+                                    {Object.keys(collections).length > 0 && (
+                                          <>
+                                            <h4>Save to existing collection:</h4>
+                                            <ul>
+                                              {Object.keys(collections).map((collectionName, index) => (
+                                                <li key={index}> {/* using index as key since collection names are unique */}
+                                                  <button onClick={() => handleSaveToExisting(collectionName)}>
+                                                    {collectionName}
+                                                  </button>
+                                                </li>
+                                              ))}
+                                            </ul>
+                                          </>
+                                        )}
 
                                     {/* Create New Collection */}
                                     <h4>Create a new collection:</h4>
