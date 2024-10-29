@@ -46,6 +46,7 @@ const ArticlePage = () => {
     const storedHistory = sessionStorage.getItem("chatHistory");
     return storedHistory ? JSON.parse(storedHistory) : [];
   });
+  const [refreshSessions, setRefreshSessions] = useState(false);
   useEffect(() => {
     // Retrieve chat history from sessionStorage
     const storedChatHistory = sessionStorage.getItem("chatHistory");
@@ -142,16 +143,18 @@ const ArticlePage = () => {
 
 
 console.log(id)
-
+useEffect(() => {
+  if (type === "bioRxiv_id") {
+    setSource("biorxiv");
+  } else if (type === "pmid") {
+    setSource("pubmed");
+  } else if (type === "plos_id") {
+    setSource("plos");
+  }
+}, [type]);
   useEffect(() => {
     // Determine the source based on `type`
-    if (type === "bioRxiv_id") {
-      setSource("biorxiv");
-    } else if (type === "pmid") {
-      setSource("pubmed");
-    } else if (type === "plos_id") {
-      setSource("plos");
-    }
+    
     // Perform GET request to fetch article data
     if (source && id) {
       const fetchArticleData = async () => {
@@ -683,7 +686,7 @@ console.log(id)
             }
           }
         }
-
+        setRefreshSessions((prev) => !prev);
         setLoading(false);
         sessionStorage.setItem("chatHistory", JSON.stringify(chatHistory));
       };
@@ -899,7 +902,7 @@ console.log(id)
             },
           }
         );
-        console.log(response)
+        console.log(response);
         if (response.data?.sessions) {
           setSessions(response.data.sessions); // Set the sessions array from the response
         }
@@ -907,11 +910,11 @@ console.log(id)
         console.error("Error fetching chat history:", error);
       }
     };
-
+  
     if (user_id && token) {
       fetchSessions();
     }
-  }, []);
+  }, [user_id, token, refreshSessions]); 
   console.log(sessions)
   console.log(token)
   // Edit functions
@@ -959,6 +962,19 @@ console.log(id)
     }
   };
 
+  useEffect(() => {
+    // Retrieve chat history from sessionStorage on component mount or on location state change
+    const storedChatHistory = sessionStorage.getItem("chatHistory");
+    
+    if (storedChatHistory) {
+      setChatHistory(JSON.parse(storedChatHistory));
+      setShowStreamingSection(true);
+    } else {
+      setShowStreamingSection(false); // Default to false if no stored chat history
+    }
+  
+    console.log("Stored Chat History:", storedChatHistory);
+  }, [location.state]); // Add location.state as a dependency to re-run on navigation
   
   const handleSessionClick = async (article_id, source, session_id) => {
     try {
@@ -970,10 +986,10 @@ console.log(id)
           },
         }
       );
-      
+  
       const formattedChatHistory = [];
       let currentEntry = {};
-      
+  
       conversationResponse.data.conversation.forEach((entry) => {
         if (entry.role === "user") {
           if (currentEntry.query) {
@@ -987,30 +1003,34 @@ console.log(id)
           currentEntry = {};
         }
       });
-      
+  
       if (currentEntry.query) {
         formattedChatHistory.push(currentEntry);
       }
-      
+  
       console.log(formattedChatHistory);
-
+  
       sessionStorage.setItem("chatHistory", JSON.stringify(formattedChatHistory));
-      
-      navigate(`/article/${source}:${article_id}`, {
+  
+      // Update `source` based on its value
+      const sourceType = source === "biorxiv" ? "bioRxiv_id" : source === "plos" ? "plos_id" : "pmid";
+  
+      navigate(`/article/${sourceType}:${article_id}`, {
         state: {
           id: article_id,
-          source: source,
+          source: sourceType,
           token: token,
           user: { access_token: token, user_id: user_id },
-          annotateData: location.state.annotateData, 
-          data: location.state.data, 
+          annotateData: location.state.annotateData,
+          data: location.state.data,
         },
       });
-      console.log(conversationResponse)
+      console.log(conversationResponse);
     } catch (error) {
       console.error("Error fetching article or conversation data:", error);
     }
   };
+  
   
   return (
     <>
@@ -1256,8 +1276,11 @@ console.log(id)
                   ) : (
                     ""
                   )}
-                  <span style={{ color: "#2b9247" }}>PMID : {id}</span>
-                </div>
+                <span style={{ color: "#2b9247" }}>
+                  {type === "bioRxiv_id" && "BioRxiv ID"} 
+                  {type === "pmid" && "PMID"}
+                  {type === "plos_id" && "PLOS ID"} : {id}
+                </span>                </div>
 
                 {articleData.article.abstract_content && (
                   <>
