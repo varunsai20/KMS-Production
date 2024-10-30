@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Rnd } from "react-rnd";
 import { useSelector } from "react-redux"; // Import useSelector from react-redux
 import Header from "../../components/Header-New";
 import Footer from "../../components/Footer-New";
@@ -18,8 +19,6 @@ import Utilities from "../../assets/images/Lander-Utilities.svg";
 import Analytics from "../../assets/images/Lander-Analytics.svg";
 import { IoCloseOutline } from "react-icons/io5";
 import "./Lander-Logedin.css";
-import { ResizableBox } from "react-resizable";
-import "react-resizable/css/styles.css"; // Import the default CSS for resizable
 
 import Draggable from "react-draggable";
 import Collection from "../../components/Collection";
@@ -27,21 +26,66 @@ import Collection from "../../components/Collection";
 import Notes from "../NotesPage/Notes";
 
 const Lander = () => {
-  // Access logged-in status from Redux
   const isLoggedIn = useSelector((state) => state.auth?.isLoggedIn);
 
   const [isLanderNotesOpen, setIsLanderNotesOpen] = useState(false);
 
   const [isCollectionOpen, setIsCollectionOpen] = useState(false);
   const [dimensions, setDimensions] = useState({ width: 500, height: 400 });
-  const [defaultPosition, setDefaultPosition] = useState({ x: 0, y: 0 });
+  const [position, setPosition] = useState({ x: 0, y: 0 });
   const { user } = useSelector((state) => state.auth);
+  //const modalRef = useRef(null);
   console.log(user);
 
-  const handleResize = (event, { size }) => {
-    setDimensions(size);
-  };
-  // Function to open the Notes modal
+  // const startResizing = (e, direction) => {
+  //   e.preventDefault();
+  //   e.stopPropagation();
+
+  //   const startX = e.clientX;
+  //   const startY = e.clientY;
+  //   const startWidth = dimensions.width;
+  //   const startHeight = dimensions.height;
+  //   const startXPos = position.x;
+  //   const startYPos = position.y;
+
+  //   const onMouseMove = (moveEvent) => {
+  //     const deltaX = moveEvent.clientX - startX;
+  //     const deltaY = moveEvent.clientY - startY;
+
+  //     const newDimensions = { ...dimensions };
+  //     const newPosition = { ...position };
+
+  //     if (direction === "right") {
+  //       newDimensions.width = startWidth + deltaX;
+  //     }
+  //     if (direction === "bottom") {
+  //       newDimensions.height = startHeight + deltaY;
+  //     }
+  //     if (direction === "left") {
+  //       newDimensions.width = startWidth - deltaX;
+  //       newPosition.x = startXPos + deltaX;
+  //     }
+  //     if (direction === "top") {
+  //       newDimensions.height = startHeight - deltaY;
+  //       newPosition.y = startYPos + deltaY;
+  //     }
+
+  //     // Apply minimum and maximum constraints
+  //     newDimensions.width = Math.max(400, Math.min(newDimensions.width, 800));
+  //     newDimensions.height = Math.max(350, Math.min(newDimensions.height, 600));
+
+  //     setDimensions(newDimensions);
+  //     setPosition(newPosition);
+  //   };
+
+  //   const stopResizing = () => {
+  //     window.removeEventListener("mousemove", onMouseMove);
+  //     window.removeEventListener("mouseup", stopResizing);
+  //   };
+
+  //   window.addEventListener("mousemove", onMouseMove);
+  //   window.addEventListener("mouseup", stopResizing);
+  // };
 
   const handleOpenNotes = () => {
     setIsLanderNotesOpen(true);
@@ -57,12 +101,13 @@ const Lander = () => {
     setIsCollectionOpen(false);
   };
   useEffect(() => {
-    const centerX =
-      (window.innerWidth - dimensions.width) / 2 + window.innerWidth * 0.3;
-    const centerY = (window.innerHeight - dimensions.height) / 2;
-    setDefaultPosition({ x: centerX, y: centerY });
-  }, [dimensions]);
-
+    if (isLanderNotesOpen) {
+      const centerX =
+        (window.innerWidth - dimensions.width) / 2 + window.innerWidth * 0.35;
+      const centerY = (window.innerHeight - dimensions.height) / 2;
+      setPosition({ x: centerX, y: centerY });
+    }
+  }, [isLanderNotesOpen]);
   return (
     <div className="Landing-Container">
       <div className="Landing-Header">
@@ -205,71 +250,63 @@ const Lander = () => {
           </section>
         )}
       </div>
-      {/* {isNotesOpen && (
-        <Draggable defaultPosition={{ x: 0, y: 0 }}>
-
+      {isLanderNotesOpen && (
+        <Rnd
+          size={{ width: dimensions.width, height: dimensions.height }}
+          position={{ x: position.x, y: position.y }}
+          onDragStop={(e, d) => {
+            setPosition({ x: d.x, y: d.y });
+          }}
+          onResizeStop={(e, direction, ref, delta, position) => {
+            setDimensions({
+              width: parseInt(ref.style.width, 10),
+              height: parseInt(ref.style.height, 10),
+            });
+            setPosition(position);
+          }}
+          minWidth={400}
+          minHeight={350}
+          maxWidth={800}
+          maxHeight={600}
+          bounds="window"
+          enableResizing={{
+            top: true,
+            right: true,
+            bottom: true,
+            left: true,
+            topRight: true,
+            bottomRight: true,
+            bottomLeft: true,
+            topLeft: true,
+          }}
+        >
           <div
             className="notes-modal"
-            style={{ width: dimensions.width, height: dimensions.height }}
-            onMouseMove={handleResize}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseUp}
+            style={{
+              width: "100%",
+              height: "100%",
+              display: "flex",
+              flexDirection: "column",
+              border: "1px solid #ddd",
+              // background: "white",
+            }}
           >
-            <button className="close-modal-notes" onClick={handleCloseNotes}>
-              <IoCloseOutline size={30} color="#1A82FF" />
-            </button>
-            <Notes />
-           
-            <div
-              className="resizer resizer-top"
-              onMouseDown={() => handleMouseDown("top")}
-            />
-            <div
-              className="resizer resizer-right"
-              onMouseDown={() => handleMouseDown("right")}
-            />
-            <div
-              className="resizer resizer-bottom"
-              onMouseDown={() => handleMouseDown("bottom")}
-            />
-            <div
-              className="resizer resizer-left"
-              onMouseDown={() => handleMouseDown("left")}
-            />
-          </div>
-          
-        </Draggable>
-      )} */}
-      {isLanderNotesOpen && (
-        <Draggable handle=".draggable-header" defaultPosition={defaultPosition}>
-          <ResizableBox
-            width={dimensions.width}
-            height={dimensions.height}
-            onResize={handleResize}
-            minConstraints={[400, 350]} // Minimum width and height
-            maxConstraints={[800, 600]} // Maximum width and height
-            resizeHandles={["s", "e", "se", "n", "w", "nw", "sw", "ne"]}
-            style={{ position: "absolute" }}
-          >
-            <div
-              className="notes-modal"
-              style={{ width: "100%", height: "100%" }}
-            >
-              {/* Draggable Header Only */}
-              <div className="draggable-header">
-                <button
-                  className="close-modal-notes"
-                  onClick={handleCloseNotes}
-                >
-                  <IoCloseOutline size={30} color="#1A82FF" />
-                </button>
-              </div>
-
-              {/* Content */}
-              <Notes isOpenNotes={isLanderNotesOpen} />
+            {/* Draggable Header */}
+            <div className="draggable-header">
+              <button className="close-modal-notes" onClick={handleCloseNotes}>
+                <IoCloseOutline size={30} color="black" />
+              </button>
             </div>
-          </ResizableBox>
-        </Draggable>
+
+            {/* Notes Content */}
+            <div style={{ flex: 1 }}>
+              <Notes
+                isOpenNotes={isLanderNotesOpen}
+                height={dimensions.height}
+              />
+            </div>
+          </div>
+        </Rnd>
       )}
 
       {isCollectionOpen && (
@@ -287,20 +324,6 @@ const Lander = () => {
           </div>
         </>
       )}
-      {/* {isCollectionOpen && (
-        <>
-          <div className="collection-modal">
-            <button
-              className="close-collection"
-              onClick={handleCloseCollection}
-            >
-              <IoCloseOutline size={30} color="#1A82FF" />
-            </button>
-            <Collection />
-          </div>
-        </>
-      )} */}
-
       <Footer />
     </div>
   );

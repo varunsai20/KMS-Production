@@ -16,9 +16,9 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   const location = useLocation(); // Access the passed state
   const { data } = location.state || { data: [] };
   const { user } = useSelector((state) => state.auth);
-  
-  const user_id=user?.user_id;
-  const token=user?.access_token;
+
+  const user_id = user?.user_id;
+  const token = user?.access_token;
   const searchTerm = sessionStorage.getItem("SearchTerm");
   const navigate = useNavigate();
   const contentRightRef = useRef(null); // Ref for searchContent-right
@@ -38,6 +38,8 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   const [currentIdType, setCurrentIdType] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [collections, setCollections] = useState([]);
+  //const [isOpenShare,setisOpenShare] =useState(flase);
+
   useEffect(() => {
     const fetchCollections = async () => {
       try {
@@ -52,7 +54,10 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
         if (response.data) {
           setCollections(response.data.collections);
           if (response.data.collections.length > 0) {
-            localStorage.setItem("collections", JSON.stringify(response.data.collections));
+            localStorage.setItem(
+              "collections",
+              JSON.stringify(response.data.collections)
+            );
           }
         }
       } catch (error) {
@@ -68,7 +73,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
     // Convert idType to a number for comparison
     const numericIdType = Number(idType);
     // console.log(`Checking for idType: ${numericIdType}`);
-  
+
     // Loop through each collection and log article IDs as numbers
     // Object.entries(collections).forEach(([collectionName, articleArray]) => {
     //   console.log(`Collection: ${collectionName}`);
@@ -76,17 +81,17 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
     //     console.log(`article_id: ${Number(article.article_id)}`);
     //   });
     // });
-  
+
     // Check if the article is bookmarked
     const result = Object.values(collections).some((articleArray) =>
-      articleArray.some((article) => Number(article.article_id) === numericIdType)
+      articleArray.some(
+        (article) => Number(article.article_id) === numericIdType
+      )
     );
-  
+
     return result;
   };
-  
-  
-  
+
   const [newCollectionName, setNewCollectionName] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageInput, setPageInput] = useState(1); // Separate state for the page input
@@ -105,50 +110,56 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
     // Standardize source values for specific cases
     let standardizedSource = source;
     if (source === "BioRxiv") standardizedSource = "biorxiv";
-    if (source === "Public Library of Science (PLOS)") standardizedSource = "plos";
-  
+    if (source === "Public Library of Science (PLOS)")
+      standardizedSource = "plos";
+
     // Ensure `rated_articles` is an array within `ratingsList`
-    const ratingsArray = Array.isArray(ratingsList?.rated_articles) ? ratingsList.rated_articles : [];
-  
+    const ratingsArray = Array.isArray(ratingsList?.rated_articles)
+      ? ratingsList.rated_articles
+      : [];
+
     // Find a matching entry with both `article_id` and `article_source`
     const savedRating = ratingsArray.find(
-      (item) => item.article_id === String(id) && item.article_source === standardizedSource
+      (item) =>
+        item.article_id === String(id) &&
+        item.article_source === standardizedSource
     );
-  
+
     // Log when both `article_id` and `article_source` match
     if (savedRating) {
       console.log("Both ID and Source Match Found:", savedRating);
     }
-  
+
     // Find entries where only `article_id` matches
     const idOnlyMatch = ratingsArray.find(
-      (item) => item.article_id === String(id) && item.article_source !== standardizedSource
+      (item) =>
+        item.article_id === String(id) &&
+        item.article_source !== standardizedSource
     );
-  
+
     // Log if only `article_id` matches but `article_source` does not
     if (idOnlyMatch) {
       console.log("ID-only Match Found:", idOnlyMatch);
     }
-  
+
     // Return the saved rating or default to 3 if not found
     return savedRating ? savedRating.average_rating : 3;
   };
-  
-
-
-
 
   // Use effect to fetch ratings only once on page load or reload
   useEffect(() => {
     const fetchRatedArticles = async () => {
       try {
-        const response = await axios.get("http://13.127.207.184:80/rating/rated-articles", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const response = await axios.get(
+          "http://13.127.207.184:80/rating/rated-articles",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
         const ratedArticles = response.data || [];
-        
+
         // Store ratings list in sessionStorage and state
         sessionStorage.setItem("ratingsList", JSON.stringify(ratedArticles));
         setRatingsList(ratedArticles);
@@ -159,11 +170,11 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
 
     const storedRatings = JSON.parse(sessionStorage.getItem("ratingsList"));
     if (!storedRatings || location.pathname === "/search") {
-      fetchRatedArticles(); 
+      fetchRatedArticles();
     } else {
       setRatingsList(storedRatings);
     }
-}, [location]); // Depend on `location` changes
+  }, [location]); // Depend on `location` changes
 
   useEffect(() => {
     const storedDateInfo = localStorage.getItem("publicationDate");
@@ -404,7 +415,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
         article_source: source,
       },
     };
-  
+
     try {
       const response = await axios.post(
         "http://13.127.207.184:80/bookmarks/users/collections",
@@ -415,7 +426,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
           },
         }
       );
-  
+
       if (response.status === 201) {
         const updatedCollections = collections.map((collection) => {
           if (collection === collectionName) {
@@ -427,7 +438,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
           }
           return collection;
         });
-  
+
         setCollections(updatedCollections);
         localStorage.setItem("collections", JSON.stringify(updatedCollections));
         setIsModalOpen(false);
@@ -436,7 +447,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       console.error("Error adding bookmark to existing collection:", error);
     }
   };
-  
 
   const handleCreateNewCollection = async () => {
     const newCollection = {
@@ -448,7 +458,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
         article_source: source,
       },
     };
-  
+
     try {
       const response = await axios.post(
         "http://13.127.207.184:80/bookmarks/users/collections",
@@ -459,7 +469,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
           },
         }
       );
-  
+
       if (response.status === 201) {
         const updatedCollections = [...collections, response.data];
         setCollections(updatedCollections);
@@ -471,8 +481,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       console.error("Error creating new collection:", error);
     }
   };
-  
-  
+
   const handleFilterChange = async (event) => {
     setLoading(true);
     setSelectedArticles([]);
@@ -498,25 +507,25 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
 
   const handleSourceTypeChange = (event) => {
     const { value, checked } = event.target;
-  
+
     const updatedSourceTypes = checked
       ? [...filters.sourceType, value]
       : filters.sourceType.filter((type) => type !== value);
-  
+
     const updatedFilters = {
       ...filters,
       sourceType: updatedSourceTypes,
     };
-  
+
     setFilters(updatedFilters);
     fetchFilteredResults(updatedSourceTypes);
   };
-  
+
   const fetchFilteredResults = (sourceTypes) => {
-    const sourceParam = sourceTypes.join(','); // Join multiple source types with commas for the query
+    const sourceParam = sourceTypes.join(","); // Join multiple source types with commas for the query
     const apiUrl = `http://13.127.207.184:80/core_search/?term=${searchTerm}&source=${sourceParam}`;
     setLoading(true);
-  
+
     axios
       .get(apiUrl, {
         headers: {
@@ -536,7 +545,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
         navigate("/search", { state: { data: [], searchTerm } });
       });
   };
-  
 
   // Function to handle radio button change
   const handleDateRangeChange = (event) => {
@@ -588,11 +596,11 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
     }
   };
 
- const handleCustomDateFilter = (startDate, endDate) => {
+  const handleCustomDateFilter = (startDate, endDate) => {
     if (startDate && endDate) {
       const formattedStartDate = formatDate(startDate);
       const formattedEndDate = formatDate(endDate);
-      const filter_type= "custom"
+      const filter_type = "custom";
       const apiUrl = `http://13.127.207.184:80/core_search/?term=${searchTerm}&date_filter=${filter_type}&from_date=${formattedStartDate}&to_date=${formattedEndDate}`;
       setLoading(true);
 
@@ -622,9 +630,11 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
           navigate("/search", { state: { data: [], searchTerm } });
         });
     } else {
-      console.error("Please provide both start and end dates for the custom range.");
+      console.error(
+        "Please provide both start and end dates for the custom range."
+      );
     }
-};
+  };
 
   const handleYearFilter = (selectedDateRange) => {
     const filterType = selectedDateRange === "5" ? "5 years" : "1 year";
@@ -639,7 +649,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
         },
       })
       .then((response) => {
-        console.log("response from api",response);
+        console.log("response from api", response);
         const data = response.data;
         setResults(data);
         setLoading(false);
@@ -662,8 +672,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
           state: { data: [], searchTerm, dateloading: true },
         });
       });
-};
-
+  };
 
   const formatDate = (dateString) => {
     const [year, month, day] = dateString.split("-");
@@ -932,23 +941,26 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       sessionStorage.setItem("AnnotateSource", "");
       setAnnotateData([]);
       setAnnotateLoading(true);
-  
+
       const extractIdType = (uniqueId) => {
         return uniqueId.split("_")[1]; // This splits "source_idType" and returns only the idType
       };
       const extractIdSource = (uniqueId) => uniqueId.split("_")[0];
-  
+
       const annotatedArticles = totalArticles.map((id) => ({
         source: extractIdSource(id),
         idType: extractIdType(id),
       }));
-  
+
       // Prepare the data by removing the "source_" part from uniqueId
-      const pubmedIds = selectedArticles.map((id) => parseInt(extractIdType(id), 10));
-      const biorxivIds = bioRxivArticles.map((id) => parseInt(extractIdType(id), 10));
+      const pubmedIds = selectedArticles.map((id) =>
+        parseInt(extractIdType(id), 10)
+      );
+      const biorxivIds = bioRxivArticles.map((id) =>
+        parseInt(extractIdType(id), 10)
+      );
       const plosIds = plosArticles.map((id) => parseInt(extractIdType(id), 10));
 
-  
       axios
         .post(
           "http://13.127.207.184:80/core_search/annotate",
@@ -966,7 +978,10 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
         .then((response) => {
           const data = response.data;
           sessionStorage.setItem("AnnotateData", JSON.stringify(data));
-          sessionStorage.setItem("AnnotateSource", JSON.stringify(annotatedArticles));
+          sessionStorage.setItem(
+            "AnnotateSource",
+            JSON.stringify(annotatedArticles)
+          );
           setAnnotateData(data);
           setAnnotateSource(annotatedArticles);
           setOpenAnnotate(true);
@@ -978,7 +993,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
         });
     }
   };
-  
+
   const [expandedPmids, setExpandedPmids] = useState({}); // Track which PMIDs are expanded
   const [expandedTexts, setExpandedTexts] = useState({});
   // Function to toggle the expansion for all rows associated with a given PMID
@@ -1658,15 +1673,27 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                                 </h3>
                               </div>
                               <FontAwesomeIcon
-  icon={regularBookmark}
-  size="l"
-  style={{
-    color: isBookmarked(idType) ? "blue" : "black",
-    cursor: "pointer",
-  }}
-  onClick={() => handleBookmarkClick(idType, result.article_title, result.source || "PubMed")}
-  title={isBookmarked(idType) ? "Bookmarked" : "Bookmark this article"}
-/>
+                                icon={regularBookmark}
+                                size="l"
+                                style={{
+                                  color: isBookmarked(idType)
+                                    ? "blue"
+                                    : "black",
+                                  cursor: "pointer",
+                                }}
+                                onClick={() =>
+                                  handleBookmarkClick(
+                                    idType,
+                                    result.article_title,
+                                    result.source || "PubMed"
+                                  )
+                                }
+                                title={
+                                  isBookmarked(idType)
+                                    ? "Bookmarked"
+                                    : "Bookmark this article"
+                                }
+                              />
 
                               {isModalOpen && (
                                 <div className="bookmark-modal-overlay">
@@ -1674,19 +1701,29 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                                     <h3>Save Bookmark</h3>
                                     {/* Existing Collections */}
                                     {Object.keys(collections).length > 0 && (
-                                          <>
-                                            <h4>Save to existing collection:</h4>
-                                            <ul>
-                                              {Object.keys(collections).map((collectionName, index) => (
-                                                <li key={index}> {/* using index as key since collection names are unique */}
-                                                  <button onClick={() => handleSaveToExisting(collectionName)}>
-                                                    {collectionName}
-                                                  </button>
-                                                </li>
-                                              ))}
-                                            </ul>
-                                          </>
-                                        )}
+                                      <>
+                                        <h4>Save to existing collection:</h4>
+                                        <ul>
+                                          {Object.keys(collections).map(
+                                            (collectionName, index) => (
+                                              <li key={index}>
+                                                {" "}
+                                                {/* using index as key since collection names are unique */}
+                                                <button
+                                                  onClick={() =>
+                                                    handleSaveToExisting(
+                                                      collectionName
+                                                    )
+                                                  }
+                                                >
+                                                  {collectionName}
+                                                </button>
+                                              </li>
+                                            )
+                                          )}
+                                        </ul>
+                                      </>
+                                    )}
 
                                     {/* Create New Collection */}
                                     <h4>Create a new collection:</h4>
@@ -1846,7 +1883,10 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                                     name={`rate_${idType}`}
                                     value={value}
                                     checked={
-                                      getRatingForArticle(idType,result.source ? result.source : "PubMed") === value
+                                      getRatingForArticle(
+                                        idType,
+                                        result.source ? result.source : "PubMed"
+                                      ) === value
                                     }
                                     disabled // Disable the input as we don't want to modify it
                                   />

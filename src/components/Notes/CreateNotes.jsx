@@ -11,14 +11,10 @@ import { GoItalic, GoStrikethrough } from "react-icons/go";
 import { PiListBullets } from "react-icons/pi";
 import { BsListOl } from "react-icons/bs";
 import DOMPurify from "dompurify";
-import axios from "axios"
+import axios from "axios";
 import { useSelector } from "react-redux";
-//import { SiGmail } from "react-icons/si";
-// import { RxCopy } from "react-icons/rx";
-//import { VscCopy } from "react-icons/vsc";
 import { MdEmail } from "react-icons/md";
 import { IoCopyOutline } from "react-icons/io5";
-// import { CiMail } from "react-icons/ci";
 
 import "./CreateNote.css";
 
@@ -30,6 +26,7 @@ const Createnotes = ({
   onDelete,
   note,
   isOpenNotes,
+  height,
 }) => {
   console.log(selectedText);
   const [title, setTitle] = useState("");
@@ -52,8 +49,8 @@ const Createnotes = ({
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const { user } = useSelector((state) => state.auth);
 
-  const user_id=user?.user_id;
-  const token=user?.access_token;
+  const user_id = user?.user_id;
+  const token = user?.access_token;
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [subject, setSubject] = useState("");
@@ -177,10 +174,10 @@ const Createnotes = ({
   const handleSubmit = async (e) => {
     e.preventDefault();
     const noteDetails = editorRef.current.innerHTML;
-  
+
     if (title && noteDetails && noteDetails !== "Take your note...") {
       const note = { title, details: noteDetails };
-  
+
       try {
         // Post the note to the server
         await axios.post(
@@ -196,12 +193,12 @@ const Createnotes = ({
             },
           }
         );
-  
+
         // Add this note to the notes array
         setNotes((prevNotes) => [note, ...prevNotes]);
         console.log("Note saved:", note);
         onClose(); // Return to Notes list
-  
+
         // Clear inputs
         setNoteContent("");
         setTitle("");
@@ -377,7 +374,11 @@ const Createnotes = ({
       <form
         className="create-note__form"
         onSubmit={handleSubmit}
-        style={{ height: `${notesHeight - 11.85}vh` }}
+        style={
+          isOpenNotes
+            ? { height: `${height - 86}px` }
+            : { height: `${notesHeight - 11.85}vh` }
+        }
       >
         <input
           className={isOpenNotes ? "lander-note-input" : "note-input"}
@@ -406,6 +407,7 @@ const Createnotes = ({
           }}
         >
           {/* Placeholder logic can be enhanced if needed */}
+          Note details
         </div>
       </form>
 
@@ -496,7 +498,7 @@ const Createnotes = ({
                 <IoCloseOutline size={20} />
               </button>
             </div>
-            <div className="createNotes-modal-body" >
+            <div className="createNotes-modal-body">
               <div className="createNotes-email">
                 <button className="createNotes-Email">
                   <div
@@ -554,7 +556,7 @@ const Createnotes = ({
                 <IoCloseOutline size={20} />
               </button>
             </div>
-            <div className="email-modal-body" style={{width:"80%"}}>
+            <div className="email-modal-body" style={{ width: "80%" }}>
               <input
                 type="email"
                 value={email}
@@ -562,7 +564,7 @@ const Createnotes = ({
                 placeholder="Email"
                 className="email-input"
               />
-              
+
               <button onClick={handleSendEmail} className="send-button">
                 Send
               </button>
