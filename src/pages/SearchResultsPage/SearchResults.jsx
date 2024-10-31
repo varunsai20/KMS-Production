@@ -3,22 +3,29 @@ import "./SearchResults.css";
 import Footer from "../../components/Footer-New";
 import SearchBar from "../../components/SearchBar";
 import Loading from "../../components/Loading";
+import { useDispatch, useSelector } from "react-redux";
 import Annotation from "../../components/Annotaions";
 import { useLocation, useNavigate } from "react-router-dom";
 import annotate from "../../assets/images/task-square.svg";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBookmark as regularBookmark } from "@fortawesome/free-regular-svg-icons";
-import { useSelector } from "react-redux";
 import { faAnglesUp } from "@fortawesome/free-solid-svg-icons";
+import uparrow from "../../assets/images/uparrow.svg"
+import { IoCloseOutline, IoShareSocial } from "react-icons/io5";
+import downarrow from "../../assets/images/downarrow.svg"
 import axios from "axios";
+import { login, logout } from "../../redux/reducers/LoginAuth"; // Import login and logout actions
+import Button from "../../components/Buttons";
 const ITEMS_PER_PAGE = 10;
 const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   const location = useLocation(); // Access the passed state
   const { data } = location.state || { data: [] };
   const { user } = useSelector((state) => state.auth);
 
-  const user_id = user?.user_id;
-  const token = user?.access_token;
+  const dispatch = useDispatch();
+  const user_id=user?.user_id;
+  const token=useSelector((state) => state.auth.access_token);
+
   const searchTerm = sessionStorage.getItem("SearchTerm");
   const navigate = useNavigate();
   const contentRightRef = useRef(null); // Ref for searchContent-right
@@ -33,42 +40,50 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   }, [bioRxivArticles, plosArticles, selectedArticles]);
   const [showPopup, setShowPopup] = useState(false);
   const [hoveredRow, setHoveredRow] = useState(null);
-
+  const [shareableLinks, setShareableLinks] = useState({});
   const [bookmarkedPmids, setBookmarkedPmids] = useState({});
   const [currentIdType, setCurrentIdType] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [collections, setCollections] = useState([]);
-  //const [isOpenShare,setisOpenShare] =useState(flase);
 
-  useEffect(() => {
-    const fetchCollections = async () => {
-      try {
-        const response = await axios.get(
-          `http://13.127.207.184:80/bookmarks/${user_id}/collections`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        if (response.data) {
-          setCollections(response.data.collections);
-          if (response.data.collections.length > 0) {
-            localStorage.setItem(
-              "collections",
-              JSON.stringify(response.data.collections)
-            );
-          }
+  const fetchCollections = async () => {
+    try {
+      const response = await axios.get(
+        `http://13.127.207.184:80/bookmarks/${user_id}/collections`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
-      } catch (error) {
-        console.error("Error fetching collections:", error);
-      }
-    };
+      );
+      if (response.data) {
+        setCollections(response.data.collections);
+        if (response.data.collections.length > 0) {
+          localStorage.setItem("collections", JSON.stringify(response.data.collections));
 
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching collections:", error);
+    }
+  };
+  const handleLogout = async () => {
+    try {
+      // Make API call to /auth/logout with user_id as a parameter
+      await axios.post(`http://13.127.207.184:80/auth/logout/?user_id=${user_id}`);
+      
+      // Dispatch logout action and navigate to the home page
+      dispatch(logout());
+      navigate("/");
+    } catch (error) {
+      console.error("Error logging out:", error);
+    }
+  };
+  useEffect(() => {
     if (user_id && token) {
       fetchCollections();
     }
-  }, []);
+  }, [user_id, token]);
   const isBookmarked = (idType) => {
     // Convert idType to a number for comparison
     const numericIdType = Number(idType);
@@ -91,6 +106,13 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
 
     return result;
   };
+
+  
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+  const handleEmailClick = () => setIsEmailModalOpen(true);
+  const handleCloseEmailModal = () => setIsEmailModalOpen(false);
+  const [email,setEmail]=useState()
+  const [emailSubject,setEmailSubject]=useState()
 
   const [newCollectionName, setNewCollectionName] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -126,9 +148,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
     );
 
     // Log when both `article_id` and `article_source` match
-    if (savedRating) {
-      console.log("Both ID and Source Match Found:", savedRating);
-    }
 
     // Find entries where only `article_id` matches
     const idOnlyMatch = ratingsArray.find(
@@ -143,7 +162,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
     }
 
     // Return the saved rating or default to 3 if not found
-    return savedRating ? savedRating.average_rating : 3;
+    return savedRating ? savedRating.average_rating : 0;
   };
 
   // Use effect to fetch ratings only once on page load or reload
@@ -211,8 +230,8 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   const [source, setSource] = useState("");
   const topPageRef = useRef(null);
   const [showFilterPopup, setShowFilterPopup] = useState(false);
-  const [showTextAvailability, setShowTextAvailability] = useState(false);
-  const [showArticleType, setShowArticleType] = useState(false);
+  const [showTextAvailability, setShowTextAvailability] = useState(true);
+  const [showArticleType, setShowArticleType] = useState(true);
   const [showSourceType, setShowSourceType] = useState(true);
   const [showPublicationDate, setShowPublicationDate] = useState(true);
   const [openAnnotate, setOpenAnnotate] = useState(false);
@@ -410,7 +429,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       user_id,
       collection_name: collectionName,
       bookmark: {
-        article_id: String(currentIdType), // Ensure it's a string
+        article_id: String(currentIdType),
         article_title: articleTitle,
         article_source: source,
       },
@@ -428,6 +447,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       );
 
       if (response.status === 201) {
+
         const updatedCollections = collections.map((collection) => {
           if (collection === collectionName) {
             // Append the new article ID to the articles if it doesn't already exist
@@ -441,6 +461,9 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
 
         setCollections(updatedCollections);
         localStorage.setItem("collections", JSON.stringify(updatedCollections));
+
+        await fetchCollections(); // Refetch collections after successful addition
+
         setIsModalOpen(false);
       }
     } catch (error) {
@@ -471,9 +494,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       );
 
       if (response.status === 201) {
-        const updatedCollections = [...collections, response.data];
-        setCollections(updatedCollections);
-        localStorage.setItem("collections", JSON.stringify(updatedCollections));
+        await fetchCollections(); // Refetch collections after successful creation
         setNewCollectionName("");
         setIsModalOpen(false);
       }
@@ -484,7 +505,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
 
   const handleFilterChange = async (event) => {
     setLoading(true);
-    setSelectedArticles([]);
     setAnnotateData([]);
     setOpenAnnotate(false);
     const newCheckedState = event.target.checked;
@@ -502,9 +522,8 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
     setFilters(updatedFilters);
     setLoading(false);
     // Making API request with the updated filters and search term when a filter changes
-    // handleButtonClick(updatedFilters);
+    handleArticleTypeFilter(updatedFilters);
   };
-
   const handleSourceTypeChange = (event) => {
     const { value, checked } = event.target;
 
@@ -555,7 +574,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       setSelectedDateRange(value);
 
       if (value !== "custom") {
-        // Call the filter immediately for non-custom ranges
+        // Call the filter immeqtely for non-custom ranges
         handleYearFilter(value);
       }
     }
@@ -679,57 +698,48 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
     return `${day}-${month}-${year}`; // Format for the API
   };
 
-  const handleButtonClick = (updatedFilters) => {
-    //setCheckBoxLoading(true);
-    //const term = newSearchTerm || seachTerm;
+  const handleArticleTypeFilter = (selectedArticleTypes) => {
+    const filterTypes = selectedArticleTypes.articleType; // Assuming this is an array
+    const queryParams = filterTypes
+      .map((type) => `article_type=${encodeURIComponent(type)}`) // Encode each type for URL safety
+      .join("&");
+  
+    const apiUrl = `http://13.127.207.184:80/core_search/?term=${encodeURIComponent(searchTerm)}&${queryParams}`;
+    
     setLoading(true);
-    if (searchTerm) {
-      setLoading(true);
-      sessionStorage.setItem("SearchTerm", searchTerm);
-
-      const timeoutId = setTimeout(() => {
+  
+    axios
+      .get(apiUrl, {
+        headers: {
+          Authorization: `Bearer ${token}`, // Add Bearer token here
+        },
+      })
+      .then((response) => {
+        console.log("Response from API with article types:", response);
+        const data = response.data;
+        setResults(data);
         setLoading(false);
-        navigate("/search", { state: { data: [], searchTerm } });
-      }, 30000); // 30 seconds
-
-      const filtersToSend = updatedFilters.articleType;
-      const apiUrl =
-        filtersToSend.length > 0
-          ? "http://13.127.207.184:80/filter"
-          : "http://13.127.207.184:80/query";
-      const requestBody =
-        filtersToSend.length > 0
-          ? {
-              query: searchTerm,
-              filters: filtersToSend, // Send the filters if available
-            }
-          : {
-              query: searchTerm, // Send only the query if filters are empty
-            };
-      axios
-        //.post(apiUrl,{query:term,filters:updatedFilters.articleType})
-        .post(apiUrl, requestBody)
-        .then((response) => {
-          //setIsChecked((prev) => !prev);
-          //localStorage.setItem("checkboxState", JSON.stringify(!isChecked));
-          const data = response.data; // Assuming the API response contains the necessary data
-          setResults(data);
-          setAnnotateData([]);
-          // Navigate to SearchPage and pass data via state
-          navigate("/search", { state: { data, searchTerm } });
-          //navigate("/search",{state:{data, searchTerm:term}});
-          clearTimeout(timeoutId);
-          setLoading(false);
-        })
-        .catch((error) => {
-          clearTimeout(timeoutId);
-          setLoading(false);
-          navigate("/search", { state: { data: [], searchTerm } });
-          console.error("Error fetching data from the API", error);
+  
+        // Save the filter state
+        localStorage.setItem(
+          "articleTypeFilter",
+          JSON.stringify({
+            selectedArticleTypes,
+          })
+        );
+        navigate("/search", { state: { data, searchTerm } });
+      })
+      .catch((error) => {
+        console.error("Error fetching data from the API with article type filters", error);
+        setLoading(false);
+        navigate("/search", {
+          state: { data: [], searchTerm, dateloading: true },
         });
-    }
+      });
   };
-
+  
+  
+  
   const handleApplyFilters = () => {
     applyFilters(filters);
     setShowFilterPopup(false);
@@ -805,11 +815,16 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       )
     );
   };
+  
   const handleResetAll = () => {
     // Clear the filters from state
     setFilters({ articleType: [], sourceType: [] });
     setAnnotateData([]);
-    setSelectedArticles([]);
+    setBioRxivArticles([]);  // Reset bioRxivArticles array
+    setPlosArticles([]);      // Reset plosArticles array
+    setSelectedArticles([]);  // Reset selectedArticles array
+
+    setShareableLinks({});
     setOpenAnnotate(false);
     setSelectedSort("best_match");
     setSelectedDateRange(""); // Reset selectedDateRange to its default value (none selected)
@@ -912,17 +927,47 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
           : [...prevPlos, pmid] // Add checked article to PLOS
     );
   };
-  const handleSourceCheckboxChange = (source, idType) => {
-    const sourceType = source || "PubMed"; // Set to "PubMed" if source is null or undefined
-    const uniqueId = `${sourceType}_${idType}`; // Create unique ID for checkbox state
-    if (sourceType === "BioRxiv") {
-      handleBioRxivBoxChange(uniqueId);
+  console.log(totalArticles);
+  const handleSourceCheckboxChange = (source, idType, doi) => {
+    const sourceType = source ; // Set to "PubMed" if source is null or undefined
+    const uniqueId = `${sourceType}_${idType}`;
+    console.log(sourceType)
+    let shareableLink;
+    if (sourceType === "pubmed") {
+      console.log("entered")
+      shareableLink = `https://pubmed.ncbi.nlm.nih.gov/${idType}`;
+    } else if (sourceType === "Public Library of Science (PLOS)") {
+      shareableLink = `https://journals.plos.org/plosone/article?id=${doi}`;
+    } else if (sourceType === "BioRxiv") {
+      shareableLink = `https://www.biorxiv.org/content/${doi}`;
+    }
+  
+    // Toggle link in shareableLinks state
+    setShareableLinks((prevLinks) => {
+      if (prevLinks[uniqueId]) {
+        // Remove the link if it already exists
+        const updatedLinks = { ...prevLinks };
+        delete updatedLinks[uniqueId];
+        return updatedLinks;
+      } else {
+        // Add the link if it doesn't exist
+        return {
+          ...prevLinks,
+          [uniqueId]: shareableLink,
+        };
+      } 
+    });
+  
+    // Call appropriate checkbox handler based on source type
+    if (sourceType === "pubmed") {
+      handleCheckboxChange(uniqueId);
     } else if (sourceType === "Public Library of Science (PLOS)") {
       handlePlosBoxChange(uniqueId);
-    } else {
-      handleCheckboxChange(uniqueId); // For other sources, including "PubMed"
+    } else if (sourceType === "BioRxiv") {
+      handleBioRxivBoxChange(uniqueId);
     }
   };
+  
 
   const isArticleSelected = (source, idType) => {
     const uniqueId = `${source}_${idType}`; // Create unique ID for checking selection state
@@ -934,7 +979,37 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       return selectedArticles.includes(uniqueId); // For other sources
     }
   };
-
+  const handleShare = () => {
+    setIsEmailModalOpen(true);
+  };
+  const handleSendEmail = async () => {
+    const links = Object.values(shareableLinks).join(" "); // Get all the URLs as a single space-separated string
+  
+    const emailData = {
+      email: email, // assuming `email` state holds the email input value
+      subject: emailSubject || "Check out this article", // default subject if none provided
+      content: links, // the concatenated URLs
+    };
+    console.log(links)
+    try {
+      const response = await axios.post(
+        "http://13.127.207.184:80/core_search/sharearticle",
+        emailData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, // Add Bearer token
+          },
+        }
+      );
+      
+      if (response.status === 200) {
+        console.log("Email sent successfully");
+        handleCloseEmailModal(); // Close modal after successful email send
+      }
+    } catch (error) {
+      console.error("Error sending email:", error);
+    }
+  };
   const handleAnnotateClick = async () => {
     if (totalArticles.length > 0) {
       sessionStorage.setItem("AnnotateData", "");
@@ -1031,15 +1106,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
 
   return (
     <div className="Container" ref={contentRightRef}>
-      <div
-        style={{
-          position: "sticky",
-          top: 0,
-          zIndex: 1,
-          background: "white",
-          margin: ".5% 0 1% 0",
-        }}
-      >
+      <div className="search-container-content"      >
         <header className="search-header">
           <div className="search-header-logo" style={{ margin: "20px 0" }}>
             <a href="/">
@@ -1067,8 +1134,8 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
             className="search-header-auth-buttons"
             style={{ margin: "20px 26px 20px 0" }}
           >
-            <button className="login">Login</button>
-          </div>
+              <Button text="Logout" className="logout-btn" onClick={handleLogout} />
+              </div>
         </header>
       </div>
       <SearchBar className="searchResults-Bar"></SearchBar>
@@ -1088,33 +1155,9 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
               <h5 onClick={() => setShowArticleType(!showArticleType)}>
                 Article type{" "}
                 {showArticleType ? (
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 20 20"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    transform="rotate(0)"
-                  >
-                    <path
-                      d="M3.72603 6.64009C3.94792 6.4182 4.29514 6.39803 4.53981 6.57957L4.60991 6.64009L10.0013 12.0312L15.3927 6.64009C15.6146 6.4182 15.9618 6.39803 16.2065 6.57957L16.2766 6.64009C16.4985 6.86198 16.5186 7.2092 16.3371 7.45387L16.2766 7.52397L10.4432 13.3573C10.2214 13.5792 9.87414 13.5994 9.62946 13.4178L9.55936 13.3573L3.72603 7.52397C3.48195 7.2799 3.48195 6.88417 3.72603 6.64009Z"
-                      fill="#4A4B53"
-                    />
-                  </svg>
+                  <img src={downarrow}/>
                 ) : (
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 20 20"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    transform="rotate(180)"
-                  >
-                    <path
-                      d="M3.72603 6.64009C3.94792 6.4182 4.29514 6.39803 4.53981 6.57957L4.60991 6.64009L10.0013 12.0312L15.3927 6.64009C15.6146 6.4182 15.9618 6.39803 16.2065 6.57957L16.2766 6.64009C16.4985 6.86198 16.5186 7.2092 16.3371 7.45387L16.2766 7.52397L10.4432 13.3573C10.2214 13.5792 9.87414 13.5994 9.62946 13.4178L9.55936 13.3573L3.72603 7.52397C3.48195 7.2799 3.48195 6.88417 3.72603 6.64009Z"
-                      fill="#4A4B53"
-                    />
-                  </svg>
+                  <img src={uparrow}/>
                 )}
               </h5>
               {showArticleType && (
@@ -1169,33 +1212,9 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
               <h5 onClick={() => setShowSourceType(!showSourceType)}>
                 Source Type{" "}
                 {showSourceType ? (
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 20 20"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    transform="rotate(0)"
-                  >
-                    <path
-                      d="M3.72603 6.64009C3.94792 6.4182 4.29514 6.39803 4.53981 6.57957L4.60991 6.64009L10.0013 12.0312L15.3927 6.64009C15.6146 6.4182 15.9618 6.39803 16.2065 6.57957L16.2766 6.64009C16.4985 6.86198 16.5186 7.2092 16.3371 7.45387L16.2766 7.52397L10.4432 13.3573C10.2214 13.5792 9.87414 13.5994 9.62946 13.4178L9.55936 13.3573L3.72603 7.52397C3.48195 7.2799 3.48195 6.88417 3.72603 6.64009Z"
-                      fill="#4A4B53"
-                    />
-                  </svg>
+                  <img src={downarrow}/>
                 ) : (
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 20 20"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    transform="rotate(180)"
-                  >
-                    <path
-                      d="M3.72603 6.64009C3.94792 6.4182 4.29514 6.39803 4.53981 6.57957L4.60991 6.64009L10.0013 12.0312L15.3927 6.64009C15.6146 6.4182 15.9618 6.39803 16.2065 6.57957L16.2766 6.64009C16.4985 6.86198 16.5186 7.2092 16.3371 7.45387L16.2766 7.52397L10.4432 13.3573C10.2214 13.5792 9.87414 13.5994 9.62946 13.4178L9.55936 13.3573L3.72603 7.52397C3.48195 7.2799 3.48195 6.88417 3.72603 6.64009Z"
-                      fill="#4A4B53"
-                    />
-                  </svg>
+                  <img src={uparrow}/>
                 )}
               </h5>
 
@@ -1240,33 +1259,9 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                 Publication date{" "}
                 <span>
                   {showPublicationDate ? (
-                    <svg
-                      width="20"
-                      height="20"
-                      viewBox="0 0 20 20"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                      transform="rotate(0)"
-                    >
-                      <path
-                        d="M3.72603 6.64009C3.94792 6.4182 4.29514 6.39803 4.53981 6.57957L4.60991 6.64009L10.0013 12.0312L15.3927 6.64009C15.6146 6.4182 15.9618 6.39803 16.2065 6.57957L16.2766 6.64009C16.4985 6.86198 16.5186 7.2092 16.3371 7.45387L16.2766 7.52397L10.4432 13.3573C10.2214 13.5792 9.87414 13.5994 9.62946 13.4178L9.55936 13.3573L3.72603 7.52397C3.48195 7.2799 3.48195 6.88417 3.72603 6.64009Z"
-                        fill="#4A4B53"
-                      />
-                    </svg>
+                    <img src={downarrow}/>
                   ) : (
-                    <svg
-                      width="20"
-                      height="20"
-                      viewBox="0 0 20 20"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                      transform="rotate(180)"
-                    >
-                      <path
-                        d="M3.72603 6.64009C3.94792 6.4182 4.29514 6.39803 4.53981 6.57957L4.60991 6.64009L10.0013 12.0312L15.3927 6.64009C15.6146 6.4182 15.9618 6.39803 16.2065 6.57957L16.2766 6.64009C16.4985 6.86198 16.5186 7.2092 16.3371 7.45387L16.2766 7.52397L10.4432 13.3573C10.2214 13.5792 9.87414 13.5994 9.62946 13.4178L9.55936 13.3573L3.72603 7.52397C3.48195 7.2799 3.48195 6.88417 3.72603 6.64009Z"
-                        fill="#4A4B53"
-                      />
-                    </svg>
+                    <img src={uparrow}/>
                   )}
                 </span>
               </h5>
@@ -1352,33 +1347,9 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                 <span>Text availability</span>
                 <span>
                   {showTextAvailability ? (
-                    <svg
-                      width="20"
-                      height="20"
-                      viewBox="0 0 20 20"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                      transform="rotate(0)"
-                    >
-                      <path
-                        d="M3.72603 6.64009C3.94792 6.4182 4.29514 6.39803 4.53981 6.57957L4.60991 6.64009L10.0013 12.0312L15.3927 6.64009C15.6146 6.4182 15.9618 6.39803 16.2065 6.57957L16.2766 6.64009C16.4985 6.86198 16.5186 7.2092 16.3371 7.45387L16.2766 7.52397L10.4432 13.3573C10.2214 13.5792 9.87414 13.5994 9.62946 13.4178L9.55936 13.3573L3.72603 7.52397C3.48195 7.2799 3.48195 6.88417 3.72603 6.64009Z"
-                        fill="#4A4B53"
-                      />
-                    </svg>
+                    <img src={downarrow}/>
                   ) : (
-                    <svg
-                      width="20"
-                      height="20"
-                      viewBox="0 0 20 20"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                      transform="rotate(180)"
-                    >
-                      <path
-                        d="M3.72603 6.64009C3.94792 6.4182 4.29514 6.39803 4.53981 6.57957L4.60991 6.64009L10.0013 12.0312L15.3927 6.64009C15.6146 6.4182 15.9618 6.39803 16.2065 6.57957L16.2766 6.64009C16.4985 6.86198 16.5186 7.2092 16.3371 7.45387L16.2766 7.52397L10.4432 13.3573C10.2214 13.5792 9.87414 13.5994 9.62946 13.4178L9.55936 13.3573L3.72603 7.52397C3.48195 7.2799 3.48195 6.88417 3.72603 6.64009Z"
-                        fill="#4A4B53"
-                      />
-                    </svg>
+                    <img src={uparrow}/>
                   )}
                 </span>
               </h5>
@@ -1456,8 +1427,19 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                   </div>
 
                   <button
-                    className="SearchResult-Share"
-                    title="Share selected articles"
+                    onClick={
+                      Object.keys(shareableLinks).length > 0
+                        ? handleShare
+                        : null
+                    } 
+                    className={`SearchResult-Share ${
+                      Object.keys(shareableLinks).length > 0  ? "active" : "disabled"
+                    }`}
+                    title={
+                      Object.keys(shareableLinks).length === 0
+                        ? "Select an article to share"
+                        : "Share selected articles"
+                    }
                   >
                     Share
                   </button>
@@ -1645,7 +1627,8 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                                   onChange={() =>
                                     handleSourceCheckboxChange(
                                       result.source,
-                                      idType
+                                      idType,
+                                      result.doi
                                     )
                                   }
                                   checked={isArticleSelected(
@@ -1754,6 +1737,43 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                                   </div>
                                 </div>
                               )}
+                               {isEmailModalOpen && (
+        <div className="email-modal-overlay" style={{backdropFilter: "blur(1px)",background:"none"}}onClick={handleCloseEmailModal}>
+          <div
+            className="email-modal-content"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="email-modal-header">
+              <h3>Send to</h3>
+              <button
+                className="email-modal-close-button"
+                onClick={handleCloseEmailModal}
+              >
+                <IoCloseOutline size={20} />
+              </button>
+            </div>
+            <div className="email-modal-body" style={{display:"flex",gap:"10px",flexDirection:"column"}}>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Email"
+                className="email-input"
+              />
+              <input
+                type="text"
+                value={emailSubject}
+                onChange={(e) => setEmailSubject(e.target.value)}
+                placeholder="Enter Subject"
+                className="email-input"
+              />
+              <button onClick={handleSendEmail} style={{width:"50%",margin:"auto"}}className="send-button">
+                Send
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
                             </div>
                             <p className="searchresult-authors">{`Published on: ${result.publication_date}`}</p>
                             <div className="searchresult-ID">
@@ -2057,6 +2077,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
               >
                 <img src={notesicon} alt="notes-icon" />
               </div> */}
+             
               </>
             </div>
           </div>

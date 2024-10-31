@@ -7,7 +7,7 @@
   import "./Header-New.css";
   import Logo from "../assets/images/Logo_New.svg";
   import ProfileIcon from "../assets/images/Profile-dummy.svg"; // Profile icon for logged-in users
-
+  import axios from "axios";
   const Header = () => {
     const location = useLocation();
     const navigate = useNavigate();
@@ -24,9 +24,17 @@
     };
 
     // Handle logout click
-    const handleLogout = () => {
-      dispatch(logout());
-      navigate("/"); // Redirect to home after logout
+    const handleLogout = async () => {
+      try {
+        // Make API call to /auth/logout with user_id as a parameter
+        await axios.post(`http://13.127.207.184:80/auth/logout/?user_id=${userId}`);
+        
+        // Dispatch logout action and navigate to the home page
+        dispatch(logout());
+        navigate("/");
+      } catch (error) {
+        console.error("Error logging out:", error);
+      }
     };
 
     // Handle profile click
@@ -63,7 +71,7 @@
           {isLoggedIn ? (
             // If user is logged in, show profile icon and logout button
             <>
-              <div onClick={handleProfileClick} style={{ cursor: "pointer" }}>
+              <div onClick={handleProfileClick} style={{ cursor: "pointer",height:"35px" }}>
                 <img src={ProfileIcon} style={{ width: "35px" }} alt="Profile" className="profile-icon" />
               </div>
               <Button text="Logout" className="logout-btn" onClick={handleLogout} />
@@ -72,7 +80,7 @@
             // If not logged in, show login button
             <Button
               text="Login"
-              className="login-btn"
+              className="login-btn" 
               onClick={handleLogin}
             />
           )}

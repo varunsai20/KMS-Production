@@ -10,7 +10,7 @@ const EditResearcher = () => {
   const { user_id } = useParams();
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
-  const token = user?.access_token;
+  const token = useSelector((state) => state.auth.access_token);
 
   const [formData, setFormData] = useState({
     fullname: '',

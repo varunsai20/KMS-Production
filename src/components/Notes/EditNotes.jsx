@@ -25,8 +25,10 @@ const Editnotes = ({
 }) => {
   const { user } = useSelector((state) => state.auth);
 
-  const user_id = user?.user_id;
-  const token = user?.access_token;
+
+  const user_id=user?.user_id;
+  const token=useSelector((state) => state.auth.access_token);
+
   const [title, setTitle] = useState(note.title);
   const [note_id, setNote_id] = useState(note.note_id);
   const [isPlaceholderVisible, setIsPlaceholderVisible] = useState(false);

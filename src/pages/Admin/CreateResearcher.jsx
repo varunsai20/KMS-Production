@@ -11,7 +11,7 @@ const CreateResearcher = () => {
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
   const user_id = user?.user_id;
-  const token = user?.access_token;
+  const token = useSelector((state) => state.auth.access_token);
 
   const [formData, setFormData] = useState({
     fullname: '',

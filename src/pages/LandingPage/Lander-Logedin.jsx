@@ -34,7 +34,6 @@ const Lander = () => {
   const [dimensions, setDimensions] = useState({ width: 400, height: 400 });
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const { user } = useSelector((state) => state.auth);
-  console.log(user);
 
   const handleOpenNotes = () => {
     setIsLanderNotesOpen(true);

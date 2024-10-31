@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import { useSelector } from "react-redux";
+import { useSelector,useDispatch } from "react-redux";
 import { useParams, useLocation } from "react-router-dom";
 import "./ArticlePage.css";
+import Button from "../../components/Buttons";
 import { Typography } from "@mui/material";
 import flag from "../../assets/images/flash.svg";
 import Arrow from "../../assets/images/back-arrow.svg";
@@ -23,11 +24,12 @@ import { faAnglesUp } from "@fortawesome/free-solid-svg-icons";
 //import { BiSolidPaperPlane } from "react-icons/bi";
 import { IoMdPaperPlane } from "react-icons/io";
 import Notes from "../NotesPage/Notes";
+import { login, logout } from "../../redux/reducers/LoginAuth"; // Import login and logout actions
 
 const ArticlePage = () => {
   const { pmid } = useParams();
   const { user } = useSelector((state) => state.auth);
-  const token = user?.access_token;
+  const token = useSelector((state) => state.auth.access_token);const dispatch = useDispatch();
   const user_id = user?.user_id;
   const [type, id1] = pmid.split(":");
   const id = Number(id1);
@@ -73,49 +75,49 @@ const ArticlePage = () => {
   const [editedTitle, setEditedTitle] = useState("");
   const [articleTitle, setArticleTitle] = useState("");
   const [collections, setCollections] = useState([]);
-  useEffect(() => {
-    const fetchCollections = async () => {
-      try {
-        const response = await axios.get(
-          `http://13.127.207.184:80/bookmarks/${user_id}/collections`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        console.log(response);
-        if (response.data) {
-          setCollections(response.data.collections);
-          if (response.data.collections.length > 0) {
-            localStorage.setItem(
-              "collections",
-              JSON.stringify(response.data.collections)
-            );
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching collections:", error);
-      }
-    };
 
+  const fetchCollections = async () => {
+    try {
+      const response = await axios.get(
+        `http://13.127.207.184:80/bookmarks/${user_id}/collections`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (response.data) {
+        setCollections(response.data.collections);
+        if (response.data.collections.length > 0) {
+          localStorage.setItem("collections", JSON.stringify(response.data.collections));
+
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching collections:", error);
+    }
+  };
+  
+  useEffect(() => {
     if (user_id && token) {
       fetchCollections();
     }
-  }, []);
+  }, [user_id, token]);
   console.log(collections);
   const isBookmarked = (idType) => {
     // Convert idType to a number for comparison
     const numericIdType = Number(idType);
-    console.log(`Checking for idType: ${numericIdType}`);
 
+    // console.log(`Checking for idType: ${numericIdType}`);
+  
     // Loop through each collection and log article IDs as numbers
-    Object.entries(collections).forEach(([collectionName, articleArray]) => {
-      console.log(`Collection: ${collectionName}`);
-      articleArray.forEach((article) => {
-        console.log(`article_id: ${Number(article.article_id)}`);
-      });
-    });
+    // Object.entries(collections).forEach(([collectionName, articleArray]) => {
+    //   console.log(`Collection: ${collectionName}`);
+    //   articleArray.forEach((article) => {
+    //     console.log(`article_id: ${Number(article.article_id)}`);
+    //   });
+    // });
+  
 
     // Check if the article is bookmarked
     const result = Object.values(collections).some((articleArray) =>
@@ -124,7 +126,6 @@ const ArticlePage = () => {
       )
     );
 
-    console.log(`isBookmarked for idType ${numericIdType}:`, result);
     return result;
   };
   const [currentid, setCurrentid] = useState(null);
@@ -143,6 +144,7 @@ const ArticlePage = () => {
   const [notesHeight, setNotesHeight] = useState(35);
   const minHeight = 15;
   const maxHeight = 60;
+
 
   // Add this useEffect to reset savedText when openNotes becomes false
   useEffect(() => {
@@ -174,6 +176,20 @@ const ArticlePage = () => {
       setSource("plos");
     }
   }, [type]);
+
+  const handleLogout = async () => {
+    try {
+      // Make API call to /auth/logout with user_id as a parameter
+      await axios.post(`http://13.127.207.184:80/auth/logout/?user_id=${user_id}`);
+      
+      // Dispatch logout action and navigate to the home page
+      dispatch(logout());
+      navigate("/");
+    } catch (error) {
+      console.error("Error logging out:", error);
+    }
+  };
+
 
   useEffect(() => {
     // Determine the source based on `type`
@@ -421,7 +437,7 @@ const ArticlePage = () => {
       user_id,
       collection_name: collectionName,
       bookmark: {
-        article_id: String(currentid), // Ensure it's a string
+        article_id: String(currentid),
         article_title: articleTitle,
         article_source: source,
       },
@@ -439,6 +455,7 @@ const ArticlePage = () => {
       );
 
       if (response.status === 201) {
+
         const updatedCollections = collections.map((collection) => {
           if (collection === collectionName) {
             // Append the new article ID to the articles if it doesn't already exist
@@ -452,6 +469,9 @@ const ArticlePage = () => {
 
         setCollections(updatedCollections);
         localStorage.setItem("collections", JSON.stringify(updatedCollections));
+
+        await fetchCollections(); // Refetch collections after successful addition
+
         setIsModalOpen(false);
       }
     } catch (error) {
@@ -502,7 +522,7 @@ const ArticlePage = () => {
     if (!openNotes) {
       setOpenNotes(true);
     }
-
+    
     // Hide the popup after saving
     if (popupRef.current) {
       popupRef.current.style.display = "none";
@@ -1060,75 +1080,86 @@ const ArticlePage = () => {
             </ul>
           </nav>
           <div className="auth-buttons" style={{ margin: "20px 26px 20px 0" }}>
-            <button className="login">Login</button>
+          <Button text="Logout" className="logout-btn" onClick={handleLogout} />
+
           </div>
         </header>
         <div className="content">
           <div className="history-pagination">
             <h5>Recent Interactions</h5>
             <ul>
-              {sessions.length > 0 ? (
-                sessions.map((session) => (
-                  <li key={session.session_id}>
-                    {editingSessionId === session.session_id ? (
-                      <TextField
-                        type="text"
-                        style={{ padding: "0" }}
-                        sx={{
-                          "& .MuiOutlinedInput-root": {
-                            height: "40px",
-                            "& fieldset": {
-                              borderColor: "transparent",
-                            },
-                            "&:hover fieldset": {
-                              borderColor: "transparent",
-                            },
-                            "&.Mui-focused fieldset": {
-                              borderColor: "transparent",
-                            },
-                          },
-                          "& .MuiOutlinedInput-input": {
-                            outline: "none",
-                          },
-                        }}
-                        value={editedTitle}
-                        onChange={handleTitleChange}
-                        onBlur={() => handleSaveEdit(session.session_id)} // Save on blur
-                        autoFocus
-                      />
-                    ) : (
-                      <a
-                        onClick={() => {
-                          console.log("Session ID:", session.session_id);
-                          console.log("Source:", session.source);
-                          handleSessionClick(
-                            session.article_id,
-                            session.source,
-                            session.session_id,
-                            user_id
-                          );
-                        }}
-                      >
-                        {session.session_title.slice(0, 35)}
-                        {session.session_title.length > 35 ? "..." : ""}
-                      </a>
-                    )}
-                    <FontAwesomeIcon
-                      title="Rename the title"
-                      icon={faPen}
-                      onClick={() =>
-                        handleEditClick(
-                          session.session_id,
-                          session.session_title
-                        )
-                      }
-                      style={{ cursor: "pointer", marginLeft: "10px" }}
-                    />
-                  </li>
-                ))
-              ) : (
-                <li>No sessions available</li>
-              )}
+
+            {sessions.length > 0 ? (
+  sessions.map((session) => {
+    // Mapping keywords to custom titles
+    const mappedTitle = session.session_title.includes("what are the key highlights from this article")
+      ? "Key Highlights"
+      : session.session_title.includes("what can we conclude form this article")
+      ? "Conclusion"
+      : session.session_title.includes("Summarize this article")
+      ? "Summarize"
+      : session.session_title; // Default title if no keyword match
+
+    return (
+      <li key={session.session_id}>
+        {editingSessionId === session.session_id ? (
+          <TextField
+            type="text"
+            style={{ padding: "0" }}
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                height: "40px",
+                "& fieldset": {
+                  borderColor: "transparent",
+                },
+                "&:hover fieldset": {
+                  borderColor: "transparent",
+                },
+                "&.Mui-focused fieldset": {
+                  borderColor: "transparent",
+                },
+              },
+              "& .MuiOutlinedInput-input": {
+                outline: "none",
+              },
+            }}
+            value={editedTitle}
+            onChange={handleTitleChange}
+            onBlur={() => handleSaveEdit(session.session_id)} // Save on blur
+            autoFocus
+          />
+        ) : (
+          <a
+            onClick={() => {
+              console.log("Session ID:", session.session_id);
+              console.log("Source:", session.source);
+              handleSessionClick(
+                session.article_id,
+                session.source,
+                session.session_id,
+                user_id
+              );
+            }}
+          >
+            {mappedTitle.slice(0, 30)}
+            {mappedTitle.length > 30 ? "..." : ""}
+          </a>
+        )}
+        <FontAwesomeIcon
+          title="Rename the title"
+          icon={faPen}
+          onClick={() => handleEditClick(session.session_id, mappedTitle)}
+          style={{ cursor: "pointer", marginLeft: "10px" }}
+        />
+      </li>
+    );
+  })
+) : (
+  <li>No sessions available</li>
+)}
+
+
+
             </ul>
           </div>
 
@@ -1323,13 +1354,24 @@ const ArticlePage = () => {
                 {articleData.article.body_content &&
                   renderContentInOrder(articleData.article.body_content, true)}
 
-                {showStreamingSection && (
-                  <div className="streaming-section">
-                    <div className="streaming-content">
-                      {chatHistory.map((chat, index) => (
-                        <div key={index}>
-                          <div className="query-asked">
-                            <span>{chat.query}</span>
+
+                  {showStreamingSection && (
+                    <div className="streaming-section">
+                      <div className="streaming-content">
+                        
+                        {chatHistory.map((chat, index) => (
+                          <div key={index}>
+                            <div className="query-asked">
+                            <span>
+                            {chat.query === "Summarize this article"
+                              ? "Summarize"
+                              : chat.query === "what can we conclude form this article"
+                              ? "Conclusion"
+                              : chat.query === "what are the key highlights from this article"
+                              ? "Key Highlights"
+                              : chat.query}
+                          </span>                            
+
                           </div>
 
                           <div
@@ -1480,7 +1522,7 @@ const ArticlePage = () => {
           <button
             onClick={() =>
               handlePromptClick(
-                " what are the key highlights from this article"
+                "what are the key highlights from this article"
               )
             }
           >

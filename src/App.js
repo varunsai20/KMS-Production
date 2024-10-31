@@ -1,5 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import axios from 'axios';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import dayjs from 'dayjs';
 import Lander from "./pages/LandingPage/Lander-Logedin";
 import Login from "./pages/Authentication/Login/Login";
 import SignUpForm from "./pages/Authentication/SignUp/Signup";
@@ -8,13 +11,54 @@ import ArticlePage from "./pages/ArticlePage/ArticlePage";
 import CreateResearcher from './pages/Admin/CreateResearcher';
 import CreateAdmin from './pages/Admin/CreateAdmins';
 import Admin from './pages/Admin/Admin';
-import Dashboard from './pages/Admin/Dashboard';
 import Researchers from './pages/Admin/Researchers';
-import AdminComp from './pages/Admin/Admin-Comp';
 import Profile from './components/Profile';
 import EditResearcher from './pages/Admin/EditResearcher';
+import ProtectedRoute from './protectedRoute';
+import { login,updateTokens } from "./redux/reducers/LoginAuth"; // Import login action
 
 function App() {
+  const dispatch = useDispatch();
+  const { access_token, refresh_token, user_id, iat, exp } = useSelector((state) => state.auth);
+  console.log("access_token:  ",access_token)
+  console.log("refresh_token:  ",refresh_token)
+  console.log("iat",iat)
+  console.log("Exp",exp)
+  const checkAndRefreshToken = async () => {
+    const now = dayjs().unix();
+    const expirationTime = exp - 60; // Check for refresh 1 minute before expiration
+  
+    if (now >= expirationTime) {
+      try {
+        const response = await axios.post('http://13.127.207.184:80/auth/refresh', {
+          refresh_token,
+        });
+  
+        dispatch(
+          updateTokens({
+            access_token: response.data.access_token,
+            refresh_token: response.data.refresh_token,
+            iat: response.data.iat,
+            exp: response.data.exp,
+          })
+        );
+      } catch (error) {
+        console.error('Token refresh failed:', error);
+      }
+    }
+  };
+  
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (access_token && refresh_token && exp) {
+        checkAndRefreshToken();
+      }
+    }, 30 * 1000); // Check every minute (60,000 milliseconds)
+  
+    return () => clearInterval(interval);
+  });
+  
+
   return (
     <Router>
       <div className="App">
@@ -22,11 +66,12 @@ function App() {
           <Route path="/" element={<Lander />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<SignUpForm />} />
-          <Route path="/search" element={<SearchResults />} />
-          <Route path="/article/:pmid" element={<ArticlePage />} />
 
-          {/* Admin Routes */}
-          <Route path="/admin" element={<Admin />}>
+          {/* Protected Routes */}
+          <Route path="/search" element={<ProtectedRoute><SearchResults /></ProtectedRoute>} />
+          <Route path="/article/:pmid" element={<ProtectedRoute><ArticlePage /></ProtectedRoute>} />
+
+          <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>}>
             <Route path="users" element={<Researchers />} />
             <Route path="users/create" element={<CreateResearcher />} />
             <Route path="users/edit/:user_id" element={<EditResearcher />} />
@@ -34,7 +79,7 @@ function App() {
           </Route>
 
           {/* User Profile Route */}
-          <Route path="/users/profile/:user_id" element={<Profile />} />
+          <Route path="/users/profile/:user_id" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         </Routes>
       </div>
     </Router>
