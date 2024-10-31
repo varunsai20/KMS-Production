@@ -756,7 +756,7 @@ const ArticlePage = () => {
   };
 
   const handleBackClick = () => {
-    navigate("/search", { state: { data, searchTerm } });
+    navigate(-1);
   };
   const handleNavigationClick = (section) => {
     setActiveSection(section);
