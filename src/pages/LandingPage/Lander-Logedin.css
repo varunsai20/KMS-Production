@@ -3,13 +3,14 @@
   flex-direction: column;
   overflow-y: hidden; /* Prevents overflow and layout changes */
   overflow-x: hidden;
+  height: 100vh;
   position: relative;
 }
 .Landing-Content {
   display: flex;
   justify-content: space-between;
   margin: 0% 7%;
-  min-height: 60%;
+  min-height: 50%;
   overflow-y: hidden; /* Prevents overflow and layout changes */
   overflow-x: hidden;
 }

@@ -51,8 +51,8 @@ const Lander = () => {
   useEffect(() => {
     if (isLanderNotesOpen) {
       const centerX =
-        (window.innerWidth - dimensions.width) / 2 + window.innerWidth * 0.35;
-      const centerY = (window.innerHeight - dimensions.height) / 1.05;
+        (window.innerWidth - dimensions.width) / 2 + window.innerWidth * 0.365;
+      const centerY = (window.innerHeight - dimensions.height) / 1.2;
       setPosition({ x: centerX, y: centerY });
     }
   }, [isLanderNotesOpen]);

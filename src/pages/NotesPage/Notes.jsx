@@ -31,6 +31,7 @@ const NotesManager = ({
   const [notes, setNotes] = useState([]);
   const [currentView, setCurrentView] = useState("list"); // 'list', 'create', 'edit'
   const [selectedNote, setSelectedNote] = useState(null);
+  
   const [textToSave, setTextToSave] = useState([]); // Store the passed selected text
   const [filterText, setFilterText] = useState("");
 
@@ -66,8 +67,7 @@ const NotesManager = ({
 
   console.log(notes);
 
-  const [currentView, setCurrentView] = useState("list"); // 'list', 'create', 'edit'
-  const [selectedNote, setSelectedNote] = useState(null);
+
 
 
   // Update filterText when returning to "list" view
