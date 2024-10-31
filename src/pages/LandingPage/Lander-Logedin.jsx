@@ -102,11 +102,11 @@ const Lander = () => {
                 alt="Landing-History-Icon"
               />
               <h4>History</h4>
-              <a href="" onClick={handleOpenCollection}>
+              <a href="#Bookmarks" onClick={handleOpenCollection}>
                 Bookmarks
               </a>
-              <a href="">Conversations</a>
-              <a href="" onClick={handleOpenNotes}>
+              <a href="#Conversations">Conversations</a>
+              <a href="#notes" onClick={handleOpenNotes}>
                 Notes
               </a>
             </div>
@@ -117,9 +117,9 @@ const Lander = () => {
                 alt="Landing-Analytics-Icon"
               />
               <h4>Analytics</h4>
-              <a href="">Dashboard</a>
-              <a href="">Reports</a>
-              <a href="">Predictive Analysis</a>
+              <a href="#dashbo">Dashboard</a>
+              <a href="#reports">Reports</a>
+              <a href="predictive">Predictive Analysis</a>
             </div>
             <div className="Feature-Item">
               <img
@@ -128,9 +128,9 @@ const Lander = () => {
                 alt="Landing-Utilities-Icon"
               />
               <h4>Utilities</h4>
-              <a href="">Annotations</a>
-              <a href="">Citation</a>
-              <a href="">Protocol</a>
+              <a href="#Annotations">Annotations</a>
+              <a href="#Citations">Citation</a>
+              <a href="#Protocol">Protocol</a>
             </div>
             <div className="Feature-Item">
               <img
@@ -139,8 +139,8 @@ const Lander = () => {
                 alt="Landing-Help-Icon"
               />
               <h4>Help</h4>
-              <a href="">About Infer</a>
-              <a href="">FAQs</a>
+              <a href="#About">About Infer</a>
+              <a href="#Faqs">FAQs</a>
             </div>
           </>
         ) : (
