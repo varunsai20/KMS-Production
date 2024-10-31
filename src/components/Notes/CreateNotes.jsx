@@ -44,7 +44,7 @@ const Createnotes = ({
     unorderedList: false,
   });
   const editorRef = useRef(null);
-  const [noteContent, setNoteContent] = useState(selectedText || "");
+  const [noteContent, setNoteContent] = useState("");
   const [shareMessage, setShareMessage] = useState("");
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const { user } = useSelector((state) => state.auth);
@@ -106,16 +106,18 @@ const Createnotes = ({
   useEffect(() => {
     if (selectedText && editorRef.current) {
       const sanitizedText = DOMPurify.sanitize(selectedText.trim()); // Sanitize input
+      editorRef.current.innerHTML = sanitizedText;
+      setNoteContent(sanitizedText);
 
       // Prevent duplication on the first render or if the same text is selected again
-      const currentContent = editorRef.current.innerText.trim();
-      if (!currentContent.includes(sanitizedText)) {
-        editorRef.current.innerHTML = currentContent
-          ? currentContent + " " + sanitizedText
-          : sanitizedText; // Add text only if it's not already present
-        console.log(selectedText);
-        setNoteContent(editorRef.current.innerHTML.trim());
-      }
+      // const currentContent = editorRef.current.innerText.trim();
+      // if (!currentContent.includes(sanitizedText)) {
+      //   editorRef.current.innerHTML = currentContent
+      //     ? currentContent + " " + sanitizedText
+      //     : sanitizedText; // Add text only if it's not already present
+      //   console.log(selectedText);
+      //   setNoteContent(editorRef.current.innerHTML.trim());
+      // }
     }
   }, [selectedText]);
 
@@ -173,10 +175,10 @@ const Createnotes = ({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const noteDetails = editorRef.current.innerHTML;
+    const noteContent = editorRef.current.innerHTML;
 
-    if (title && noteDetails && noteDetails !== "Take your note...") {
-      const note = { title, details: noteDetails };
+    if (title && noteContent && noteContent !== "Take your note...") {
+      const note = { title, content: noteContent }; // Use 'content' instead of 'details'
 
       try {
         // Post the note to the server
@@ -185,7 +187,7 @@ const Createnotes = ({
           {
             user_id, // Ensure `user_id` is defined and available in your component
             title: note.title,
-            content: note.details,
+            content: note.content,
           },
           {
             headers: {
@@ -196,31 +198,34 @@ const Createnotes = ({
 
         // Add this note to the notes array
         setNotes((prevNotes) => [note, ...prevNotes]);
-        console.log("Note saved:", note);
+
         onClose(); // Return to Notes list
 
         // Clear inputs
         setNoteContent("");
         setTitle("");
         editorRef.current.innerHTML = "";
+        // // Add this note to the notes array
+        // setNotes((prevNotes) => [note, ...prevNotes]);
+        // console.log("Note saved:", note);
+        // onClose(); // Return to Notes list
+
+        // // Clear inputs
+        // setNoteContent("");
+        // setTitle("");
+        // editorRef.current.innerHTML = "";
       } catch (error) {
         console.error("Error saving note:", error);
       }
     }
   };
-
+  console.log("text is saved");
   const initiateDelete = (e) => {
     e.stopPropagation(); // Prevent triggering onEdit
     //setIsMenuOpen(false); // Close the menu
     setShowConfirmDelete(true); // Show confirmation popup
   };
 
-  // const confirmDelete = (e) => {
-  //   // e.stopPropagation();
-  //   onDelete(note.id);
-  //   console.log(note.id);
-  //   setShowConfirmDelete(false);
-  // };
   const confirmDelete = (e) => {
     if (note && note.id) {
       // Check if the note and its ID are valid
@@ -403,11 +408,11 @@ const Createnotes = ({
             fontSize: "14px",
             textAlign: "start",
             overflowY: "auto",
-            // color: "white",
+            //color: "white",
           }}
         >
           {/* Placeholder logic can be enhanced if needed */}
-          Note details
+          {/* Note details */}
         </div>
       </form>
 

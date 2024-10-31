@@ -94,8 +94,19 @@ const Editnotes = ({
   const handleCloseModal = () => setIsShareModalOpen(false);
   const handleCloseEmailModal = () => setIsEmailModalOpen(false);
 
+  // useEffect(() => {
+  //   // Populate editor with note details and handle placeholder visibility
+  //   if (note.content?.trim() === "") {
+  //     setIsPlaceholderVisible(true);
+  //     setTitle("");
+  //   } else {
+  //     setIsPlaceholderVisible(false);
+  //     if (editorRef.current) {
+  //       editorRef.current.innerHTML = note.content;
+  //     }
+  //   }
+  // }, [note.content]);
   useEffect(() => {
-    // Populate editor with note details and handle placeholder visibility
     if (note.content?.trim() === "") {
       setIsPlaceholderVisible(true);
       setTitle("");

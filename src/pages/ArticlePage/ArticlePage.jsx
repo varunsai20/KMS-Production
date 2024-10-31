@@ -5,7 +5,6 @@ import { useParams, useLocation } from "react-router-dom";
 import "./ArticlePage.css";
 import { Typography } from "@mui/material";
 import flag from "../../assets/images/flash.svg";
-import Header from "../../components/Header-New";
 import Arrow from "../../assets/images/back-arrow.svg";
 import annotate from "../../assets/images/task-square.svg";
 import { useNavigate } from "react-router-dom";
@@ -20,8 +19,9 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTelegram } from "@fortawesome/free-brands-svg-icons";
 import { faPen } from "@fortawesome/free-solid-svg-icons";
 import { faAnglesUp } from "@fortawesome/free-solid-svg-icons";
-//import { IoSaveOutline } from "react-icons/io5";
-import { BsSend } from "react-icons/bs";
+//import { LiaTelegramPlane } from "react-icons/lia";
+//import { BiSolidPaperPlane } from "react-icons/bi";
+import { IoMdPaperPlane } from "react-icons/io";
 import Notes from "../NotesPage/Notes";
 
 const ArticlePage = () => {
@@ -144,6 +144,13 @@ const ArticlePage = () => {
   const minHeight = 15;
   const maxHeight = 60;
 
+  // Add this useEffect to reset savedText when openNotes becomes false
+  useEffect(() => {
+    if (!openNotes) {
+      setSavedText(""); // Reset savedText when notes are closed
+    }
+  }, [openNotes]);
+
   useEffect(() => {
     if (openAnnotate && !openNotes) {
       setAnnotateHeight(70);
@@ -167,6 +174,7 @@ const ArticlePage = () => {
       setSource("plos");
     }
   }, [type]);
+
   useEffect(() => {
     // Determine the source based on `type`
 
@@ -196,60 +204,7 @@ const ArticlePage = () => {
       fetchArticleData();
     }
   }, [id, source, token]);
-  // Handle mouse drag for annotate (bottom border)
-  // const handleAnnotateResize = (e) => {
-  //   e.preventDefault();
-  //   const startY = e.clientY;
-  //   const startHeight = annotateHeight;
 
-  //   const onMouseMove = (moveEvent) => {
-  //     const delta = ((moveEvent.clientY - startY) / window.innerHeight) * 100;
-  //     const newAnnotateHeight = Math.max(
-  //       minHeight,
-  //       Math.min(maxHeight, startHeight + delta)
-  //     );
-  //     const newNotesHeight = 70 - newAnnotateHeight; // adjust notes height dynamically
-
-  //     setAnnotateHeight(newAnnotateHeight);
-  //     setNotesHeight(newNotesHeight);
-  //   };
-
-  //   const onMouseUp = () => {
-  //     window.removeEventListener("mousemove", onMouseMove);
-  //     window.removeEventListener("mouseup", onMouseUp);
-  //   };
-
-  //   window.addEventListener("mousemove", onMouseMove);
-  //   window.addEventListener("mouseup", onMouseUp);
-  // };
-
-  // // Handle mouse drag for notes (top border)
-  // const handleNotesResize = (e) => {
-  //   e.preventDefault();
-  //   const startY = e.clientY;
-  //   const startHeight = notesHeight;
-
-  //   const onMouseMove = (moveEvent) => {
-  //     const delta = ((startY - moveEvent.clientY) / window.innerHeight) * 100;
-  //     const newNotesHeight = Math.max(
-  //       minHeight,
-  //       Math.min(maxHeight, startHeight + delta)
-  //     );
-  //     //const newAnnotateHeight = 70 - newNotesHeight; // adjust annotate height dynamically
-  //     const newAnnotateHeight = Math.max(minHeight, 70 - newNotesHeight); // ensure annotateHeight is at least minHeight
-
-  //     setNotesHeight(newNotesHeight);
-  //     setAnnotateHeight(newAnnotateHeight);
-  //   };
-
-  //   const onMouseUp = () => {
-  //     window.removeEventListener("mousemove", onMouseMove);
-  //     window.removeEventListener("mouseup", onMouseUp);
-  //   };
-
-  //   window.addEventListener("mousemove", onMouseMove);
-  //   window.addEventListener("mouseup", onMouseUp);
-  // };
   const handleAnnotateResize = (e) => {
     if (openAnnotate && openNotes) {
       e.preventDefault();
@@ -800,28 +755,6 @@ const ArticlePage = () => {
     // Replace the search term in the text with markdown bold syntax
     return text.replace(regex, "**$1**"); // Wrap the matched term with markdown bold syntax
   };
-  // const contentWidth = "43.61%";
-  // const searchBarwidth = "62%";
-  // const handleWidth = (newWidth) => {
-  //   //const newWidth = parseInt(event.target.value);
-  //   setSearchWidth(newWidth);
-  // };
-  // const handleAnnotate = () => {
-  //   if (openAnnotate) {
-  //     setOpenAnnotate(false);
-  //   } else {
-  //     setOpenAnnotate(true);
-  //     setOpenNotes(false);
-  //   }
-  // };
-  // const handleNotes = () => {
-  //   if (openNotes) {
-  //     setOpenNotes(false);
-  //   } else {
-  //     setOpenAnnotate(false);
-  //     setOpenNotes(true);
-  //   }
-  // };
   const handleAnnotate = () => {
     setOpenAnnotate((prevOpenAnnotate) => !prevOpenAnnotate); // Toggle annotate
     // No need to close Notes when Annotate is toggled
@@ -1439,19 +1372,18 @@ const ArticlePage = () => {
                   }}
                   //onClick={handleSaveToNote}
                 >
-                  <button onClick={handleSaveToNote} className="Popup-buttons">
-                    <div className="save-icon">
-                      {/* <IoSaveOutline fontSize={"15px"} color="black" /> */}
-                      <BsSend
-                        size={17}
-                        color="white"
-                        title="Send to Notes"
-                        style={{ paddingTop: "3px" }}
-                      />
-                    </div>
-                    <span style={{ color: "white", fontSize: "17px" }}>
+                  <button
+                    onClick={handleSaveToNote}
+                    className="Popup-buttons"
+                    title="Send to Notes"
+                  >
+                    {/* <BiSolidPaperPlane size={25} color="black" /> */}
+                    <IoMdPaperPlane size={25} color="black" />
+
+                    {/* <LiaTelegramPlane size={25} color="black" /> */}
+                    {/* <span style={{ color: "black", fontSize: "17px" }}>
                       send to notes
-                    </span>
+                    </span> */}
                   </button>
                 </div>
               </div>

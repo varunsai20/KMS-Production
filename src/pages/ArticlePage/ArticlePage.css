@@ -581,6 +581,7 @@ td {
   padding: 3px;
   display: flex;
   gap: 3px;
+  box-shadow: #ccc;
 }
 
 .typing-dot {

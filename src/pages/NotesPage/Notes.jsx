@@ -6,7 +6,21 @@ import "./Notes.css";
 
 import { useSelector } from "react-redux";
 import axios from "axios";
-const NotesManager = ({ selectedText, notesHeight, isOpenNotes, height }) => {
+const NotesManager = ({
+  selectedText: propSelectedText,
+  notesHeight,
+  isOpenNotes,
+  height,
+}) => {
+  const [currentSelectedText, setSelectedText] = useState("");
+  useEffect(() => {
+    if (propSelectedText) {
+      setSelectedText(propSelectedText.trim());
+      setCurrentView("create"); // Switch to 'create' view
+    } else {
+      setCurrentView("list"); // Show notes list if no selected text
+    }
+  }, [propSelectedText]);
   const { user } = useSelector((state) => state.auth);
 
   const user_id = user?.user_id;
@@ -48,24 +62,24 @@ const NotesManager = ({ selectedText, notesHeight, isOpenNotes, height }) => {
 
   const [currentView, setCurrentView] = useState("list"); // 'list', 'create', 'edit'
   const [selectedNote, setSelectedNote] = useState(null);
-  const [textToSave, setTextToSave] = useState([]); // Store the passed selected text
+  //const [textToSave, setTextToSave] = useState([]); // Store the passed selected text
 
   useEffect(() => {
     localStorage.setItem("notes", JSON.stringify(notes));
   }, [notes]);
 
-  // Automatically switch to the 'create' view and accumulate unique text
-  useEffect(() => {
-    if (selectedText) {
-      if (!textToSave.includes(selectedText.trim())) {
-        setTextToSave((prevText) => [...prevText, selectedText.trim()]);
-      }
-      setCurrentView("create"); // Switch to 'create' view
-    }
-  }, [selectedText]);
+  // useEffect(() => {
+  //   if (selectedText) {
+  //     if (!textToSave.includes(selectedText.trim())) {
+  //       setTextToSave((prevText) => [...prevText, selectedText.trim()]);
+  //     }
+  //     setCurrentView("create"); // Switch to 'create' view
+  //   }
+  // }, [selectedText]);
 
   const handleAddNewNote = () => {
     setCurrentView("create");
+    setSelectedText("");
   };
 
   const handleEditNote = (note) => {
@@ -75,7 +89,7 @@ const NotesManager = ({ selectedText, notesHeight, isOpenNotes, height }) => {
 
   const handleCloseCreate = () => {
     setCurrentView("list");
-    setTextToSave(""); // Clear the selected text after creating the note
+    setSelectedText("");
   };
 
   const handleCloseEdit = () => {
@@ -99,13 +113,12 @@ const NotesManager = ({ selectedText, notesHeight, isOpenNotes, height }) => {
         `http://13.127.207.184:80/notes/deletenote/${user_id}/${noteId}`,
         {
           headers: {
-            Authorization: `Bearer ${token}`, // Ensure token is available in component's state or context
+            Authorization: `Bearer ${token}`,
           },
         }
       );
 
       if (response.status === 200) {
-        // Update local notes state to reflect deletion
         setNotes((prevNotes) =>
           prevNotes.filter((note) => note.note_id !== noteId)
         );
@@ -120,7 +133,6 @@ const NotesManager = ({ selectedText, notesHeight, isOpenNotes, height }) => {
 
   return (
     <div className={isOpenNotes ? "Lander-manager" : "notes-manager-content"}>
-      {/* Ensure there are valid child elements here */}
       {currentView === "list" && (
         <NotesList
           notes={notes}
@@ -135,7 +147,7 @@ const NotesManager = ({ selectedText, notesHeight, isOpenNotes, height }) => {
       {currentView === "create" && (
         <Createnotes
           notes={notes}
-          selectedText={selectedText}
+          selectedText={currentSelectedText} // Pass the currentSelectedText
           setNotes={setNotes}
           onClose={handleCloseCreate}
           onDelete={handleDeleteNote}

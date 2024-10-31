@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Rnd } from "react-rnd";
-import { useSelector } from "react-redux"; // Import useSelector from react-redux
+import { useSelector } from "react-redux";
 import Header from "../../components/Header-New";
 import Footer from "../../components/Footer-New";
 import LandingImage from "../../assets/images/image 1.svg";
@@ -20,7 +20,7 @@ import Analytics from "../../assets/images/Lander-Analytics.svg";
 import { IoCloseOutline } from "react-icons/io5";
 import "./Lander-Logedin.css";
 
-import Draggable from "react-draggable";
+//import Draggable from "react-draggable";
 import Collection from "../../components/Collection";
 
 import Notes from "../NotesPage/Notes";
@@ -31,61 +31,10 @@ const Lander = () => {
   const [isLanderNotesOpen, setIsLanderNotesOpen] = useState(false);
 
   const [isCollectionOpen, setIsCollectionOpen] = useState(false);
-  const [dimensions, setDimensions] = useState({ width: 500, height: 400 });
+  const [dimensions, setDimensions] = useState({ width: 400, height: 400 });
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const { user } = useSelector((state) => state.auth);
-  //const modalRef = useRef(null);
   console.log(user);
-
-  // const startResizing = (e, direction) => {
-  //   e.preventDefault();
-  //   e.stopPropagation();
-
-  //   const startX = e.clientX;
-  //   const startY = e.clientY;
-  //   const startWidth = dimensions.width;
-  //   const startHeight = dimensions.height;
-  //   const startXPos = position.x;
-  //   const startYPos = position.y;
-
-  //   const onMouseMove = (moveEvent) => {
-  //     const deltaX = moveEvent.clientX - startX;
-  //     const deltaY = moveEvent.clientY - startY;
-
-  //     const newDimensions = { ...dimensions };
-  //     const newPosition = { ...position };
-
-  //     if (direction === "right") {
-  //       newDimensions.width = startWidth + deltaX;
-  //     }
-  //     if (direction === "bottom") {
-  //       newDimensions.height = startHeight + deltaY;
-  //     }
-  //     if (direction === "left") {
-  //       newDimensions.width = startWidth - deltaX;
-  //       newPosition.x = startXPos + deltaX;
-  //     }
-  //     if (direction === "top") {
-  //       newDimensions.height = startHeight - deltaY;
-  //       newPosition.y = startYPos + deltaY;
-  //     }
-
-  //     // Apply minimum and maximum constraints
-  //     newDimensions.width = Math.max(400, Math.min(newDimensions.width, 800));
-  //     newDimensions.height = Math.max(350, Math.min(newDimensions.height, 600));
-
-  //     setDimensions(newDimensions);
-  //     setPosition(newPosition);
-  //   };
-
-  //   const stopResizing = () => {
-  //     window.removeEventListener("mousemove", onMouseMove);
-  //     window.removeEventListener("mouseup", stopResizing);
-  //   };
-
-  //   window.addEventListener("mousemove", onMouseMove);
-  //   window.addEventListener("mouseup", stopResizing);
-  // };
 
   const handleOpenNotes = () => {
     setIsLanderNotesOpen(true);
@@ -104,7 +53,7 @@ const Lander = () => {
     if (isLanderNotesOpen) {
       const centerX =
         (window.innerWidth - dimensions.width) / 2 + window.innerWidth * 0.35;
-      const centerY = (window.innerHeight - dimensions.height) / 2;
+      const centerY = (window.innerHeight - dimensions.height) / 1.05;
       setPosition({ x: centerX, y: centerY });
     }
   }, [isLanderNotesOpen]);
@@ -143,7 +92,6 @@ const Lander = () => {
         </div>
       </div>
 
-      {/* Show different content based on logged-in status */}
       <div className="Landing-Features">
         {isLoggedIn ? (
           // Show this section if logged in
@@ -288,17 +236,14 @@ const Lander = () => {
               display: "flex",
               flexDirection: "column",
               border: "1px solid #ddd",
-              // background: "white",
             }}
           >
-            {/* Draggable Header */}
             <div className="draggable-header">
               <button className="close-modal-notes" onClick={handleCloseNotes}>
                 <IoCloseOutline size={30} color="black" />
               </button>
             </div>
 
-            {/* Notes Content */}
             <div style={{ flex: 1 }}>
               <Notes
                 isOpenNotes={isLanderNotesOpen}
