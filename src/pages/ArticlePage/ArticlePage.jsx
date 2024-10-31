@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import { useSelector } from "react-redux";
+import { useSelector,useDispatch } from "react-redux";
 import { useParams, useLocation } from "react-router-dom";
 import "./ArticlePage.css";
+import Button from "../../components/Buttons";
 import { Typography } from "@mui/material";
 import flag from "../../assets/images/flash.svg";
-import Header from "../../components/Header-New";
 import Arrow from "../../assets/images/back-arrow.svg";
 import annotate from "../../assets/images/task-square.svg";
 import { useNavigate } from "react-router-dom";
@@ -20,14 +20,16 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTelegram } from "@fortawesome/free-brands-svg-icons";
 import { faPen } from "@fortawesome/free-solid-svg-icons";
 import { faAnglesUp } from "@fortawesome/free-solid-svg-icons";
-//import { IoSaveOutline } from "react-icons/io5";
-import { BsSend } from "react-icons/bs";
+//import { LiaTelegramPlane } from "react-icons/lia";
+//import { BiSolidPaperPlane } from "react-icons/bi";
+import { IoMdPaperPlane } from "react-icons/io";
 import Notes from "../NotesPage/Notes";
+import { login, logout } from "../../redux/reducers/LoginAuth"; // Import login and logout actions
 
 const ArticlePage = () => {
   const { pmid } = useParams();
   const { user } = useSelector((state) => state.auth);
-  const token = user?.access_token;
+  const token = useSelector((state) => state.auth.access_token);const dispatch = useDispatch();
   const user_id = user?.user_id;
   const [type, id1] = pmid.split(":");
   const id = Number(id1);
@@ -46,6 +48,7 @@ const ArticlePage = () => {
     const storedHistory = sessionStorage.getItem("chatHistory");
     return storedHistory ? JSON.parse(storedHistory) : [];
   });
+  const [refreshSessions, setRefreshSessions] = useState(false);
   useEffect(() => {
     // Retrieve chat history from sessionStorage
     const storedChatHistory = sessionStorage.getItem("chatHistory");
@@ -53,7 +56,9 @@ const ArticlePage = () => {
     if (storedChatHistory) {
       // Parse the chat history string back into an array
       setChatHistory(JSON.parse(storedChatHistory));
+      setShowStreamingSection(true);
     }
+    console.log(storedChatHistory);
   }, []);
   const [showStreamingSection, setShowStreamingSection] = useState(false);
   // const [chatInput, setChatInput] = useState(true);
@@ -63,67 +68,70 @@ const ArticlePage = () => {
   const contentRef = useRef(null); // Ref to target the content div
   const [contentWidth, setContentWidth] = useState(); // State for content width
   const [ratingsList, setRatingsList] = useState(() => {
-    return JSON.parse(sessionStorage.getItem("ratingsList")) || [];
+    return JSON.parse(sessionStorage.getItem("ratingsGiven")) || [];
   });
   const [triggerAskClick, setTriggerAskClick] = useState(false);
   const [editingPmid, setEditingPmid] = useState(null);
   const [editedTitle, setEditedTitle] = useState("");
   const [articleTitle, setArticleTitle] = useState("");
   const [collections, setCollections] = useState([]);
-  useEffect(() => {
-    const fetchCollections = async () => {
-      try {
-        const response = await axios.get(
-          `http://13.127.207.184:80/bookmarks/${user_id}/collections`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        console.log(response)
-        if (response.data) {
-          setCollections(response.data.collections);
-          if (response.data.collections.length > 0) {
-            localStorage.setItem("collections", JSON.stringify(response.data.collections));
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching collections:", error);
-      }
-    };
 
+  const fetchCollections = async () => {
+    try {
+      const response = await axios.get(
+        `http://13.127.207.184:80/bookmarks/${user_id}/collections`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (response.data) {
+        setCollections(response.data.collections);
+        if (response.data.collections.length > 0) {
+          localStorage.setItem("collections", JSON.stringify(response.data.collections));
+
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching collections:", error);
+    }
+  };
+  
+  useEffect(() => {
     if (user_id && token) {
       fetchCollections();
     }
-  }, []);
+  }, [user_id, token]);
   console.log(collections);
   const isBookmarked = (idType) => {
     // Convert idType to a number for comparison
     const numericIdType = Number(idType);
-    console.log(`Checking for idType: ${numericIdType}`);
+
+    // console.log(`Checking for idType: ${numericIdType}`);
   
     // Loop through each collection and log article IDs as numbers
-    Object.entries(collections).forEach(([collectionName, articleArray]) => {
-      console.log(`Collection: ${collectionName}`);
-      articleArray.forEach((article) => {
-        console.log(`article_id: ${Number(article.article_id)}`);
-      });
-    });
+    // Object.entries(collections).forEach(([collectionName, articleArray]) => {
+    //   console.log(`Collection: ${collectionName}`);
+    //   articleArray.forEach((article) => {
+    //     console.log(`article_id: ${Number(article.article_id)}`);
+    //   });
+    // });
   
+
     // Check if the article is bookmarked
     const result = Object.values(collections).some((articleArray) =>
-      articleArray.some((article) => Number(article.article_id) === numericIdType)
+      articleArray.some(
+        (article) => Number(article.article_id) === numericIdType
+      )
     );
-  
-    console.log(`isBookmarked for idType ${numericIdType}:`, result);
+
     return result;
   };
   const [currentid, setCurrentid] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newCollectionName, setNewCollectionName] = useState("");
 
- 
   const [sessions, setSessions] = useState([]);
   const [editingSessionId, setEditingSessionId] = useState(null);
 
@@ -137,8 +145,29 @@ const ArticlePage = () => {
   const minHeight = 15;
   const maxHeight = 60;
 
+
+  // Add this useEffect to reset savedText when openNotes becomes false
   useEffect(() => {
-    // Determine the source based on `type`
+    if (!openNotes) {
+      setSavedText(""); // Reset savedText when notes are closed
+    }
+  }, [openNotes]);
+
+  useEffect(() => {
+    if (openAnnotate && !openNotes) {
+      setAnnotateHeight(70);
+      setNotesHeight(0);
+    } else if (openNotes && !openAnnotate) {
+      setNotesHeight(70);
+      setAnnotateHeight(0);
+    } else {
+      setAnnotateHeight(35); // Reset to default when both are open
+      setNotesHeight(35);
+    }
+  }, [openAnnotate, openNotes]);
+
+  console.log(id);
+  useEffect(() => {
     if (type === "bioRxiv_id") {
       setSource("biorxiv");
     } else if (type === "pmid") {
@@ -146,6 +175,24 @@ const ArticlePage = () => {
     } else if (type === "plos_id") {
       setSource("plos");
     }
+  }, [type]);
+
+  const handleLogout = async () => {
+    try {
+      // Make API call to /auth/logout with user_id as a parameter
+      await axios.post(`http://13.127.207.184:80/auth/logout/?user_id=${user_id}`);
+      
+      // Dispatch logout action and navigate to the home page
+      dispatch(logout());
+      navigate("/");
+    } catch (error) {
+      console.error("Error logging out:", error);
+    }
+  };
+
+
+  useEffect(() => {
+    // Determine the source based on `type`
 
     // Perform GET request to fetch article data
     if (source && id) {
@@ -173,59 +220,61 @@ const ArticlePage = () => {
       fetchArticleData();
     }
   }, [id, source, token]);
-  // Handle mouse drag for annotate (bottom border)
+
   const handleAnnotateResize = (e) => {
-    e.preventDefault();
-    const startY = e.clientY;
-    const startHeight = annotateHeight;
+    if (openAnnotate && openNotes) {
+      e.preventDefault();
+      const startY = e.clientY;
+      const startHeight = annotateHeight;
 
-    const onMouseMove = (moveEvent) => {
-      const delta = ((moveEvent.clientY - startY) / window.innerHeight) * 100;
-      const newAnnotateHeight = Math.max(
-        minHeight,
-        Math.min(maxHeight, startHeight + delta)
-      );
-      const newNotesHeight = 70 - newAnnotateHeight; // adjust notes height dynamically
+      const onMouseMove = (moveEvent) => {
+        const delta = ((moveEvent.clientY - startY) / window.innerHeight) * 100;
+        const newAnnotateHeight = Math.max(
+          minHeight,
+          Math.min(maxHeight, startHeight + delta)
+        );
+        const newNotesHeight = 70 - newAnnotateHeight;
 
-      setAnnotateHeight(newAnnotateHeight);
-      setNotesHeight(newNotesHeight);
-    };
+        setAnnotateHeight(newAnnotateHeight);
+        setNotesHeight(newNotesHeight);
+      };
 
-    const onMouseUp = () => {
-      window.removeEventListener("mousemove", onMouseMove);
-      window.removeEventListener("mouseup", onMouseUp);
-    };
+      const onMouseUp = () => {
+        window.removeEventListener("mousemove", onMouseMove);
+        window.removeEventListener("mouseup", onMouseUp);
+      };
 
-    window.addEventListener("mousemove", onMouseMove);
-    window.addEventListener("mouseup", onMouseUp);
+      window.addEventListener("mousemove", onMouseMove);
+      window.addEventListener("mouseup", onMouseUp);
+    }
   };
 
-  // Handle mouse drag for notes (top border)
   const handleNotesResize = (e) => {
-    e.preventDefault();
-    const startY = e.clientY;
-    const startHeight = notesHeight;
+    if (openAnnotate && openNotes) {
+      e.preventDefault();
+      const startY = e.clientY;
+      const startHeight = notesHeight;
 
-    const onMouseMove = (moveEvent) => {
-      const delta = ((startY - moveEvent.clientY) / window.innerHeight) * 100;
-      const newNotesHeight = Math.max(
-        minHeight,
-        Math.min(maxHeight, startHeight + delta)
-      );
-      //const newAnnotateHeight = 70 - newNotesHeight; // adjust annotate height dynamically
-      const newAnnotateHeight = Math.max(minHeight, 70 - newNotesHeight); // ensure annotateHeight is at least minHeight
+      const onMouseMove = (moveEvent) => {
+        const delta = ((startY - moveEvent.clientY) / window.innerHeight) * 100;
+        const newNotesHeight = Math.max(
+          minHeight,
+          Math.min(maxHeight, startHeight + delta)
+        );
+        const newAnnotateHeight = Math.max(minHeight, 70 - newNotesHeight);
 
-      setNotesHeight(newNotesHeight);
-      setAnnotateHeight(newAnnotateHeight);
-    };
+        setNotesHeight(newNotesHeight);
+        setAnnotateHeight(newAnnotateHeight);
+      };
 
-    const onMouseUp = () => {
-      window.removeEventListener("mousemove", onMouseMove);
-      window.removeEventListener("mouseup", onMouseUp);
-    };
+      const onMouseUp = () => {
+        window.removeEventListener("mousemove", onMouseMove);
+        window.removeEventListener("mouseup", onMouseUp);
+      };
 
-    window.addEventListener("mousemove", onMouseMove);
-    window.addEventListener("mouseup", onMouseUp);
+      window.addEventListener("mousemove", onMouseMove);
+      window.addEventListener("mouseup", onMouseUp);
+    }
   };
 
   useEffect(() => {
@@ -244,54 +293,60 @@ const ArticlePage = () => {
   }, [openNotes]);
 
   const getRatingForArticle = async (uniqueId) => {
-    // const [source, article_id] = uniqueId.split("_");
-  
-    // try {
-    //   const response = await axios.get(
-    //     `http://13.127.207.184:80/rating/average-rating/${article_id}/${source}`,
-    //     {
-    //       headers: {
-    //         Authorization: `Bearer ${token}`,
-    //       },
-    //     }
-    //   );
-    //   const avgRating = response.data?.average_rating || 0; // Default to 0 if not found
-  
-    //   // Update the local rating list with the fetched average rating
-    //   setRatingsList((prevRatings) => [
-    //     ...prevRatings.filter((item) => item.uniqueId !== uniqueId),
-    //     { uniqueId, rating: avgRating },
-    //   ]);
-    //   return avgRating;
-    // } catch (error) {
-    //   console.error("Error fetching rating:", error);
-    //   return 0; // Default to 0 if an error occurs
-    // }
-  };  
+    // Check if the rating is already available in ratingsList
+    const cachedRating = ratingsList.find((item) => item.uniqueId === uniqueId);
+    if (cachedRating) return cachedRating.rating;
+
+    const [source, article_id] = uniqueId.split("_");
+
+    try {
+      const response = await axios.get(
+        `http://13.127.207.184:80/rating/user-ratings/${user_id}/${article_id}/${source}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      const avgRating = response.data?.average_rating || 0;
+
+      // Update the local rating list with the fetched average rating
+      setRatingsList((prevRatings) => [
+        ...prevRatings.filter((item) => item.uniqueId !== uniqueId),
+        { uniqueId, rating: avgRating },
+      ]);
+
+      return avgRating;
+    } catch (error) {
+      console.error("Error fetching rating:", error);
+      return 0;
+    }
+  };
+  console.log(ratingsList);
 
   const handleRatingChange = async (uniqueId, newRating) => {
     // Ensure ratingsList is an array
     const currentRatings = Array.isArray(ratingsList) ? ratingsList : [];
-  
+
     // Create a copy of ratingsList
     const updatedRatings = [...currentRatings];
-  
+
     const existingRatingIndex = updatedRatings.findIndex(
       (item) => item.uniqueId === uniqueId
     );
-  
+
     if (existingRatingIndex !== -1) {
       updatedRatings[existingRatingIndex].rating = newRating;
     } else {
       updatedRatings.push({ uniqueId, rating: newRating });
     }
-  
+
     setRatingsList(updatedRatings);
-    sessionStorage.setItem("ratingsList", JSON.stringify(updatedRatings));
-  
+    sessionStorage.setItem("ratingsGiven", JSON.stringify(updatedRatings));
+
     // Extract source and article_id from uniqueId
     const [article_source, article_id] = uniqueId.split("_");
-  
+
     try {
       await axios.post(
         "http://13.127.207.184:80/rating/rate",
@@ -313,12 +368,11 @@ const ArticlePage = () => {
       console.error("Error saving rating:", error);
     }
   };
-  
+
   const handleMouseUp = (event) => {
     if (!contentRef.current.contains(event.target)) {
       return; // Exit if the selection is outside .article-content
-
-    }
+    }
 
     const selection = window.getSelection();
 
@@ -383,12 +437,12 @@ const ArticlePage = () => {
       user_id,
       collection_name: collectionName,
       bookmark: {
-        article_id: String(currentid), // Ensure it's a string
+        article_id: String(currentid),
         article_title: articleTitle,
         article_source: source,
       },
     };
-  
+
     try {
       const response = await axios.post(
         "http://13.127.207.184:80/bookmarks/users/collections",
@@ -399,8 +453,9 @@ const ArticlePage = () => {
           },
         }
       );
-  
+
       if (response.status === 201) {
+
         const updatedCollections = collections.map((collection) => {
           if (collection === collectionName) {
             // Append the new article ID to the articles if it doesn't already exist
@@ -411,16 +466,18 @@ const ArticlePage = () => {
           }
           return collection;
         });
-  
+
         setCollections(updatedCollections);
         localStorage.setItem("collections", JSON.stringify(updatedCollections));
+
+        await fetchCollections(); // Refetch collections after successful addition
+
         setIsModalOpen(false);
       }
     } catch (error) {
       console.error("Error adding bookmark to existing collection:", error);
     }
   };
-  
 
   const handleCreateNewCollection = async () => {
     const newCollection = {
@@ -432,7 +489,7 @@ const ArticlePage = () => {
         article_source: source,
       },
     };
-  
+
     try {
       const response = await axios.post(
         "http://13.127.207.184:80/bookmarks/users/collections",
@@ -443,7 +500,7 @@ const ArticlePage = () => {
           },
         }
       );
-  
+
       if (response.status === 201) {
         const updatedCollections = [...collections, response.data];
         setCollections(updatedCollections);
@@ -465,7 +522,7 @@ const ArticlePage = () => {
     if (!openNotes) {
       setOpenNotes(true);
     }
-
+    
     // Hide the popup after saving
     if (popupRef.current) {
       popupRef.current.style.display = "none";
@@ -495,11 +552,7 @@ const ArticlePage = () => {
   //   }
   // };
 
-
-
-
   const getid = () => {
-
     return `${source}_${id}`;
   };
 
@@ -672,7 +725,7 @@ const ArticlePage = () => {
             }
           }
         }
-
+        setRefreshSessions((prev) => !prev);
         setLoading(false);
         sessionStorage.setItem("chatHistory", JSON.stringify(chatHistory));
       };
@@ -683,6 +736,8 @@ const ArticlePage = () => {
       setLoading(false);
     }
   };
+
+  console.log(chatHistory);
 
   const handlePromptClick = (queryText) => {
     setQuery(queryText);
@@ -701,7 +756,7 @@ const ArticlePage = () => {
   };
 
   const handleBackClick = () => {
-    navigate("/search", { state: { data, searchTerm } });
+    navigate(-1);
   };
   const handleNavigationClick = (section) => {
     setActiveSection(section);
@@ -720,28 +775,6 @@ const ArticlePage = () => {
     // Replace the search term in the text with markdown bold syntax
     return text.replace(regex, "**$1**"); // Wrap the matched term with markdown bold syntax
   };
-  // const contentWidth = "43.61%";
-  // const searchBarwidth = "62%";
-  // const handleWidth = (newWidth) => {
-  //   //const newWidth = parseInt(event.target.value);
-  //   setSearchWidth(newWidth);
-  // };
-  // const handleAnnotate = () => {
-  //   if (openAnnotate) {
-  //     setOpenAnnotate(false);
-  //   } else {
-  //     setOpenAnnotate(true);
-  //     setOpenNotes(false);
-  //   }
-  // };
-  // const handleNotes = () => {
-  //   if (openNotes) {
-  //     setOpenNotes(false);
-  //   } else {
-  //     setOpenAnnotate(false);
-  //     setOpenNotes(true);
-  //   }
-  // };
   const handleAnnotate = () => {
     setOpenAnnotate((prevOpenAnnotate) => !prevOpenAnnotate); // Toggle annotate
     // No need to close Notes when Annotate is toggled
@@ -873,7 +906,6 @@ const ArticlePage = () => {
     });
   };
 
-
   useEffect(() => {
     const fetchSessions = async () => {
       try {
@@ -885,7 +917,7 @@ const ArticlePage = () => {
             },
           }
         );
-        console.log(response)
+        console.log(response);
         if (response.data?.sessions) {
           setSessions(response.data.sessions); // Set the sessions array from the response
         }
@@ -897,13 +929,13 @@ const ArticlePage = () => {
     if (user_id && token) {
       fetchSessions();
     }
-  }, []);
-  console.log(token)
+  }, [user_id, token, refreshSessions]);
+  console.log(sessions);
+  console.log(token);
   // Edit functions
   const handleEditClick = (sessionId, title) => {
     setEditingSessionId(sessionId);
     setEditedTitle(title);
-
   };
 
   const handleTitleChange = (e) => {
@@ -925,8 +957,8 @@ const ArticlePage = () => {
           },
         }
       );
-      console.log(sessionId)
-      console.log(editedTitle)
+      console.log(sessionId);
+      console.log(editedTitle);
       // Update the local sessions state after a successful edit
       setSessions((prevSessions) =>
         prevSessions.map((session) =>
@@ -943,6 +975,84 @@ const ArticlePage = () => {
       console.error("Error updating session title:", error);
     }
   };
+
+  useEffect(() => {
+    // Retrieve chat history from sessionStorage on component mount or on location state change
+    const storedChatHistory = sessionStorage.getItem("chatHistory");
+
+    if (storedChatHistory) {
+      setChatHistory(JSON.parse(storedChatHistory));
+      setShowStreamingSection(true);
+    } else {
+      setShowStreamingSection(false); // Default to false if no stored chat history
+    }
+
+    console.log("Stored Chat History:", storedChatHistory);
+  }, [location.state]); // Add location.state as a dependency to re-run on navigation
+
+  const handleSessionClick = async (article_id, source, session_id) => {
+    try {
+      const conversationResponse = await axios.get(
+        `http://13.127.207.184:80/history/conversations/history/${user_id}/${session_id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const formattedChatHistory = [];
+      let currentEntry = {};
+
+      conversationResponse.data.conversation.forEach((entry) => {
+        if (entry.role === "user") {
+          if (currentEntry.query) {
+            formattedChatHistory.push(currentEntry);
+            currentEntry = {};
+          }
+          currentEntry.query = entry.parts.join(" ");
+        } else if (entry.role === "model") {
+          currentEntry.response = entry.parts.join(" ");
+          formattedChatHistory.push(currentEntry);
+          currentEntry = {};
+        }
+      });
+
+      if (currentEntry.query) {
+        formattedChatHistory.push(currentEntry);
+      }
+
+      console.log(formattedChatHistory);
+
+      sessionStorage.setItem(
+        "chatHistory",
+        JSON.stringify(formattedChatHistory)
+      );
+
+      // Update `source` based on its value
+      const sourceType =
+        source === "biorxiv"
+          ? "bioRxiv_id"
+          : source === "plos"
+          ? "plos_id"
+          : "pmid";
+
+      navigate(`/article/${sourceType}:${article_id}`, {
+        state: {
+          id: article_id,
+          source: sourceType,
+          token: token,
+          user: { access_token: token, user_id: user_id },
+          annotateData: location.state.annotateData,
+          data: location.state.data,
+        },
+      });
+      console.log(conversationResponse);
+    } catch (error) {
+      console.error("Error fetching article or conversation data:", error);
+    }
+  };
+
   return (
     <>
       <div className="container">
@@ -970,59 +1080,86 @@ const ArticlePage = () => {
             </ul>
           </nav>
           <div className="auth-buttons" style={{ margin: "20px 26px 20px 0" }}>
-            <button className="login">Login</button>
+          <Button text="Logout" className="logout-btn" onClick={handleLogout} />
+
           </div>
         </header>
         <div className="content">
           <div className="history-pagination">
             <h5>Recent Interactions</h5>
             <ul>
+
             {sessions.length > 0 ? (
-        sessions.map((session) => (
-          <li key={session.session_id}>
-            {editingSessionId === session.session_id ? (
-              <TextField
-                type="text"
-                style={{ padding: "0" }}
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    height: "40px",
-                    "& fieldset": {
-                      borderColor: "transparent",
-                    },
-                    "&:hover fieldset": {
-                      borderColor: "transparent",
-                    },
-                    "&.Mui-focused fieldset": {
-                      borderColor: "transparent",
-                    },
-                  },
-                  "& .MuiOutlinedInput-input": {
-                    outline: "none",
-                  },
-                }}
-                value={editedTitle}
-                onChange={handleTitleChange}
-                onBlur={() => handleSaveEdit(session.session_id)} // Save on blur
-                autoFocus
-              />
-            ) : (
-              <a>
-                {session.session_title.slice(0, 35)}
-                {session.session_title.length > 35 ? "..." : ""}
-              </a>
-            )}
-            <FontAwesomeIcon
-              title="Rename the title"
-              icon={faPen}
-              onClick={() => handleEditClick(session.session_id, session.session_title)}
-              style={{ cursor: "pointer", marginLeft: "10px" }}
-            />
-          </li>
-        ))
-      ) : (
-        <li>No recent interactions</li>
-      )}
+  sessions.map((session) => {
+    // Mapping keywords to custom titles
+    const mappedTitle = session.session_title.includes("what are the key highlights from this article")
+      ? "Key Highlights"
+      : session.session_title.includes("what can we conclude form this article")
+      ? "Conclusion"
+      : session.session_title.includes("Summarize this article")
+      ? "Summarize"
+      : session.session_title; // Default title if no keyword match
+
+    return (
+      <li key={session.session_id}>
+        {editingSessionId === session.session_id ? (
+          <TextField
+            type="text"
+            style={{ padding: "0" }}
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                height: "40px",
+                "& fieldset": {
+                  borderColor: "transparent",
+                },
+                "&:hover fieldset": {
+                  borderColor: "transparent",
+                },
+                "&.Mui-focused fieldset": {
+                  borderColor: "transparent",
+                },
+              },
+              "& .MuiOutlinedInput-input": {
+                outline: "none",
+              },
+            }}
+            value={editedTitle}
+            onChange={handleTitleChange}
+            onBlur={() => handleSaveEdit(session.session_id)} // Save on blur
+            autoFocus
+          />
+        ) : (
+          <a
+            onClick={() => {
+              console.log("Session ID:", session.session_id);
+              console.log("Source:", session.source);
+              handleSessionClick(
+                session.article_id,
+                session.source,
+                session.session_id,
+                user_id
+              );
+            }}
+          >
+            {mappedTitle.slice(0, 30)}
+            {mappedTitle.length > 30 ? "..." : ""}
+          </a>
+        )}
+        <FontAwesomeIcon
+          title="Rename the title"
+          icon={faPen}
+          onClick={() => handleEditClick(session.session_id, mappedTitle)}
+          style={{ cursor: "pointer", marginLeft: "10px" }}
+        />
+      </li>
+    );
+  })
+) : (
+  <li>No sessions available</li>
+)}
+
+
+
             </ul>
           </div>
 
@@ -1061,7 +1198,13 @@ const ArticlePage = () => {
                             id={`star${value}-${uniqueId}`}
                             name={`rate_${uniqueId}`}
                             value={value}
-                            checked={getRatingForArticle(uniqueId) === value}
+                            // Check if ratingsList is an array and find the cached rating if it exists
+                            checked={
+                              (Array.isArray(ratingsList) &&
+                                ratingsList.find(
+                                  (item) => item.uniqueId === uniqueId
+                                )?.rating) === value
+                            }
                             onChange={() => handleRatingChange(uniqueId, value)}
                           />
                           <label
@@ -1086,66 +1229,76 @@ const ArticlePage = () => {
                     {articleData.article.article_title}
                   </p>
                   <FontAwesomeIcon
-  icon={regularBookmark}
-  size="l"
-  style={{
-    color: isBookmarked(id) ? "blue" : "black",
-    cursor: "pointer",
-  }}
-  onClick={() => handleBookmarkClick(id, articleData.article.article_title,source || "PubMed")}
-  title={isBookmarked(id) ? "Bookmarked" : "Bookmark this article"}
-/>
+                    icon={regularBookmark}
+                    size="l"
+                    style={{
+                      color: isBookmarked(id) ? "blue" : "black",
+                      cursor: "pointer",
+                    }}
+                    onClick={() =>
+                      handleBookmarkClick(
+                        id,
+                        articleData.article.article_title,
+                        source || "PubMed"
+                      )
+                    }
+                    title={
+                      isBookmarked(id) ? "Bookmarked" : "Bookmark this article"
+                    }
+                  />
 
-                              {isModalOpen && (
-                                <div className="bookmark-modal-overlay">
-                                  <div className="modal-content" ref={modalRef}>
-                                    <h3>Save Bookmark</h3>
-                                    {console.log("Collections data:", collections)}
-                                    {/* Existing Collections */}
-                                    {Object.keys(collections).length > 0 && (
-                                          <>
-                                            <h4>Save to existing collection:</h4>
-                                            <ul>
-                                              {Object.keys(collections).map((collectionName, index) => (
-                                                <li key={index}> {/* using index as key since collection names are unique */}
-                                                  <button onClick={() => handleSaveToExisting(collectionName)}>
-                                                    {collectionName}
-                                                  </button>
-                                                </li>
-                                              ))}
-                                            </ul>
-                                          </>
-                                        )}
-
-                                    {/* Create New Collection */}
-                                    <h4>Create a new collection:</h4>
-                                    <input
-                                      type="text"
-                                      value={newCollectionName}
-                                      onChange={(e) =>
-                                        setNewCollectionName(e.target.value)
+                  {isModalOpen && (
+                    <div className="bookmark-modal-overlay">
+                      <div className="modal-content" ref={modalRef}>
+                        <h3>Save Bookmark</h3>
+                        {console.log("Collections data:", collections)}
+                        {/* Existing Collections */}
+                        {Object.keys(collections).length > 0 && (
+                          <>
+                            <h4>Save to existing collection:</h4>
+                            <ul>
+                              {Object.keys(collections).map(
+                                (collectionName, index) => (
+                                  <li key={index}>
+                                    {" "}
+                                    {/* using index as key since collection names are unique */}
+                                    <button
+                                      onClick={() =>
+                                        handleSaveToExisting(collectionName)
                                       }
-                                      placeholder="New collection name"
-                                    />
-                                    <div
-                                      style={{ display: "flex", gap: "20px" }}
                                     >
-                                      <button
-                                        onClick={handleCreateNewCollection}
-                                        disabled={!newCollectionName}
-                                      >
-                                        Create
-                                      </button>
-
-                                      <button
-                                        onClick={() => setIsModalOpen(false)}
-                                      >
-                                        Cancel
-                                      </button>
-                                    </div>
-                                  </div>
-                                </div>
+                                      {collectionName}
+                                    </button>
+                                  </li>
+                                )
                               )}
+                            </ul>
+                          </>
+                        )}
+
+                        {/* Create New Collection */}
+                        <h4>Create a new collection:</h4>
+                        <input
+                          type="text"
+                          value={newCollectionName}
+                          onChange={(e) => setNewCollectionName(e.target.value)}
+                          placeholder="New collection name"
+                        />
+                        <div style={{ display: "flex", gap: "20px" }}>
+                          <button
+                            onClick={handleCreateNewCollection}
+                            disabled={!newCollectionName}
+                          >
+                            Create
+                          </button>
+
+                          <button onClick={() => setIsModalOpen(false)}>
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -1169,7 +1322,11 @@ const ArticlePage = () => {
                   ) : (
                     ""
                   )}
-                  <span style={{ color: "#2b9247" }}>PMID : {id}</span>
+                  <span style={{ color: "#2b9247" }}>
+                    {type === "bioRxiv_id" && "BioRxiv ID"}
+                    {type === "pmid" && "PMID"}
+                    {type === "plos_id" && "PLOS ID"} : {id}
+                  </span>{" "}
                 </div>
 
                 {articleData.article.abstract_content && (
@@ -1197,13 +1354,24 @@ const ArticlePage = () => {
                 {articleData.article.body_content &&
                   renderContentInOrder(articleData.article.body_content, true)}
 
-                {showStreamingSection && (
-                  <div className="streaming-section">
-                    <div className="streaming-content">
-                      {chatHistory.map((chat, index) => (
-                        <div key={index}>
-                          <div className="query-asked">
-                            <span>{chat.query}</span>
+
+                  {showStreamingSection && (
+                    <div className="streaming-section">
+                      <div className="streaming-content">
+                        
+                        {chatHistory.map((chat, index) => (
+                          <div key={index}>
+                            <div className="query-asked">
+                            <span>
+                            {chat.query === "Summarize this article"
+                              ? "Summarize"
+                              : chat.query === "what can we conclude form this article"
+                              ? "Conclusion"
+                              : chat.query === "what are the key highlights from this article"
+                              ? "Key Highlights"
+                              : chat.query}
+                          </span>                            
+
                           </div>
 
                           <div
@@ -1246,19 +1414,18 @@ const ArticlePage = () => {
                   }}
                   //onClick={handleSaveToNote}
                 >
-                  <button onClick={handleSaveToNote} className="Popup-buttons">
-                    <div className="save-icon">
-                      {/* <IoSaveOutline fontSize={"15px"} color="black" /> */}
-                      <BsSend
-                        size={17}
-                        color="white"
-                        title="Send to Notes"
-                        style={{ paddingTop: "3px" }}
-                      />
-                    </div>
-                    <span style={{ color: "white", fontSize: "17px" }}>
+                  <button
+                    onClick={handleSaveToNote}
+                    className="Popup-buttons"
+                    title="Send to Notes"
+                  >
+                    {/* <BiSolidPaperPlane size={25} color="black" /> */}
+                    <IoMdPaperPlane size={25} color="black" />
+
+                    {/* <LiaTelegramPlane size={25} color="black" /> */}
+                    {/* <span style={{ color: "black", fontSize: "17px" }}>
                       send to notes
-                    </span>
+                    </span> */}
                   </button>
                 </div>
               </div>
@@ -1355,7 +1522,7 @@ const ArticlePage = () => {
           <button
             onClick={() =>
               handlePromptClick(
-                " what are the key highlights from this article"
+                "what are the key highlights from this article"
               )
             }
           >

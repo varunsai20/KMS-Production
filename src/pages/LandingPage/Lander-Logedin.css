@@ -3,12 +3,14 @@
   flex-direction: column;
   overflow-y: hidden; /* Prevents overflow and layout changes */
   overflow-x: hidden;
+  height: 100vh;
+  position: relative;
 }
 .Landing-Content {
   display: flex;
   justify-content: space-between;
-  margin: 1% 7%;
-  min-height: 60%;
+  margin: 0% 7%;
+  min-height: 50%;
   overflow-y: hidden; /* Prevents overflow and layout changes */
   overflow-x: hidden;
 }
@@ -330,7 +332,7 @@
   background-color: rgba(235, 235, 247, 0.5);
 }
 
-.resizer {
+/* .resizer {
   position: absolute;
   background: transparent;
   z-index: 1000;
@@ -366,14 +368,53 @@
   top: 0;
   bottom: 0;
   left: 0;
+} */
+.resize-handle {
+  position: absolute;
+  background-color: transparent;
+  z-index: 5;
 }
+
+/* Resize Handles */
+.resize-handle.right {
+  right: -4px;
+  top: 0;
+  width: 8px;
+  height: 100%;
+  cursor: ew-resize;
+}
+
+.resize-handle.left {
+  left: -4px;
+  top: 0;
+  width: 8px;
+  height: 100%;
+  cursor: ew-resize;
+}
+
+.resize-handle.bottom {
+  left: 0;
+  bottom: -4px;
+  width: 100%;
+  height: 8px;
+  cursor: ns-resize;
+}
+
+.resize-handle.top {
+  left: 0;
+  top: -4px;
+  width: 100%;
+  height: 8px;
+  cursor: ns-resize;
+}
+
 .draggable-header {
   position: absolute;
   height: 2.8vh;
-  cursor: move;
-  padding: 10px;
+  /* cursor: move; */
+  padding: 10px 6px 10px 10px;
   width: 96%;
-  background-color: #999999;
+  background-color: #8d32a7;
   /* background-color: #1a82ff; */
   color: #fff;
 }
@@ -387,13 +428,25 @@
 }
 
 /* Notes list as Lander-list */
-.Lander-Notes-List {
+/* .Lander-Notes-List {
   border-radius: 16px;
   margin: 0 1% 0 0;
   overflow-y: auto;
   opacity: 0px;
   border: 1px solid rgba(235, 235, 243, 1);
 }
+.Lander-Notes-List-header {
+  position: sticky;
+  top: 0;
+  background-color: white;
+  z-index: 10;
+  cursor: move;
+  padding: 10px;
+} */
+/* .lander-notes__container {
+  max-height: calc(100vh - 50vh);
+  overflow-y: auto;
+} */
 .lander-plus-dots {
   display: flex;
   justify-content: space-between;
@@ -421,7 +474,7 @@
   padding: 0;
 }
 .lander-Search-wrapper {
-  background-color: #f2f2f2;
+  background-color: #eab3fa4a;
   position: relative;
   width: 100%; /* or desired width */
   display: flex;
@@ -437,8 +490,9 @@
   outline: none;
   box-sizing: border-box;
   margin: 1%;
-  background-color: #f2f2f2;
-  color: white;
+  background-color: #eab3fa4a;
+  color: black;
+  position: sticky;
 }
 
 .lander-Search-icon {
@@ -692,6 +746,11 @@
   color: black;
   min-height: 200px;
 }
+.lander-note-taking:empty:before {
+  content: attr(placeholder);
+  color: #aaa;
+  pointer-events: none;
+}
 .lander-toolbar {
   display: flex;
   justify-content: space-between;
@@ -706,4 +765,24 @@
 }
 .lander-create-note__actions {
   z-index: 1;
+}
+/* email-overlay */
+.lander-email-modal-overlay {
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+.lander-createNotes-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  backdrop-filter: blur(1px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
 }

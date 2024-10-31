@@ -12,12 +12,13 @@ const Researchers = () => {
 
   // Access admin data from Redux
   const { user } = useSelector((state) => state.auth);
-  console.log(user)
   const adminId = user?.user_id;
   const organizationName = user?.organization_name;
   const userRole = user?.role;
-  const token=user?.access_token;
-
+  const token=useSelector((state) => state.auth.access_token);
+  console.log(user)
+  console.log(useSelector((state) => state.auth))
+  console.log(token)
   // Log Redux data to verify
 
   // Redirect if not an Admin

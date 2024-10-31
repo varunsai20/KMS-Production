@@ -15,13 +15,22 @@ import { IoCopyOutline } from "react-icons/io5";
 import "./EditNotes.css"; // Import CSS for styling
 
 import { useSelector } from "react-redux";
-const Editnotes = ({ note, setNotes, onClose, notesHeight, isOpenNotes }) => {
+const Editnotes = ({
+  note,
+  setNotes,
+  onClose,
+  notesHeight,
+  isOpenNotes,
+  height,
+}) => {
   const { user } = useSelector((state) => state.auth);
 
+
   const user_id=user?.user_id;
-  const token=user?.access_token;
+  const token=useSelector((state) => state.auth.access_token);
+
   const [title, setTitle] = useState(note.title);
-  const [note_id,setNote_id]=useState(note.note_id)
+  const [note_id, setNote_id] = useState(note.note_id);
   const [isPlaceholderVisible, setIsPlaceholderVisible] = useState(false);
   const [activeFormats, setActiveFormats] = useState({
     bold: false,
@@ -57,10 +66,10 @@ const Editnotes = ({ note, setNotes, onClose, notesHeight, isOpenNotes }) => {
   const handleSendEmail = async () => {
     const requestData = {
       user_id: user_id, // make sure user_id is accessible from your component's state or props
-      note_id: note_id,  // replace noteId with the actual note ID you want to share
-      email: email,     // assuming `email` is the recipient's email in your component's state
+      note_id: note_id, // replace noteId with the actual note ID you want to share
+      email: email, // assuming `email` is the recipient's email in your component's state
     };
-  
+
     try {
       const response = await axios.post(
         "http://13.127.207.184:80/notes/sharenotes",
@@ -71,7 +80,7 @@ const Editnotes = ({ note, setNotes, onClose, notesHeight, isOpenNotes }) => {
           },
         }
       );
-  
+
       if (response.status === 200) {
         console.log("Email sent successfully to:", email);
         handleCloseEmailModal(); // Close the modal after sending
@@ -82,14 +91,24 @@ const Editnotes = ({ note, setNotes, onClose, notesHeight, isOpenNotes }) => {
       console.error("Error sending email:", error);
     }
   };
-  
 
   const handleEmailClick = () => setIsEmailModalOpen(true);
   const handleCloseModal = () => setIsShareModalOpen(false);
   const handleCloseEmailModal = () => setIsEmailModalOpen(false);
 
+  // useEffect(() => {
+  //   // Populate editor with note details and handle placeholder visibility
+  //   if (note.content?.trim() === "") {
+  //     setIsPlaceholderVisible(true);
+  //     setTitle("");
+  //   } else {
+  //     setIsPlaceholderVisible(false);
+  //     if (editorRef.current) {
+  //       editorRef.current.innerHTML = note.content;
+  //     }
+  //   }
+  // }, [note.content]);
   useEffect(() => {
-    // Populate editor with note details and handle placeholder visibility
     if (note.content?.trim() === "") {
       setIsPlaceholderVisible(true);
       setTitle("");
@@ -128,13 +147,13 @@ const Editnotes = ({ note, setNotes, onClose, notesHeight, isOpenNotes }) => {
     };
   }, []);
 
-  const handleForm = async(e) => {
+  const handleForm = async (e) => {
     e.preventDefault();
     const noteDetails = editorRef.current.innerHTML;
-  
+
     if (title && noteDetails && noteDetails !== "Take your note...") {
-      const note = { title, details: noteDetails,note_id };
-  
+      const note = { title, details: noteDetails, note_id };
+
       try {
         // Post the note to the server
         await axios.put(
@@ -143,7 +162,7 @@ const Editnotes = ({ note, setNotes, onClose, notesHeight, isOpenNotes }) => {
             user_id, // Ensure `user_id` is defined and available in your component
             title: note.title,
             content: note.details,
-            note_id:note.note_id,
+            note_id: note.note_id,
           },
           {
             headers: {
@@ -151,12 +170,12 @@ const Editnotes = ({ note, setNotes, onClose, notesHeight, isOpenNotes }) => {
             },
           }
         );
-  
+
         // Add this note to the notes array
         setNotes((prevNotes) => [note, ...prevNotes]);
         console.log("Note saved:", note);
         onClose(); // Return to Notes list
-  
+
         // Clear inputs
         setTitle("");
         editorRef.current.innerHTML = "";
@@ -275,6 +294,7 @@ const Editnotes = ({ note, setNotes, onClose, notesHeight, isOpenNotes }) => {
           className={
             isOpenNotes ? "lander-edit-note__details" : "edit-note__details"
           }
+          style={isOpenNotes ? { height: `${height - 135}px` } : {}}
           ref={editorRef}
           contentEditable={true}
           suppressContentEditableWarning={true}
@@ -354,7 +374,14 @@ const Editnotes = ({ note, setNotes, onClose, notesHeight, isOpenNotes }) => {
         </button>
       </div>
       {isShareModalOpen && (
-        <div className="createNotes-modal-overlay" onClick={handleCloseModal}>
+        <div
+          className={
+            isOpenNotes
+              ? "lander-createNotes-modal-overlay"
+              : "createNotes-modal-overlay"
+          }
+          onClick={handleCloseModal}
+        >
           <div
             className="createNotes-modal-content"
             onClick={(e) => e.stopPropagation()}
@@ -410,7 +437,12 @@ const Editnotes = ({ note, setNotes, onClose, notesHeight, isOpenNotes }) => {
       )}
 
       {isEmailModalOpen && (
-        <div className="email-modal-overlay" onClick={handleCloseEmailModal}>
+        <div
+          className={
+            isOpenNotes ? "lander-email-modal-overlay" : "email-modal-overlay"
+          }
+          onClick={handleCloseEmailModal}
+        >
           <div
             className="email-modal-content"
             onClick={(e) => e.stopPropagation()}
@@ -424,7 +456,10 @@ const Editnotes = ({ note, setNotes, onClose, notesHeight, isOpenNotes }) => {
                 <IoCloseOutline size={20} />
               </button>
             </div>
-            <div className="email-modal-body" style={{display:"flex",gap:"10px"}}>
+            <div
+              className="email-modal-body"
+              style={{ display: "flex", gap: "10px" }}
+            >
               <input
                 type="email"
                 value={email}
@@ -432,7 +467,7 @@ const Editnotes = ({ note, setNotes, onClose, notesHeight, isOpenNotes }) => {
                 placeholder="Email"
                 className="email-input"
               />
-             
+
               <button onClick={handleSendEmail} className="send-button">
                 Send
               </button>

@@ -11,14 +11,10 @@ import { GoItalic, GoStrikethrough } from "react-icons/go";
 import { PiListBullets } from "react-icons/pi";
 import { BsListOl } from "react-icons/bs";
 import DOMPurify from "dompurify";
-import axios from "axios"
+import axios from "axios";
 import { useSelector } from "react-redux";
-//import { SiGmail } from "react-icons/si";
-// import { RxCopy } from "react-icons/rx";
-//import { VscCopy } from "react-icons/vsc";
 import { MdEmail } from "react-icons/md";
 import { IoCopyOutline } from "react-icons/io5";
-// import { CiMail } from "react-icons/ci";
 
 import "./CreateNote.css";
 
@@ -30,6 +26,7 @@ const Createnotes = ({
   onDelete,
   note,
   isOpenNotes,
+  height,
 }) => {
   console.log(selectedText);
   const [title, setTitle] = useState("");
@@ -47,13 +44,14 @@ const Createnotes = ({
     unorderedList: false,
   });
   const editorRef = useRef(null);
-  const [noteContent, setNoteContent] = useState(selectedText || "");
+  const [noteContent, setNoteContent] = useState("");
   const [shareMessage, setShareMessage] = useState("");
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const { user } = useSelector((state) => state.auth);
 
+
   const user_id=user?.user_id;
-  const token=user?.access_token;
+  const token=useSelector((state) => state.auth.access_token);
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [subject, setSubject] = useState("");
@@ -109,16 +107,18 @@ const Createnotes = ({
   useEffect(() => {
     if (selectedText && editorRef.current) {
       const sanitizedText = DOMPurify.sanitize(selectedText.trim()); // Sanitize input
+      editorRef.current.innerHTML = sanitizedText;
+      setNoteContent(sanitizedText);
 
       // Prevent duplication on the first render or if the same text is selected again
-      const currentContent = editorRef.current.innerText.trim();
-      if (!currentContent.includes(sanitizedText)) {
-        editorRef.current.innerHTML = currentContent
-          ? currentContent + " " + sanitizedText
-          : sanitizedText; // Add text only if it's not already present
-        console.log(selectedText);
-        setNoteContent(editorRef.current.innerHTML.trim());
-      }
+      // const currentContent = editorRef.current.innerText.trim();
+      // if (!currentContent.includes(sanitizedText)) {
+      //   editorRef.current.innerHTML = currentContent
+      //     ? currentContent + " " + sanitizedText
+      //     : sanitizedText; // Add text only if it's not already present
+      //   console.log(selectedText);
+      //   setNoteContent(editorRef.current.innerHTML.trim());
+      // }
     }
   }, [selectedText]);
 
@@ -176,11 +176,11 @@ const Createnotes = ({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const noteDetails = editorRef.current.innerHTML;
-  
-    if (title && noteDetails && noteDetails !== "Take your note...") {
-      const note = { title, details: noteDetails };
-  
+    const noteContent = editorRef.current.innerHTML;
+
+    if (title && noteContent && noteContent !== "Take your note...") {
+      const note = { title, content: noteContent }; // Use 'content' instead of 'details'
+
       try {
         // Post the note to the server
         await axios.post(
@@ -188,7 +188,7 @@ const Createnotes = ({
           {
             user_id, // Ensure `user_id` is defined and available in your component
             title: note.title,
-            content: note.details,
+            content: note.content,
           },
           {
             headers: {
@@ -196,34 +196,37 @@ const Createnotes = ({
             },
           }
         );
-  
+
         // Add this note to the notes array
         setNotes((prevNotes) => [note, ...prevNotes]);
-        console.log("Note saved:", note);
+
         onClose(); // Return to Notes list
-  
+
         // Clear inputs
         setNoteContent("");
         setTitle("");
         editorRef.current.innerHTML = "";
+        // // Add this note to the notes array
+        // setNotes((prevNotes) => [note, ...prevNotes]);
+        // console.log("Note saved:", note);
+        // onClose(); // Return to Notes list
+
+        // // Clear inputs
+        // setNoteContent("");
+        // setTitle("");
+        // editorRef.current.innerHTML = "";
       } catch (error) {
         console.error("Error saving note:", error);
       }
     }
   };
-
+  console.log("text is saved");
   const initiateDelete = (e) => {
     e.stopPropagation(); // Prevent triggering onEdit
     //setIsMenuOpen(false); // Close the menu
     setShowConfirmDelete(true); // Show confirmation popup
   };
 
-  // const confirmDelete = (e) => {
-  //   // e.stopPropagation();
-  //   onDelete(note.id);
-  //   console.log(note.id);
-  //   setShowConfirmDelete(false);
-  // };
   const confirmDelete = (e) => {
     if (note && note.id) {
       // Check if the note and its ID are valid
@@ -377,7 +380,11 @@ const Createnotes = ({
       <form
         className="create-note__form"
         onSubmit={handleSubmit}
-        style={{ height: `${notesHeight - 11.85}vh` }}
+        style={
+          isOpenNotes
+            ? { height: `${height - 86}px` }
+            : { height: `${notesHeight - 11.85}vh` }
+        }
       >
         <input
           className={isOpenNotes ? "lander-note-input" : "note-input"}
@@ -402,10 +409,11 @@ const Createnotes = ({
             fontSize: "14px",
             textAlign: "start",
             overflowY: "auto",
-            // color: "white",
+            //color: "white",
           }}
         >
           {/* Placeholder logic can be enhanced if needed */}
+          {/* Note details */}
         </div>
       </form>
 
@@ -496,7 +504,7 @@ const Createnotes = ({
                 <IoCloseOutline size={20} />
               </button>
             </div>
-            <div className="createNotes-modal-body" >
+            <div className="createNotes-modal-body">
               <div className="createNotes-email">
                 <button className="createNotes-Email">
                   <div
@@ -554,7 +562,7 @@ const Createnotes = ({
                 <IoCloseOutline size={20} />
               </button>
             </div>
-            <div className="email-modal-body" style={{width:"80%"}}>
+            <div className="email-modal-body" style={{ width: "80%" }}>
               <input
                 type="email"
                 value={email}
@@ -562,7 +570,7 @@ const Createnotes = ({
                 placeholder="Email"
                 className="email-input"
               />
-              
+
               <button onClick={handleSendEmail} className="send-button">
                 Send
               </button>

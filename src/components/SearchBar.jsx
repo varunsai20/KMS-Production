@@ -18,7 +18,7 @@ const SearchBar = ({ renderInputContainer, className }) => {
   const location = useLocation();
   const dispatch=useDispatch();
   const { user } = useSelector((state) => state.auth);
-  const token=user?.access_token;
+  const token=useSelector((state) => state.auth.access_token);
   useEffect(() => {
     if (location.pathname === "/search") {
       // Check if searchTerm is present in sessionStorage

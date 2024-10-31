@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import './CreateResearcher.css';
 import { useSelector } from 'react-redux';
@@ -10,7 +11,7 @@ const CreateResearcher = () => {
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
   const user_id = user?.user_id;
-  const token = user?.access_token;
+  const token = useSelector((state) => state.auth.access_token);
 
   const [formData, setFormData] = useState({
     fullname: '',
@@ -80,7 +81,7 @@ const CreateResearcher = () => {
         technical_skills: formData.technical_skills.split(',').map(skill => skill.trim()),
         research_interests: formData.research_interests.split(',').map(interest => interest.trim()),
       };
-
+  
       try {
         const response = await axios.post(
           `http://13.127.207.184:80/admin/create-user/${user_id}`,
@@ -91,16 +92,26 @@ const CreateResearcher = () => {
             },
           }
         );
-
+  
         if (response.status === 201) {
           navigate('/admin/users');
         }
       } catch (error) {
-        console.error('Error creating user:', error);
+        if (error.response && error.response.status === 400) {
+          // Access the message from the response data and set it as a general form error
+          setErrors({
+            ...errors,
+            form: error.response.data.msg, // Set the msg directly as a form-level error
+          });
+          
+        } else {
+          console.error('Error creating user:', error);
+        }
       }
     }
   };
-
+  
+    
   return (
     <div style={{ margin: '0 2%' }}>
       <div className="create-researcher-header">
@@ -271,6 +282,7 @@ const CreateResearcher = () => {
           </select>
         </div>
         </div>
+        {errors.form && <p className="error-message" style={{color:"red",margin:"0",gap:"0"}}>{errors.form}</p>}
 
         {/* Action Buttons */}
         <div className="form-actions">
@@ -282,6 +294,7 @@ const CreateResearcher = () => {
           </button>
         </div>
       </form>
+
     </div>
   );
 };
