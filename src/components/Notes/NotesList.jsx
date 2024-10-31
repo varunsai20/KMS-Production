@@ -2,7 +2,9 @@ import React, { useEffect,useState } from "react";
 import NoteItem from "./NoteItem";
 import SearchIcon from "../../assets/images/Search.svg";
 import { LuPlus } from "react-icons/lu";
+
 import "./NotesList.css";
+
 
 const NotesList = ({
   notes,
@@ -12,6 +14,10 @@ const NotesList = ({
   onEditNote,
   onDeleteNote,
   isOpenNotes,
+
+  height,
+  //onDeleteAllNotes,
+
 }) => {
   const [filteredNotes, setFilteredNotes] = useState(notes);
 
@@ -54,12 +60,21 @@ const NotesList = ({
           />
         </div>
       </header>
-      <div className="notes__container">
-        {filteredNotes.length === 0 && <p className="empty__notes">No Notes Found.</p>}
+
+      <div
+        className={isOpenNotes ? "lander-notes__container" : "notes__container"}
+        style={
+          isOpenNotes ? { height: `${height - 85}px`, overflowY: "auto" } : {}
+        }
+      >
+        {filteredNotes.length === 0 && (
+          <p className="empty__notes">No Notes Found.</p>
+        )}
         {filteredNotes.map((note) => (
           <NoteItem
-            key={note.note_id}
-            note={note}
+            key={note.note_id} // Use note_id instead of id
+            note={note} // Ensure `note` contains `note_id`, `content`, etc.
+
             onEdit={onEditNote}
             onDelete={onDeleteNote}
           />

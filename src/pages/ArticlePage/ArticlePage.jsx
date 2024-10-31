@@ -6,7 +6,6 @@ import "./ArticlePage.css";
 import Button from "../../components/Buttons";
 import { Typography } from "@mui/material";
 import flag from "../../assets/images/flash.svg";
-import Header from "../../components/Header-New";
 import Arrow from "../../assets/images/back-arrow.svg";
 import annotate from "../../assets/images/task-square.svg";
 import { useNavigate } from "react-router-dom";
@@ -21,8 +20,9 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTelegram } from "@fortawesome/free-brands-svg-icons";
 import { faPen } from "@fortawesome/free-solid-svg-icons";
 import { faAnglesUp } from "@fortawesome/free-solid-svg-icons";
-//import { IoSaveOutline } from "react-icons/io5";
-import { BsSend } from "react-icons/bs";
+//import { LiaTelegramPlane } from "react-icons/lia";
+//import { BiSolidPaperPlane } from "react-icons/bi";
+import { IoMdPaperPlane } from "react-icons/io";
 import Notes from "../NotesPage/Notes";
 import { login, logout } from "../../redux/reducers/LoginAuth"; // Import login and logout actions
 
@@ -56,9 +56,9 @@ const ArticlePage = () => {
     if (storedChatHistory) {
       // Parse the chat history string back into an array
       setChatHistory(JSON.parse(storedChatHistory));
-      setShowStreamingSection(true);  
+      setShowStreamingSection(true);
     }
-    console.log(storedChatHistory)
+    console.log(storedChatHistory);
   }, []);
   const [showStreamingSection, setShowStreamingSection] = useState(false);
   // const [chatInput, setChatInput] = useState(true);
@@ -75,6 +75,7 @@ const ArticlePage = () => {
   const [editedTitle, setEditedTitle] = useState("");
   const [articleTitle, setArticleTitle] = useState("");
   const [collections, setCollections] = useState([]);
+
   const fetchCollections = async () => {
     try {
       const response = await axios.get(
@@ -89,6 +90,7 @@ const ArticlePage = () => {
         setCollections(response.data.collections);
         if (response.data.collections.length > 0) {
           localStorage.setItem("collections", JSON.stringify(response.data.collections));
+
         }
       }
     } catch (error) {
@@ -105,6 +107,7 @@ const ArticlePage = () => {
   const isBookmarked = (idType) => {
     // Convert idType to a number for comparison
     const numericIdType = Number(idType);
+
     // console.log(`Checking for idType: ${numericIdType}`);
   
     // Loop through each collection and log article IDs as numbers
@@ -115,18 +118,20 @@ const ArticlePage = () => {
     //   });
     // });
   
+
     // Check if the article is bookmarked
     const result = Object.values(collections).some((articleArray) =>
-      articleArray.some((article) => Number(article.article_id) === numericIdType)
+      articleArray.some(
+        (article) => Number(article.article_id) === numericIdType
+      )
     );
-  
+
     return result;
   };
   const [currentid, setCurrentid] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newCollectionName, setNewCollectionName] = useState("");
 
- 
   const [sessions, setSessions] = useState([]);
   const [editingSessionId, setEditingSessionId] = useState(null);
 
@@ -139,6 +144,38 @@ const ArticlePage = () => {
   const [notesHeight, setNotesHeight] = useState(35);
   const minHeight = 15;
   const maxHeight = 60;
+
+
+  // Add this useEffect to reset savedText when openNotes becomes false
+  useEffect(() => {
+    if (!openNotes) {
+      setSavedText(""); // Reset savedText when notes are closed
+    }
+  }, [openNotes]);
+
+  useEffect(() => {
+    if (openAnnotate && !openNotes) {
+      setAnnotateHeight(70);
+      setNotesHeight(0);
+    } else if (openNotes && !openAnnotate) {
+      setNotesHeight(70);
+      setAnnotateHeight(0);
+    } else {
+      setAnnotateHeight(35); // Reset to default when both are open
+      setNotesHeight(35);
+    }
+  }, [openAnnotate, openNotes]);
+
+  console.log(id);
+  useEffect(() => {
+    if (type === "bioRxiv_id") {
+      setSource("biorxiv");
+    } else if (type === "pmid") {
+      setSource("pubmed");
+    } else if (type === "plos_id") {
+      setSource("plos");
+    }
+  }, [type]);
 
   const handleLogout = async () => {
     try {
@@ -153,19 +190,10 @@ const ArticlePage = () => {
     }
   };
 
-console.log(id)
-useEffect(() => {
-  if (type === "bioRxiv_id") {
-    setSource("biorxiv");
-  } else if (type === "pmid") {
-    setSource("pubmed");
-  } else if (type === "plos_id") {
-    setSource("plos");
-  }
-}, [type]);
+
   useEffect(() => {
     // Determine the source based on `type`
-    
+
     // Perform GET request to fetch article data
     if (source && id) {
       const fetchArticleData = async () => {
@@ -192,59 +220,61 @@ useEffect(() => {
       fetchArticleData();
     }
   }, [id, source, token]);
-  // Handle mouse drag for annotate (bottom border)
+
   const handleAnnotateResize = (e) => {
-    e.preventDefault();
-    const startY = e.clientY;
-    const startHeight = annotateHeight;
+    if (openAnnotate && openNotes) {
+      e.preventDefault();
+      const startY = e.clientY;
+      const startHeight = annotateHeight;
 
-    const onMouseMove = (moveEvent) => {
-      const delta = ((moveEvent.clientY - startY) / window.innerHeight) * 100;
-      const newAnnotateHeight = Math.max(
-        minHeight,
-        Math.min(maxHeight, startHeight + delta)
-      );
-      const newNotesHeight = 70 - newAnnotateHeight; // adjust notes height dynamically
+      const onMouseMove = (moveEvent) => {
+        const delta = ((moveEvent.clientY - startY) / window.innerHeight) * 100;
+        const newAnnotateHeight = Math.max(
+          minHeight,
+          Math.min(maxHeight, startHeight + delta)
+        );
+        const newNotesHeight = 70 - newAnnotateHeight;
 
-      setAnnotateHeight(newAnnotateHeight);
-      setNotesHeight(newNotesHeight);
-    };
+        setAnnotateHeight(newAnnotateHeight);
+        setNotesHeight(newNotesHeight);
+      };
 
-    const onMouseUp = () => {
-      window.removeEventListener("mousemove", onMouseMove);
-      window.removeEventListener("mouseup", onMouseUp);
-    };
+      const onMouseUp = () => {
+        window.removeEventListener("mousemove", onMouseMove);
+        window.removeEventListener("mouseup", onMouseUp);
+      };
 
-    window.addEventListener("mousemove", onMouseMove);
-    window.addEventListener("mouseup", onMouseUp);
+      window.addEventListener("mousemove", onMouseMove);
+      window.addEventListener("mouseup", onMouseUp);
+    }
   };
 
-  // Handle mouse drag for notes (top border)
   const handleNotesResize = (e) => {
-    e.preventDefault();
-    const startY = e.clientY;
-    const startHeight = notesHeight;
+    if (openAnnotate && openNotes) {
+      e.preventDefault();
+      const startY = e.clientY;
+      const startHeight = notesHeight;
 
-    const onMouseMove = (moveEvent) => {
-      const delta = ((startY - moveEvent.clientY) / window.innerHeight) * 100;
-      const newNotesHeight = Math.max(
-        minHeight,
-        Math.min(maxHeight, startHeight + delta)
-      );
-      //const newAnnotateHeight = 70 - newNotesHeight; // adjust annotate height dynamically
-      const newAnnotateHeight = Math.max(minHeight, 70 - newNotesHeight); // ensure annotateHeight is at least minHeight
+      const onMouseMove = (moveEvent) => {
+        const delta = ((startY - moveEvent.clientY) / window.innerHeight) * 100;
+        const newNotesHeight = Math.max(
+          minHeight,
+          Math.min(maxHeight, startHeight + delta)
+        );
+        const newAnnotateHeight = Math.max(minHeight, 70 - newNotesHeight);
 
-      setNotesHeight(newNotesHeight);
-      setAnnotateHeight(newAnnotateHeight);
-    };
+        setNotesHeight(newNotesHeight);
+        setAnnotateHeight(newAnnotateHeight);
+      };
 
-    const onMouseUp = () => {
-      window.removeEventListener("mousemove", onMouseMove);
-      window.removeEventListener("mouseup", onMouseUp);
-    };
+      const onMouseUp = () => {
+        window.removeEventListener("mousemove", onMouseMove);
+        window.removeEventListener("mouseup", onMouseUp);
+      };
 
-    window.addEventListener("mousemove", onMouseMove);
-    window.addEventListener("mouseup", onMouseUp);
+      window.addEventListener("mousemove", onMouseMove);
+      window.addEventListener("mouseup", onMouseUp);
+    }
   };
 
   useEffect(() => {
@@ -266,9 +296,9 @@ useEffect(() => {
     // Check if the rating is already available in ratingsList
     const cachedRating = ratingsList.find((item) => item.uniqueId === uniqueId);
     if (cachedRating) return cachedRating.rating;
-  
+
     const [source, article_id] = uniqueId.split("_");
-  
+
     try {
       const response = await axios.get(
         `http://13.127.207.184:80/rating/user-ratings/${user_id}/${article_id}/${source}`,
@@ -279,44 +309,44 @@ useEffect(() => {
         }
       );
       const avgRating = response.data?.average_rating || 0;
-  
+
       // Update the local rating list with the fetched average rating
       setRatingsList((prevRatings) => [
         ...prevRatings.filter((item) => item.uniqueId !== uniqueId),
         { uniqueId, rating: avgRating },
       ]);
-  
+
       return avgRating;
     } catch (error) {
       console.error("Error fetching rating:", error);
       return 0;
     }
   };
-  console.log(ratingsList)
+  console.log(ratingsList);
 
   const handleRatingChange = async (uniqueId, newRating) => {
     // Ensure ratingsList is an array
     const currentRatings = Array.isArray(ratingsList) ? ratingsList : [];
-  
+
     // Create a copy of ratingsList
     const updatedRatings = [...currentRatings];
-  
+
     const existingRatingIndex = updatedRatings.findIndex(
       (item) => item.uniqueId === uniqueId
     );
-  
+
     if (existingRatingIndex !== -1) {
       updatedRatings[existingRatingIndex].rating = newRating;
     } else {
       updatedRatings.push({ uniqueId, rating: newRating });
     }
-  
+
     setRatingsList(updatedRatings);
     sessionStorage.setItem("ratingsGiven", JSON.stringify(updatedRatings));
-  
+
     // Extract source and article_id from uniqueId
     const [article_source, article_id] = uniqueId.split("_");
-  
+
     try {
       await axios.post(
         "http://13.127.207.184:80/rating/rate",
@@ -338,12 +368,11 @@ useEffect(() => {
       console.error("Error saving rating:", error);
     }
   };
-  
+
   const handleMouseUp = (event) => {
     if (!contentRef.current.contains(event.target)) {
       return; // Exit if the selection is outside .article-content
-
-    }
+    }
 
     const selection = window.getSelection();
 
@@ -413,7 +442,7 @@ useEffect(() => {
         article_source: source,
       },
     };
-  
+
     try {
       const response = await axios.post(
         "http://13.127.207.184:80/bookmarks/users/collections",
@@ -424,16 +453,31 @@ useEffect(() => {
           },
         }
       );
-  
+
       if (response.status === 201) {
+
+        const updatedCollections = collections.map((collection) => {
+          if (collection === collectionName) {
+            // Append the new article ID to the articles if it doesn't already exist
+            return {
+              ...collection,
+              articles: [...(collection.articles || []), currentid],
+            };
+          }
+          return collection;
+        });
+
+        setCollections(updatedCollections);
+        localStorage.setItem("collections", JSON.stringify(updatedCollections));
+
         await fetchCollections(); // Refetch collections after successful addition
+
         setIsModalOpen(false);
       }
     } catch (error) {
       console.error("Error adding bookmark to existing collection:", error);
     }
   };
-  
 
   const handleCreateNewCollection = async () => {
     const newCollection = {
@@ -445,7 +489,7 @@ useEffect(() => {
         article_source: source,
       },
     };
-  
+
     try {
       const response = await axios.post(
         "http://13.127.207.184:80/bookmarks/users/collections",
@@ -456,7 +500,7 @@ useEffect(() => {
           },
         }
       );
-  
+
       if (response.status === 201) {
         const updatedCollections = [...collections, response.data];
         setCollections(updatedCollections);
@@ -508,11 +552,7 @@ useEffect(() => {
   //   }
   // };
 
-
-
-
   const getid = () => {
-
     return `${source}_${id}`;
   };
 
@@ -697,8 +737,7 @@ useEffect(() => {
     }
   };
 
-  console.log(chatHistory)
-
+  console.log(chatHistory);
 
   const handlePromptClick = (queryText) => {
     setQuery(queryText);
@@ -736,28 +775,6 @@ useEffect(() => {
     // Replace the search term in the text with markdown bold syntax
     return text.replace(regex, "**$1**"); // Wrap the matched term with markdown bold syntax
   };
-  // const contentWidth = "43.61%";
-  // const searchBarwidth = "62%";
-  // const handleWidth = (newWidth) => {
-  //   //const newWidth = parseInt(event.target.value);
-  //   setSearchWidth(newWidth);
-  // };
-  // const handleAnnotate = () => {
-  //   if (openAnnotate) {
-  //     setOpenAnnotate(false);
-  //   } else {
-  //     setOpenAnnotate(true);
-  //     setOpenNotes(false);
-  //   }
-  // };
-  // const handleNotes = () => {
-  //   if (openNotes) {
-  //     setOpenNotes(false);
-  //   } else {
-  //     setOpenAnnotate(false);
-  //     setOpenNotes(true);
-  //   }
-  // };
   const handleAnnotate = () => {
     setOpenAnnotate((prevOpenAnnotate) => !prevOpenAnnotate); // Toggle annotate
     // No need to close Notes when Annotate is toggled
@@ -889,7 +906,6 @@ useEffect(() => {
     });
   };
 
-
   useEffect(() => {
     const fetchSessions = async () => {
       try {
@@ -909,18 +925,17 @@ useEffect(() => {
         console.error("Error fetching chat history:", error);
       }
     };
-  
+
     if (user_id && token) {
       fetchSessions();
     }
-  }, [user_id, token, refreshSessions]); 
-  console.log(sessions)
-  console.log(token)
+  }, [user_id, token, refreshSessions]);
+  console.log(sessions);
+  console.log(token);
   // Edit functions
   const handleEditClick = (sessionId, title) => {
     setEditingSessionId(sessionId);
     setEditedTitle(title);
-
   };
 
   const handleTitleChange = (e) => {
@@ -942,8 +957,8 @@ useEffect(() => {
           },
         }
       );
-      console.log(sessionId)
-      console.log(editedTitle)
+      console.log(sessionId);
+      console.log(editedTitle);
       // Update the local sessions state after a successful edit
       setSessions((prevSessions) =>
         prevSessions.map((session) =>
@@ -964,17 +979,17 @@ useEffect(() => {
   useEffect(() => {
     // Retrieve chat history from sessionStorage on component mount or on location state change
     const storedChatHistory = sessionStorage.getItem("chatHistory");
-    
+
     if (storedChatHistory) {
       setChatHistory(JSON.parse(storedChatHistory));
       setShowStreamingSection(true);
     } else {
       setShowStreamingSection(false); // Default to false if no stored chat history
     }
-  
+
     console.log("Stored Chat History:", storedChatHistory);
   }, [location.state]); // Add location.state as a dependency to re-run on navigation
-  
+
   const handleSessionClick = async (article_id, source, session_id) => {
     try {
       const conversationResponse = await axios.get(
@@ -985,10 +1000,10 @@ useEffect(() => {
           },
         }
       );
-  
+
       const formattedChatHistory = [];
       let currentEntry = {};
-  
+
       conversationResponse.data.conversation.forEach((entry) => {
         if (entry.role === "user") {
           if (currentEntry.query) {
@@ -1002,18 +1017,26 @@ useEffect(() => {
           currentEntry = {};
         }
       });
-  
+
       if (currentEntry.query) {
         formattedChatHistory.push(currentEntry);
       }
-  
+
       console.log(formattedChatHistory);
-  
-      sessionStorage.setItem("chatHistory", JSON.stringify(formattedChatHistory));
-  
+
+      sessionStorage.setItem(
+        "chatHistory",
+        JSON.stringify(formattedChatHistory)
+      );
+
       // Update `source` based on its value
-      const sourceType = source === "biorxiv" ? "bioRxiv_id" : source === "plos" ? "plos_id" : "pmid";
-  
+      const sourceType =
+        source === "biorxiv"
+          ? "bioRxiv_id"
+          : source === "plos"
+          ? "plos_id"
+          : "pmid";
+
       navigate(`/article/${sourceType}:${article_id}`, {
         state: {
           id: article_id,
@@ -1029,8 +1052,7 @@ useEffect(() => {
       console.error("Error fetching article or conversation data:", error);
     }
   };
-  
-  
+
   return (
     <>
       <div className="container">
@@ -1066,6 +1088,7 @@ useEffect(() => {
           <div className="history-pagination">
             <h5>Recent Interactions</h5>
             <ul>
+
             {sessions.length > 0 ? (
   sessions.map((session) => {
     // Mapping keywords to custom titles
@@ -1136,6 +1159,7 @@ useEffect(() => {
 )}
 
 
+
             </ul>
           </div>
 
@@ -1167,29 +1191,29 @@ useEffect(() => {
                       <span>Rate the article </span>
                     </div>
                     <div className="rate">
-                    {[5, 4, 3, 2, 1].map((value) => (
-  <React.Fragment key={value}>
-    <input
-      type="radio"
-      id={`star${value}-${uniqueId}`}
-      name={`rate_${uniqueId}`}
-      value={value}
-      // Check if ratingsList is an array and find the cached rating if it exists
-      checked={
-        (Array.isArray(ratingsList) &&
-          ratingsList.find((item) => item.uniqueId === uniqueId)?.rating) === value
-      }
-      onChange={() => handleRatingChange(uniqueId, value)}
-    />
-    <label
-      htmlFor={`star${value}-${uniqueId}`}
-      title={`${value} star`}
-    />
-  </React.Fragment>
-))}
-
-</div>
-
+                      {[5, 4, 3, 2, 1].map((value) => (
+                        <React.Fragment key={value}>
+                          <input
+                            type="radio"
+                            id={`star${value}-${uniqueId}`}
+                            name={`rate_${uniqueId}`}
+                            value={value}
+                            // Check if ratingsList is an array and find the cached rating if it exists
+                            checked={
+                              (Array.isArray(ratingsList) &&
+                                ratingsList.find(
+                                  (item) => item.uniqueId === uniqueId
+                                )?.rating) === value
+                            }
+                            onChange={() => handleRatingChange(uniqueId, value)}
+                          />
+                          <label
+                            htmlFor={`star${value}-${uniqueId}`}
+                            title={`${value} star`}
+                          />
+                        </React.Fragment>
+                      ))}
+                    </div>
                   </div>
                 </div>
 
@@ -1205,66 +1229,76 @@ useEffect(() => {
                     {articleData.article.article_title}
                   </p>
                   <FontAwesomeIcon
-  icon={regularBookmark}
-  size="l"
-  style={{
-    color: isBookmarked(id) ? "blue" : "black",
-    cursor: "pointer",
-  }}
-  onClick={() => handleBookmarkClick(id, articleData.article.article_title,source || "PubMed")}
-  title={isBookmarked(id) ? "Bookmarked" : "Bookmark this article"}
-/>
+                    icon={regularBookmark}
+                    size="l"
+                    style={{
+                      color: isBookmarked(id) ? "blue" : "black",
+                      cursor: "pointer",
+                    }}
+                    onClick={() =>
+                      handleBookmarkClick(
+                        id,
+                        articleData.article.article_title,
+                        source || "PubMed"
+                      )
+                    }
+                    title={
+                      isBookmarked(id) ? "Bookmarked" : "Bookmark this article"
+                    }
+                  />
 
-                              {isModalOpen && (
-                                <div className="bookmark-modal-overlay">
-                                  <div className="modal-content" ref={modalRef}>
-                                    <h3>Save Bookmark</h3>
-                                    {console.log("Collections data:", collections)}
-                                    {/* Existing Collections */}
-                                    {Object.keys(collections).length > 0 && (
-                                          <>
-                                            <h4>Save to existing collection:</h4>
-                                            <ul>
-                                              {Object.keys(collections).map((collectionName, index) => (
-                                                <li key={index}> {/* using index as key since collection names are unique */}
-                                                  <button onClick={() => handleSaveToExisting(collectionName)}>
-                                                    {collectionName}
-                                                  </button>
-                                                </li>
-                                              ))}
-                                            </ul>
-                                          </>
-                                        )}
-
-                                    {/* Create New Collection */}
-                                    <h4>Create a new collection:</h4>
-                                    <input
-                                      type="text"
-                                      value={newCollectionName}
-                                      onChange={(e) =>
-                                        setNewCollectionName(e.target.value)
+                  {isModalOpen && (
+                    <div className="bookmark-modal-overlay">
+                      <div className="modal-content" ref={modalRef}>
+                        <h3>Save Bookmark</h3>
+                        {console.log("Collections data:", collections)}
+                        {/* Existing Collections */}
+                        {Object.keys(collections).length > 0 && (
+                          <>
+                            <h4>Save to existing collection:</h4>
+                            <ul>
+                              {Object.keys(collections).map(
+                                (collectionName, index) => (
+                                  <li key={index}>
+                                    {" "}
+                                    {/* using index as key since collection names are unique */}
+                                    <button
+                                      onClick={() =>
+                                        handleSaveToExisting(collectionName)
                                       }
-                                      placeholder="New collection name"
-                                    />
-                                    <div
-                                      style={{ display: "flex", gap: "20px" }}
                                     >
-                                      <button
-                                        onClick={handleCreateNewCollection}
-                                        disabled={!newCollectionName}
-                                      >
-                                        Create
-                                      </button>
-
-                                      <button
-                                        onClick={() => setIsModalOpen(false)}
-                                      >
-                                        Cancel
-                                      </button>
-                                    </div>
-                                  </div>
-                                </div>
+                                      {collectionName}
+                                    </button>
+                                  </li>
+                                )
                               )}
+                            </ul>
+                          </>
+                        )}
+
+                        {/* Create New Collection */}
+                        <h4>Create a new collection:</h4>
+                        <input
+                          type="text"
+                          value={newCollectionName}
+                          onChange={(e) => setNewCollectionName(e.target.value)}
+                          placeholder="New collection name"
+                        />
+                        <div style={{ display: "flex", gap: "20px" }}>
+                          <button
+                            onClick={handleCreateNewCollection}
+                            disabled={!newCollectionName}
+                          >
+                            Create
+                          </button>
+
+                          <button onClick={() => setIsModalOpen(false)}>
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -1288,11 +1322,12 @@ useEffect(() => {
                   ) : (
                     ""
                   )}
-                <span style={{ color: "#2b9247" }}>
-                  {type === "bioRxiv_id" && "BioRxiv ID"} 
-                  {type === "pmid" && "PMID"}
-                  {type === "plos_id" && "PLOS ID"} : {id}
-                </span>                </div>
+                  <span style={{ color: "#2b9247" }}>
+                    {type === "bioRxiv_id" && "BioRxiv ID"}
+                    {type === "pmid" && "PMID"}
+                    {type === "plos_id" && "PLOS ID"} : {id}
+                  </span>{" "}
+                </div>
 
                 {articleData.article.abstract_content && (
                   <>
@@ -1319,6 +1354,7 @@ useEffect(() => {
                 {articleData.article.body_content &&
                   renderContentInOrder(articleData.article.body_content, true)}
 
+
                   {showStreamingSection && (
                     <div className="streaming-section">
                       <div className="streaming-content">
@@ -1335,6 +1371,7 @@ useEffect(() => {
                               ? "Key Highlights"
                               : chat.query}
                           </span>                            
+
                           </div>
 
                           <div
@@ -1377,19 +1414,18 @@ useEffect(() => {
                   }}
                   //onClick={handleSaveToNote}
                 >
-                  <button onClick={handleSaveToNote} className="Popup-buttons">
-                    <div className="save-icon">
-                      {/* <IoSaveOutline fontSize={"15px"} color="black" /> */}
-                      <BsSend
-                        size={17}
-                        color="white"
-                        title="Send to Notes"
-                        style={{ paddingTop: "3px" }}
-                      />
-                    </div>
-                    <span style={{ color: "white", fontSize: "17px" }}>
+                  <button
+                    onClick={handleSaveToNote}
+                    className="Popup-buttons"
+                    title="Send to Notes"
+                  >
+                    {/* <BiSolidPaperPlane size={25} color="black" /> */}
+                    <IoMdPaperPlane size={25} color="black" />
+
+                    {/* <LiaTelegramPlane size={25} color="black" /> */}
+                    {/* <span style={{ color: "black", fontSize: "17px" }}>
                       send to notes
-                    </span>
+                    </span> */}
                   </button>
                 </div>
               </div>
