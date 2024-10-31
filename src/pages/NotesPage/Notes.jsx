@@ -2,62 +2,55 @@ import React, { useState, useEffect } from "react";
 import NotesList from "../../components/Notes/NotesList";
 import Createnotes from "../../components/Notes/CreateNotes";
 import Editnotes from "../../components/Notes/EditNotes";
-import "./Notes.css";
-
-
-
-//   const [notes, setNotes] = useState(
-//     JSON.parse(localStorage.getItem("notes")) || []
-//   );
-
 import { useSelector } from "react-redux";
 import axios from "axios";
-const NotesManager = ({ selectedText, notesHeight,isOpenNotes }) => {
+import "./Notes.css";
+
+const NotesManager = ({ selectedText, notesHeight, isOpenNotes }) => {
   const { user } = useSelector((state) => state.auth);
+  const user_id = user?.user_id;
+  const token = useSelector((state) => state.auth.access_token);
 
-  const user_id=user?.user_id;
-  const token=user?.access_token;
   const [notes, setNotes] = useState([]);
+  const [currentView, setCurrentView] = useState("list"); // 'list', 'create', 'edit'
+  const [selectedNote, setSelectedNote] = useState(null);
+  const [textToSave, setTextToSave] = useState([]); // Store the passed selected text
+  const [filterText, setFilterText] = useState("");
 
-  useEffect(() => {
-    const fetchNotes = async () => {
-      try {
-        const response = await axios.get(`http://13.127.207.184:80/notes/getnotes/${user_id}`, {
+  const fetchNotes = async () => {
+    try {
+      const response = await axios.get(
+        `http://13.127.207.184:80/notes/getnotes/${user_id}`,
+        {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        });
-        console.log("API response:", response);
-  
-        // Convert response data to an array if it's not already
-        const notesArray = Array.isArray(response.data.data) 
-          ? response.data.data 
-          : Object.values(response.data.data); // Convert object to array
-        
-        // Set notes and save to localStorage
-        setNotes(notesArray);
-        localStorage.setItem("notes", JSON.stringify(notesArray));
-      } catch (error) {
-        console.error("Error fetching notes:", error);
-      }
-    };
-  
+        }
+      );
+      const notesArray = Array.isArray(response.data.data)
+        ? response.data.data
+        : Object.values(response.data.data);
+      
+      setNotes(notesArray);
+      localStorage.setItem("notes", JSON.stringify(notesArray));
+    } catch (error) {
+      console.error("Error fetching notes:", error);
+    }
+  };
+
+  useEffect(() => {
     if (user_id && token) {
       fetchNotes();
     }
   }, [user_id, token]);
-  
-  console.log(notes)
 
-  const [currentView, setCurrentView] = useState("list"); // 'list', 'create', 'edit'
-  const [selectedNote, setSelectedNote] = useState(null);
-  const [textToSave, setTextToSave] = useState([]); // Store the passed selected text
-
+  // Update filterText when returning to "list" view
   useEffect(() => {
-    localStorage.setItem("notes", JSON.stringify(notes));
-  }, [notes]);
+    if (currentView === "list") {
+      setFilterText("");
+    }
+  }, [currentView]);
 
-  // Automatically switch to the 'create' view and accumulate unique text
   useEffect(() => {
     if (selectedText) {
       if (!textToSave.includes(selectedText.trim())) {
@@ -86,29 +79,18 @@ const NotesManager = ({ selectedText, notesHeight,isOpenNotes }) => {
     setCurrentView("list");
   };
 
-  const handleDeleteAllNotes = () => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete all notes?"
-    );
-    if (confirmDelete) {
-      setNotes([]); // Clear all notes
-      setCurrentView("list");
-    }
-  };
-
   const handleDeleteNote = async (noteId) => {
     try {
       const response = await axios.delete(
         `http://13.127.207.184:80/notes/deletenote/${user_id}/${noteId}`,
         {
           headers: {
-            Authorization: `Bearer ${token}`, // Ensure token is available in component's state or context
+            Authorization: `Bearer ${token}`,
           },
         }
       );
   
       if (response.status === 200) {
-        // Update local notes state to reflect deletion
         setNotes((prevNotes) => prevNotes.filter((note) => note.note_id !== noteId));
         console.log("Note deleted successfully");
       } else {
@@ -118,18 +100,17 @@ const NotesManager = ({ selectedText, notesHeight,isOpenNotes }) => {
       console.error("Error deleting note:", error);
     }
   };
-  
 
   return (
     <div className={isOpenNotes ? "Lander-manager" : "notes-manager-content"}>
-      {/* Ensure there are valid child elements here */}
       {currentView === "list" && (
         <NotesList
           notes={notes}
+          filterText={filterText} // Pass filter text
+          setFilterText={setFilterText} // Update filter text
           onAddNewNote={handleAddNewNote}
           onEditNote={handleEditNote}
           onDeleteNote={handleDeleteNote}
-          onDeleteAllNotes={handleDeleteAllNotes}
           isOpenNotes={isOpenNotes}
         />
       )}

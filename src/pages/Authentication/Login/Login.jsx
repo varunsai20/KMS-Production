@@ -83,6 +83,8 @@ const Login = () => {
             email: userProfile.email,
             department: userProfile.department,
             organization_name:userProfile.organization_name,
+            iat:response.data.iat,
+            exp:response.data.exp
           }));
   
           // Redirect based on role

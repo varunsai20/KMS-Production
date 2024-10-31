@@ -36,7 +36,6 @@ const Lander = () => {
   const [dimensions, setDimensions] = useState({ width: 500, height: 400 });
   const [defaultPosition, setDefaultPosition] = useState({ x: 0, y: 0 });
   const { user } = useSelector((state) => state.auth);
-  console.log(user);
 
   const handleResize = (event, { size }) => {
     setDimensions(size);

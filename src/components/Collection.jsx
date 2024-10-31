@@ -13,7 +13,7 @@ const Collection = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useSelector((state) => state.auth);
-  const token=user?.access_token;
+  const token=useSelector((state) => state.auth.access_token);
   const user_id =user?.user_id; // Replace with actual user ID
   useEffect(() => {
     const fetchCollections = async () => {

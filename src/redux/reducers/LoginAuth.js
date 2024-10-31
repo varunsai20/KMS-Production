@@ -3,11 +3,19 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
   isLoggedIn: false,
-  user: null,
+  user: {
+    user_id: null,
+    role: null,
+    name: null,
+    email: null,
+    department: null,
+    organization_name: null,
+  },
   access_token: null,
   refresh_token: null,
   token_type: null,
-  user_id: null,
+  iat: null,
+  exp: null,
 };
 
 const authSlice = createSlice({
@@ -16,23 +24,31 @@ const authSlice = createSlice({
   reducers: {
     login: (state, action) => {
       state.isLoggedIn = true;
-      state.user = action.payload; // Store user details
+      const { user_id, role, name, email, department, organization_name } = action.payload;
+      state.user = { user_id, role, name, email, department, organization_name };
       state.access_token = action.payload.access_token;
       state.refresh_token = action.payload.refresh_token;
       state.token_type = action.payload.token_type;
-      state.user_id = action.payload.user_id;
+      state.iat = action.payload.iat;
+      state.exp = action.payload.exp;
+    },
+    updateTokens: (state, action) => {
+      state.access_token = action.payload.access_token;
+      state.refresh_token = action.payload.refresh_token;
+      state.iat = action.payload.iat;
+      state.exp = action.payload.exp;
     },
     logout: (state) => {
       state.isLoggedIn = false;
-      state.user = null;
+      state.user = initialState.user; // Reset user to initial structure
       state.access_token = null;
       state.refresh_token = null;
       state.token_type = null;
-      state.user_id = null;
+      state.iat = null;
+      state.exp = null;
     },
   },
 });
 
-export const { login, logout } = authSlice.actions;
+export const { login, updateTokens, logout } = authSlice.actions;
 export default authSlice.reducer;
-  
