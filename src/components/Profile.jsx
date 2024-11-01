@@ -11,6 +11,7 @@
   import { useNavigate } from 'react-router-dom';
   const Profile = () => {
     const { user } = useSelector((state) => state.auth);
+    
     const user_id = user?.user_id;
     const token = useSelector((state) => state.auth.access_token);
     const userRole = user?.role;
@@ -22,14 +23,14 @@
       role: '',
       department: '',
       job_title: '',
-      organization_name: '',
+      organization_name: user?.organization_name,
       primary_research_area: '',
       technical_skills: '',
       research_interests: '',
     });
     const[userData,setUserData]=useState({})
     const isUser = userRole === 'User'; // Check if the role is 'User'
-
+    const disableIfUserRole = userRole === 'User';
     // Fetch user details on component mount
     useEffect(() => {
       const fetchUserDetails = async () => {
@@ -148,6 +149,7 @@
               value={formData.fullname} 
               onChange={handleInputChange} 
               placeholder="Enter full name" 
+              disabled={disableIfUserRole}
               // style={{ borderColor: errors.fullname ? 'red' : '' }}
             />
           </div>
@@ -159,6 +161,7 @@
               value={formData.email} 
               onChange={handleInputChange} 
               placeholder="Enter email ID" 
+              disabled={disableIfUserRole}
               // style={{ borderColor: errors.email ? 'red' : '' }}
             />
           </div>
@@ -180,6 +183,7 @@
               value={formData.department} 
               onChange={handleInputChange} 
               className="select-box"
+              disabled={disableIfUserRole}
               // style={{ borderColor: errors.department ? 'red' : '' }}
             >
               <option>Select Department</option>
@@ -207,6 +211,7 @@
               value={formData.job_title} 
               onChange={handleInputChange} 
               placeholder="Enter Job Title" 
+              disabled={disableIfUserRole}
               // style={{ borderColor: errors.job_title ? 'red' : '' }}
             />
           </div>
@@ -216,6 +221,7 @@
             name="primary_research_area" 
             value={formData.primary_research_area} 
             onChange={handleInputChange} 
+            disabled={disableIfUserRole}
             // style={{ borderColor: errors.primary_research_area ? 'red' : '' }}
           >
             <option>Select Expertise</option>
@@ -237,6 +243,7 @@
     value={formData.organization_name} 
     onChange={handleInputChange} 
     // style={{ borderColor: errors.organization_name ? 'red' : '' }}
+    disabled
   >
     <option>Select Organization</option>
     <option value="Infer">Infer</option>
@@ -261,6 +268,7 @@
               value={formData.technical_skills} 
               onChange={handleInputChange} 
               placeholder="Enter relevant software, lab techniques etc" 
+              disabled={disableIfUserRole}
               // style={{ borderColor: errors.technical_skills ? 'red' : '' }}
             />
           </div>
@@ -270,6 +278,7 @@
             name="research_interests" 
             value={formData.research_interests} 
             onChange={handleInputChange} 
+            disabled={disableIfUserRole}
             // style={{ borderColor: errors.research_interests ? 'red' : '' }}
           >
             <option>Select Research Interests</option>
@@ -286,7 +295,7 @@
 
             {/* Action Buttons */}
             <div className="form-actions">
-              <button type="submit" className="create-button" disabled={isUser}>
+              <button type="submit" className="create-button" disabled={disableIfUserRole} style={{ opacity: disableIfUserRole ? 0.5 : 1,cursor:"not-allowed"}}>
                 Save
               </button>
             </div>

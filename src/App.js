@@ -20,10 +20,6 @@ import { login,updateTokens } from "./redux/reducers/LoginAuth"; // Import login
 function App() {
   const dispatch = useDispatch();
   const { access_token, refresh_token, user_id, iat, exp } = useSelector((state) => state.auth);
-  console.log("access_token:  ",access_token)
-  console.log("refresh_token:  ",refresh_token)
-  console.log("iat",iat)
-  console.log("Exp",exp)
   const checkAndRefreshToken = async () => {
     const now = dayjs().unix();
     const expirationTime = exp - 60; // Check for refresh 1 minute before expiration
@@ -68,8 +64,8 @@ function App() {
           <Route path="/signup" element={<SignUpForm />} />
 
           {/* Protected Routes */}
-          <Route path="/search" element={<ProtectedRoute><SearchResults /></ProtectedRoute>} />
-          <Route path="/article/:pmid" element={<ProtectedRoute><ArticlePage /></ProtectedRoute>} />
+          <Route path="/search" element={<SearchResults />} />
+          <Route path="/article/:pmid" element={<ArticlePage />} />
 
           <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>}>
             <Route path="users" element={<Researchers />} />

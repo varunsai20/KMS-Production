@@ -18,7 +18,7 @@ const EditResearcher = () => {
     role: '',
     department: '',
     job_title: '',
-    organization_name: '',
+    organization_name:user?.organization_name,
     primary_research_area: '',
     technical_skills: '',
     research_interests: '',
@@ -249,6 +249,7 @@ const EditResearcher = () => {
     value={formData.organization_name} 
     onChange={handleInputChange} 
     style={{ borderColor: errors.organization_name ? 'red' : '' }}
+    disabled
   >
     <option>Select Organization</option>
     <option value="Infer">Infer</option>

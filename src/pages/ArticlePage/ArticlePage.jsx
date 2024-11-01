@@ -16,6 +16,7 @@ import Annotation from "../../components/Annotaions";
 import { faBookmark as regularBookmark } from "@fortawesome/free-regular-svg-icons";
 import notesicon from "../../assets/images/note-2.svg";
 import rehypeRaw from "rehype-raw";
+import Logo from "../../assets/images/Logo_New.svg";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTelegram } from "@fortawesome/free-brands-svg-icons";
 import { faPen } from "@fortawesome/free-solid-svg-icons";
@@ -27,6 +28,9 @@ import Notes from "../NotesPage/Notes";
 import { login, logout } from "../../redux/reducers/LoginAuth"; // Import login and logout actions
 
 const ArticlePage = () => {
+  const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
+  const displayIfLoggedIn = isLoggedIn ? null : "none";
+  const widthIfLoggedIn=isLoggedIn?null:"100%";
   const { pmid } = useParams();
   const { user } = useSelector((state) => state.auth);
   const token = useSelector((state) => state.auth.access_token);const dispatch = useDispatch();
@@ -1061,7 +1065,7 @@ const ArticlePage = () => {
             <a href="/">
               <img
                 href="/"
-                src="https://www.infersol.com/wp-content/uploads/2020/02/logo.png"
+                src={Logo}
                 alt="Infer Logo"
               />
             </a>
@@ -1085,7 +1089,7 @@ const ArticlePage = () => {
           </div>
         </header>
         <div className="content">
-          <div className="history-pagination">
+          <div className="history-pagination" style={{display: displayIfLoggedIn,}}>
             <h5>Recent Interactions</h5>
             <ul>
 
@@ -1168,6 +1172,7 @@ const ArticlePage = () => {
               className="article-content"
               onMouseUp={handleMouseUp}
               ref={contentRef}
+              style={{width: widthIfLoggedIn}}
             >
               <div className="article-title">
                 <div
@@ -1186,7 +1191,7 @@ const ArticlePage = () => {
                     ></img>
                     <button className="back-button">Back</button>
                   </div>
-                  <div className="Rate-Article">
+                  <div className="Rate-Article" style={{display: displayIfLoggedIn,}}>
                     <div>
                       <span>Rate the article </span>
                     </div>
@@ -1234,6 +1239,7 @@ const ArticlePage = () => {
                     style={{
                       color: isBookmarked(id) ? "blue" : "black",
                       cursor: "pointer",
+                      display: displayIfLoggedIn,
                     }}
                     onClick={() =>
                       handleBookmarkClick(
@@ -1431,12 +1437,12 @@ const ArticlePage = () => {
               </div>
             </div>
           ) : (
-            <div className="Article-data-not-found">
-              <p>Data not found for the given PMID</p>
+            <div className="Article-data-not-found" style={{width: widthIfLoggedIn, display:"flex",alignItems:'center',justifyContent:"center",height:"70vh"}}>
+              <p style={{}}>Data not found for the given PMID</p>
             </div>
           )}
 
-          <div className="right-aside">
+          <div className="right-aside" style={{display: displayIfLoggedIn,}}>
             <div className="annotate-note">
               {openAnnotate && (
                 <div
@@ -1506,7 +1512,7 @@ const ArticlePage = () => {
 
       <div
         className="chat-query"
-        style={{ width: openNotes ? contentWidth : "69%" }}
+        style={{ width: openNotes ? contentWidth : "69%",display: displayIfLoggedIn, }}
       >
         <div className="predefined-prompts">
           <button onClick={() => handlePromptClick("Summarize this article")}>

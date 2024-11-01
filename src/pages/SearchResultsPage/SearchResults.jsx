@@ -16,16 +16,19 @@ import downarrow from "../../assets/images/downarrow.svg"
 import axios from "axios";
 import { login, logout } from "../../redux/reducers/LoginAuth"; // Import login and logout actions
 import Button from "../../components/Buttons";
+import Logo from "../../assets/images/Logo_New.svg";
+import ProfileIcon from "../../assets/images/Profile-dummy.svg";
 const ITEMS_PER_PAGE = 10;
 const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   const location = useLocation(); // Access the passed state
   const { data } = location.state || { data: [] };
   const { user } = useSelector((state) => state.auth);
-
+  const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
+  const displayIfLoggedIn = isLoggedIn ? null : "none";
   const dispatch = useDispatch();
   const user_id=user?.user_id;
   const token=useSelector((state) => state.auth.access_token);
-
+  console.log(user)
   const searchTerm = sessionStorage.getItem("SearchTerm");
   const navigate = useNavigate();
   const contentRightRef = useRef(null); // Ref for searchContent-right
@@ -67,6 +70,16 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       console.error("Error fetching collections:", error);
     }
   };
+  const handleProfileClick = () => {
+    
+      if (user?.role === "Admin") {
+        navigate(`/admin/users/profile/${user_id}`); // Navigate to Admin profile page
+      } else if (user?.role === "User") {
+        navigate(`/users/profile/${user_id}`); // Navigate to User profile page
+      }
+    
+  };
+  const handleLogin = () => navigate('/login');
   const handleLogout = async () => {
     try {
       // Make API call to /auth/logout with user_id as a parameter
@@ -1112,7 +1125,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
             <a href="/">
               <img
                 href="/"
-                src="https://www.infersol.com/wp-content/uploads/2020/02/logo.png"
+                src={Logo}
                 alt="Infer Logo"
               />
             </a>
@@ -1132,9 +1145,18 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
           </nav>
           <div
             className="search-header-auth-buttons"
-            style={{ margin: "20px 26px 20px 0" }}
+            style={{ margin: "20px 26px 20px 0",display:"flex",gap:"10px" }}
           >
-              <Button text="Logout" className="logout-btn" onClick={handleLogout} />
+              {isLoggedIn ? (
+                <>
+                <div onClick={handleProfileClick} style={{ cursor: "pointer",height:"35px" }}>
+                <img src={ProfileIcon} style={{ width: "35px" }} alt="Profile" className="profile-icon" />
+              </div>
+                <Button text="Logout" className="logout-btn" onClick={handleLogout} />
+                </>
+      ) : (
+        <Button text="Login" className="login-btn" onClick={handleLogin} />
+      )}
               </div>
         </header>
       </div>
@@ -1381,6 +1403,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                     style={{
                       cursor: selectedArticles.length > 0 ? "pointer" : "",
                       opacity: selectedArticles.length > 0 ? 1 : "", // Change opacity for a disabled effect
+                      display: displayIfLoggedIn,
                     }}
                     title={
                       selectedArticles.length === 0
@@ -1427,6 +1450,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                   </div>
 
                   <button
+                  style={{display: displayIfLoggedIn,}}
                     onClick={
                       Object.keys(shareableLinks).length > 0
                         ? handleShare
@@ -1444,6 +1468,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                     Share
                   </button>
                   <button
+                  style={{display: displayIfLoggedIn,}}
                     className="SearchResult-Save"
                     title="Save selected articles"
                   >
@@ -1624,6 +1649,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                                 <input
                                   type="checkbox"
                                   className="result-checkbox"
+                                  style={{display: displayIfLoggedIn,}}
                                   onChange={() =>
                                     handleSourceCheckboxChange(
                                       result.source,
@@ -1663,6 +1689,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                                     ? "blue"
                                     : "black",
                                   cursor: "pointer",
+                                  display: displayIfLoggedIn,
                                 }}
                                 onClick={() =>
                                   handleBookmarkClick(
@@ -1894,7 +1921,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                             </p>
                           </div>
                           <div className="Article-Options-Right">
-                            <div class="searchResult-rate">
+                            <div class="searchResult-rate" style={{display: displayIfLoggedIn,}}>
                               {[5, 4, 3, 2, 1].map((value) => (
                                 <React.Fragment key={value}>
                                   <input
@@ -2013,7 +2040,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
         </div>
 
         <>
-          <div className="search-right-aside">
+          <div className="search-right-aside" style={{display: displayIfLoggedIn,}}>
             {openAnnotate && (
               <div className="search-annotate">
                 <Annotation
