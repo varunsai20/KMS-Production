@@ -17,19 +17,17 @@
     const navigate = useNavigate();
     const [profileImage, setProfileImage] = useState(profile);
     const [formData, setFormData] = useState({
-      user_id: '',
       fullname: '',
+      email: '',
+      role: '',
       department: '',
-      new_email: '',
-      new_status: '',
-      new_role: '',
-      new_job_title: '',
-      new_primary_research_area: '',
-      new_organization_name: '',
-      new_technical_skills: [],
-      new_research_interests: [],
+      job_title: '',
+      organization_name: '',
+      primary_research_area: '',
+      technical_skills: '',
+      research_interests: '',
     });
-
+    const[userData,setUserData]=useState({})
     const isUser = userRole === 'User'; // Check if the role is 'User'
 
     // Fetch user details on component mount
@@ -41,31 +39,19 @@
               Authorization: `Bearer ${token}`,
             },
           });
-          const userDetails = response.data.user_profile;
-          setFormData({
-            fullname: userDetails.fullname,
-            email: userDetails.email,
-            role: userDetails.role,
-            department: userDetails.department,
-            job_title: userDetails.job_title,
-            organization_name: userDetails.organization_name,
-            primary_research_area: userDetails.primary_research_area,
-            technical_skills: userDetails.technical_skills.join(', '),
-            research_interests: userDetails.research_interests.join(', '),
-          });
-          if (userDetails.profile_picture_url) {
-            setProfileImage(userDetails.profile_picture_url);
-          }
+          console.log(response)
+          setFormData(response.data.user_profile);
         } catch (error) {
           console.error('Error fetching user details:', error);
         }
       };
-
+  
       if (user_id) {
         fetchUserDetails();
       }
     }, [user_id, token]);
 
+    console.log(formData)
     // Handle image upload
     const handleImageChange = async (e) => {
       const file = e.target.files[0];
@@ -103,14 +89,27 @@
       e.preventDefault();
   
       try {
-        const updatedData = {
-          ...formData,
-          user_id,
+        const requestBody = {
+          user_id: user_id,
+          fullname: formData.fullname,
+          department: formData.department,
+          new_email: formData.email,
+          new_status: "",  // Populate if you have a status field or leave empty
+          new_role: formData.role,
+          new_job_title: formData.job_title,
+          new_primary_research_area: formData.primary_research_area,
+          new_organization_name: formData.organization_name,
+          new_technical_skills: Array.isArray(formData.technical_skills)
+            ? formData.technical_skills
+            : formData.technical_skills.split(',').map(skill => skill.trim()),
+          new_research_interests: Array.isArray(formData.research_interests)
+            ? formData.research_interests
+            : formData.research_interests.split(',').map(interest => interest.trim())
         };
   
         const response = await axios.put(
-          "http://13.127.207.184:80/admin/edit_user",
-          updatedData,
+          `http://13.127.207.184:80/admin/edit_user`,
+          requestBody,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -118,12 +117,12 @@
           }
         );
   
+        // Check for response status and navigate if successful
         if (response.status === 200) {
-          console.log("Profile data saved successfully.");
-          navigate(-1); // This will navigate to the previous URL
+          navigate('/admin/users');
         }
       } catch (error) {
-        console.error("Error saving profile data:", error);
+        console.error('Error updating user:', error);
       }
     };
 
@@ -141,28 +140,28 @@
             <div className="form-section">
               <h3>Basic Details</h3>
               <div className="form-row">
-                <div className="form-row-item">
-                  <label>Full Name</label>
-                  <input
-                    type="text"
-                    name="fullname"
-                    value={formData.fullname}
-                    onChange={handleInputChange}
-                    placeholder="Enter full name"
-                    disabled={isUser} // Disable if role is User
-                  />
-                </div>
-                <div className="form-row-item">
-                  <label>Email ID</label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    placeholder="Enter email ID"
-                    disabled={isUser} // Disable if role is User
-                  />
-                </div>
+              <div className='form-row-item'>
+            <label>Full Name</label>
+            <input 
+              type="text" 
+              name="fullname" 
+              value={formData.fullname} 
+              onChange={handleInputChange} 
+              placeholder="Enter full name" 
+              // style={{ borderColor: errors.fullname ? 'red' : '' }}
+            />
+          </div>
+          <div className='form-row-item'>
+            <label>Email ID</label>
+            <input 
+              type="email" 
+              name="email" 
+              value={formData.email} 
+              onChange={handleInputChange} 
+              placeholder="Enter email ID" 
+              // style={{ borderColor: errors.email ? 'red' : '' }}
+            />
+          </div>
               </div>
             </div>
 
@@ -170,23 +169,28 @@
             <div className="form-section">
               <h3>Role & Department</h3>
               <div className="form-row">
-                <div className="form-row-item">
+                <div className="form-row-item"> 
                   <label>Role</label>
                   <input type="text" value={formData.role} disabled />
                 </div>
-                <div className="form-row-item">
-                  <label>Department</label>
-                  <select
-                    name="department"
-                    value={formData.department}
-                    onChange={handleInputChange}
-                    disabled={isUser} // Disable if role is User
-                  >
-                    <option>Select Department</option>
-                    <option>IT</option>
-                    <option>HR</option>
-                  </select>
-                </div>
+                <div className='form-row-item'>
+            <label>Department</label>
+            <select 
+              name="department" 
+              value={formData.department} 
+              onChange={handleInputChange} 
+              className="select-box"
+              // style={{ borderColor: errors.department ? 'red' : '' }}
+            >
+              <option>Select Department</option>
+              {departments.map((dept, index) => (
+                <option key={index} value={dept}>
+                  {dept}
+                </option>
+              ))}
+            </select>
+          </div>
+
               </div>
             </div>
 
@@ -195,45 +199,53 @@
               <h3>Professional Details</h3>
               <div className="form-section-multiplerow">
                 <div className="form-row">
-                  <div className="form-row-item">
-                    <label>Job Title</label>
-                    <input
-                      type="text"
-                      name="job_title"
-                      value={formData.job_title}
-                      onChange={handleInputChange}
-                      placeholder="Enter Job Title"
-                      disabled={isUser} // Disable if role is User
-                    />
-                  </div>
-                  <div className="form-row-item">
-                    <label>Primary Research Area</label>
-                    <select
-                      name="primary_research_area"
-                      value={formData.primary_research_area}
-                      onChange={handleInputChange}
-                      disabled={isUser} // Disable if role is User
-                    >
-                      <option>Select Research Area</option>
-                      <option>DNA</option>
-                      <option>Cancer</option>
-                    </select>
-                  </div>
+                <div className='form-row-item'>
+            <label>Job Title</label>
+            <input 
+              type="text" 
+              name="job_title" 
+              value={formData.job_title} 
+              onChange={handleInputChange} 
+              placeholder="Enter Job Title" 
+              // style={{ borderColor: errors.job_title ? 'red' : '' }}
+            />
+          </div>
+          <div className='form-row-item'>
+          <label>Primary Research Area</label>
+          <select 
+            name="primary_research_area" 
+            value={formData.primary_research_area} 
+            onChange={handleInputChange} 
+            // style={{ borderColor: errors.primary_research_area ? 'red' : '' }}
+          >
+            <option>Select Expertise</option>
+            {primaryResearchAreas.map((area, index) => (
+              <option key={index} value={area}>
+                {area}
+              </option>
+            ))}
+          </select>
+        </div>
+
                 </div>
                 <div className="form-row">
-                  <div className="form-row-item">
-                    <label>Organization</label>
-                    <input
-                      className='org'
-                      type="text"
-                      name="organization_name"
-                      value={formData.organization_name}
-                      onChange={handleInputChange}
-                      placeholder="Enter organization name"
-                      disabled={isUser} // Disable if role is User
-                    />
-                  </div>
-                </div>
+                  <div className='form-row-item'>
+  <label>Organization</label>
+  <select 
+    className='org'
+    name="organization_name" 
+    value={formData.organization_name} 
+    onChange={handleInputChange} 
+    // style={{ borderColor: errors.organization_name ? 'red' : '' }}
+  >
+    <option>Select Organization</option>
+    <option value="Infer">Infer</option>
+    <option value="NIH">NIH</option>
+    <option value="Johnson & Johnson">Johnson & Johnson</option>
+    {/* Add more options here if needed */}
+  </select>
+</div>
+</div>
               </div>
             </div>
 
@@ -241,28 +253,34 @@
             <div className="form-section">
               <h3>Skills & User Interests</h3>
               <div className="form-row">
-                <div className="form-row-item">
-                  <label>Technical Skills</label>
-                  <input
-                    type="text"
-                    name="technical_skills"
-                    value={formData.technical_skills}
-                    onChange={handleInputChange}
-                    placeholder="Enter relevant software, lab techniques, etc."
-                    disabled={isUser} // Disable if role is User
-                  />
-                </div>
-                <div className="form-row-item">
-                  <label>User Interests</label>
-                  <input
-                    type="text"
-                    name="research_interests"
-                    value={formData.research_interests}
-                    onChange={handleInputChange}
-                    placeholder="Enter user interests"
-                    disabled={isUser} // Disable if role is User
-                  />
-                </div>
+              <div className='form-row-item'>
+            <label>Technical Skills</label>
+            <input 
+              type="text" 
+              name="technical_skills" 
+              value={formData.technical_skills} 
+              onChange={handleInputChange} 
+              placeholder="Enter relevant software, lab techniques etc" 
+              // style={{ borderColor: errors.technical_skills ? 'red' : '' }}
+            />
+          </div>
+          <div className='form-row-item'>
+          <label>Research Interests</label>
+          <select 
+            name="research_interests" 
+            value={formData.research_interests} 
+            onChange={handleInputChange} 
+            // style={{ borderColor: errors.research_interests ? 'red' : '' }}
+          >
+            <option>Select Research Interests</option>
+            {researchInterests.map((interest, index) => (
+              <option key={index} value={interest}>
+                {interest}
+              </option>
+            ))}
+          </select>
+        </div>
+
               </div>
             </div>
 

@@ -53,7 +53,7 @@ function App() {
       if (access_token && refresh_token && exp) {
         checkAndRefreshToken();
       }
-    }, 30 * 1000); // Check every minute (60,000 milliseconds)
+    }, 1800 * 1000); // Check every minute (60,000 milliseconds)
   
     return () => clearInterval(interval);
   });

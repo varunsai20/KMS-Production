@@ -57,7 +57,8 @@ const Lander = () => {
     }
   }, [isLanderNotesOpen]);
   return (
-    <div className="Landing-Container">
+    <div className="Landing-Container"
+    style={isLoggedIn?{height:`${100}vh`}:{}}>
       <div className="Landing-Header">
         <Header />
       </div>
@@ -102,11 +103,13 @@ const Lander = () => {
                 alt="Landing-History-Icon"
               />
               <h4>History</h4>
+
               <a href="#" onClick={handleOpenCollection}>
                 Bookmarks
               </a>
               <a href="#">Conversations</a>
               <a href="#" onClick={handleOpenNotes}>
+
                 Notes
               </a>
             </div>
@@ -117,9 +120,11 @@ const Lander = () => {
                 alt="Landing-Analytics-Icon"
               />
               <h4>Analytics</h4>
+
               <a href="#">Dashboard</a>
               <a href="#">Reports</a>
               <a href="#">Predictive Analysis</a>
+
             </div>
             <div className="Feature-Item">
               <img
@@ -128,9 +133,11 @@ const Lander = () => {
                 alt="Landing-Utilities-Icon"
               />
               <h4>Utilities</h4>
+
               <a href="#">Annotations</a>
               <a href="#">Citation</a>
               <a href="#">Protocol</a>
+
             </div>
             <div className="Feature-Item">
               <img
@@ -139,8 +146,10 @@ const Lander = () => {
                 alt="Landing-Help-Icon"
               />
               <h4>Help</h4>
+
               <a href="#">About Infer</a>
               <a href="#">FAQs</a>
+
             </div>
           </>
         ) : (
