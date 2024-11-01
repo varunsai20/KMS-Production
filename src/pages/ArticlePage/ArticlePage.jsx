@@ -26,6 +26,7 @@ import { faAnglesUp } from "@fortawesome/free-solid-svg-icons";
 import { IoMdPaperPlane } from "react-icons/io";
 import Notes from "../NotesPage/Notes";
 import { login, logout } from "../../redux/reducers/LoginAuth"; // Import login and logout actions
+import ProfileIcon from "../../assets/images/Profile-dummy.svg";
 
 const ArticlePage = () => {
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
@@ -51,6 +52,7 @@ const ArticlePage = () => {
   const [chatHistory, setChatHistory] = useState(() => {
     const storedHistory = sessionStorage.getItem("chatHistory");
     return storedHistory ? JSON.parse(storedHistory) : [];
+    
   });
   const [refreshSessions, setRefreshSessions] = useState(false);
   useEffect(() => {
@@ -181,18 +183,33 @@ const ArticlePage = () => {
     }
   }, [type]);
 
-  const handleLogout = async () => {
-    try {
-      // Make API call to /auth/logout with user_id as a parameter
-      await axios.post(`http://13.127.207.184:80/auth/logout/?user_id=${user_id}`);
-      
-      // Dispatch logout action and navigate to the home page
-      dispatch(logout());
-      navigate("/");
-    } catch (error) {
-      console.error("Error logging out:", error);
+  const handleProfileClick = () => {
+    
+    if (user?.role === "Admin") {
+      navigate(`/admin/users/profile/${user_id}`); // Navigate to Admin profile page
+    } else if (user?.role === "User") {
+      navigate(`/users/profile/${user_id}`); // Navigate to User profile page
     }
-  };
+  
+};
+const handleLogin = () => navigate('/login');
+const handleLogout = async () => {
+  try {
+    // Make API call to /auth/logout with user_id as a parameter
+    await axios.post(`http://13.127.207.184:80/auth/logout/?user_id=${user_id}`);
+    
+    // Dispatch logout action and navigate to the home page
+    dispatch(logout());
+    navigate("/");
+  } catch (error) {
+    console.error("Error logging out:", error);
+  }
+};
+useEffect(() => {
+  if (user_id && token) {
+    fetchCollections();
+  }
+}, [user_id, token]);
 
 
   useEffect(() => {
@@ -1083,9 +1100,17 @@ const ArticlePage = () => {
               </li> */}
             </ul>
           </nav>
-          <div className="auth-buttons" style={{ margin: "20px 26px 20px 0" }}>
-          <Button text="Logout" className="logout-btn" onClick={handleLogout} />
-
+          <div className="auth-buttons" style={{ margin: "20px 26px 20px 0" ,display:"flex",gap:"10px"}}>
+          {isLoggedIn ? (
+                <>
+                <div onClick={handleProfileClick} style={{ cursor: "pointer",height:"35px" }}>
+                <img src={ProfileIcon} style={{ width: "35px" }} alt="Profile" className="profile-icon" />
+              </div>
+                <Button text="Logout" className="logout-btn" onClick={handleLogout} />
+                </>
+      ) : (
+        <Button text="Login" className="login-btn" onClick={handleLogin} />
+      )}
           </div>
         </header>
         <div className="content">
