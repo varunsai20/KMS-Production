@@ -57,7 +57,8 @@ const Lander = () => {
     }
   }, [isLanderNotesOpen]);
   return (
-    <div className="Landing-Container">
+    <div className="Landing-Container"
+    style={isLoggedIn?{height:`${100}vh`}:{}}>
       <div className="Landing-Header">
         <Header />
       </div>

@@ -3,7 +3,7 @@
   flex-direction: column;
   overflow-y: hidden; /* Prevents overflow and layout changes */
   overflow-x: hidden;
-  height: 100vh;
+  /* height: 100vh; */
   position: relative;
 }
 .Landing-Content {

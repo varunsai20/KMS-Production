@@ -221,17 +221,21 @@ const CreateResearcher = () => {
 
         {/* Row 4 */}
         <div className='User-Form-Row'>
-          <div className='User-Form-Row-Items'>
-            <label>Organization</label>
-            <input 
-              type="text" 
-              name="organization_name" 
-              value={formData.organization_name} 
-              onChange={handleInputChange} 
-              placeholder="Enter organization name" 
-              style={{ borderColor: errors.organization_name ? 'red' : '' }}
-            />
-          </div>
+        <div className='User-Form-Row-Items'>
+  <label>Organization</label>
+  <select 
+    name="organization_name" 
+    value={formData.organization_name} 
+    onChange={handleInputChange} 
+    style={{ borderColor: errors.organization_name ? 'red' : '' }}
+  >
+    <option>Select Organization</option>
+    <option value="Infer">Infer</option>
+    <option value="NIH">NIH</option>
+    <option value="Johnson & Johnson">Johnson & Johnson</option>
+  </select>
+</div>
+
 
           <div className='User-Form-Row-Items'>
           <label>Primary Research Area</label>
