@@ -121,7 +121,6 @@ const Login = () => {
               placeholder="Enter username"
               value={email}
               onChange={handleEmailChange}
-              style={{ border: "1px solid #1A82FF" }}
             />
           </div>
         </div>
