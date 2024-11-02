@@ -4,15 +4,15 @@ import SearchIcon from "../assets/images/Search.svg";
 import "./Collection.css";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { useParams, useLocation } from "react-router-dom";
-import { IoCloseOutline } from "react-icons/io5";
+//import { useParams, useLocation } from "react-router-dom";
+//import { IoCloseOutline } from "react-icons/io5";
 const Collection = () => {
   const [collections, setCollections] = useState([]);
   const [selectedCollection, setSelectedCollection] = useState(null);
   const [text, setText] = useState("");
   const [filteredCollections, setFilteredCollections] = useState([]);
   const navigate = useNavigate();
-  const location = useLocation();
+  //const location = useLocation();
   const { user } = useSelector((state) => state.auth);
   const token = useSelector((state) => state.auth.access_token);
   const user_id = user?.user_id; // Replace with actual user ID
@@ -123,9 +123,6 @@ const Collection = () => {
             <h3 className="collection-articles-header">
               Articles in {selectedCollection.name}
             </h3>
-            <button className="close-collection">
-              <IoCloseOutline size={30} color="black" />
-            </button>
             <table>
               <thead>
                 <tr className="heading-row">
