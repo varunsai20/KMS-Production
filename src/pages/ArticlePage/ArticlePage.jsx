@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import { useSelector,useDispatch } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { useParams, useLocation } from "react-router-dom";
 import "./ArticlePage.css";
 import Button from "../../components/Buttons";
@@ -31,10 +31,11 @@ import ProfileIcon from "../../assets/images/Profile-dummy.svg";
 const ArticlePage = () => {
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
   const displayIfLoggedIn = isLoggedIn ? null : "none";
-  const widthIfLoggedIn=isLoggedIn?null:"100%";
+  const widthIfLoggedIn = isLoggedIn ? null : "100%";
   const { pmid } = useParams();
   const { user } = useSelector((state) => state.auth);
-  const token = useSelector((state) => state.auth.access_token);const dispatch = useDispatch();
+  const token = useSelector((state) => state.auth.access_token);
+  const dispatch = useDispatch();
   const user_id = user?.user_id;
   const [type, id1] = pmid.split(":");
   const id = Number(id1);
@@ -52,7 +53,6 @@ const ArticlePage = () => {
   const [chatHistory, setChatHistory] = useState(() => {
     const storedHistory = sessionStorage.getItem("chatHistory");
     return storedHistory ? JSON.parse(storedHistory) : [];
-    
   });
   const [refreshSessions, setRefreshSessions] = useState(false);
   useEffect(() => {
@@ -95,15 +95,17 @@ const ArticlePage = () => {
       if (response.data) {
         setCollections(response.data.collections);
         if (response.data.collections.length > 0) {
-          localStorage.setItem("collections", JSON.stringify(response.data.collections));
-
+          localStorage.setItem(
+            "collections",
+            JSON.stringify(response.data.collections)
+          );
         }
       }
     } catch (error) {
       console.error("Error fetching collections:", error);
     }
   };
-  
+
   useEffect(() => {
     if (user_id && token) {
       fetchCollections();
@@ -115,7 +117,7 @@ const ArticlePage = () => {
     const numericIdType = Number(idType);
 
     // console.log(`Checking for idType: ${numericIdType}`);
-  
+
     // Loop through each collection and log article IDs as numbers
     // Object.entries(collections).forEach(([collectionName, articleArray]) => {
     //   console.log(`Collection: ${collectionName}`);
@@ -123,7 +125,6 @@ const ArticlePage = () => {
     //     console.log(`article_id: ${Number(article.article_id)}`);
     //   });
     // });
-  
 
     // Check if the article is bookmarked
     const result = Object.values(collections).some((articleArray) =>
@@ -150,7 +151,6 @@ const ArticlePage = () => {
   const [notesHeight, setNotesHeight] = useState(35);
   const minHeight = 15;
   const maxHeight = 60;
-
 
   // Add this useEffect to reset savedText when openNotes becomes false
   useEffect(() => {
@@ -184,33 +184,32 @@ const ArticlePage = () => {
   }, [type]);
 
   const handleProfileClick = () => {
-    
     if (user?.role === "Admin") {
       navigate(`/admin/users/profile/${user_id}`); // Navigate to Admin profile page
     } else if (user?.role === "User") {
       navigate(`/users/profile/${user_id}`); // Navigate to User profile page
     }
-  
-};
-const handleLogin = () => navigate('/login');
-const handleLogout = async () => {
-  try {
-    // Make API call to /auth/logout with user_id as a parameter
-    await axios.post(`http://13.127.207.184:80/auth/logout/?user_id=${user_id}`);
-    
-    // Dispatch logout action and navigate to the home page
-    dispatch(logout());
-    navigate("/");
-  } catch (error) {
-    console.error("Error logging out:", error);
-  }
-};
-useEffect(() => {
-  if (user_id && token) {
-    fetchCollections();
-  }
-}, [user_id, token]);
+  };
+  const handleLogin = () => navigate("/login");
+  const handleLogout = async () => {
+    try {
+      // Make API call to /auth/logout with user_id as a parameter
+      await axios.post(
+        `http://13.127.207.184:80/auth/logout/?user_id=${user_id}`
+      );
 
+      // Dispatch logout action and navigate to the home page
+      dispatch(logout());
+      navigate("/");
+    } catch (error) {
+      console.error("Error logging out:", error);
+    }
+  };
+  useEffect(() => {
+    if (user_id && token) {
+      fetchCollections();
+    }
+  }, [user_id, token]);
 
   useEffect(() => {
     // Determine the source based on `type`
@@ -476,7 +475,6 @@ useEffect(() => {
       );
 
       if (response.status === 201) {
-
         const updatedCollections = collections.map((collection) => {
           if (collection === collectionName) {
             // Append the new article ID to the articles if it doesn't already exist
@@ -543,7 +541,7 @@ useEffect(() => {
     if (!openNotes) {
       setOpenNotes(true);
     }
-    
+
     // Hide the popup after saving
     if (popupRef.current) {
       popupRef.current.style.display = "none";
@@ -1080,11 +1078,7 @@ useEffect(() => {
         <header className="header">
           <div className="logo" style={{ margin: "20px 0" }}>
             <a href="/">
-              <img
-                href="/"
-                src={Logo}
-                alt="Infer Logo"
-              />
+              <img href="/" src={Logo} alt="Infer Logo" />
             </a>
           </div>
           <nav className="nav-menu">
@@ -1100,95 +1094,113 @@ useEffect(() => {
               </li> */}
             </ul>
           </nav>
-          <div className="auth-buttons" style={{ margin: "20px 26px 20px 0" ,display:"flex",gap:"10px"}}>
-          {isLoggedIn ? (
-                <>
-                <div onClick={handleProfileClick} style={{ cursor: "pointer",height:"35px" }}>
-                <img src={ProfileIcon} style={{ width: "35px" }} alt="Profile" className="profile-icon" />
-              </div>
-                <Button text="Logout" className="logout-btn" onClick={handleLogout} />
-                </>
-      ) : (
-        <Button text="Login" className="login-btn" onClick={handleLogin} />
-      )}
+          <div
+            className="auth-buttons"
+            style={{ margin: "20px 26px 20px 0", display: "flex", gap: "10px" }}
+          >
+            {isLoggedIn ? (
+              <>
+                <div
+                  onClick={handleProfileClick}
+                  style={{ cursor: "pointer", height: "35px" }}
+                >
+                  <img
+                    src={ProfileIcon}
+                    style={{ width: "35px" }}
+                    alt="Profile"
+                    className="profile-icon"
+                  />
+                </div>
+                <Button
+                  text="Logout"
+                  className="logout-btn"
+                  onClick={handleLogout}
+                />
+              </>
+            ) : (
+              <Button
+                text="Login"
+                className="login-btn"
+                onClick={handleLogin}
+              />
+            )}
           </div>
         </header>
         <div className="content">
-          <div className="history-pagination" style={{display: displayIfLoggedIn,}}>
+          <div
+            className="history-pagination"
+            style={{ display: displayIfLoggedIn }}
+          >
             <h5>Recent Interactions</h5>
             <ul>
+              {sessions.length > 0 ? (
+                sessions.map((session) => {
+                  // Mapping keywords to custom titles
+                  const mappedTitle = session.session_title.includes(
+                    "what are the key highlights from this article"
+                  )
+                    ? "Key Highlights"
+                    : session.session_title.includes(
+                        "what can we conclude form this article"
+                      )
+                    ? "Conclusion"
+                    : session.session_title.includes("Summarize this article")
+                    ? "Summarize"
+                    : session.session_title; // Default title if no keyword match
 
-            {sessions.length > 0 ? (
-  sessions.map((session) => {
-    // Mapping keywords to custom titles
-    const mappedTitle = session.session_title.includes("what are the key highlights from this article")
-      ? "Key Highlights"
-      : session.session_title.includes("what can we conclude form this article")
-      ? "Conclusion"
-      : session.session_title.includes("Summarize this article")
-      ? "Summarize"
-      : session.session_title; // Default title if no keyword match
-
-    return (
-      <li key={session.session_id}>
-        {editingSessionId === session.session_id ? (
-          <TextField
-            type="text"
-            style={{ padding: "0" }}
-            sx={{
-              "& .MuiOutlinedInput-root": {
-                height: "40px",
-                "& fieldset": {
-                  borderColor: "transparent",
-                },
-                "&:hover fieldset": {
-                  borderColor: "transparent",
-                },
-                "&.Mui-focused fieldset": {
-                  borderColor: "transparent",
-                },
-              },
-              "& .MuiOutlinedInput-input": {
-                outline: "none",
-              },
-            }}
-            value={editedTitle}
-            onChange={handleTitleChange}
-            onBlur={() => handleSaveEdit(session.session_id)} // Save on blur
-            autoFocus
-          />
-        ) : (
-          <a
-            onClick={() => {
-              console.log("Session ID:", session.session_id);
-              console.log("Source:", session.source);
-              handleSessionClick(
-                session.article_id,
-                session.source,
-                session.session_id,
-                user_id
-              );
-            }}
-          >
-            {mappedTitle.slice(0, 30)}
-            {mappedTitle.length > 30 ? "..." : ""}
-          </a>
-        )}
-        <FontAwesomeIcon
-          title="Rename the title"
-          icon={faPen}
-          onClick={() => handleEditClick(session.session_id, mappedTitle)}
-          style={{ cursor: "pointer", marginLeft: "10px" }}
-        />
-      </li>
-    );
-  })
-) : (
-  <li>No sessions available</li>
-)}
-
-
-
+                  return (
+                    <li key={session.session_id}>
+                      {editingSessionId === session.session_id ? (
+                        <input
+                          type="text"
+                          style={{
+                            padding: "0",
+                            height: "20px",
+                            width: "100%", // Adjust width as needed
+                            fontSize: "16px", // Adjust font size as needed
+                            // Add any additional styles you need
+                          }}
+                          value={editedTitle}
+                          onChange={handleTitleChange}
+                          onBlur={() => handleSaveEdit(session.session_id)} // Save on blur
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              handleSaveEdit(session.session_id);
+                            }
+                          }}
+                          autoFocus
+                        />
+                      ) : (
+                        <a
+                          onClick={() => {
+                            console.log("Session ID:", session.session_id);
+                            console.log("Source:", session.source);
+                            handleSessionClick(
+                              session.article_id,
+                              session.source,
+                              session.session_id,
+                              user_id
+                            );
+                          }}
+                        >
+                          {mappedTitle.slice(0, 30)}
+                          {mappedTitle.length > 30 ? "..." : ""}
+                        </a>
+                      )}
+                      <FontAwesomeIcon
+                        title="Rename the title"
+                        icon={faPen}
+                        onClick={() =>
+                          handleEditClick(session.session_id, mappedTitle)
+                        }
+                        style={{ cursor: "pointer", marginLeft: "10px" }}
+                      />
+                    </li>
+                  );
+                })
+              ) : (
+                <li>No sessions available</li>
+              )}
             </ul>
           </div>
 
@@ -1197,7 +1209,7 @@ useEffect(() => {
               className="article-content"
               onMouseUp={handleMouseUp}
               ref={contentRef}
-              style={{width: widthIfLoggedIn}}
+              style={{ width: widthIfLoggedIn }}
             >
               <div className="article-title">
                 <div
@@ -1216,7 +1228,10 @@ useEffect(() => {
                     ></img>
                     <button className="back-button">Back</button>
                   </div>
-                  <div className="Rate-Article" style={{display: displayIfLoggedIn,}}>
+                  <div
+                    className="Rate-Article"
+                    style={{ display: displayIfLoggedIn }}
+                  >
                     <div>
                       <span>Rate the article </span>
                     </div>
@@ -1385,24 +1400,23 @@ useEffect(() => {
                 {articleData.article.body_content &&
                   renderContentInOrder(articleData.article.body_content, true)}
 
-
-                  {showStreamingSection && (
-                    <div className="streaming-section">
-                      <div className="streaming-content">
-                        
-                        {chatHistory.map((chat, index) => (
-                          <div key={index}>
-                            <div className="query-asked">
+                {showStreamingSection && (
+                  <div className="streaming-section">
+                    <div className="streaming-content">
+                      {chatHistory.map((chat, index) => (
+                        <div key={index}>
+                          <div className="query-asked">
                             <span>
-                            {chat.query === "Summarize this article"
-                              ? "Summarize"
-                              : chat.query === "what can we conclude form this article"
-                              ? "Conclusion"
-                              : chat.query === "what are the key highlights from this article"
-                              ? "Key Highlights"
-                              : chat.query}
-                          </span>                            
-
+                              {chat.query === "Summarize this article"
+                                ? "Summarize"
+                                : chat.query ===
+                                  "what can we conclude form this article"
+                                ? "Conclusion"
+                                : chat.query ===
+                                  "what are the key highlights from this article"
+                                ? "Key Highlights"
+                                : chat.query}
+                            </span>
                           </div>
 
                           <div
@@ -1462,12 +1476,21 @@ useEffect(() => {
               </div>
             </div>
           ) : (
-            <div className="Article-data-not-found" style={{width: widthIfLoggedIn, display:"flex",alignItems:'center',justifyContent:"center",height:"70vh"}}>
+            <div
+              className="Article-data-not-found"
+              style={{
+                width: widthIfLoggedIn,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                height: "70vh",
+              }}
+            >
               <p style={{}}>Data not found for the given PMID</p>
             </div>
           )}
 
-          <div className="right-aside" style={{display: displayIfLoggedIn,}}>
+          <div className="right-aside" style={{ display: displayIfLoggedIn }}>
             <div className="annotate-note">
               {openAnnotate && (
                 <div
@@ -1537,7 +1560,10 @@ useEffect(() => {
 
       <div
         className="chat-query"
-        style={{ width: openNotes ? contentWidth : "69%",display: displayIfLoggedIn, }}
+        style={{
+          width: openNotes ? contentWidth : "69%",
+          display: displayIfLoggedIn,
+        }}
       >
         <div className="predefined-prompts">
           <button onClick={() => handlePromptClick("Summarize this article")}>
@@ -1552,9 +1578,7 @@ useEffect(() => {
           </button>
           <button
             onClick={() =>
-              handlePromptClick(
-                "what are the key highlights from this article"
-              )
+              handlePromptClick("what are the key highlights from this article")
             }
           >
             Key Highlights

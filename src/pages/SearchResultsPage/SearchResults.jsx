@@ -10,14 +10,15 @@ import annotate from "../../assets/images/task-square.svg";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBookmark as regularBookmark } from "@fortawesome/free-regular-svg-icons";
 import { faAnglesUp } from "@fortawesome/free-solid-svg-icons";
-import uparrow from "../../assets/images/uparrow.svg"
+import uparrow from "../../assets/images/uparrow.svg";
 import { IoCloseOutline, IoShareSocial } from "react-icons/io5";
-import downarrow from "../../assets/images/downarrow.svg"
+import downarrow from "../../assets/images/downarrow.svg";
 import axios from "axios";
 import { login, logout } from "../../redux/reducers/LoginAuth"; // Import login and logout actions
 import Button from "../../components/Buttons";
 import Logo from "../../assets/images/Logo_New.svg";
 import ProfileIcon from "../../assets/images/Profile-dummy.svg";
+import { toast } from "react-toastify";
 const ITEMS_PER_PAGE = 10;
 const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   const location = useLocation(); // Access the passed state
@@ -26,9 +27,9 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
   const displayIfLoggedIn = isLoggedIn ? null : "none";
   const dispatch = useDispatch();
-  const user_id=user?.user_id;
-  const token=useSelector((state) => state.auth.access_token);
-  console.log(user)
+  const user_id = user?.user_id;
+  const token = useSelector((state) => state.auth.access_token);
+  console.log(user);
   const searchTerm = sessionStorage.getItem("SearchTerm");
   const navigate = useNavigate();
   const contentRightRef = useRef(null); // Ref for searchContent-right
@@ -41,10 +42,10 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   const totalArticles = useMemo(() => {
     return [...bioRxivArticles, ...plosArticles, ...selectedArticles];
   }, [bioRxivArticles, plosArticles, selectedArticles]);
-  const [showPopup, setShowPopup] = useState(false);
-  const [hoveredRow, setHoveredRow] = useState(null);
+  //const [showPopup, setShowPopup] = useState(false);
+  //const [hoveredRow, setHoveredRow] = useState(null);
   const [shareableLinks, setShareableLinks] = useState({});
-  const [bookmarkedPmids, setBookmarkedPmids] = useState({});
+  //const [bookmarkedPmids, setBookmarkedPmids] = useState({});
   const [currentIdType, setCurrentIdType] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [collections, setCollections] = useState([]);
@@ -62,8 +63,10 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       if (response.data) {
         setCollections(response.data.collections);
         if (response.data.collections.length > 0) {
-          localStorage.setItem("collections", JSON.stringify(response.data.collections));
-
+          localStorage.setItem(
+            "collections",
+            JSON.stringify(response.data.collections)
+          );
         }
       }
     } catch (error) {
@@ -71,20 +74,20 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
     }
   };
   const handleProfileClick = () => {
-    
-      if (user?.role === "Admin") {
-        navigate(`/admin/users/profile/${user_id}`); // Navigate to Admin profile page
-      } else if (user?.role === "User") {
-        navigate(`/users/profile/${user_id}`); // Navigate to User profile page
-      }
-    
+    if (user?.role === "Admin") {
+      navigate(`/admin/users/profile/${user_id}`); // Navigate to Admin profile page
+    } else if (user?.role === "User") {
+      navigate(`/users/profile/${user_id}`); // Navigate to User profile page
+    }
   };
-  const handleLogin = () => navigate('/login');
+  const handleLogin = () => navigate("/login");
   const handleLogout = async () => {
     try {
       // Make API call to /auth/logout with user_id as a parameter
-      await axios.post(`http://13.127.207.184:80/auth/logout/?user_id=${user_id}`);
-      
+      await axios.post(
+        `http://13.127.207.184:80/auth/logout/?user_id=${user_id}`
+      );
+
       // Dispatch logout action and navigate to the home page
       dispatch(logout());
       navigate("/");
@@ -120,12 +123,11 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
     return result;
   };
 
-  
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const handleEmailClick = () => setIsEmailModalOpen(true);
-  const handleCloseEmailModal = () => setIsEmailModalOpen(false);
-  const [email,setEmail]=useState()
-  const [emailSubject,setEmailSubject]=useState()
+  //const handleCloseEmailModal = () => setIsEmailModalOpen(false);
+  const [email, setEmail] = useState();
+  const [emailSubject, setEmailSubject] = useState();
 
   const [newCollectionName, setNewCollectionName] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -459,27 +461,53 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
         }
       );
 
-      if (response.status === 201) {
+      // if (response.status === 201) {
+      //   console.log(response.data.collections);
 
-        const updatedCollections = collections.map((collection) => {
-          if (collection === collectionName) {
-            // Append the new article ID to the articles if it doesn't already exist
-            return {
-              ...collection,
-              articles: [...(collection.articles || []), currentIdType],
-            };
-          }
-          return collection;
-        });
+      //   const updatedCollections = collections.map((collection) => {
+      //     if (collection === collectionName) {
+      //       // Append the new article ID to the articles if it doesn't already exist
+      //       console.log(response.data.collections);
+
+      //       return {
+      //         ...collection,
+      //         articles: [...(collection.articles || []), currentIdType],
+      //       };
+      //     }
+      //     return collection;
+      //   });
+      if (response.status === 201) {
+        const updatedCollections = {
+          ...collections,
+          [collectionName]: [
+            ...(collections[collectionName] || []),
+            {
+              article_id: String(currentIdType),
+              article_title: articleTitle,
+              article_source: source,
+            },
+          ],
+        };
 
         setCollections(updatedCollections);
         localStorage.setItem("collections", JSON.stringify(updatedCollections));
+        toast.success("Successfully added to Existing Collection", {
+          position: "top-right",
+          autoClose: 1000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+        });
 
         await fetchCollections(); // Refetch collections after successful addition
 
         setIsModalOpen(false);
       }
     } catch (error) {
+      toast.error("Failed to Add to the collection");
       console.error("Error adding bookmark to existing collection:", error);
     }
   };
@@ -507,11 +535,22 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       );
 
       if (response.status === 201) {
+        toast.success("Collection Created", {
+          position: "top-right",
+          autoClose: 1000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+        });
         await fetchCollections(); // Refetch collections after successful creation
         setNewCollectionName("");
         setIsModalOpen(false);
       }
     } catch (error) {
+      toast.error("Failed to CreateCollection");
       console.error("Error creating new collection:", error);
     }
   };
@@ -716,11 +755,13 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
     const queryParams = filterTypes
       .map((type) => `article_type=${encodeURIComponent(type)}`) // Encode each type for URL safety
       .join("&");
-  
-    const apiUrl = `http://13.127.207.184:80/core_search/?term=${encodeURIComponent(searchTerm)}&${queryParams}`;
-    
+
+    const apiUrl = `http://13.127.207.184:80/core_search/?term=${encodeURIComponent(
+      searchTerm
+    )}&${queryParams}`;
+
     setLoading(true);
-  
+
     axios
       .get(apiUrl, {
         headers: {
@@ -732,7 +773,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
         const data = response.data;
         setResults(data);
         setLoading(false);
-  
+
         // Save the filter state
         localStorage.setItem(
           "articleTypeFilter",
@@ -743,16 +784,17 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
         navigate("/search", { state: { data, searchTerm } });
       })
       .catch((error) => {
-        console.error("Error fetching data from the API with article type filters", error);
+        console.error(
+          "Error fetching data from the API with article type filters",
+          error
+        );
         setLoading(false);
         navigate("/search", {
           state: { data: [], searchTerm, dateloading: true },
         });
       });
   };
-  
-  
-  
+
   const handleApplyFilters = () => {
     applyFilters(filters);
     setShowFilterPopup(false);
@@ -828,14 +870,14 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       )
     );
   };
-  
+
   const handleResetAll = () => {
     // Clear the filters from state
     setFilters({ articleType: [], sourceType: [] });
     setAnnotateData([]);
-    setBioRxivArticles([]);  // Reset bioRxivArticles array
-    setPlosArticles([]);      // Reset plosArticles array
-    setSelectedArticles([]);  // Reset selectedArticles array
+    setBioRxivArticles([]); // Reset bioRxivArticles array
+    setPlosArticles([]); // Reset plosArticles array
+    setSelectedArticles([]); // Reset selectedArticles array
 
     setShareableLinks({});
     setOpenAnnotate(false);
@@ -942,19 +984,19 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   };
   console.log(totalArticles);
   const handleSourceCheckboxChange = (source, idType, doi) => {
-    const sourceType = source ; // Set to "PubMed" if source is null or undefined
+    const sourceType = source; // Set to "PubMed" if source is null or undefined
     const uniqueId = `${sourceType}_${idType}`;
-    console.log(sourceType)
+    console.log(sourceType);
     let shareableLink;
     if (sourceType === "pubmed") {
-      console.log("entered")
+      console.log("entered");
       shareableLink = `https://pubmed.ncbi.nlm.nih.gov/${idType}`;
     } else if (sourceType === "Public Library of Science (PLOS)") {
       shareableLink = `https://journals.plos.org/plosone/article?id=${doi}`;
     } else if (sourceType === "BioRxiv") {
       shareableLink = `https://www.biorxiv.org/content/${doi}`;
     }
-  
+
     // Toggle link in shareableLinks state
     setShareableLinks((prevLinks) => {
       if (prevLinks[uniqueId]) {
@@ -968,9 +1010,9 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
           ...prevLinks,
           [uniqueId]: shareableLink,
         };
-      } 
+      }
     });
-  
+
     // Call appropriate checkbox handler based on source type
     if (sourceType === "pubmed") {
       handleCheckboxChange(uniqueId);
@@ -980,7 +1022,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       handleBioRxivBoxChange(uniqueId);
     }
   };
-  
 
   const isArticleSelected = (source, idType) => {
     const uniqueId = `${source}_${idType}`; // Create unique ID for checking selection state
@@ -996,14 +1037,19 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
     setIsEmailModalOpen(true);
   };
   const handleSendEmail = async () => {
+    if (!email) {
+      toast.error("Please enter an email address.");
+      return;
+    }
+
     const links = Object.values(shareableLinks).join(" "); // Get all the URLs as a single space-separated string
-  
+
     const emailData = {
       email: email, // assuming `email` state holds the email input value
       subject: emailSubject || "Check out this article", // default subject if none provided
       content: links, // the concatenated URLs
     };
-    console.log(links)
+    console.log(links);
     try {
       const response = await axios.post(
         "http://13.127.207.184:80/core_search/sharearticle",
@@ -1014,14 +1060,32 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
           },
         }
       );
-      
+
       if (response.status === 200) {
+        toast.success("Email sent successfully", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+        });
         console.log("Email sent successfully");
+        setEmail("");
+        setEmailSubject("");
         handleCloseEmailModal(); // Close modal after successful email send
       }
     } catch (error) {
       console.error("Error sending email:", error);
+      toast.error("Failed to send email. Please try again.");
     }
+  };
+  const handleCloseEmailModal = () => {
+    setIsEmailModalOpen(false);
+    setEmail("");
+    setEmailSubject("");
   };
   const handleAnnotateClick = async () => {
     if (totalArticles.length > 0) {
@@ -1119,15 +1183,11 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
 
   return (
     <div className="Container" ref={contentRightRef}>
-      <div className="search-container-content"      >
+      <div className="search-container-content">
         <header className="search-header">
           <div className="search-header-logo" style={{ margin: "20px 0" }}>
             <a href="/">
-              <img
-                href="/"
-                src={Logo}
-                alt="Infer Logo"
-              />
+              <img href="/" src={Logo} alt="Infer Logo" />
             </a>
           </div>
           <nav className="nav-menu">
@@ -1145,19 +1205,35 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
           </nav>
           <div
             className="search-header-auth-buttons"
-            style={{ margin: "20px 26px 20px 0",display:"flex",gap:"10px" }}
+            style={{ margin: "20px 26px 20px 0", display: "flex", gap: "10px" }}
           >
-              {isLoggedIn ? (
-                <>
-                <div onClick={handleProfileClick} style={{ cursor: "pointer",height:"35px" }}>
-                <img src={ProfileIcon} style={{ width: "35px" }} alt="Profile" className="profile-icon" />
-              </div>
-                <Button text="Logout" className="logout-btn" onClick={handleLogout} />
-                </>
-      ) : (
-        <Button text="Login" className="login-btn" onClick={handleLogin} />
-      )}
-              </div>
+            {isLoggedIn ? (
+              <>
+                <div
+                  onClick={handleProfileClick}
+                  style={{ cursor: "pointer", height: "35px" }}
+                >
+                  <img
+                    src={ProfileIcon}
+                    style={{ width: "35px" }}
+                    alt="Profile"
+                    className="profile-icon"
+                  />
+                </div>
+                <Button
+                  text="Logout"
+                  className="logout-btn"
+                  onClick={handleLogout}
+                />
+              </>
+            ) : (
+              <Button
+                text="Login"
+                className="login-btn"
+                onClick={handleLogin}
+              />
+            )}
+          </div>
         </header>
       </div>
       <SearchBar className="searchResults-Bar"></SearchBar>
@@ -1177,9 +1253,9 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
               <h5 onClick={() => setShowArticleType(!showArticleType)}>
                 Article type{" "}
                 {showArticleType ? (
-                  <img src={downarrow}/>
+                  <img src={downarrow} />
                 ) : (
-                  <img src={uparrow}/>
+                  <img src={uparrow} />
                 )}
               </h5>
               {showArticleType && (
@@ -1234,9 +1310,9 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
               <h5 onClick={() => setShowSourceType(!showSourceType)}>
                 Source Type{" "}
                 {showSourceType ? (
-                  <img src={downarrow}/>
+                  <img src={downarrow} />
                 ) : (
-                  <img src={uparrow}/>
+                  <img src={uparrow} />
                 )}
               </h5>
 
@@ -1281,9 +1357,9 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                 Publication date{" "}
                 <span>
                   {showPublicationDate ? (
-                    <img src={downarrow}/>
+                    <img src={downarrow} />
                   ) : (
-                    <img src={uparrow}/>
+                    <img src={uparrow} />
                   )}
                 </span>
               </h5>
@@ -1369,9 +1445,9 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                 <span>Text availability</span>
                 <span>
                   {showTextAvailability ? (
-                    <img src={downarrow}/>
+                    <img src={downarrow} />
                   ) : (
-                    <img src={uparrow}/>
+                    <img src={uparrow} />
                   )}
                 </span>
               </h5>
@@ -1450,14 +1526,16 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                   </div>
 
                   <button
-                  style={{display: displayIfLoggedIn,}}
+                    style={{ display: displayIfLoggedIn }}
                     onClick={
                       Object.keys(shareableLinks).length > 0
                         ? handleShare
                         : null
-                    } 
+                    }
                     className={`SearchResult-Share ${
-                      Object.keys(shareableLinks).length > 0  ? "active" : "disabled"
+                      Object.keys(shareableLinks).length > 0
+                        ? "active"
+                        : "disabled"
                     }`}
                     title={
                       Object.keys(shareableLinks).length === 0
@@ -1468,7 +1546,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                     Share
                   </button>
                   <button
-                  style={{display: displayIfLoggedIn,}}
+                    style={{ display: displayIfLoggedIn }}
                     className="SearchResult-Save"
                     title="Save selected articles"
                   >
@@ -1649,7 +1727,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                                 <input
                                   type="checkbox"
                                   className="result-checkbox"
-                                  style={{display: displayIfLoggedIn,}}
+                                  style={{ display: displayIfLoggedIn }}
                                   onChange={() =>
                                     handleSourceCheckboxChange(
                                       result.source,
@@ -1764,43 +1842,65 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                                   </div>
                                 </div>
                               )}
-                               {isEmailModalOpen && (
-        <div className="email-modal-overlay" style={{backdropFilter: "blur(1px)",background:"none"}}onClick={handleCloseEmailModal}>
-          <div
-            className="email-modal-content"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="email-modal-header">
-              <h3>Send to</h3>
-              <button
-                className="email-modal-close-button"
-                onClick={handleCloseEmailModal}
-              >
-                <IoCloseOutline size={20} />
-              </button>
-            </div>
-            <div className="email-modal-body" style={{display:"flex",gap:"10px",flexDirection:"column"}}>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Email"
-                className="email-input"
-              />
-              <input
-                type="text"
-                value={emailSubject}
-                onChange={(e) => setEmailSubject(e.target.value)}
-                placeholder="Enter Subject"
-                className="email-input"
-              />
-              <button onClick={handleSendEmail} style={{width:"50%",margin:"auto"}}className="send-button">
-                Send
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+                              {isEmailModalOpen && (
+                                <div
+                                  className="email-modal-overlay"
+                                  style={{
+                                    backdropFilter: "blur(1px)",
+                                    background: "none",
+                                  }}
+                                  onClick={handleCloseEmailModal}
+                                >
+                                  <div
+                                    className="email-modal-content"
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    <div className="email-modal-header">
+                                      <h3>Send to</h3>
+                                      <button
+                                        className="email-modal-close-button"
+                                        onClick={handleCloseEmailModal}
+                                      >
+                                        <IoCloseOutline size={20} />
+                                      </button>
+                                    </div>
+                                    <div
+                                      className="email-modal-body"
+                                      style={{
+                                        display: "flex",
+                                        gap: "10px",
+                                        flexDirection: "column",
+                                      }}
+                                    >
+                                      <input
+                                        type="email"
+                                        value={email}
+                                        onChange={(e) =>
+                                          setEmail(e.target.value)
+                                        }
+                                        placeholder="Email"
+                                        className="email-input"
+                                      />
+                                      <input
+                                        type="text"
+                                        value={emailSubject}
+                                        onChange={(e) =>
+                                          setEmailSubject(e.target.value)
+                                        }
+                                        placeholder="Enter Subject"
+                                        className="email-input"
+                                      />
+                                      <button
+                                        onClick={handleSendEmail}
+                                        style={{ width: "50%", margin: "auto" }}
+                                        className="send-button"
+                                      >
+                                        Send
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
                             </div>
                             <p className="searchresult-authors">{`Published on: ${result.publication_date}`}</p>
                             <div className="searchresult-ID">
@@ -1921,7 +2021,10 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                             </p>
                           </div>
                           <div className="Article-Options-Right">
-                            <div class="searchResult-rate" style={{display: displayIfLoggedIn,}}>
+                            <div
+                              class="searchResult-rate"
+                              style={{ display: displayIfLoggedIn }}
+                            >
                               {[5, 4, 3, 2, 1].map((value) => (
                                 <React.Fragment key={value}>
                                   <input
@@ -2040,7 +2143,10 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
         </div>
 
         <>
-          <div className="search-right-aside" style={{display: displayIfLoggedIn,}}>
+          <div
+            className="search-right-aside"
+            style={{ display: displayIfLoggedIn }}
+          >
             {openAnnotate && (
               <div className="search-annotate">
                 <Annotation
@@ -2104,7 +2210,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
               >
                 <img src={notesicon} alt="notes-icon" />
               </div> */}
-             
               </>
             </div>
           </div>

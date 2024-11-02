@@ -122,7 +122,6 @@ const NoteItem = ({ note, onEdit, onDelete, isOpenNotes }) => {
           }}
           style={{ color: "#333", margin: 0 }}
         />
-
       </div>
 
       {/* Popup Menu */}
