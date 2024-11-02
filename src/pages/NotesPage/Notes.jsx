@@ -12,6 +12,7 @@ const NotesManager = ({
   notesHeight,
   isOpenNotes,
   height,
+  onCloseNotes,
 }) => {
   const [currentSelectedText, setSelectedText] = useState("");
   useEffect(() => {
@@ -27,14 +28,12 @@ const NotesManager = ({
   const user_id = user?.user_id;
   const token = useSelector((state) => state.auth.access_token);
 
-
   const [notes, setNotes] = useState([]);
   const [currentView, setCurrentView] = useState("list"); // 'list', 'create', 'edit'
   const [selectedNote, setSelectedNote] = useState(null);
-  
+
   const [textToSave, setTextToSave] = useState([]); // Store the passed selected text
   const [filterText, setFilterText] = useState("");
-
 
   const fetchNotes = async () => {
     try {
@@ -49,7 +48,7 @@ const NotesManager = ({
       const notesArray = Array.isArray(response.data.data)
         ? response.data.data
         : Object.values(response.data.data);
-      
+
       setNotes(notesArray);
       localStorage.setItem("notes", JSON.stringify(notesArray));
     } catch (error) {
@@ -58,17 +57,12 @@ const NotesManager = ({
   };
 
   useEffect(() => {
-
     if (user_id && token) {
       fetchNotes();
     }
   }, [user_id, token]);
 
-
   console.log(notes);
-
-
-
 
   // Update filterText when returning to "list" view
   useEffect(() => {
@@ -76,7 +70,6 @@ const NotesManager = ({
       setFilterText("");
     }
   }, [currentView]);
-
 
   // useEffect(() => {
   //   if (selectedText) {
@@ -86,7 +79,6 @@ const NotesManager = ({
   //     setCurrentView("create"); // Switch to 'create' view
   //   }
   // }, [selectedText]);
-
 
   const handleAddNewNote = () => {
     setCurrentView("create");
@@ -120,8 +112,9 @@ const NotesManager = ({
       );
 
       if (response.status === 200) {
-
-        setNotes((prevNotes) => prevNotes.filter((note) => note.note_id !== noteId));
+        setNotes((prevNotes) =>
+          prevNotes.filter((note) => note.note_id !== noteId)
+        );
 
         console.log("Note deleted successfully");
       } else {

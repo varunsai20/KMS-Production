@@ -49,9 +49,8 @@ const Createnotes = ({
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const { user } = useSelector((state) => state.auth);
 
-
-  const user_id=user?.user_id;
-  const token=useSelector((state) => state.auth.access_token);
+  const user_id = user?.user_id;
+  const token = useSelector((state) => state.auth.access_token);
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [subject, setSubject] = useState("");
@@ -69,6 +68,9 @@ const Createnotes = ({
   const handleSendEmail = () => {
     // Handle sending email logic here, e.g., make an API call
     console.log("Sending email to:", email, "with subject:", subject);
+
+    setEmail("");
+    setSubject("");
     handleCloseEmailModal(); // Close the modal after sending
   };
 
@@ -478,14 +480,14 @@ const Createnotes = ({
           <BsListOl size={20} />
         </button>
         {/* Share Button */}
-        <button
+        {/* <button
           onClick={handleShare}
           title="Share"
           className="share-button"
           aria-label="Share Note"
         >
           <IoShareSocial size={20} />
-        </button>
+        </button> */}
       </div>
 
       {/* Share Modal */}

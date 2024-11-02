@@ -57,8 +57,10 @@ const Lander = () => {
     }
   }, [isLanderNotesOpen]);
   return (
-    <div className="Landing-Container"
-    style={isLoggedIn?{height:`${100}vh`}:{}}>
+    <div
+      className="Landing-Container"
+      style={isLoggedIn ? { height: `${100}vh` } : {}}
+    >
       <div className="Landing-Header">
         <Header />
       </div>
@@ -109,7 +111,6 @@ const Lander = () => {
               </a>
               <a href="#">Conversations</a>
               <a href="#" onClick={handleOpenNotes}>
-
                 Notes
               </a>
             </div>
@@ -124,7 +125,6 @@ const Lander = () => {
               <a href="#">Dashboard</a>
               <a href="#">Reports</a>
               <a href="#">Predictive Analysis</a>
-
             </div>
             <div className="Feature-Item">
               <img
@@ -137,7 +137,6 @@ const Lander = () => {
               <a href="#">Annotations</a>
               <a href="#">Citation</a>
               <a href="#">Protocol</a>
-
             </div>
             <div className="Feature-Item">
               <img
@@ -149,7 +148,6 @@ const Lander = () => {
 
               <a href="#">About Infer</a>
               <a href="#">FAQs</a>
-
             </div>
           </>
         ) : (
@@ -246,16 +244,16 @@ const Lander = () => {
               border: "1px solid #ddd",
             }}
           >
-            <div className="draggable-header">
-              <button className="close-modal-notes" onClick={handleCloseNotes}>
-                <IoCloseOutline size={30} color="black" />
-              </button>
-            </div>
+            <div className="draggable-header"></div>
+            <button className="close-modal-notes" onClick={handleCloseNotes}>
+              <IoCloseOutline size={30} color="black" />
+            </button>
 
             <div style={{ flex: 1 }}>
               <Notes
                 isOpenNotes={isLanderNotesOpen}
                 height={dimensions.height}
+                oncloseNotes={handleCloseNotes}
               />
             </div>
           </div>

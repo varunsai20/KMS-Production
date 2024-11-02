@@ -5,6 +5,7 @@ import "./Collection.css";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { useParams, useLocation } from "react-router-dom";
+import { IoCloseOutline } from "react-icons/io5";
 const Collection = () => {
   const [collections, setCollections] = useState([]);
   const [selectedCollection, setSelectedCollection] = useState(null);
@@ -13,8 +14,8 @@ const Collection = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useSelector((state) => state.auth);
-  const token=useSelector((state) => state.auth.access_token);
-  const user_id =user?.user_id; // Replace with actual user ID
+  const token = useSelector((state) => state.auth.access_token);
+  const user_id = user?.user_id; // Replace with actual user ID
   useEffect(() => {
     const fetchCollections = async () => {
       try {
@@ -30,7 +31,9 @@ const Collection = () => {
         setCollections(fetchedCollections);
         setFilteredCollections(fetchedCollections);
 
-        const savedCollectionName = localStorage.getItem("selectedCollectionName");
+        const savedCollectionName = localStorage.getItem(
+          "selectedCollectionName"
+        );
         if (savedCollectionName && fetchedCollections[savedCollectionName]) {
           setSelectedCollection({
             name: savedCollectionName,
@@ -62,10 +65,14 @@ const Collection = () => {
     setFilteredCollections(filtered);
   };
   const handleArticleClick = (article_id, source) => {
-    const sourceType = source === "BioRxiv" ? "bioRxiv_id" : source === "Public Library of Science (PLOS)" ? "plos_id" : "pmid";
-    navigate(`/article/${sourceType}:${article_id}`,{
+    const sourceType =
+      source === "BioRxiv"
+        ? "bioRxiv_id"
+        : source === "Public Library of Science (PLOS)"
+        ? "plos_id"
+        : "pmid";
+    navigate(`/article/${sourceType}:${article_id}`, {
       state: {
-        
         annotateData: [],
       },
     });
@@ -74,8 +81,13 @@ const Collection = () => {
     <>
       <div className="collections-list">
         <h3 className="collection-heading">My Collections</h3>
+
         <div className="Search-Collection">
-          <img src={SearchIcon} alt="search" className="Search-collection-icon" />
+          <img
+            src={SearchIcon}
+            alt="search"
+            className="Search-collection-icon"
+          />
           <input
             type="text"
             value={text}
@@ -111,6 +123,9 @@ const Collection = () => {
             <h3 className="collection-articles-header">
               Articles in {selectedCollection.name}
             </h3>
+            <button className="close-collection">
+              <IoCloseOutline size={30} color="black" />
+            </button>
             <table>
               <thead>
                 <tr className="heading-row">
@@ -124,7 +139,13 @@ const Collection = () => {
                   <tr
                     key={article.article_id}
                     className="article-item"
-                    onClick={() => handleArticleClick(article.article_id, article.article_source)}                  >
+                    onClick={() =>
+                      handleArticleClick(
+                        article.article_id,
+                        article.article_source
+                      )
+                    }
+                  >
                     <td>{article.article_id}</td>
                     <td>{article.article_title}</td>
                     <td>{article.article_source}</td>

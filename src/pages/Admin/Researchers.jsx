@@ -1,30 +1,31 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import axios from 'axios';
-import './Researcher.css';
-import SearchIcon from '../../assets/images/Search.svg';
+import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import axios from "axios";
+import "./Researcher.css";
+import SearchIcon from "../../assets/images/Search.svg";
 
 const Researchers = () => {
   const [isOpen, setIsOpen] = useState(null);
   const [userData, setUserData] = useState([]);
   const navigate = useNavigate();
+  const dropdownRef = useRef(null);
 
   // Access admin data from Redux
   const { user } = useSelector((state) => state.auth);
   const adminId = user?.user_id;
   const organizationName = user?.organization_name;
   const userRole = user?.role;
-  const token=useSelector((state) => state.auth.access_token);
-  console.log(user)
-  console.log(useSelector((state) => state.auth))
-  console.log(token)
+  const token = useSelector((state) => state.auth.access_token);
+  console.log(user);
+  console.log(useSelector((state) => state.auth));
+  console.log(token);
   // Log Redux data to verify
 
   // Redirect if not an Admin
   useEffect(() => {
-    if (userRole !== 'Admin') {
-      navigate('/');
+    if (userRole !== "Admin") {
+      navigate("/");
     }
   }, [userRole, navigate]);
 
@@ -42,19 +43,32 @@ const Researchers = () => {
         );
         setUserData(response.data.users); // Assuming API returns a `users` array
       } catch (error) {
-        console.error('Error fetching users:', error);
+        console.error("Error fetching users:", error);
       }
     };
 
     if (adminId && organizationName) fetchUsers();
   }, [adminId, organizationName, token]);
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(null); // Close dropdown if clicked outside
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   const toggleDropdown = (email) => {
     setIsOpen(isOpen === email ? null : email);
   };
 
   const handleCreateClick = () => {
-    navigate('/admin/users/create');
+    navigate("/admin/users/create");
   };
 
   const handleEditClick = (userId) => {
@@ -63,7 +77,7 @@ const Researchers = () => {
   const handleSuspendClick = async (userId, currentStatus) => {
     const normalizedStatus = currentStatus.toLowerCase();
     const newStatus = normalizedStatus === "active" ? "Inactive" : "active";
-  
+
     try {
       const response = await axios.put(
         `http://13.127.207.184:80/admin/update_user_status`,
@@ -78,7 +92,7 @@ const Researchers = () => {
           },
         }
       );
-  
+
       if (response.status === 200) {
         // Update userData to reflect the new status
         setUserData((prevData) =>
@@ -88,10 +102,10 @@ const Researchers = () => {
         );
       }
     } catch (error) {
-      console.error('Error updating user status:', error);
+      console.error("Error updating user status:", error);
     }
   };
-  
+
   const handleDeleteClick = async (userId) => {
     if (window.confirm("Are you sure you want to delete this user?")) {
       try {
@@ -104,14 +118,14 @@ const Researchers = () => {
           }
         );
         // Refresh the user list after successful deletion
-        setUserData(userData.filter(user => user.user_id !== userId));
+        setUserData(userData.filter((user) => user.user_id !== userId));
       } catch (error) {
-        console.error('Error deleting user:', error);
+        console.error("Error deleting user:", error);
       }
     }
   };
   return (
-    <div style={{ margin: '0 2%' }}>
+    <div style={{ margin: "0 2%" }}>
       <h2 className="ResearcherHeading">Manage Users</h2>
       <div className="Manage-Researchers">
         <div className="Manage-Researcher-Input">
@@ -132,7 +146,7 @@ const Researchers = () => {
               <th>Status</th>
               <th>Role</th>
               <th></th>
-            </tr> 
+            </tr>
           </thead>
           <tbody>
             {userData.map((user) => (
@@ -147,18 +161,37 @@ const Researchers = () => {
                 </td>
                 <td>{user.role}</td>
                 <td>
-                  <div className="action-dropdown">
-                    <div className="action-icon" onClick={() => toggleDropdown(user.email)}>⋮</div>
+                  <div className="action-dropdown" ref={dropdownRef}>
+                    <div
+                      className="action-icon"
+                      onClick={() => toggleDropdown(user.email)}
+                    >
+                      ⋮
+                    </div>
                     {isOpen === user.email && (
                       <ul className="dropdown-menu">
-                        <li className="dropdown-item" onClick={() => handleEditClick(user.user_id)}>Edit</li>
+                        <li
+                          className="dropdown-item"
+                          onClick={() => handleEditClick(user.user_id)}
+                        >
+                          Edit
+                        </li>
                         <li
                           className="dropdown-item delete"
-                          onClick={() => handleSuspendClick(user.user_id, user.user_status)}
+                          onClick={() =>
+                            handleSuspendClick(user.user_id, user.user_status)
+                          }
                         >
-                          {user.user_status.toLowerCase() === "active" ? "Suspend" : "Activate"}
+                          {user.user_status.toLowerCase() === "active"
+                            ? "Suspend"
+                            : "Activate"}
                         </li>
-                        <li className="dropdown-item delete" onClick={()=>handleDeleteClick(user.user_id)}>Delete</li>
+                        <li
+                          className="dropdown-item delete"
+                          onClick={() => handleDeleteClick(user.user_id)}
+                        >
+                          Delete
+                        </li>
                       </ul>
                     )}
                   </div>
