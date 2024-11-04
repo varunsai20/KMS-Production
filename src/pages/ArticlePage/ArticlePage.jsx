@@ -36,12 +36,14 @@ const ArticlePage = () => {
   const widthIfLoggedIn = isLoggedIn ? null : "100%";
   const { pmid } = useParams();
   const { user } = useSelector((state) => state.auth);
+  const profilePictureUrl = user?.profile_picture_url;
   const token = useSelector((state) => state.auth.access_token);
   const dispatch = useDispatch();
   const user_id = user?.user_id;
   const [type, id1] = pmid.split(":");
   const id = Number(id1);
   const [source, setSource] = useState();
+  const [annotateLoading, setAnnotateLoading] = useState(false);
   const location = useLocation();
   const { data } = location.state || { data: [] };
   const [searchTerm, setSearchTerm] = useState("");
@@ -50,7 +52,7 @@ const ArticlePage = () => {
   const [query, setQuery] = useState("");
   const [response, setResponse] = useState("");
   const [loading, setLoading] = useState(false);
-  const annotateData = location.state.annotateData || { annotateData: [] };
+  const [annotateData,setAnnotateData] = useState(location.state.annotateData || []);
   const endOfMessagesRef = useRef(null);
   const [chatHistory, setChatHistory] = useState(() => {
     const storedHistory = sessionStorage.getItem("chatHistory");
@@ -66,7 +68,6 @@ const ArticlePage = () => {
       setChatHistory(JSON.parse(storedChatHistory));
       setShowStreamingSection(true);
     }
-    console.log(storedChatHistory);
   }, []);
   const [showStreamingSection, setShowStreamingSection] = useState(false);
   // const [chatInput, setChatInput] = useState(true);
@@ -113,7 +114,6 @@ const ArticlePage = () => {
       fetchCollections();
     }
   }, [user_id, token]);
-  console.log(collections);
   const isBookmarked = (idType) => {
     // Convert idType to a number for comparison
     const numericIdType = Number(idType);
@@ -174,7 +174,6 @@ const ArticlePage = () => {
     }
   }, [openAnnotate, openNotes]);
 
-  console.log(id);
   useEffect(() => {
     if (type === "bioRxiv_id") {
       setSource("biorxiv");
@@ -344,7 +343,6 @@ const ArticlePage = () => {
       return 0;
     }
   };
-  console.log(ratingsList);
 
   const handleRatingChange = async (uniqueId, newRating) => {
     // Ensure ratingsList is an array
@@ -779,7 +777,6 @@ const ArticlePage = () => {
     }
   };
 
-  console.log(chatHistory);
 
   const handlePromptClick = (queryText) => {
     setQuery(queryText);
@@ -818,10 +815,52 @@ const ArticlePage = () => {
     return text.replace(regex, "**$1**"); // Wrap the matched term with markdown bold syntax
   };
   const handleAnnotate = () => {
-    setOpenAnnotate((prevOpenAnnotate) => !prevOpenAnnotate); // Toggle annotate
+    setOpenAnnotate((prevOpenAnnotate) => !prevOpenAnnotate);
+   
     // No need to close Notes when Annotate is toggled
   };
-
+  
+  const handleAnnotateClick = async () => {
+  
+    // Determine the appropriate source and ID to send
+    let requestBody = {};
+    if (source === "pubmed" && id) {
+      requestBody = { pubmed: [id] };
+    } else if (source === "biorxiv" && id) {
+      requestBody = { biorxiv: [id] };
+    } else if (source === "plos" && id) {
+      requestBody = { plos: [id] };
+    }
+    setAnnotateLoading(true);
+    try {
+      const response = await axios.post(
+        "http://13.127.207.184:80/core_search/annotate",
+        requestBody,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, // Add the Bearer token here
+          },
+        }
+      );
+  
+      const data = response.data;
+      setAnnotateData(data);
+      // setAnnotateSource(annotatedArticles);
+      setAnnotateLoading(false);
+    } catch (error) {
+      console.error("Error fetching data from the API", error);
+      // setAnnotateLoading(false);
+    }
+  };
+  useEffect(() => {
+ 
+}, [openAnnotate, annotateData]);
+    useEffect(()=>{
+      if (openAnnotate && !annotateData) {
+        handleAnnotateClick();
+      }
+    })
+  console.log(annotateData)
   const handleNotes = () => {
     setOpenNotes((prevOpenNotes) => !prevOpenNotes); // Toggle notes
     // No need to close Annotate when Notes is toggled
@@ -959,7 +998,6 @@ const ArticlePage = () => {
             },
           }
         );
-        console.log(response);
         if (response.data?.sessions) {
           setSessions(response.data.sessions); // Set the sessions array from the response
         }
@@ -972,8 +1010,7 @@ const ArticlePage = () => {
       fetchSessions();
     }
   }, [user_id, token, refreshSessions]);
-  console.log(sessions);
-  console.log(token);
+
   // Edit functions
   const handleEditClick = (sessionId, title) => {
     setEditingSessionId(sessionId);
@@ -1029,7 +1066,6 @@ const ArticlePage = () => {
       setShowStreamingSection(false); // Default to false if no stored chat history
     }
 
-    console.log("Stored Chat History:", storedChatHistory);
   }, [location.state]); // Add location.state as a dependency to re-run on navigation
 
   const handleSessionClick = async (article_id, source, session_id) => {
@@ -1128,8 +1164,8 @@ const ArticlePage = () => {
                   style={{ cursor: "pointer", height: "35px" }}
                 >
                   <img
-                    src={ProfileIcon}
-                    style={{ width: "35px" }}
+                                    src={profilePictureUrl || ProfileIcon} // Use profilePictureUrl if available, else fallback to ProfileIcon
+                                    style={{ width: "35px",borderRadius:"16px" }}
                     alt="Profile"
                     className="profile-icon"
                   />
@@ -1568,17 +1604,12 @@ const ArticlePage = () => {
               <div
                 className={`search-annotate-icon ${
                   openAnnotate ? "open" : "closed"
-                } ${annotateData && annotateData.length > 0 ? "" : "disabled"}`}
+                }`}
                 onClick={
-                  annotateData && annotateData.length > 0
-                    ? handleAnnotate
-                    : null
+                 handleAnnotate
                 }
                 style={{
-                  cursor:
-                    annotateData && annotateData.length > 0
-                      ? "pointer"
-                      : "not-allowed",
+                  
                   opacity: annotateData && annotateData.length > 0 ? 1 : 1, // Adjust visibility when disabled
                 }}
               >

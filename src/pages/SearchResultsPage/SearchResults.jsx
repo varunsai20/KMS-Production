@@ -25,6 +25,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   const location = useLocation(); // Access the passed state
   const { data } = location.state || { data: [] };
   const { user } = useSelector((state) => state.auth);
+  const profilePictureUrl = user?.profile_picture_url;
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
   const displayIfLoggedIn = isLoggedIn ? null : "none";
   const dispatch = useDispatch();
@@ -1232,8 +1233,9 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                   style={{ cursor: "pointer", height: "35px" }}
                 >
                   <img
-                    src={ProfileIcon}
-                    style={{ width: "35px" }}
+                                    src={profilePictureUrl || ProfileIcon} // Use profilePictureUrl if available, else fallback to ProfileIcon
+
+                    style={{ width: "35px",borderRadius:"16px" }}
                     alt="Profile"
                     className="profile-icon"
                   />
@@ -1745,7 +1747,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                                 <input
                                   type="checkbox"
                                   className="result-checkbox"
-                                  style={{ display: displayIfLoggedIn }}
+                                  style={{ display: displayIfLoggedIn,height:"14px",width:"14px",marginTop:"5px" }}
                                   onChange={() =>
                                     handleSourceCheckboxChange(
                                       result.source,
