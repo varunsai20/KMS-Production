@@ -14,6 +14,7 @@ import { CircularProgress } from "@mui/material";
 import { TextField } from "@mui/material";
 import Annotation from "../../components/Annotaions";
 import { faBookmark as regularBookmark } from "@fortawesome/free-regular-svg-icons";
+import { faBookmark as solidBookmark } from "@fortawesome/free-solid-svg-icons";
 import notesicon from "../../assets/images/note-2.svg";
 import rehypeRaw from "rehype-raw";
 import Logo from "../../assets/images/Logo_New.svg";
@@ -27,6 +28,7 @@ import { IoMdPaperPlane } from "react-icons/io";
 import Notes from "../NotesPage/Notes";
 import { login, logout } from "../../redux/reducers/LoginAuth"; // Import login and logout actions
 import ProfileIcon from "../../assets/images/Profile-dummy.svg";
+import { toast } from "react-toastify";
 
 const ArticlePage = () => {
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
@@ -475,25 +477,37 @@ const ArticlePage = () => {
       );
 
       if (response.status === 201) {
-        const updatedCollections = collections.map((collection) => {
-          if (collection === collectionName) {
-            // Append the new article ID to the articles if it doesn't already exist
-            return {
-              ...collection,
-              articles: [...(collection.articles || []), currentid],
-            };
-          }
-          return collection;
-        });
+        const updatedCollections = {
+          ...collections,
+          [collectionName]: [
+            ...(collections[collectionName] || []),
+            {
+              article_id: String(currentid),
+              article_title: articleTitle,
+              article_source: source,
+            },
+          ],
+        };
 
         setCollections(updatedCollections);
         localStorage.setItem("collections", JSON.stringify(updatedCollections));
+        toast.success("Successfully added to Existing Collection", {
+          position: "top-right",
+          autoClose: 1000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+        });
 
         await fetchCollections(); // Refetch collections after successful addition
 
         setIsModalOpen(false);
       }
     } catch (error) {
+      toast.error("Failed to Add to the collection");
       console.error("Error adding bookmark to existing collection:", error);
     }
   };
@@ -521,13 +535,22 @@ const ArticlePage = () => {
       );
 
       if (response.status === 201) {
-        const updatedCollections = [...collections, response.data];
-        setCollections(updatedCollections);
-        localStorage.setItem("collections", JSON.stringify(updatedCollections));
+        toast.success("Collection Created", {
+          position: "top-right",
+          autoClose: 1000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+        });
+        await fetchCollections(); // Refetch collections after successful creation
         setNewCollectionName("");
         setIsModalOpen(false);
       }
     } catch (error) {
+      toast.error("Failed to CreateCollection");
       console.error("Error creating new collection:", error);
     }
   };
@@ -824,7 +847,7 @@ const ArticlePage = () => {
       </div>
     );
   };
-
+  
   const renderContentInOrder = (content, isAbstract = false) => {
     const sortedKeys = Object.keys(content).sort(
       (a, b) => parseInt(a) - parseInt(b)
@@ -1236,28 +1259,29 @@ const ArticlePage = () => {
                       <span>Rate the article </span>
                     </div>
                     <div className="rate">
-                      {[5, 4, 3, 2, 1].map((value) => (
+                    {[5, 4, 3, 2, 1].map((value) => {
+                      const existingRating = Array.isArray(ratingsList) &&
+                        ratingsList.find((item) => item.uniqueId === uniqueId)?.rating;
+
+                      return (
                         <React.Fragment key={value}>
                           <input
                             type="radio"
                             id={`star${value}-${uniqueId}`}
                             name={`rate_${uniqueId}`}
                             value={value}
-                            // Check if ratingsList is an array and find the cached rating if it exists
-                            checked={
-                              (Array.isArray(ratingsList) &&
-                                ratingsList.find(
-                                  (item) => item.uniqueId === uniqueId
-                                )?.rating) === value
-                            }
+                            checked={existingRating === value}
                             onChange={() => handleRatingChange(uniqueId, value)}
+                            disabled={!!existingRating} // Disable if a rating already exists
                           />
                           <label
                             htmlFor={`star${value}-${uniqueId}`}
                             title={`${value} star`}
                           />
                         </React.Fragment>
-                      ))}
+                      );
+                    })}
+
                     </div>
                   </div>
                 </div>
@@ -1274,10 +1298,10 @@ const ArticlePage = () => {
                     {articleData.article.article_title}
                   </p>
                   <FontAwesomeIcon
-                    icon={regularBookmark}
+                    icon={isBookmarked(id) ? solidBookmark : regularBookmark}
                     size="l"
                     style={{
-                      color: isBookmarked(id) ? "blue" : "black",
+                      color: isBookmarked(id) ? "#0071bc" : "black",
                       cursor: "pointer",
                       display: displayIfLoggedIn,
                     }}
@@ -1293,58 +1317,74 @@ const ArticlePage = () => {
                     }
                   />
 
-                  {isModalOpen && (
-                    <div className="bookmark-modal-overlay">
-                      <div className="modal-content" ref={modalRef}>
-                        <h3>Save Bookmark</h3>
-                        {console.log("Collections data:", collections)}
-                        {/* Existing Collections */}
-                        {Object.keys(collections).length > 0 && (
-                          <>
-                            <h4>Save to existing collection:</h4>
-                            <ul>
-                              {Object.keys(collections).map(
-                                (collectionName, index) => (
-                                  <li key={index}>
-                                    {" "}
-                                    {/* using index as key since collection names are unique */}
-                                    <button
-                                      onClick={() =>
-                                        handleSaveToExisting(collectionName)
+{isModalOpen && (
+                                <div className="bookmark-modal-overlay">
+                                  <div className="modal-content" ref={modalRef}>
+                                    {/* Existing Collections */}
+
+                                    {/* Create New Collection */}
+                                    <h4>Create a new collection:</h4>
+                                    <input
+                                      type="text"
+                                      value={newCollectionName}
+                                      onChange={(e) =>
+                                        setNewCollectionName(e.target.value)
                                       }
-                                    >
-                                      {collectionName}
-                                    </button>
-                                  </li>
-                                )
+                                      placeholder="New collection name"
+                                      />
+                                    <div
+                                      style={{ display: "flex", gap: "20px",marginBottom:"15px" }}
+                                      >
+                                      <button
+                                        onClick={handleCreateNewCollection}
+                                        disabled={!newCollectionName}
+                                        >
+                                        Create
+                                      </button>
+
+                                      <button
+                                        onClick={() => setIsModalOpen(false)}
+                                        >
+                                        Cancel
+                                      </button>
+                                    </div>
+                                    
+                                  {Object.keys(collections).length > 0 && (
+                                    <>
+                                      <h4>Save to existing collection:</h4>
+                                      <ul>
+                                        {Object.keys(collections).map(
+                                          (collectionName, index) => (
+                                            <ul key={index}>
+                                              
+                                              {/* using index as key since collection names are unique */}
+                                              <li onClick={() =>
+                                                  handleSaveToExisting(
+                                                    collectionName
+                                                  )
+                                                }><span className="collection-name">{collectionName}</span>
+                                                <span className="collection-article-count">
+                                                  {collections[collectionName].length} articles
+                                                </span>
+                                                </li>
+                                              {/* <button
+                                                onClick={() =>
+                                                  handleSaveToExisting(
+                                                    collectionName
+                                                  )
+                                                }
+                                              >
+                                                {collectionName}
+                                              </button> */}
+                                            </ul>
+                                          )
+                                        )}
+                                      </ul>
+                                    </>
+                                  )}
+                                  </div>
+                                </div>
                               )}
-                            </ul>
-                          </>
-                        )}
-
-                        {/* Create New Collection */}
-                        <h4>Create a new collection:</h4>
-                        <input
-                          type="text"
-                          value={newCollectionName}
-                          onChange={(e) => setNewCollectionName(e.target.value)}
-                          placeholder="New collection name"
-                        />
-                        <div style={{ display: "flex", gap: "20px" }}>
-                          <button
-                            onClick={handleCreateNewCollection}
-                            disabled={!newCollectionName}
-                          >
-                            Create
-                          </button>
-
-                          <button onClick={() => setIsModalOpen(false)}>
-                            Cancel
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
                 </div>
               </div>
 

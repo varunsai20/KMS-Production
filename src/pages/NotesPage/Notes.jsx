@@ -137,6 +137,7 @@ const NotesManager = ({
           onDeleteNote={handleDeleteNote}
           isOpenNotes={isOpenNotes}
           height={height}
+          fetchNotes={fetchNotes}
         />
       )}
       {currentView === "create" && (

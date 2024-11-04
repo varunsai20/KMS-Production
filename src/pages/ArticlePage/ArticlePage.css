@@ -646,10 +646,7 @@ td {
 .rate > input:checked ~ label {
   color: #ffc700;
 }
-.rate:not(:checked) > label:hover,
-.rate:not(:checked) > label:hover ~ label {
-  color: #ffc700;
-}
+
 .rate > input:checked + label:hover,
 .rate > input:checked + label:hover ~ label,
 .rate > input:checked ~ label:hover,
@@ -657,7 +654,13 @@ td {
 .rate > label:hover ~ input:checked ~ label {
   color: #ffc700;
 }
-
+.rate:not(:checked) > input:not(:disabled) ~ label:hover,
+.rate:not(:checked) > input:not(:disabled) ~ label:hover ~ label {
+  color: #ffc700;
+}
+.rate > input:disabled ~ label {
+  cursor: default;
+}
 #scrollTopBtn {
   display: none; /* Hidden by default */
   position: fixed; /* Stay in place */

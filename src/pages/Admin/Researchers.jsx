@@ -151,7 +151,7 @@ const Researchers = () => {
           <tbody>
             {userData.map((user) => (
               <tr key={user.email}>
-                <td>{user.fullname}</td>
+                <td><a style={{cursor:"pointer"}}onClick={() => handleEditClick(user.user_id)}>{user.fullname}</a></td>
                 <td>{user.email}</td>
                 <td>{user.department}</td>
                 <td>

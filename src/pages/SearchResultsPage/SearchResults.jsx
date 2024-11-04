@@ -9,6 +9,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import annotate from "../../assets/images/task-square.svg";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBookmark as regularBookmark } from "@fortawesome/free-regular-svg-icons";
+import { faBookmark as solidBookmark } from "@fortawesome/free-solid-svg-icons";
 import { faAnglesUp } from "@fortawesome/free-solid-svg-icons";
 import uparrow from "../../assets/images/uparrow.svg";
 import { IoCloseOutline, IoShareSocial } from "react-icons/io5";
@@ -29,7 +30,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   const dispatch = useDispatch();
   const user_id = user?.user_id;
   const token = useSelector((state) => state.auth.access_token);
-  console.log(user);
   const searchTerm = sessionStorage.getItem("SearchTerm");
   const navigate = useNavigate();
   const contentRightRef = useRef(null); // Ref for searchContent-right
@@ -172,9 +172,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
     );
 
     // Log if only `article_id` matches but `article_source` does not
-    if (idOnlyMatch) {
-      console.log("ID-only Match Found:", idOnlyMatch);
-    }
+
 
     // Return the saved rating or default to 3 if not found
     return savedRating ? savedRating.average_rating : 0;
@@ -271,19 +269,25 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   // Scroll event listener to show or hide the scroll-to-top button
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 100) {
-        document.getElementById("scrollTopBtn").style.display = "block"; // Show button
+      const scrollTop = window.scrollY;
+      const windowHeight = window.innerHeight;
+      const documentHeight = document.documentElement.scrollHeight;
+  
+      // Check if the user is near the bottom of the page
+      if (scrollTop + windowHeight >= documentHeight - 50) {
+        document.getElementById("scrollTopBtn").style.display = "block"; // Show button at bottom
       } else {
         document.getElementById("scrollTopBtn").style.display = "none"; // Hide button
       }
     };
-
+  
     // Add event listener for window scroll
     window.addEventListener("scroll", handleScroll);
-
+  
     // Clean up event listener
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+  
   const sortedPublicationData =
     data && data.articles
       ? [...data.articles].sort((a, b) => {
@@ -363,23 +367,38 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
 
   //
 
-  // Pagination logic
+  useEffect(() => {
+    // Retrieve the stored page number from sessionStorage when the component loads
+    const storedPage = sessionStorage.getItem('currentPage');
+    console.log(storedPage)
+    if (storedPage) {
+      console.log("set")
+      setCurrentPage(Number(storedPage));
+      console.log(storedPage)
+      console.log("enterd")
+      console.log(storedPage)
+      setPageInput(Number(storedPage));
+    }
+  }, []);
+
+  
+
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
   const paginatedArticles = sortedData.slice(startIndex, endIndex);
 
-  // Function to handle page change
   const handlePageChange = (newPage) => {
-    if (
-      newPage > 0 &&
-      newPage <= Math.ceil(sortedData.length / ITEMS_PER_PAGE)
-    ) {
+    if (newPage > 0 && newPage <= Math.ceil(sortedData.length / ITEMS_PER_PAGE)) {
       setCurrentPage(newPage);
       setPageInput(newPage);
+      sessionStorage.setItem('currentPage', newPage);
       scrollToTop();
     }
   };
-
+  // useEffect(() => {
+  //   // Store the current page number in sessionStorage whenever it changes
+  //   
+  // }, [handlePageChange]);
   const handleAnnotate = () => {
     if (openAnnotate) {
       setOpenAnnotate(false);
@@ -941,10 +960,10 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       setPageInput(currentPage); // Reset input to current page if invalid
     }
   };
-  useEffect(() => {
-    setCurrentPage(1); // Reset currentPage to 1 whenever new search results are loaded
-    setPageInput(1); // Reset the input field to 1 as well
-  }, [data.articles]);
+  // useEffect(() => {
+  //   setCurrentPage(1); // Reset currentPage to 1 whenever new search results are loaded
+  //   setPageInput(1); // Reset the input field to 1 as well
+  // }, [data.articles]);
   useEffect(() => {
     if (loading) {
       document.body.style.overflow = "hidden"; // Prevent scrolling
@@ -982,7 +1001,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
           : [...prevPlos, pmid] // Add checked article to PLOS
     );
   };
-  console.log(totalArticles);
   const handleSourceCheckboxChange = (source, idType, doi) => {
     const sourceType = source; // Set to "PubMed" if source is null or undefined
     const uniqueId = `${sourceType}_${idType}`;
@@ -1509,7 +1527,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                         }
                         disabled={annotateLoading} // Disable the button while loading
                       >
-                        Annotate
+                      Annotate
                       </button>
                       {/* Show loading spinner */}
                       {annotateLoading && (
@@ -1760,58 +1778,30 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                                 </h3>
                               </div>
                               <FontAwesomeIcon
-                                icon={regularBookmark}
-                                size="l"
-                                style={{
-                                  color: isBookmarked(idType)
-                                    ? "blue"
-                                    : "black",
-                                  cursor: "pointer",
-                                  display: displayIfLoggedIn,
-                                }}
-                                onClick={() =>
-                                  handleBookmarkClick(
-                                    idType,
-                                    result.article_title,
-                                    result.source || "PubMed"
-                                  )
-                                }
-                                title={
-                                  isBookmarked(idType)
-                                    ? "Bookmarked"
-                                    : "Bookmark this article"
-                                }
-                              />
-
+  icon={isBookmarked(idType) ? solidBookmark : regularBookmark}
+  size="l"
+  style={{
+    color: isBookmarked(idType) ? "#0071bc" : "black",
+    cursor: "pointer",
+    display: displayIfLoggedIn,
+  }}
+  onClick={() =>
+    handleBookmarkClick(
+      idType,
+      result.article_title,
+      result.source || "PubMed"
+    )
+  }
+  title={
+    isBookmarked(idType)
+      ? "Bookmarked"
+      : "Bookmark this article"
+  }
+/>
                               {isModalOpen && (
                                 <div className="bookmark-modal-overlay">
                                   <div className="modal-content" ref={modalRef}>
-                                    <h3>Save Bookmark</h3>
                                     {/* Existing Collections */}
-                                    {Object.keys(collections).length > 0 && (
-                                      <>
-                                        <h4>Save to existing collection:</h4>
-                                        <ul>
-                                          {Object.keys(collections).map(
-                                            (collectionName, index) => (
-                                              <li key={index}>
-                                                {" "}
-                                                {/* using index as key since collection names are unique */}
-                                                <button
-                                                  onClick={() =>
-                                                    handleSaveToExisting(
-                                                      collectionName
-                                                    )
-                                                  }
-                                                >
-                                                  {collectionName}
-                                                </button>
-                                              </li>
-                                            )
-                                          )}
-                                        </ul>
-                                      </>
-                                    )}
 
                                     {/* Create New Collection */}
                                     <h4>Create a new collection:</h4>
@@ -1822,23 +1812,57 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                                         setNewCollectionName(e.target.value)
                                       }
                                       placeholder="New collection name"
-                                    />
+                                      />
                                     <div
-                                      style={{ display: "flex", gap: "20px" }}
-                                    >
+                                      style={{ display: "flex", gap: "20px",marginBottom:"15px" }}
+                                      >
                                       <button
                                         onClick={handleCreateNewCollection}
                                         disabled={!newCollectionName}
-                                      >
+                                        >
                                         Create
                                       </button>
 
                                       <button
                                         onClick={() => setIsModalOpen(false)}
-                                      >
+                                        >
                                         Cancel
                                       </button>
                                     </div>
+                                    
+                                  {Object.keys(collections).length > 0 && (
+                                    <>
+                                      <h4>Save to existing collection:</h4>
+                                      <ul>
+                                        {Object.keys(collections).map(
+                                          (collectionName, index) => (
+                                            <ul key={index}>
+                                              
+                                              {/* using index as key since collection names are unique */}
+                                              <li onClick={() =>
+                                                  handleSaveToExisting(
+                                                    collectionName
+                                                  )
+                                                }><span className="collection-name">{collectionName}</span>
+                                                <span className="collection-article-count">
+                                                  {collections[collectionName].length} articles
+                                                </span>
+                                                </li>
+                                              {/* <button
+                                                onClick={() =>
+                                                  handleSaveToExisting(
+                                                    collectionName
+                                                  )
+                                                }
+                                              >
+                                                {collectionName}
+                                              </button> */}
+                                            </ul>
+                                          )
+                                        )}
+                                      </ul>
+                                    </>
+                                  )}
                                   </div>
                                 </div>
                               )}

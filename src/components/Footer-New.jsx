@@ -11,15 +11,12 @@ const Footer = () => {
     <div
       className="footer"
       style={{
-
-        // position: location.pathname === "/" ? "absolute" : "static",
-
-        position: isLoggedIn ? "absolute" : "",
-
-        bottom: location.pathname === "/" ? 0 : "auto",
+        position: isLoggedIn && location.pathname === "/" ? "absolute" : "static",
+        bottom: isLoggedIn && location.pathname === "/" ? 0 : "auto",
         width: "100%", // Ensure the footer takes up the full width
         textAlign: "center", // Center the content
       }}
+      
     >
       <p className="footer-trademark-content">
         Copyright © 2024, Infer Solutions, Inc. All Rights Reserved.

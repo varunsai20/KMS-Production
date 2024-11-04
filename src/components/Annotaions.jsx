@@ -83,7 +83,6 @@ const Annotation = ({
       };
     });
   };
-  console.log(annotateHeight);
   const toggleExpandText = (key) => {
     setExpandedTexts((prevState) => ({
       ...prevState,

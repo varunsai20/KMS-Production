@@ -10,6 +10,7 @@ const initialState = {
     email: null,
     department: null,
     organization_name: null,
+    profile_picture_url:null,
   },
   access_token: null,
   refresh_token: null,
@@ -24,8 +25,8 @@ const authSlice = createSlice({
   reducers: {
     login: (state, action) => {
       state.isLoggedIn = true;
-      const { user_id, role, name, email, department, organization_name } = action.payload;
-      state.user = { user_id, role, name, email, department, organization_name };
+      const { user_id, role, name, email, department, organization_name,profile_picture_url } = action.payload;
+      state.user = { user_id, role, name, email, department, organization_name,profile_picture_url };
       state.access_token = action.payload.access_token;
       state.refresh_token = action.payload.refresh_token;
       state.token_type = action.payload.token_type;
