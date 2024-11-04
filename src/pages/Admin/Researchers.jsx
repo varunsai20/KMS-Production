@@ -161,7 +161,7 @@ const Researchers = () => {
                 </td>
                 <td>{user.role}</td>
                 <td>
-                  <div className="action-dropdown" ref={dropdownRef}>
+                  <div className="action-dropdown" >
                     <div
                       className="action-icon"
                       onClick={() => toggleDropdown(user.email)}
