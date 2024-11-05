@@ -1187,7 +1187,7 @@ const ArticlePage = () => {
                 >
                   <img
                                     src={profilePictureUrl || ProfileIcon} // Use profilePictureUrl if available, else fallback to ProfileIcon
-                                    style={{ width: "35px",borderRadius:"16px" }}
+                                    style={{ width: "35px",height:"35px",borderRadius:"16px" }}
                     alt="Profile"
                     className="profile-icon"
                   />
