@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useLocation, Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../redux/reducers/LoginAuth";
@@ -13,12 +13,28 @@ const Header = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-
+  
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
-  const user = useSelector((state) => state.auth.user);
+  const { user, profileUpdated } = useSelector((state) => state.auth);
+
+  useEffect(() => {
+    setCurrentProfileImage(user.profile_picture_url.profile_picture_url || ProfileIcon);
+  }, [user.profile_picture_url, profileUpdated]); // Re-run when profileUpdated changes
+
   const userId = user?.user_id;
   const userRole = user?.role;
   const profilePictureUrl = user?.profile_picture_url;
+  
+  const [currentProfileImage, setCurrentProfileImage] = useState(ProfileIcon);
+  console.log(currentProfileImage)
+  // useEffect(() => {
+  //   // Update current profile image when profilePictureUrl changes
+  //   if (profilePictureUrl) {
+  //     setCurrentProfileImage(profilePictureUrl);
+  //   } else {
+  //     setCurrentProfileImage(ProfileIcon); // Fallback to default icon
+  //   }
+  // }, [profilePictureUrl]);
 
   // Function to check if the current path matches the link's href
   const isActive = (path) => location.pathname === path;
@@ -72,8 +88,8 @@ const Header = () => {
           <>
             <div onClick={handleProfileClick} style={{ cursor: "pointer", height: "35px" }}>
               <img
-                src={profilePictureUrl || ProfileIcon} // Use profilePictureUrl if available, else fallback to ProfileIcon
-                style={{ width: "35px", borderRadius: "50%" }}
+                src={currentProfileImage}
+                style={{ width: "35px",height:"35px", borderRadius: "50%" }}
                 alt="Profile"
                 className="profile-icon"
               />

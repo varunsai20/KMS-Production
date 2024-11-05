@@ -357,33 +357,34 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   //
 
   useEffect(() => {
-    // Retrieve the stored page number from sessionStorage when the component loads
-    const storedPage = sessionStorage.getItem('currentPage');
-    console.log(storedPage)
+    // Check for updates in sortedData and reset pagination if there's a change
+    setCurrentPage(1);
+    setPageInput(1);
+    // sessionStorage.setItem("currentPage", 1);
+  }, [location.state.data]); // Reset pagination only when sortedData changes
+  
+  useEffect(() => {
+    // Retrieve the stored page number from sessionStorage when the component first loads
+    const storedPage = sessionStorage.getItem("currentPage");
     if (storedPage) {
-      console.log("set")
       setCurrentPage(Number(storedPage));
-      console.log(storedPage)
-      console.log("enterd")
-      console.log(storedPage)
       setPageInput(Number(storedPage));
     }
-  }, []);
-
+  }, []); // This effect runs only once on component mount
   
-
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
   const paginatedArticles = sortedData.slice(startIndex, endIndex);
-
+  
   const handlePageChange = (newPage) => {
     if (newPage > 0 && newPage <= Math.ceil(sortedData.length / ITEMS_PER_PAGE)) {
       setCurrentPage(newPage);
       setPageInput(newPage);
-      sessionStorage.setItem('currentPage', newPage);
+      sessionStorage.setItem("currentPage", newPage);
       scrollToTop();
     }
   };
+  
   // useEffect(() => {
   //   // Store the current page number in sessionStorage whenever it changes
   //   
@@ -590,10 +591,15 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   };
   
   const fetchFilteredResults = ({ sourceTypes = [], dateRange, startDate, endDate, articleTypes = [] }) => {  
+    // Check if all filters are empty
+    if (sourceTypes.length === 0 && articleTypes.length === 0 && !dateRange) {
+        navigate("/search", { state: { data: searchResults, searchTerm } });
+        return;
+    }
+
     // Base URL for the API
     let apiUrl = `http://13.127.207.184:80/core_search/?term=${encodeURIComponent(searchTerm)}`;
-    console.log(sourceTypes)
-    console.log(articleTypes)
+
     // Add sources if provided
     if (sourceTypes.length > 0) {
         const sourceParams = sourceTypes.map((source) => `source=${encodeURIComponent(source)}`).join("&");
@@ -616,41 +622,37 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
         }
     }
 
-    // Only proceed if any filters are active
-    if (sourceTypes.length > 0 || articleTypes.length > 0 || dateRange) {
-        setLoading(true);
+    setLoading(true);
 
-        axios
-            .get(apiUrl, {
-                headers: { Authorization: `Bearer ${token}` },
-            })
-            .then((response) => {
-                setResults(response.data);
-                setLoading(false);
+    axios
+        .get(apiUrl, {
+            headers: { Authorization: `Bearer ${token}` },
+        })
+        .then((response) => {
+            setResults(response.data);
+            setLoading(false);
 
-                // Save the filter state to localStorage for persistence
-                localStorage.setItem(
-                    "filters",
-                    JSON.stringify({
-                        sourceTypes,
-                        dateRange,
-                        customStartDate: dateRange === "custom" ? startDate : "",
-                        customEndDate: dateRange === "custom" ? endDate : "",
-                        articleTypes,
-                    })
-                );
+            // Save the filter state to localStorage for persistence
+            localStorage.setItem(
+                "filters",
+                JSON.stringify({
+                    sourceTypes,
+                    dateRange,
+                    customStartDate: dateRange === "custom" ? startDate : "",
+                    customEndDate: dateRange === "custom" ? endDate : "",
+                    articleTypes,
+                })
+            );
 
-                navigate("/search", { state: { data: response.data, searchTerm } });
-            })
-            .catch((error) => {
-                console.error("Error fetching data from the API", error);
-                setLoading(false);
-                navigate("/search", { state: { data: [], searchTerm } });
-            });
-    } else {
-        console.log("No filters applied; skipping API call.");
-    }
+            navigate("/search", { state: { data: response.data, searchTerm } });
+        })
+        .catch((error) => {
+            console.error("Error fetching data from the API", error);
+            setLoading(false);
+            navigate("/search", { state: { data: [], searchTerm } });
+        });
 };
+
 
   
   const formatDate = (dateString) => {
@@ -1476,13 +1478,13 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                   >
                     Share
                   </button>
-                  <button
+                  {/* <button
                     style={{ display: displayIfLoggedIn }}
                     className="SearchResult-Save"
                     title="Save selected articles"
                   >
                     Save
-                  </button>
+                  </button> */}
                 </div>
                 <div
                   style={{
