@@ -54,37 +54,29 @@ const Lander = () => {
   };
   useEffect(() => {
     const fetchSessions = async () => {
-      try {
-        const response = await axios.get(
-          `http://13.127.207.184:80/history/conversations/sessions/${user_id}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-  
-        if (response.data?.sessions) {
-          const sessionsData = response.data.sessions;
-  
-          // Completely swap the first two sessions if the array has at least two items
-          if (sessionsData.length >= 2) {
-            const temp = sessionsData[0];
-            sessionsData[0] = sessionsData[1];
-            sessionsData[1] = temp;
-          }
-  
-          setSessions(sessionsData); // Set the modified sessions array to state
+        try {
+            const response = await axios.get(
+                `http://13.127.207.184:80/history/conversations/sessions/${user_id}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+            if (response.data?.sessions) {
+                const sessionsData = response.data.sessions.reverse(); // Reverse the array order
+                setSessions(sessionsData); // Set the reversed sessions array to state
+            }
+        } catch (error) {
+            console.error("Error fetching chat history:", error);
         }
-      } catch (error) {
-        console.error("Error fetching chat history:", error);
-      }
     };
-  
+
     if (user_id && token) {
-      fetchSessions();
+        fetchSessions();
     }
-  }, [user_id, token]);
+}, [user_id, token]);
+
   console.log(sessions[0])  
 
   const handleSessionClick = async () => {

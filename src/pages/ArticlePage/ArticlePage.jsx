@@ -226,7 +226,7 @@ const ArticlePage = () => {
 
   useEffect(() => {
     // Determine the source based on `type`
-
+    setAnnotateLoading(true)
     // Perform GET request to fetch article data
     if (source && id) {
       const fetchArticleData = async () => {
@@ -241,7 +241,7 @@ const ArticlePage = () => {
           );
           const article = response.data; // Assuming response contains article data directly
           setArticleData(article);
-
+          setAnnotateLoading(false)
           // Retrieve saved search term from session storage
           const savedTerm = sessionStorage.getItem("SearchTerm");
           setSearchTerm(savedTerm);
@@ -828,8 +828,8 @@ const ArticlePage = () => {
   };
   console.log(annotateData)
   const handleAnnotate = () => {
-    // Replace `desiredId` with the actual ID you want to match against
-    const matchingIdExists = annotateData && annotateData.some(item => item.id === id);
+    // Check if `id` exists as a key in `annotateData`
+    const matchingIdExists = annotateData && Object.prototype.hasOwnProperty.call(annotateData, id);
 
     if ((!annotateData || !matchingIdExists) && !hasFetchedAnnotateData) {
         handleAnnotateClick();
@@ -837,6 +837,7 @@ const ArticlePage = () => {
         setOpenAnnotate((prevOpenAnnotate) => !prevOpenAnnotate); // Open immediately if matching ID is present
     }
 };
+
 
   
   const handleAnnotateClick = async () => {
@@ -1010,36 +1011,29 @@ const ArticlePage = () => {
 
   useEffect(() => {
     const fetchSessions = async () => {
-      try {
-        const response = await axios.get(
-          `http://13.127.207.184:80/history/conversations/sessions/${user_id}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        if (response.data?.sessions) {
-          const sessionsData = response.data.sessions;
-  
-          // Completely swap the first two sessions if the array has at least two items
-          if (sessionsData.length >= 2) {
-            const temp = sessionsData[0];
-            sessionsData[0] = sessionsData[1];
-            sessionsData[1] = temp;
-          }
-  
-          setSessions(sessionsData); // Set the modified sessions array to state
+        try {
+            const response = await axios.get(
+                `http://13.127.207.184:80/history/conversations/sessions/${user_id}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+            if (response.data?.sessions) {
+                const sessionsData = response.data.sessions.reverse(); // Reverse the array order
+                setSessions(sessionsData); // Set the reversed sessions array to state
+            }
+        } catch (error) {
+            console.error("Error fetching chat history:", error);
         }
-      } catch (error) {
-        console.error("Error fetching chat history:", error);
-      }
     };
 
     if (user_id && token) {
-      fetchSessions();
+        fetchSessions();
     }
-  }, [user_id, token, refreshSessions]);
+}, [user_id, token, refreshSessions]);
+
 
   // Edit functions
   const handleEditClick = (sessionId, title) => {
