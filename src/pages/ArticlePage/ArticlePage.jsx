@@ -53,7 +53,6 @@ const ArticlePage = () => {
   const [query, setQuery] = useState("");
   const [response, setResponse] = useState("");
   const [loading, setLoading] = useState(false);
-  console.log(location.state.annotateData)
   const [annotateData, setAnnotateData] = useState(location.state?.annotateData || "");
   const endOfMessagesRef = useRef(null);
   const [chatHistory, setChatHistory] = useState(() => {
@@ -1021,7 +1020,16 @@ const ArticlePage = () => {
           }
         );
         if (response.data?.sessions) {
-          setSessions(response.data.sessions); // Set the sessions array from the response
+          const sessionsData = response.data.sessions;
+  
+          // Completely swap the first two sessions if the array has at least two items
+          if (sessionsData.length >= 2) {
+            const temp = sessionsData[0];
+            sessionsData[0] = sessionsData[1];
+            sessionsData[1] = temp;
+          }
+  
+          setSessions(sessionsData); // Set the modified sessions array to state
         }
       } catch (error) {
         console.error("Error fetching chat history:", error);

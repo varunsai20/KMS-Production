@@ -19,7 +19,8 @@ import Utilities from "../../assets/images/Lander-Utilities.svg";
 import Analytics from "../../assets/images/Lander-Analytics.svg";
 import { IoCloseOutline } from "react-icons/io5";
 import "./Lander-Logedin.css";
-
+import { useNavigate } from "react-router-dom";
+import axios from "axios"
 //import Draggable from "react-draggable";
 import Collection from "../../components/Collection";
 
@@ -27,14 +28,17 @@ import Notes from "../NotesPage/Notes";
 
 const Lander = () => {
   const isLoggedIn = useSelector((state) => state.auth?.isLoggedIn);
-
+  const [sessions, setSessions] = useState([]);
   const [isLanderNotesOpen, setIsLanderNotesOpen] = useState(false);
-
+  const [refreshSessions, setRefreshSessions] = useState(false);
+  console.log(sessions)
   const [isCollectionOpen, setIsCollectionOpen] = useState(false);
   const [dimensions, setDimensions] = useState({ width: 400, height: 400 });
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const { user } = useSelector((state) => state.auth);
-
+  const token = useSelector((state) => state.auth.access_token);
+  const user_id = user?.user_id;
+  const navigate = useNavigate();
   const handleOpenNotes = () => {
     setIsLanderNotesOpen(true);
   };
@@ -48,6 +52,101 @@ const Lander = () => {
   const handleCloseCollection = () => {
     setIsCollectionOpen(false);
   };
+  useEffect(() => {
+    const fetchSessions = async () => {
+      try {
+        const response = await axios.get(
+          `http://13.127.207.184:80/history/conversations/sessions/${user_id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+  
+        if (response.data?.sessions) {
+          const sessionsData = response.data.sessions;
+  
+          // Completely swap the first two sessions if the array has at least two items
+          if (sessionsData.length >= 2) {
+            const temp = sessionsData[0];
+            sessionsData[0] = sessionsData[1];
+            sessionsData[1] = temp;
+          }
+  
+          setSessions(sessionsData); // Set the modified sessions array to state
+        }
+      } catch (error) {
+        console.error("Error fetching chat history:", error);
+      }
+    };
+  
+    if (user_id && token) {
+      fetchSessions();
+    }
+  }, [user_id, token]);
+  console.log(sessions[0])  
+
+  const handleSessionClick = async () => {
+    if (sessions.length === 0) return; // Ensure there is a session to work with
+
+    const { article_id, source, session_id } = sessions[0]; // Destructure values from the first session
+
+    try {
+        const conversationResponse = await axios.get(
+            `http://13.127.207.184:80/history/conversations/history/${user_id}/${session_id}`,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            }
+        );
+
+        const formattedChatHistory = [];
+        let currentEntry = {};
+
+        conversationResponse.data.conversation.forEach((entry) => {
+            if (entry.role === "user") {
+                if (currentEntry.query) {
+                    formattedChatHistory.push(currentEntry);
+                    currentEntry = {};
+                }
+                currentEntry.query = entry.parts.join(" ");
+            } else if (entry.role === "model") {
+                currentEntry.response = entry.parts.join(" ");
+                formattedChatHistory.push(currentEntry);
+                currentEntry = {};
+            }
+        });
+
+        if (currentEntry.query) {
+            formattedChatHistory.push(currentEntry);
+        }
+
+        console.log(formattedChatHistory);
+
+        sessionStorage.setItem("chatHistory", JSON.stringify(formattedChatHistory));
+
+        const sourceType =
+            source === "biorxiv" ? "bioRxiv_id" : source === "plos" ? "plos_id" : "pmid";
+
+        navigate(`/article/${sourceType}:${article_id}`, {
+            state: {
+                id: article_id,
+                source: sourceType,
+                token: token,
+                user: { access_token: token, user_id: user_id },
+            },
+        });
+        console.log(conversationResponse);
+    } catch (error) {
+        console.error("Error fetching article or conversation data:", error);
+    }
+};
+
+
+
+
   useEffect(() => {
     if (isLanderNotesOpen) {
       const centerX =
@@ -109,7 +208,7 @@ const Lander = () => {
               <a href="#" onClick={handleOpenCollection}>
                 Bookmarks
               </a>
-              <a href="#">Conversations</a>
+              <a href="#" onClick={handleSessionClick}>Conversations</a>
               <a href="#" onClick={handleOpenNotes}>
                 Notes
               </a>

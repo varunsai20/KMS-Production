@@ -1204,7 +1204,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       [key]: !prevState[key], // Toggle between full text and sliced text for a specific row
     }));
   };
-
+  
   return (
     <div className="Container" ref={contentRightRef}>
       <div className="search-container-content">
@@ -1936,7 +1936,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                             <p className="searchresult-authors">{`Published on: ${result.publication_date}`}</p>
                             <div className="searchresult-ID">
                               <p className="searchresult-pmid">{`ID: ${idType}`}</p>
-                              {result.doi ? (
+                              {/* {result.doi ? (
                                 <p className="searchresult-pmid">
                                   {" "}
                                   DoI:
@@ -1948,7 +1948,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                                 </p>
                               ) : (
                                 ""
-                              )}
+                              )} */}
                             </div>
                             <p
                               className="searchresult-description"
