@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
-
 import useCreateDate from "./UseCreateDate";
-import { CiMenuFries } from "react-icons/ci";
-import { IoCloseOutline, IoShareSocial } from "react-icons/io5";
-import { RiDeleteBin6Line } from "react-icons/ri";
+import { HiOutlineMenuAlt1 } from "react-icons/hi";
+import { IoCloseOutline } from "react-icons/io5";
+//import { RiDeleteBin6Line } from "react-icons/ri";
 import { RxDotsHorizontal } from "react-icons/rx";
 import Button from "../Buttons";
 import { FiBold, FiUnderline } from "react-icons/fi";
@@ -15,25 +14,29 @@ import axios from "axios";
 import { useSelector } from "react-redux";
 import { MdEmail } from "react-icons/md";
 import { IoCopyOutline } from "react-icons/io5";
-
+import { CgNotes } from "react-icons/cg";
 import "./CreateNote.css";
-
+import ConfirmSave from "../../utils/ConfirmSave";
+import { toast } from "react-toastify";
 const Createnotes = ({
   setNotes,
   onClose,
-  selectedText,
+  //selectedText,
+  textToSave,
   notesHeight,
   onDelete,
   note,
   isOpenNotes,
   height,
 }) => {
-  console.log(selectedText);
+  //console.log(selectedText);
   const [title, setTitle] = useState("");
   const [isOpenDropdown, setIsOpenDropdown] = useState(false);
   const date = useCreateDate();
   const headerRef = useRef(null);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [unsavedChanges, setUnsavedChanges] = useState(false); // Track unsaved changes
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const [activeFormats, setActiveFormats] = useState({
     bold: false,
@@ -48,35 +51,35 @@ const Createnotes = ({
   const [shareMessage, setShareMessage] = useState("");
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const { user } = useSelector((state) => state.auth);
-
   const user_id = user?.user_id;
   const token = useSelector((state) => state.auth.access_token);
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [subject, setSubject] = useState("");
+  const [titleError, setTitleError] = useState("");
 
   const handleEmailClick = () => {
-    setIsEmailModalOpen(true); // Open the email popup modal
+    setIsEmailModalOpen(true);
   };
 
   const handleCloseEmailModal = () => {
-    setIsEmailModalOpen(false); // Close the email popup modal
+    setIsEmailModalOpen(false);
     setEmail("");
     setSubject("");
   };
 
   const handleSendEmail = () => {
-    // Handle sending email logic here, e.g., make an API call
     console.log("Sending email to:", email, "with subject:", subject);
 
     setEmail("");
     setSubject("");
-    handleCloseEmailModal(); // Close the modal after sending
+    handleCloseEmailModal();
   };
+  console.log("Selected Text:", textToSave);
 
-  console.log("Selected Text:", selectedText);
-  console.log("note content", noteContent);
-  //console.log("noteid", note.id);
+  const handleCancel = () => {
+    setShowConfirm(false);
+  };
 
   useEffect(() => {
     const handleSelectionChange = () => {
@@ -105,48 +108,50 @@ const Createnotes = ({
     };
   }, []);
 
-  // Effect to handle incoming selectedText
   useEffect(() => {
-    if (selectedText && editorRef.current) {
-      const sanitizedText = DOMPurify.sanitize(selectedText.trim()); // Sanitize input
-      editorRef.current.innerHTML = sanitizedText;
-      setNoteContent(sanitizedText);
+    if (textToSave && editorRef.current) {
+      const sanitizedTexts = textToSave.map((text) =>
+        DOMPurify.sanitize(text.trim())
+      );
+      const currentContent = editorRef.current.innerHTML.trim();
 
-      // Prevent duplication on the first render or if the same text is selected again
-      // const currentContent = editorRef.current.innerText.trim();
-      // if (!currentContent.includes(sanitizedText)) {
-      //   editorRef.current.innerHTML = currentContent
-      //     ? currentContent + " " + sanitizedText
-      //     : sanitizedText; // Add text only if it's not already present
-      //   console.log(selectedText);
-      //   setNoteContent(editorRef.current.innerHTML.trim());
-      // }
+      const textsToAdd = sanitizedTexts.filter(
+        (text) => !currentContent.includes(text)
+      );
+
+      if (textsToAdd.length > 0) {
+        const newContent = [currentContent, ...textsToAdd]
+          .filter(Boolean)
+          .join(" <br>");
+        // .trim();
+        editorRef.current.innerHTML = newContent;
+        setNoteContent(newContent);
+      }
     }
-  }, [selectedText]);
+  }, [textToSave]);
 
   const handleInput = (e) => {
-    setNoteContent(e.target.innerText); // Set the content as plain text (ignoring HTML)
+    setNoteContent(e.target.innerText);
+    setUnsavedChanges(true);
   };
 
   const handleEditorClick = () => {
-    editorRef.current.focus(); // Set focus on the editor
+    editorRef.current.focus();
   };
 
   const handleFormat = (command) => {
     document.execCommand(command, false, null);
 
-    // After executing the command, update the activeFormats state
     setActiveFormats((prevFormats) => ({
       ...prevFormats,
       [command]: !prevFormats[command],
     }));
 
-    // Special handling for lists to toggle between ordered and unordered
     if (command === "insertOrderedList") {
       setActiveFormats((prevFormats) => ({
         ...prevFormats,
         orderedList: !prevFormats.orderedList,
-        unorderedList: false, // Ensure only one list type is active
+        unorderedList: false,
       }));
     }
 
@@ -154,7 +159,7 @@ const Createnotes = ({
       setActiveFormats((prevFormats) => ({
         ...prevFormats,
         unorderedList: !prevFormats.unorderedList,
-        orderedList: false, // Ensure only one list type is active
+        orderedList: false,
       }));
     }
   };
@@ -165,7 +170,7 @@ const Createnotes = ({
 
   const handleClickOutside = (event) => {
     if (headerRef.current && !headerRef.current.contains(event.target)) {
-      setIsOpenDropdown(false); // Close the dropdown if clicked outside
+      setIsOpenDropdown(false);
     }
   };
 
@@ -179,54 +184,72 @@ const Createnotes = ({
   const handleSubmit = async (e) => {
     e.preventDefault();
     const noteContent = editorRef.current.innerHTML;
+    if (!title.trim()) {
+      // If title is empty, set error message and exit function
+      setTitleError("Add title to save");
+      return;
+    } else {
+      setTitleError(""); // Clear error if title is provided
+    }
 
-    if (title && noteContent && noteContent !== "Take your note...") {
-      const note = { title, content: noteContent }; // Use 'content' instead of 'details'
+    // if (title && noteContent && noteContent !== "Take your note...") {
+    //   const note = { title, content: noteContent };
+    const note = {
+      title: title || noteContent.slice(0, 25) || "Untitled Note",
+      content: noteContent,
+    };
 
-      try {
-        // Post the note to the server
-        await axios.post(
-          "http://13.127.207.184:80/notes/createnote",
-          {
-            user_id, // Ensure `user_id` is defined and available in your component
-            title: note.title,
-            content: note.content,
+    try {
+      // Post the note to the server
+      const response = await axios.post(
+        "http://13.127.207.184:80/notes/createnote",
+        {
+          user_id, // Ensure `user_id` is defined and available in your component
+          title: note.title,
+          content: note.content,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, // Ensure `token` is defined
           },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`, // Ensure `token` is defined
-            },
-          }
-        );
+        }
+      );
 
-        // Add this note to the notes array
+      // Add this note to the notes array
+      if (response.status === 201) {
         setNotes((prevNotes) => [note, ...prevNotes]);
-
-        onClose(); // Return to Notes list
-
-        // Clear inputs
-        setNoteContent("");
-        setTitle("");
-        editorRef.current.innerHTML = "";
-        // // Add this note to the notes array
-        // setNotes((prevNotes) => [note, ...prevNotes]);
-        // console.log("Note saved:", note);
-        // onClose(); // Return to Notes list
-
-        // // Clear inputs
-        // setNoteContent("");
-        // setTitle("");
-        // editorRef.current.innerHTML = "";
-      } catch (error) {
-        console.error("Error saving note:", error);
+        toast.success("Notes Saved Successfully", {
+          autoClose: 1000,
+        });
       }
+
+      onClose();
+
+      setNoteContent("");
+      setTitle("");
+      editorRef.current.innerHTML = "";
+      setUnsavedChanges(false); // Mark changes as saved
+    } catch (error) {
+      toast.error("Error saving note:", {
+        autoClose: 1000,
+      });
+      console.error("Error saving note:", error);
+    }
+    //}
+  };
+  console.log("text is saved", textToSave);
+  const handleCloseClick = () => {
+    if (unsavedChanges) {
+      setShowConfirm(true);
+    } else {
+      onClose();
     }
   };
-  console.log("text is saved");
+
   const initiateDelete = (e) => {
-    e.stopPropagation(); // Prevent triggering onEdit
-    //setIsMenuOpen(false); // Close the menu
-    setShowConfirmDelete(true); // Show confirmation popup
+    e.stopPropagation();
+    //setIsMenuOpen(false);
+    setShowConfirmDelete(true);
   };
 
   const confirmDelete = (e) => {
@@ -305,17 +328,20 @@ const Createnotes = ({
                   onClick={handleOpenNotesList}
                   className="dropdown-button-noteslist"
                 >
-                  <CiMenuFries style={{ marginRight: "10px" }} />
+                  <HiOutlineMenuAlt1
+                    size={16}
+                    style={{ marginRight: "10px" }}
+                  />
                   <span>Notes List</span>
                 </button>
-                <button
+                {/* <button
                   // onClick={handleDeleteNotes}
                   onClick={initiateDelete}
                   className="dropdown-button-deletenotes"
                 >
                   <RiDeleteBin6Line style={{ marginRight: "5px" }} /> Delete
                   Notes
-                </button>
+                </button> */}
                 {showConfirmDelete && (
                   <div className="confirm-overlay">
                     <div className="confirm-popup">
@@ -348,7 +374,10 @@ const Createnotes = ({
           text="Save"
           onClick={handleSubmit}
         >
-          save
+          <div className="save-in" style={{ display: "flex", gap: "3px" }}>
+            <CgNotes size={17} />
+            <span>save</span>
+          </div>
         </button>
         <div
           className={
@@ -363,20 +392,31 @@ const Createnotes = ({
             title="Options"
           >
             <RxDotsHorizontal
-              color={isOpenNotes ? "white" : "#1a82ff"}
+              color={isOpenNotes ? "#1a82ff" : "#1a82ff"}
               size={25}
             />
           </button>
           <Button
             text={
               <IoCloseOutline
-                color={isOpenNotes ? "white" : "#1a82ff"}
+                color={isOpenNotes ? "#1a82ff" : "#1a82ff"}
                 size={25}
               />
             }
             className="notes-cancel-button"
-            onClick={onClose}
+            onClick={handleCloseClick}
           />
+          {showConfirm && (
+            <ConfirmSave
+              message="Are you sure you want to leave without saving?"
+              onSave={handleSubmit}
+              onDiscard={() => {
+                setShowConfirm(false);
+                onClose();
+              }}
+              onCancel={handleCancel}
+            />
+          )}
         </div>
       </header>
       <form
@@ -385,16 +425,22 @@ const Createnotes = ({
         style={
           isOpenNotes
             ? { height: `${height - 86}px` }
-            : { height: `${notesHeight - 11.85}vh` }
+            : { height: `${notesHeight - 13.1}vh` }
         }
       >
         <input
           className={isOpenNotes ? "lander-note-input" : "note-input"}
           type="text"
-          placeholder="Title"
+          placeholder={titleError || "Title"}
           value={title}
-          onChange={(e) => setTitle(e.target.value)}
+          onChange={(e) => {
+            setTitle(e.target.value);
+            setTitleError(""); // Clear error on input change
+          }}
           autoFocus
+          style={{
+            borderColor: titleError ? "red" : undefined,
+          }}
         />
         <div
           className={isOpenNotes ? "lander-note-taking" : "note-taking"}
@@ -411,7 +457,6 @@ const Createnotes = ({
             fontSize: "14px",
             textAlign: "start",
             overflowY: "auto",
-            //color: "white",
           }}
         >
           {/* Placeholder logic can be enhanced if needed */}
@@ -495,7 +540,7 @@ const Createnotes = ({
         <div className="createNotes-modal-overlay" onClick={handleCloseModal}>
           <div
             className="createNotes-modal-content"
-            onClick={(e) => e.stopPropagation()} // Prevent modal from closing when clicking inside
+            onClick={(e) => e.stopPropagation()}
           >
             <div className="createNotes-modal-header">
               <h3>Share Note</h3>
@@ -550,9 +595,16 @@ const Createnotes = ({
 
       {/* Email Modal */}
       {isEmailModalOpen && (
-        <div className="email-modal-overlay" onClick={handleCloseEmailModal}>
+        <div
+          className={
+            isOpenNotes ? "lander-email-overlay" : "email-modal-overlay"
+          }
+          onClick={handleCloseEmailModal}
+        >
           <div
-            className="email-modal-content"
+            className={
+              isOpenNotes ? "lander-email-modal-content" : "email-modal-content"
+            }
             onClick={(e) => e.stopPropagation()}
           >
             <div className="email-modal-header">
@@ -572,7 +624,6 @@ const Createnotes = ({
                 placeholder="Email"
                 className="email-input"
               />
-
               <button onClick={handleSendEmail} className="send-button">
                 Send
               </button>

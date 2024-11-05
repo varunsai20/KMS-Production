@@ -257,7 +257,7 @@
 }
 .close-modal-notes {
   position: absolute;
-  top: -40px;
+  /* top: -40px; */
   right: 0px;
   color: white;
   background-color: transparent;
@@ -408,16 +408,13 @@
   cursor: ns-resize;
 }
 
-.draggable-header {
+/* .draggable-header {
   position: absolute;
-  height: 2.8vh;
-  /* cursor: move; */
+  height: 4vh;
   padding: 10px 6px 10px 10px;
-  width: 96%;
   background-color: #8d32a7;
-  /* background-color: #1a82ff; */
   color: #fff;
-}
+} */
 .Notes {
   width: 100%;
   height: 100%;
@@ -453,7 +450,8 @@
   border-bottom: 1px solid rgba(235, 235, 243, 1);
   margin: 0%;
   padding: 0;
-  background-color: #999999;
+  height: 5vh;
+  background-color: #8d32a7;
 }
 .lander-button-plus {
   color: white;
@@ -468,6 +466,8 @@
   margin: 2%;
   padding: 0%;
   z-index: 1;
+  display: none;
+  /* margin: 0 auto; */
 }
 #p {
   margin: 0;
@@ -649,7 +649,7 @@
 
 /* edit note */
 .lander-edit-back-button {
-  color: white;
+  color: #1a82ff;
   font-size: 20px;
   background: none;
   width: 10%;
@@ -658,11 +658,14 @@
 }
 
 .lander-edit-save-button {
-  padding: 5px 0px 5px 0px;
+  padding: 5px 3px 5px 5px;
+  font-size: 17px;
+  /* width: 18%; */
+  height: 30px;
   color: white;
-  font-size: 20px;
-  background: none;
-  width: 20%;
+  border-radius: 34px;
+  background-color: #1a82ff;
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
   cursor: pointer;
   z-index: 1;
 }
@@ -675,7 +678,7 @@
   outline: none;
   font-size: 14px;
   font-family: "Manrope", sans-serif;
-  border-bottom: 1px solid #ebebf3;
+  border: 1px solid #999999;
   background-color: #f2f2f2;
 }
 .lander-edit-note__details {
@@ -691,6 +694,7 @@
   overflow-y: auto;
   text-align: start;
   color: black;
+  cursor: text;
 }
 .lander-toolbar {
   display: flex;
@@ -704,13 +708,21 @@
   background-color: blueviolet;
 }
 .lander-note-save-button {
-  color: white;
+  /* color: white;
   font-size: 20px;
   background: none;
   border-radius: 10px;
   width: 20%;
   margin: 3px;
-  height: 40px;
+  height: 40px; */
+  margin: 2%;
+  font-size: 16px;
+  /* width: 16%; */
+  height: 30px;
+  color: white;
+  border-radius: 34px;
+  background-color: #1a82ff;
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
   z-index: 1;
 }
 .lander-dropdown-toggle {
@@ -745,6 +757,7 @@
   overflow-y: auto;
   color: black;
   min-height: 200px;
+  cursor: text;
 }
 .lander-note-taking:empty:before {
   content: attr(placeholder);
@@ -764,11 +777,18 @@
   padding: 10px 0px 0px 10px;
 }
 .lander-create-note__actions {
+  /* background-color: #1a82ff;
+  margin-right: 10vh; */
   z-index: 1;
 }
 /* email-overlay */
 .lander-email-modal-overlay {
-  background: rgba(0, 0, 0, 0.6);
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  /* background: rgba(0, 0, 0, 0.6); */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -785,4 +805,39 @@
   justify-content: center;
   align-items: center;
   z-index: 2000;
+}
+
+.lander-email-modal-content {
+  background: white;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  height: 46%;
+}
+.noteItem-email-modal-overlay {
+  position: fixed;
+  width: 100%;
+  top: 30%;
+  left: 0;
+  /* width: 50vw;
+  height: 50vh;
+  background: rgba(0, 0, 0, 0.6); */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.noteItem-email-modal-content {
+  background: white;
+  padding: 20px;
+  width: 100%;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }

@@ -17,6 +17,7 @@
   font-size: 14px;
   font-family: Manrope;
   overflow-y: auto;
+  cursor: text;
 }
 .create-note__form {
   display: flex;
@@ -139,9 +140,15 @@
   border-radius: 4px;
 }
 .note-save-button {
-  font-size: 18px;
-  width: 20%;
-  color: #1a82ff;
+  margin: 2%;
+  font-size: 16px;
+  width: 16%;
+  height: 30px;
+  color: white;
+
+  border-radius: 34px;
+  background-color: #1a82ff;
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
   /* padding-top: 10px; */
 }
 .custom-ordered-list {
@@ -171,6 +178,10 @@
   content: attr(placeholder);
   color: #aaa;
   pointer-events: none;
+}
+.note-taking p {
+  margin-top: 0;
+  margin-bottom: 1em; /* Controls gap between paragraphs */
 }
 .share-message {
   position: fixed;
@@ -346,4 +357,15 @@
 
 .send-button:hover {
   background-color: #155bb5;
+}
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+.saving-icon {
+  animation: spin 1s linear infinite;
 }

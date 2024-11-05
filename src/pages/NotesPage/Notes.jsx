@@ -7,33 +7,39 @@ import "./Notes.css";
 
 import { useSelector } from "react-redux";
 import axios from "axios";
+import { toast } from "react-toastify";
 const NotesManager = ({
   selectedText: propSelectedText,
   notesHeight,
   isOpenNotes,
   height,
-  onCloseNotes,
+  oncloseNotes,
 }) => {
-  const [currentSelectedText, setSelectedText] = useState("");
-  useEffect(() => {
-    if (propSelectedText) {
-      setSelectedText(propSelectedText.trim());
-      setCurrentView("create"); // Switch to 'create' view
-    } else {
-      setCurrentView("list"); // Show notes list if no selected text
-    }
-  }, [propSelectedText]);
+  console.log(propSelectedText);
 
   const { user } = useSelector((state) => state.auth);
   const user_id = user?.user_id;
   const token = useSelector((state) => state.auth.access_token);
-
   const [notes, setNotes] = useState([]);
-  const [currentView, setCurrentView] = useState("list"); // 'list', 'create', 'edit'
-  const [selectedNote, setSelectedNote] = useState(null);
-
-  const [textToSave, setTextToSave] = useState([]); // Store the passed selected text
+  const [currentView, setCurrentView] = useState("list");
+  const [textToSave, setTextToSave] = useState([]);
+  const [editTextToSave, setEditTextToSave] = useState([]);
   const [filterText, setFilterText] = useState("");
+  const [selectedNote, setSelectedNote] = useState(null);
+  const [lastOpenView, setLastOpenView] = useState("list");
+
+  useEffect(() => {
+    if (propSelectedText) {
+      setTextToSave((prevText) => [...prevText, propSelectedText.trim()]);
+      if (currentView !== "edit") {
+        setCurrentView("create");
+      } else if (currentView === "edit") {
+        setEditTextToSave((prev) => [...prev, propSelectedText.trim()]);
+      }
+    }
+  }, [propSelectedText]);
+
+  console.log(propSelectedText);
 
   const fetchNotes = async () => {
     try {
@@ -64,6 +70,18 @@ const NotesManager = ({
 
   console.log(notes);
 
+  useEffect(() => {
+    if (!isOpenNotes) {
+      setLastOpenView(currentView);
+    }
+  }, [isOpenNotes, currentView]);
+
+  useEffect(() => {
+    if (isOpenNotes) {
+      setCurrentView(lastOpenView);
+    }
+  }, [isOpenNotes, lastOpenView]);
+
   // Update filterText when returning to "list" view
   useEffect(() => {
     if (currentView === "list") {
@@ -71,34 +89,28 @@ const NotesManager = ({
     }
   }, [currentView]);
 
-  // useEffect(() => {
-  //   if (selectedText) {
-  //     if (!textToSave.includes(selectedText.trim())) {
-  //       setTextToSave((prevText) => [...prevText, selectedText.trim()]);
-  //     }
-  //     setCurrentView("create"); // Switch to 'create' view
-  //   }
-  // }, [selectedText]);
-
   const handleAddNewNote = () => {
     setCurrentView("create");
-    setSelectedText("");
+    setTextToSave([]);
   };
 
   const handleEditNote = (note) => {
     setSelectedNote(note);
+    setEditTextToSave([]);
     setCurrentView("edit");
   };
 
   const handleCloseCreate = () => {
     setCurrentView("list");
-    setSelectedText("");
+    setTextToSave([]);
   };
 
   const handleCloseEdit = () => {
     setSelectedNote(null);
+    setEditTextToSave([]);
     setCurrentView("list");
   };
+  // setNotes(updatedNotesArray);
 
   const handleDeleteNote = async (noteId) => {
     try {
@@ -115,9 +127,11 @@ const NotesManager = ({
         setNotes((prevNotes) =>
           prevNotes.filter((note) => note.note_id !== noteId)
         );
+        toast.success("Deleted Successfully");
 
         console.log("Note deleted successfully");
       } else {
+        toast.error("Failed to delete note:");
         console.error("Failed to delete note:", response);
       }
     } catch (error) {
@@ -127,23 +141,28 @@ const NotesManager = ({
 
   return (
     <div className={isOpenNotes ? "Lander-manager" : "notes-manager-content"}>
+      {/* <button onClick={oncloseNotes}>hdvbvhcaskv</button> */}
       {currentView === "list" && (
         <NotesList
           notes={notes}
-          filterText={filterText} // Pass filter text
-          setFilterText={setFilterText} // Update filter text
+          filterText={filterText}
+          setFilterText={setFilterText}
           onAddNewNote={handleAddNewNote}
           onEditNote={handleEditNote}
           onDeleteNote={handleDeleteNote}
           isOpenNotes={isOpenNotes}
           height={height}
+
+          oncloseNotes={oncloseNotes}
+
           fetchNotes={fetchNotes}
+
         />
       )}
       {currentView === "create" && (
         <Createnotes
           notes={notes}
-          selectedText={currentSelectedText} // Pass the currentSelectedText
+          textToSave={textToSave}
           setNotes={setNotes}
           onClose={handleCloseCreate}
           onDelete={handleDeleteNote}
@@ -155,6 +174,7 @@ const NotesManager = ({
       {currentView === "edit" && selectedNote && (
         <Editnotes
           note={selectedNote}
+          textToSave={editTextToSave}
           setNotes={setNotes}
           onClose={handleCloseEdit}
           notesHeight={notesHeight}
