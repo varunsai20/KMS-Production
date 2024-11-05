@@ -101,9 +101,9 @@ const Annotation = ({
       const [_, type, pmidFromUrl] = typeMatch;
 
       // Ensure filteredAnnotateData is always an array
-      filteredAnnotateData = annotateData
+      filteredAnnotateData = annotateData?annotateData
         .filter((entry) => entry.hasOwnProperty(pmidFromUrl))
-        .map((entry) => ({ [pmidFromUrl]: entry[pmidFromUrl] }));
+        .map((entry) => ({ [pmidFromUrl]: entry[pmidFromUrl] })):"  ";
     }
 
     // If filteredAnnotateData is not an array, default it to an empty array

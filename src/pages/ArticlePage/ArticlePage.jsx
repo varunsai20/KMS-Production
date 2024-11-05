@@ -3,6 +3,7 @@ import axios from "axios";
 import { useSelector, useDispatch } from "react-redux";
 import { useParams, useLocation } from "react-router-dom";
 import "./ArticlePage.css";
+import Loading from "../../components/Loading";
 import Button from "../../components/Buttons";
 import { Typography } from "@mui/material";
 import flag from "../../assets/images/flash.svg";
@@ -52,7 +53,8 @@ const ArticlePage = () => {
   const [query, setQuery] = useState("");
   const [response, setResponse] = useState("");
   const [loading, setLoading] = useState(false);
-  const [annotateData,setAnnotateData] = useState(location.state.annotateData || []);
+  console.log(location.state.annotateData)
+  const [annotateData, setAnnotateData] = useState(location.state?.annotateData || "");
   const endOfMessagesRef = useRef(null);
   const [chatHistory, setChatHistory] = useState(() => {
     const storedHistory = sessionStorage.getItem("chatHistory");
@@ -69,6 +71,17 @@ const ArticlePage = () => {
       setShowStreamingSection(true);
     }
   }, []);
+  useEffect(() => {
+    if (annotateLoading) {
+      document.body.style.overflow = "hidden"; // Prevent scrolling
+    } else {
+      document.body.style.overflow = "auto"; // Enable scrolling
+    }
+
+    return () => {
+      document.body.style.overflow = "auto"; // Cleanup on unmount
+    };
+  }, [annotateLoading]);
   const [showStreamingSection, setShowStreamingSection] = useState(false);
   // const [chatInput, setChatInput] = useState(true);
   const [openAnnotate, setOpenAnnotate] = useState(false);
@@ -140,7 +153,7 @@ const ArticlePage = () => {
   const [currentid, setCurrentid] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newCollectionName, setNewCollectionName] = useState("");
-
+  const [hasFetchedAnnotateData, setHasFetchedAnnotateData] = useState(false);
   const [sessions, setSessions] = useState([]);
   const [editingSessionId, setEditingSessionId] = useState(null);
 
@@ -814,15 +827,21 @@ const ArticlePage = () => {
     // Replace the search term in the text with markdown bold syntax
     return text.replace(regex, "**$1**"); // Wrap the matched term with markdown bold syntax
   };
+  console.log(annotateData)
   const handleAnnotate = () => {
-    setOpenAnnotate((prevOpenAnnotate) => !prevOpenAnnotate);
-   
-    // No need to close Notes when Annotate is toggled
-  };
+    // Replace `desiredId` with the actual ID you want to match against
+    const matchingIdExists = annotateData && annotateData.some(item => item.id === id);
+
+    if ((!annotateData || !matchingIdExists) && !hasFetchedAnnotateData) {
+        handleAnnotateClick();
+    } else {
+        setOpenAnnotate((prevOpenAnnotate) => !prevOpenAnnotate); // Open immediately if matching ID is present
+    }
+};
+
   
   const handleAnnotateClick = async () => {
-  
-    // Determine the appropriate source and ID to send
+    // Define the request body according to source and id
     let requestBody = {};
     if (source === "pubmed" && id) {
       requestBody = { pubmed: [id] };
@@ -831,6 +850,7 @@ const ArticlePage = () => {
     } else if (source === "plos" && id) {
       requestBody = { plos: [id] };
     }
+  
     setAnnotateLoading(true);
     try {
       const response = await axios.post(
@@ -838,28 +858,30 @@ const ArticlePage = () => {
         requestBody,
         {
           headers: {
-            Authorization: `Bearer ${token}`, // Add the Bearer token here
+            Authorization: `Bearer ${token}`,
           },
         }
       );
   
       const data = response.data;
       setAnnotateData(data);
-      // setAnnotateSource(annotatedArticles);
-      setAnnotateLoading(false);
+      setHasFetchedAnnotateData(true); // Set flag after successful fetch
+      setOpenAnnotate(true); // Open annotation panel after data is received
     } catch (error) {
       console.error("Error fetching data from the API", error);
-      // setAnnotateLoading(false);
+    } finally {
+      setAnnotateLoading(false);
     }
   };
+  
+  // Optional: useEffect for clearing flag if needed, such as when sources change
   useEffect(() => {
- 
-}, [openAnnotate, annotateData]);
-    useEffect(()=>{
-      if (openAnnotate && !annotateData) {
-        handleAnnotateClick();
-      }
-    })
+    if (!annotateData) {
+      setHasFetchedAnnotateData(false);
+    }
+  }, [annotateData, source, id]);
+  
+  
   console.log(annotateData)
   const handleNotes = () => {
     setOpenNotes((prevOpenNotes) => !prevOpenNotes); // Toggle notes
@@ -1185,6 +1207,7 @@ const ArticlePage = () => {
             )}
           </div>
         </header>
+        {annotateLoading ? <Loading /> : ""}
         <div className="content">
           <div
             className="history-pagination"

@@ -612,10 +612,15 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
     fetchFilteredResults(updatedSourceTypes);
   };
 
+  const buildQueryParams = (paramName, valuesArray) => {
+    return valuesArray
+      .map((value) => `${encodeURIComponent(paramName)}=${encodeURIComponent(value)}`)
+      .join("&");
+  };
+  
   const fetchFilteredResults = (sourceTypes) => {
-    const sourceParam = sourceTypes.join(","); // Join multiple source types with commas for the query
-    const apiUrl = `http://13.127.207.184:80/core_search/?term=${searchTerm}&source=${sourceParam}`;
-    setLoading(true);
+    const sourceParams = buildQueryParams("source", sourceTypes); // Creates the source query parameter string
+    const apiUrl = `http://13.127.207.184:80/core_search/?term=${encodeURIComponent(searchTerm)}&${sourceParams}`;
 
     axios
       .get(apiUrl, {
