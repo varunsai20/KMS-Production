@@ -3,12 +3,65 @@ import "./NoteItem.css";
 import { RxDotsHorizontal } from "react-icons/rx";
 import { RxOpenInNewWindow } from "react-icons/rx";
 import { RiDeleteBin6Line } from "react-icons/ri";
+import { GoMail } from "react-icons/go";
+import axios from "axios";
+import { useSelector } from "react-redux";
+import { IoCloseOutline } from "react-icons/io5";
+import { toast } from "react-toastify";
 
 const NoteItem = ({ note, onEdit, onDelete, isOpenNotes }) => {
   const [isHovered, setIsHovered] = useState(false); // Track hover state
   const [isMenuOpen, setIsMenuOpen] = useState(false); // Track menu visibility
   const [showConfirmDelete, setShowConfirmDelete] = useState(false); // Track confirmation popup visibility
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+  const [email, setEmail] = useState("");
   const menuRef = useRef(null); // Reference to the popup menu
+  const { user } = useSelector((state) => state.auth);
+  const user_id = user?.user_id;
+  const token = useSelector((state) => state.auth.access_token);
+
+  const handleEmailClick = (e) => {
+    e.stopPropagation(); // Prevent triggering onEdit
+    setIsEmailModalOpen(true);
+  };
+
+  const handleCloseEmailModal = () => {
+    setIsEmailModalOpen(false);
+    setEmail(""); // Reset email input when modal is closed
+  };
+
+  // Email sending logic
+  const handleSendEmail = async () => {
+    const requestData = {
+      user_id: user_id,
+      note_id: note.note_id,
+      email: email,
+    };
+
+    try {
+      const response = await axios.post(
+        "http://13.127.207.184:80/notes/sharenotes",
+        requestData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        toast.success("Email sent successfully");
+        console.log("Email sent successfully to:", email);
+        handleCloseEmailModal();
+      } else {
+        toast.error("Failed to send email:");
+        console.error("Failed to send email:", response);
+      }
+    } catch (error) {
+      toast.error("Error sending email:");
+      console.error("Error sending email:", error);
+    }
+  };
 
   // Handle clicks outside the popup menu to close it
   useEffect(() => {
@@ -60,16 +113,6 @@ const NoteItem = ({ note, onEdit, onDelete, isOpenNotes }) => {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={() => onEdit(note)} // Open note on click
-      // style={{
-      //   cursor: "pointer",
-      //   borderRadius: "10px",
-      //   position: "relative", // To position the popup menu
-      //   padding: "10px",
-      //   boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
-      //   marginBottom: "10px",
-      //   backgroundColor: "#fff", // Background color for better visibility
-      //   transition: "background-color 0.3s ease",
-      // }}
     >
       <div
         className="title-header"
@@ -159,8 +202,6 @@ const NoteItem = ({ note, onEdit, onDelete, isOpenNotes }) => {
                 color: "#1A82FF",
                 transition: "background-color 0.2s ease",
               }}
-              // onMouseEnter={(e) => (e.target.style.backgroundColor = "#f0f0f0")}
-              // onMouseLeave={(e) => (e.target.style.backgroundColor = "#fff")}
             >
               <RxOpenInNewWindow size={15} color="#1A82FF" />
               <span style={{ marginLeft: "10px", fontSize: "14px" }}>
@@ -177,13 +218,39 @@ const NoteItem = ({ note, onEdit, onDelete, isOpenNotes }) => {
                 transition: "background-color 0.2s ease",
                 gap: "10px",
               }}
-              // onMouseEnter={(e) => (e.target.style.backgroundColor = "#f0f0f0")}
-              // onMouseLeave={(e) => (e.target.style.backgroundColor = "#fff")}
             >
               <RiDeleteBin6Line size={15} color="#1A82FF" />
               <span style={{ marginLeft: "10px", fontSize: "14px" }}>
                 Delete Note
               </span>
+            </li>
+            <li
+              className="popup-menu-item"
+              onClick={handleEmailClick} // This now stops propagation
+              style={{
+                color: "#1A82FF",
+                padding: "5px 10px",
+                cursor: "pointer",
+                transition: "background-color 0.2s ease",
+                gap: "10px",
+              }}
+            >
+              <div className="send-email" style={{ display: "flex" }}>
+                <div className="email-icon" style={{ paddingTop: "3px" }}>
+                  <GoMail size={17} color="#1A82FF" />
+                </div>
+                <div className="email-span">
+                  <span
+                    style={{
+                      marginLeft: "10px",
+                      fontSize: "14px",
+                      paddingTop: "5px",
+                    }}
+                  >
+                    Send Email
+                  </span>
+                </div>
+              </div>
             </li>
           </ul>
         </div>
@@ -198,6 +265,51 @@ const NoteItem = ({ note, onEdit, onDelete, isOpenNotes }) => {
               </button>
               <button className="confirm-keep-button" onClick={cancelDelete}>
                 Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {isEmailModalOpen && (
+        <div
+          className={
+            isOpenNotes
+              ? "noteItem-email-modal-overlay"
+              : "noteItem-modal-overlay"
+          }
+          onClick={handleCloseEmailModal}
+        >
+          <div
+            className={
+              isOpenNotes
+                ? "noteItem-email-modal-content"
+                : "noteItem-modal-content"
+            }
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="noteItem-modal-header">
+              <h3 style={{ color: "black" }}>Send to</h3>
+              <button
+                className="noteItem-modal-close-button"
+                onClick={handleCloseEmailModal}
+              >
+                <IoCloseOutline size={20} />
+              </button>
+            </div>
+            <div
+              className="noteItem-modal-body"
+              style={{ display: "flex", gap: "10px" }}
+            >
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Email"
+                className="email-input"
+              />
+
+              <button onClick={handleSendEmail} className="send-button">
+                Send
               </button>
             </div>
           </div>

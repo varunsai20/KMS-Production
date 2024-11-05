@@ -1,10 +1,10 @@
-import React, { useEffect,useState } from "react";
+import React, { useEffect, useState } from "react";
 import NoteItem from "./NoteItem";
 import SearchIcon from "../../assets/images/Search.svg";
 import { LuPlus } from "react-icons/lu";
+import { IoCloseOutline } from "react-icons/io5";
 
 import "./NotesList.css";
-
 
 const NotesList = ({
   notes,
@@ -14,10 +14,11 @@ const NotesList = ({
   onEditNote,
   onDeleteNote,
   isOpenNotes,
-  fetchNotes,
-  height,
-  //onDeleteAllNotes,
 
+  fetchNotes,
+
+  height,
+  oncloseNotes,
 }) => {
   const [filteredNotes, setFilteredNotes] = useState(notes);
 
@@ -40,16 +41,29 @@ const NotesList = ({
 
   return (
     <section className={isOpenNotes ? "Lander-Notes-List" : "Notes-List"}>
-      <header className={isOpenNotes ? "Lander-Notes-List-header" : "Notes-List-header"}>
+      <header
+        className={
+          isOpenNotes ? "Lander-Notes-List-header" : "Notes-List-header"
+        }
+      >
         <div className={isOpenNotes ? "lander-plus-dots" : "plus-dots"}>
-          <button title="New Note" className={isOpenNotes ? "lander-button-plus" : "button-plus"} onClick={onAddNewNote}>
+          <button
+            title="New Note"
+            className={isOpenNotes ? "lander-button-plus" : "button-plus"}
+            onClick={onAddNewNote}
+          >
             <LuPlus />
           </button>
-          <div className={isOpenNotes ? "lander-p" : "p"}>
+          <button className="close-notes-in" onClick={oncloseNotes}>
+            <IoCloseOutline size={30} color="white" />
+          </button>
+          <div className={isOpenNotes ? "lander-p" : "note-p"}>
             <p id="p">Notes</p>
           </div>
         </div>
-        <div className={isOpenNotes ? "lander-Search-wrapper" : "Search-wrapper"}>
+        <div
+          className={isOpenNotes ? "lander-Search-wrapper" : "Search-wrapper"}
+        >
           <img src={SearchIcon} alt="search" className="Search-icon" />
           <input
             type="text"
@@ -75,9 +89,10 @@ const NotesList = ({
           <NoteItem
             key={note.note_id} // Use note_id instead of id
             note={note} // Ensure `note` contains `note_id`, `content`, etc.
-
             onEdit={onEditNote}
             onDelete={onDeleteNote}
+            isOpenNotes={isOpenNotes}
+            //onCloseNotes={onCloseNotes}
           />
         ))}
       </div>

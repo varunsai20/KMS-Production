@@ -336,9 +336,9 @@ const Lander = () => {
             }}
           >
             <div className="draggable-header"></div>
-            <button className="close-modal-notes" onClick={handleCloseNotes}>
-              <IoCloseOutline size={30} color="black" />
-            </button>
+            {/* <button className="close-modal-notes" onClick={handleCloseNotes}>
+              <IoCloseOutline size={30} color="white" />
+            </button> */}
 
             <div style={{ flex: 1 }}>
               <Notes

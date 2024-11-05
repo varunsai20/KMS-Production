@@ -23,7 +23,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTelegram } from "@fortawesome/free-brands-svg-icons";
 import { faPen } from "@fortawesome/free-solid-svg-icons";
 import { faAnglesUp } from "@fortawesome/free-solid-svg-icons";
-//import { LiaTelegramPlane } from "react-icons/lia";
+import { LiaTelegramPlane } from "react-icons/lia";
 //import { BiSolidPaperPlane } from "react-icons/bi";
 import { IoMdPaperPlane } from "react-icons/io";
 import Notes from "../NotesPage/Notes";
@@ -824,13 +824,12 @@ const ArticlePage = () => {
     const regex = new RegExp(`(${searchTerm})`, "gi");
 
     // Replace the search term in the text with markdown bold syntax
-    return text.replace(regex, "**$1**"); // Wrap the matched term with markdown bold syntax
+    return text.replace(regex, "**$1**");
   };
   console.log(annotateData)
   const handleAnnotate = () => {
-    // Check if `id` exists as a key in `annotateData`
+    // Replace `desiredId` with the actual ID you want to match against
     const matchingIdExists = annotateData && Object.prototype.hasOwnProperty.call(annotateData, id);
-
     if ((!annotateData || !matchingIdExists) && !hasFetchedAnnotateData) {
         handleAnnotateClick();
     } else {
@@ -884,8 +883,7 @@ const ArticlePage = () => {
   
   console.log(annotateData)
   const handleNotes = () => {
-    setOpenNotes((prevOpenNotes) => !prevOpenNotes); // Toggle notes
-    // No need to close Annotate when Notes is toggled
+    setOpenNotes((prevOpenNotes) => !prevOpenNotes);
   };
 
   // Dynamically render the nested content in order, removing numbers, and using keys as side headings
@@ -1552,7 +1550,7 @@ const ArticlePage = () => {
                   style={{
                     position: "absolute",
                     display: "none", // Initially hidden
-                    backgroundColor: "#1A82ff",
+                    backgroundColor: "#afa7a7",
                     // padding: "5px",
                     color: "white",
                     borderRadius: "5px",
@@ -1566,9 +1564,9 @@ const ArticlePage = () => {
                     title="Send to Notes"
                   >
                     {/* <BiSolidPaperPlane size={25} color="black" /> */}
-                    <IoMdPaperPlane size={25} color="black" />
+                    {/* <IoMdPaperPlane size={25} color="black" /> */}
 
-                    {/* <LiaTelegramPlane size={25} color="black" /> */}
+                    <LiaTelegramPlane size={25} color="black" />
                     {/* <span style={{ color: "black", fontSize: "17px" }}>
                       send to notes
                     </span> */}
