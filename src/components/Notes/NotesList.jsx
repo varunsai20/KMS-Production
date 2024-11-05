@@ -14,16 +14,13 @@ const NotesList = ({
   onEditNote,
   onDeleteNote,
   isOpenNotes,
-
-  fetchNotes,
-
   height,
   oncloseNotes,
 }) => {
   const [filteredNotes, setFilteredNotes] = useState(notes);
 
   useEffect(() => {
-    fetchNotes()
+    // fetchNotes();
     if (filterText.trim() === "") {
       setFilteredNotes(notes);
     } else {
@@ -54,7 +51,11 @@ const NotesList = ({
           >
             <LuPlus />
           </button>
-          <button className="close-notes-in" onClick={oncloseNotes}>
+          <button
+            className="close-notes-in"
+            onClick={oncloseNotes}
+            style={{ zIndex: 1 }}
+          >
             <IoCloseOutline size={30} color="white" />
           </button>
           <div className={isOpenNotes ? "lander-p" : "note-p"}>

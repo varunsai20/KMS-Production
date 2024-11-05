@@ -127,7 +127,9 @@ const NotesManager = ({
         setNotes((prevNotes) =>
           prevNotes.filter((note) => note.note_id !== noteId)
         );
-        toast.success("Deleted Successfully");
+        toast.success("Deleted Successfully", {
+          autoClose: 2000,
+        });
 
         console.log("Note deleted successfully");
       } else {
@@ -152,11 +154,8 @@ const NotesManager = ({
           onDeleteNote={handleDeleteNote}
           isOpenNotes={isOpenNotes}
           height={height}
-
           oncloseNotes={oncloseNotes}
-
           fetchNotes={fetchNotes}
-
         />
       )}
       {currentView === "create" && (
@@ -169,6 +168,7 @@ const NotesManager = ({
           notesHeight={notesHeight}
           isOpenNotes={isOpenNotes}
           height={height}
+          fetchNotes={fetchNotes}
         />
       )}
       {currentView === "edit" && selectedNote && (
