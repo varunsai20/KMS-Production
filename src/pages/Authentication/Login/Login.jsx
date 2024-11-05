@@ -90,6 +90,7 @@ const Login = () => {
               organization_name: userProfile.organization_name,
               iat: response.data.iat,
               exp: response.data.exp,
+              profile_picture_url:userProfile.profile_picture_url,
             })
           );
 

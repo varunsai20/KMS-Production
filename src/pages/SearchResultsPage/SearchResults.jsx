@@ -9,6 +9,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import annotate from "../../assets/images/task-square.svg";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBookmark as regularBookmark } from "@fortawesome/free-regular-svg-icons";
+import { faBookmark as solidBookmark } from "@fortawesome/free-solid-svg-icons";
 import { faAnglesUp } from "@fortawesome/free-solid-svg-icons";
 import uparrow from "../../assets/images/uparrow.svg";
 import { IoCloseOutline, IoShareSocial } from "react-icons/io5";
@@ -24,12 +25,12 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   const location = useLocation(); // Access the passed state
   const { data } = location.state || { data: [] };
   const { user } = useSelector((state) => state.auth);
+  const profilePictureUrl = user?.profile_picture_url;
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
   const displayIfLoggedIn = isLoggedIn ? null : "none";
   const dispatch = useDispatch();
   const user_id = user?.user_id;
   const token = useSelector((state) => state.auth.access_token);
-  console.log(user);
   const searchTerm = sessionStorage.getItem("SearchTerm");
   const navigate = useNavigate();
   const contentRightRef = useRef(null); // Ref for searchContent-right
@@ -42,10 +43,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   const totalArticles = useMemo(() => {
     return [...bioRxivArticles, ...plosArticles, ...selectedArticles];
   }, [bioRxivArticles, plosArticles, selectedArticles]);
-  //const [showPopup, setShowPopup] = useState(false);
-  //const [hoveredRow, setHoveredRow] = useState(null);
   const [shareableLinks, setShareableLinks] = useState({});
-  //const [bookmarkedPmids, setBookmarkedPmids] = useState({});
   const [currentIdType, setCurrentIdType] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [collections, setCollections] = useState([]);
@@ -103,15 +101,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   const isBookmarked = (idType) => {
     // Convert idType to a number for comparison
     const numericIdType = Number(idType);
-    // console.log(`Checking for idType: ${numericIdType}`);
-
-    // Loop through each collection and log article IDs as numbers
-    // Object.entries(collections).forEach(([collectionName, articleArray]) => {
-    //   console.log(`Collection: ${collectionName}`);
-    //   articleArray.forEach((article) => {
-    //     console.log(`article_id: ${Number(article.article_id)}`);
-    //   });
-    // });
 
     // Check if the article is bookmarked
     const result = Object.values(collections).some((articleArray) =>
@@ -172,9 +161,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
     );
 
     // Log if only `article_id` matches but `article_source` does not
-    if (idOnlyMatch) {
-      console.log("ID-only Match Found:", idOnlyMatch);
-    }
+
 
     // Return the saved rating or default to 3 if not found
     return savedRating ? savedRating.average_rating : 0;
@@ -225,7 +212,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
         setCustomEndDate(customEndDate || "");
       }
     }
-  }, []);
+  }, [result]);
 
   const [filters, setFilters] = useState(() => {
     const savedFilters = localStorage.getItem("filters");
@@ -271,19 +258,25 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   // Scroll event listener to show or hide the scroll-to-top button
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 100) {
-        document.getElementById("scrollTopBtn").style.display = "block"; // Show button
+      const scrollTop = window.scrollY;
+      const windowHeight = window.innerHeight;
+      const documentHeight = document.documentElement.scrollHeight;
+  
+      // Check if the user is near the bottom of the page
+      if (scrollTop + windowHeight >= documentHeight - 50) {
+        document.getElementById("scrollTopBtn").style.display = "block"; // Show button at bottom
       } else {
         document.getElementById("scrollTopBtn").style.display = "none"; // Hide button
       }
     };
-
+  
     // Add event listener for window scroll
     window.addEventListener("scroll", handleScroll);
-
+  
     // Clean up event listener
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+  
   const sortedPublicationData =
     data && data.articles
       ? [...data.articles].sort((a, b) => {
@@ -363,23 +356,38 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
 
   //
 
-  // Pagination logic
+  useEffect(() => {
+    // Retrieve the stored page number from sessionStorage when the component loads
+    const storedPage = sessionStorage.getItem('currentPage');
+    console.log(storedPage)
+    if (storedPage) {
+      console.log("set")
+      setCurrentPage(Number(storedPage));
+      console.log(storedPage)
+      console.log("enterd")
+      console.log(storedPage)
+      setPageInput(Number(storedPage));
+    }
+  }, []);
+
+  
+
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
   const paginatedArticles = sortedData.slice(startIndex, endIndex);
 
-  // Function to handle page change
   const handlePageChange = (newPage) => {
-    if (
-      newPage > 0 &&
-      newPage <= Math.ceil(sortedData.length / ITEMS_PER_PAGE)
-    ) {
+    if (newPage > 0 && newPage <= Math.ceil(sortedData.length / ITEMS_PER_PAGE)) {
       setCurrentPage(newPage);
       setPageInput(newPage);
+      sessionStorage.setItem('currentPage', newPage);
       scrollToTop();
     }
   };
-
+  // useEffect(() => {
+  //   // Store the current page number in sessionStorage whenever it changes
+  //   
+  // }, [handlePageChange]);
   const handleAnnotate = () => {
     if (openAnnotate) {
       setOpenAnnotate(false);
@@ -554,246 +562,185 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       console.error("Error creating new collection:", error);
     }
   };
-
-  const handleFilterChange = async (event) => {
-    setLoading(true);
-    setAnnotateData([]);
-    setOpenAnnotate(false);
-    const newCheckedState = event.target.checked;
-    //setIsChecked(newCheckedState);
-    localStorage.setItem("checkboxState", JSON.stringify(newCheckedState)); // Save state to localStorage
+  const handleArticleTypeFilter = (event) => {
     const { value, checked } = event.target;
+    const updatedArticleTypes = checked
+        ? [...filters?.articleType, value]
+        : filters?.articleType.filter((type) => type !== value);
 
-    const updatedFilters = {
-      ...filters,
-      articleType: checked
-        ? [...filters.articleType, value]
-        : filters.articleType.filter((type) => type !== value),
-    };
+    setFilters((prevFilters) => ({ ...prevFilters, articleType: updatedArticleTypes }));
+    fetchFilteredResults({
+        sourceTypes: filters.sourceType,
+        dateRange: selectedDateRange,
+        startDate: customStartDate,
+        endDate: customEndDate,
+        articleTypes: updatedArticleTypes,
+        textAvailability: filters.textAvailability,
+    });
+};
 
-    setFilters(updatedFilters);
-    setLoading(false);
-    // Making API request with the updated filters and search term when a filter changes
-    handleArticleTypeFilter(updatedFilters);
+  const handleDateFilter = (selectedRange, start = "", end = "") => {
+    setSelectedDateRange(selectedRange);
+    fetchFilteredResults({
+      sourceTypes: filters.sourceType,
+      dateRange: selectedRange,
+      startDate: selectedRange === "custom" ? start : "",
+      endDate: selectedRange === "custom" ? end : "",
+    });
   };
-  const handleSourceTypeChange = (event) => {
-    const { value, checked } = event.target;
-
-    const updatedSourceTypes = checked
-      ? [...filters.sourceType, value]
-      : filters.sourceType.filter((type) => type !== value);
-
-    const updatedFilters = {
-      ...filters,
-      sourceType: updatedSourceTypes,
-    };
-
-    setFilters(updatedFilters);
-    fetchFilteredResults(updatedSourceTypes);
-  };
-
-  const fetchFilteredResults = (sourceTypes) => {
-    const sourceParam = sourceTypes.join(","); // Join multiple source types with commas for the query
-    const apiUrl = `http://13.127.207.184:80/core_search/?term=${searchTerm}&source=${sourceParam}`;
-    setLoading(true);
-
-    axios
-      .get(apiUrl, {
-        headers: {
-          Authorization: `Bearer ${token}`, // Add Bearer token here
-        },
-      })
-      .then((response) => {
-        const data = response.data;
-        setResults(data);
-        setLoading(false);
-        localStorage.setItem("sourceFilters", JSON.stringify(sourceTypes));
-        navigate("/search", { state: { data, searchTerm } });
-      })
-      .catch((error) => {
-        console.error("Error fetching data from the API", error);
-        setLoading(false);
-        navigate("/search", { state: { data: [], searchTerm } });
-      });
-  };
-
-  // Function to handle radio button change
-  const handleDateRangeChange = (event) => {
-    const value = event.target.value;
-
-    // Check if the new value is different from the current state
-    if (value !== selectedDateRange) {
-      setSelectedDateRange(value);
-
-      if (value !== "custom") {
-        // Call the filter immeqtely for non-custom ranges
-        handleYearFilter(value);
-      }
-    }
-  };
-
-  const isValidDate = (dateString) => {
-    // Check if the format matches yyyy-mm-dd and the date is valid
-    const regex = /^\d{4}-\d{2}-\d{2}$/;
-
-    if (!regex.test(dateString)) {
-      return false; // Invalid format
+  
+  const fetchFilteredResults = ({ sourceTypes = [], dateRange, startDate, endDate, articleTypes = [] }) => {  
+    // Base URL for the API
+    let apiUrl = `http://13.127.207.184:80/core_search/?term=${encodeURIComponent(searchTerm)}`;
+    console.log(sourceTypes)
+    console.log(articleTypes)
+    // Add sources if provided
+    if (sourceTypes.length > 0) {
+        const sourceParams = sourceTypes.map((source) => `source=${encodeURIComponent(source)}`).join("&");
+        apiUrl += `&${sourceParams}`;
     }
 
-    const date = new Date(dateString);
-    return date instanceof Date && !isNaN(date); // Check if it's a valid date
-  };
-
-  const handleCustomDateChange = (event) => {
-    const { name, value } = event.target;
-
-    // Validate the date before setting it
-    if (isValidDate(value)) {
-      if (name === "startDate") {
-        setCustomStartDate(value); // Only set if valid
-      } else if (name === "endDate") {
-        setCustomEndDate(value); // Only set if valid
-      }
-
-      // Ensure both dates are available and fully entered (length = 10) before calling handleDateFilter
-      const updatedStartDate = name === "startDate" ? value : customStartDate;
-      const updatedEndDate = name === "endDate" ? value : customEndDate;
-
-      // if (updatedStartDate.length === 10 && updatedEndDate.length === 10) {
-      //   handleDateFilter(updatedStartDate, updatedEndDate); // Pass valid raw dates to the filter
-      // }
-    } else {
-      console.error("Invalid date format. Please enter a valid date.");
+    // Add article types if provided
+    if (articleTypes.length > 0) {
+        const articleTypeParams = articleTypes.map((type) => `article_type=${encodeURIComponent(type)}`).join("&");
+        apiUrl += `&${articleTypeParams}`;
     }
-  };
 
-  const handleCustomDateFilter = (startDate, endDate) => {
-    if (startDate && endDate) {
-      const formattedStartDate = formatDate(startDate);
-      const formattedEndDate = formatDate(endDate);
-      const filter_type = "custom";
-      const apiUrl = `http://13.127.207.184:80/core_search/?term=${searchTerm}&date_filter=${filter_type}&from_date=${formattedStartDate}&to_date=${formattedEndDate}`;
-      setLoading(true);
+    // Add date filters if provided
+    if (dateRange) {
+        if (dateRange === "custom" && startDate && endDate) {
+            apiUrl += `&date_filter=custom&from_date=${formatDate(startDate)}&to_date=${formatDate(endDate)}`;
+        } else if (dateRange === "1" || dateRange === "5") {
+            const filterType = dateRange === "5" ? "5 years" : "1 year";
+            apiUrl += `&date_filter=${filterType}`;
+        }
+    }
 
-      axios
-        .get(apiUrl, {
-          headers: {
-            Authorization: `Bearer ${token}`, // Add Bearer token here
-          },
-        })
-        .then((response) => {
-          const data = response.data;
-          setResults(data);
-          setLoading(false);
-          localStorage.setItem(
-            "publicationDate",
-            JSON.stringify({
-              selectedDateRange: "Custom Range",
-              customStartDate: startDate,
-              customEndDate: endDate,
+    // Only proceed if any filters are active
+    if (sourceTypes.length > 0 || articleTypes.length > 0 || dateRange) {
+        setLoading(true);
+
+        axios
+            .get(apiUrl, {
+                headers: { Authorization: `Bearer ${token}` },
             })
-          );
-          navigate("/search", { state: { data, searchTerm } });
-        })
-        .catch((error) => {
-          console.error("Error fetching data from the API", error);
-          setLoading(false);
-          navigate("/search", { state: { data: [], searchTerm } });
-        });
+            .then((response) => {
+                setResults(response.data);
+                setLoading(false);
+
+                // Save the filter state to localStorage for persistence
+                localStorage.setItem(
+                    "filters",
+                    JSON.stringify({
+                        sourceTypes,
+                        dateRange,
+                        customStartDate: dateRange === "custom" ? startDate : "",
+                        customEndDate: dateRange === "custom" ? endDate : "",
+                        articleTypes,
+                    })
+                );
+
+                navigate("/search", { state: { data: response.data, searchTerm } });
+            })
+            .catch((error) => {
+                console.error("Error fetching data from the API", error);
+                setLoading(false);
+                navigate("/search", { state: { data: [], searchTerm } });
+            });
     } else {
-      console.error(
-        "Please provide both start and end dates for the custom range."
-      );
+        console.log("No filters applied; skipping API call.");
     }
-  };
+};
 
-  const handleYearFilter = (selectedDateRange) => {
-    const filterType = selectedDateRange === "5" ? "5 years" : "1 year";
-
-    const apiUrl = `http://13.127.207.184:80/core_search/?term=${searchTerm}&date_filter=${filterType}`;
-    setLoading(true);
-
-    axios
-      .get(apiUrl, {
-        headers: {
-          Authorization: `Bearer ${token}`, // Add Bearer token here
-        },
-      })
-      .then((response) => {
-        console.log("response from api", response);
-        const data = response.data;
-        setResults(data);
-        setLoading(false);
-        setCustomStartDate(""); // Clear custom dates when selecting a non-custom range
-        setCustomEndDate("");
-        localStorage.setItem(
-          "publicationDate",
-          JSON.stringify({
-            selectedDateRange,
-            customStartDate: "",
-            customEndDate: "",
-          })
-        );
-        navigate("/search", { state: { data, searchTerm } });
-      })
-      .catch((error) => {
-        console.error("Error fetching data from the API", error);
-        setLoading(false);
-        navigate("/search", {
-          state: { data: [], searchTerm, dateloading: true },
-        });
-      });
-  };
-
+  
   const formatDate = (dateString) => {
     const [year, month, day] = dateString.split("-");
     return `${day}-${month}-${year}`; // Format for the API
   };
 
-  const handleArticleTypeFilter = (selectedArticleTypes) => {
-    const filterTypes = selectedArticleTypes.articleType; // Assuming this is an array
-    const queryParams = filterTypes
-      .map((type) => `article_type=${encodeURIComponent(type)}`) // Encode each type for URL safety
-      .join("&");
+  
 
-    const apiUrl = `http://13.127.207.184:80/core_search/?term=${encodeURIComponent(
-      searchTerm
-    )}&${queryParams}`;
-
-    setLoading(true);
-
-    axios
-      .get(apiUrl, {
-        headers: {
-          Authorization: `Bearer ${token}`, // Add Bearer token here
-        },
-      })
-      .then((response) => {
-        console.log("Response from API with article types:", response);
-        const data = response.data;
-        setResults(data);
-        setLoading(false);
-
-        // Save the filter state
-        localStorage.setItem(
-          "articleTypeFilter",
-          JSON.stringify({
-            selectedArticleTypes,
-          })
-        );
-        navigate("/search", { state: { data, searchTerm } });
-      })
-      .catch((error) => {
-        console.error(
-          "Error fetching data from the API with article type filters",
-          error
-        );
-        setLoading(false);
-        navigate("/search", {
-          state: { data: [], searchTerm, dateloading: true },
-        });
-      });
+  const handleSourceTypeChange = (event) => {
+    const { value, checked } = event.target;
+    const updatedSourceTypes = checked
+      ? [...filters.sourceType, value]
+      : filters.sourceType.filter((type) => type !== value);
+  
+    setFilters((prevFilters) => ({ ...prevFilters, sourceType: updatedSourceTypes }));
+    fetchFilteredResults({
+      sourceTypes: updatedSourceTypes,
+      dateRange: selectedDateRange,
+      startDate: customStartDate,
+      endDate: customEndDate,
+    });
   };
+  
+  const handleDateRangeChange = (newRange) => {
+    setSelectedDateRange(newRange);
+    if (newRange !== "custom") {
+      fetchFilteredResults({
+        sourceTypes: filters.sourceType,
+        dateRange: newRange,
+      });
+    }
+  };
+  
+  const handleCustomDateFilter = () => {
+    fetchFilteredResults({
+      sourceTypes: filters.sourceType,
+      dateRange: "custom",
+      startDate: customStartDate,
+      endDate: customEndDate,
+    });
+  };
+    
+
+
+
+  // const handleArticleTypeFilter = (selectedArticleTypes) => {
+  //   const filterTypes = selectedArticleTypes.articleType; // Assuming this is an array
+  //   const queryParams = filterTypes
+  //     .map((type) => `article_type=${encodeURIComponent(type)}`) // Encode each type for URL safety
+  //     .join("&");
+
+  //   const apiUrl = `http://13.127.207.184:80/core_search/?term=${encodeURIComponent(
+  //     searchTerm
+  //   )}&${queryParams}`;
+
+  //   setLoading(true);
+
+  //   axios
+  //     .get(apiUrl, {
+  //       headers: {
+  //         Authorization: `Bearer ${token}`, // Add Bearer token here
+  //       },
+  //     })
+  //     .then((response) => {
+  //       console.log("Response from API with article types:", response);
+  //       const data = response.data;
+  //       setResults(data);
+  //       setLoading(false);
+
+  //       // Save the filter state
+  //       localStorage.setItem(
+  //         "articleTypeFilter",
+  //         JSON.stringify({
+  //           selectedArticleTypes,
+  //         })
+  //       );
+  //       navigate("/search", { state: { data, searchTerm } });
+  //     })
+  //     .catch((error) => {
+  //       console.error(
+  //         "Error fetching data from the API with article type filters",
+  //         error
+  //       );
+  //       setLoading(false);
+  //       navigate("/search", {
+  //         state: { data: [], searchTerm, dateloading: true },
+  //       });
+  //     });
+  // };
 
   const handleApplyFilters = () => {
     applyFilters(filters);
@@ -941,10 +888,10 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       setPageInput(currentPage); // Reset input to current page if invalid
     }
   };
-  useEffect(() => {
-    setCurrentPage(1); // Reset currentPage to 1 whenever new search results are loaded
-    setPageInput(1); // Reset the input field to 1 as well
-  }, [data.articles]);
+  // useEffect(() => {
+  //   setCurrentPage(1); // Reset currentPage to 1 whenever new search results are loaded
+  //   setPageInput(1); // Reset the input field to 1 as well
+  // }, [data.articles]);
   useEffect(() => {
     if (loading) {
       document.body.style.overflow = "hidden"; // Prevent scrolling
@@ -982,7 +929,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
           : [...prevPlos, pmid] // Add checked article to PLOS
     );
   };
-  console.log(totalArticles);
   const handleSourceCheckboxChange = (source, idType, doi) => {
     const sourceType = source; // Set to "PubMed" if source is null or undefined
     const uniqueId = `${sourceType}_${idType}`;
@@ -1180,7 +1126,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       [key]: !prevState[key], // Toggle between full text and sliced text for a specific row
     }));
   };
-
+  
   return (
     <div className="Container" ref={contentRightRef}>
       <div className="search-container-content">
@@ -1214,8 +1160,9 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                   style={{ cursor: "pointer", height: "35px" }}
                 >
                   <img
-                    src={ProfileIcon}
-                    style={{ width: "35px" }}
+                                    src={profilePictureUrl || ProfileIcon} // Use profilePictureUrl if available, else fallback to ProfileIcon
+
+                    style={{ width: "35px",borderRadius:"16px" }}
                     alt="Profile"
                     className="profile-icon"
                   />
@@ -1265,10 +1212,10 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                       type="checkbox"
                       value="Books and Documents"
                       // disabled={checkBoxLoading}
-                      checked={filters.articleType.includes(
+                      checked={filters.articleType?.includes(
                         "Books and Documents"
                       )}
-                      onChange={handleFilterChange} //FiltersComments
+                      onChange={handleArticleTypeFilter} //FiltersComments
                       //checked={isChecked} // Controlled checkbox state
                     />{" "}
                     Books & Documents
@@ -1278,8 +1225,8 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                     <input
                       type="checkbox"
                       value="Clinical Trials"
-                      checked={filters.articleType.includes("Clinical Trials")}
-                      onChange={handleFilterChange} //FiltersComments
+                      checked={filters.articleType?.includes("Clinical Trials")}
+                      onChange={handleArticleTypeFilter} //FiltersComments
                     />{" "}
                     Clinical Trials
                   </label>
@@ -1287,8 +1234,8 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                     <input
                       type="checkbox"
                       value="Meta Analysis"
-                      checked={filters.articleType.includes("Meta Analysis")}
-                      onChange={handleFilterChange} //FiltersComments
+                      checked={filters.articleType?.includes("Meta Analysis")}
+                      onChange={handleArticleTypeFilter} //FiltersComments
                     />{" "}
                     Meta Analysis
                   </label>
@@ -1296,8 +1243,8 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                     <input
                       type="checkbox"
                       value="Review"
-                      checked={filters.articleType.includes("Review")}
-                      onChange={handleFilterChange} //FiltersComments
+                      checked={filters.articleType?.includes("Review")}
+                      onChange={handleArticleTypeFilter} //FiltersComments
                     />{" "}
                     Review
                   </label>
@@ -1317,125 +1264,109 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
               </h5>
 
               {showSourceType && (
-                <div className="searchfilter-options-dropdown">
-                  <label>
-                    <input
-                      type="checkbox"
-                      value="BioRxiv"
-                      checked={filters.sourceType.includes("BioRxiv")}
-                      onChange={handleSourceTypeChange}
-                    />{" "}
-                    BioRxiv
-                  </label>
-                  <label>
-                    <input
-                      type="checkbox"
-                      value="Public Library of Science (PLOS)"
-                      checked={filters.sourceType.includes(
-                        "Public Library of Science (PLOS)"
-                      )}
-                      onChange={handleSourceTypeChange}
-                    />{" "}
-                    PLOS
-                  </label>
-                  <label>
-                    <input
-                      type="checkbox"
-                      value="pubmed"
-                      checked={filters.sourceType.includes("pubmed")}
-                      onChange={handleSourceTypeChange}
-                    />{" "}
-                    PubMed
-                  </label>
-                </div>
-              )}
-            </div>
+  <div className="searchfilter-options-dropdown">
+    <label>
+      <input
+        type="checkbox"
+        value="BioRxiv"
+        checked={filters.sourceType?.includes("BioRxiv")}
+        onChange={handleSourceTypeChange}
+      />{" "}
+      BioRxiv
+    </label>
+    <label>
+      <input
+        type="checkbox"
+        value="Public Library of Science (PLOS)"
+        checked={filters.sourceType?.includes("Public Library of Science (PLOS)")}
+        onChange={handleSourceTypeChange}
+      />{" "}
+      PLOS
+    </label>
+    <label>
+      <input
+        type="checkbox"
+        value="pubmed"
+        checked={filters.sourceType?.includes("pubmed")}
+        onChange={handleSourceTypeChange}
+      />{" "}
+      PubMed
+    </label>
+  </div>
+)}
 
-            {/* Publication date section */}
-            <div className="searchfilter-section">
-              <h5 onClick={() => setShowPublicationDate(!showPublicationDate)}>
-                Publication date{" "}
-                <span>
-                  {showPublicationDate ? (
-                    <img src={downarrow} />
-                  ) : (
-                    <img src={uparrow} />
-                  )}
-                </span>
-              </h5>
-              {showPublicationDate && (
-                <div className="searchfilter-options-dropdown">
-                  {/* Radio buttons for 1 year, 5 years, and custom range */}
-                  <label>
-                    <input
-                      type="radio"
-                      name="date"
-                      value="1"
-                      checked={selectedDateRange === "1"}
-                      onChange={handleDateRangeChange} //FiltersComments
-                    />{" "}
-                    1 year
-                  </label>
-                  <label>
-                    <input
-                      type="radio"
-                      name="date"
-                      value="5"
-                      checked={selectedDateRange === "5"}
-                      onChange={handleDateRangeChange} //FiltersComments
-                    />{" "}
-                    5 years
-                  </label>
-                  <label>
-                    <input
-                      type="radio"
-                      name="date"
-                      value="custom"
-                      checked={selectedDateRange === "custom"}
-                      onChange={handleDateRangeChange} //FiltersComments
-                    />{" "}
-                    Custom range
-                  </label>
+<div className="searchfilter-section">
+  <h5 onClick={() => setShowPublicationDate(!showPublicationDate)}>
+    Publication date{" "}
+    <span>
+      {showPublicationDate ? <img src={downarrow} /> : <img src={uparrow} />}
+    </span>
+  </h5>
+  {showPublicationDate && (
+    <div className="searchfilter-options-dropdown">
+      <label>
+        <input
+          type="radio"
+          name="date"
+          value="1"
+          checked={selectedDateRange === "1"}
+          onChange={() => handleDateFilter("1")}
+        />{" "}
+        1 year
+      </label>
+      <label>
+        <input
+          type="radio"
+          name="date"
+          value="5"
+          checked={selectedDateRange === "5"}
+          onChange={() => handleDateFilter("5")}
+        />{" "}
+        5 years
+      </label>
+      <label>
+        <input
+          type="radio"
+          name="date"
+          value="custom"
+          checked={selectedDateRange === "custom"}
+          onChange={() => setSelectedDateRange("custom")}
+        />{" "}
+        Custom range
+      </label>
 
-                  {/* Custom date range inputs, displayed only when 'Custom range' is selected */}
-                  {selectedDateRange === "custom" && (
-                    <div className="custom-date-range">
-                      <div className="custom-date-input">
-                        <label>
-                          Start Date:
-                          <input
-                            type="date"
-                            name="startDate"
-                            value={customStartDate}
-                            onChange={handleCustomDateChange} //FiltersComments
-                          />
-                        </label>
-                      </div>
+      {selectedDateRange === "custom" && (
+        <div className="custom-date-range">
+          <label>
+            Start Date:
+            <input
+              type="date"
+              name="startDate"
+              value={customStartDate}
+              onChange={(e) => setCustomStartDate(e.target.value)}
+            />
+          </label>
+          <label>
+            End Date:
+            <input
+              type="date"
+              name="endDate"
+              value={customEndDate}
+              onChange={(e) => setCustomEndDate(e.target.value)}
+            />
+          </label>
+          <button
+            className="ApplyFilters"
+            onClick={() => handleDateFilter("custom", customStartDate, customEndDate)}
+          >
+            Apply
+          </button>
+        </div>
+      )}
+    </div>
+  )}
+</div>
 
-                      <div className="custom-date-input">
-                        <label>
-                          End Date:
-                          <input
-                            type="date"
-                            name="endDate"
-                            value={customEndDate}
-                            onChange={handleCustomDateChange} //FiltersComments
-                          />
-                        </label>
-                      </div>
-
-                      <button
-                        className="ApplyFilters"
-                        onClick={() =>
-                          handleCustomDateFilter(customStartDate, customEndDate)
-                        }
-                      >
-                        Apply
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
             </div>
             {/* Text availability section */}
             <div className="searchfilter-section">
@@ -1509,7 +1440,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                         }
                         disabled={annotateLoading} // Disable the button while loading
                       >
-                        Annotate
+                      Annotate
                       </button>
                       {/* Show loading spinner */}
                       {annotateLoading && (
@@ -1727,7 +1658,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                                 <input
                                   type="checkbox"
                                   className="result-checkbox"
-                                  style={{ display: displayIfLoggedIn }}
+                                  style={{ display: displayIfLoggedIn,height:"14px",width:"14px",marginTop:"5px" }}
                                   onChange={() =>
                                     handleSourceCheckboxChange(
                                       result.source,
@@ -1760,58 +1691,30 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                                 </h3>
                               </div>
                               <FontAwesomeIcon
-                                icon={regularBookmark}
-                                size="l"
-                                style={{
-                                  color: isBookmarked(idType)
-                                    ? "blue"
-                                    : "black",
-                                  cursor: "pointer",
-                                  display: displayIfLoggedIn,
-                                }}
-                                onClick={() =>
-                                  handleBookmarkClick(
-                                    idType,
-                                    result.article_title,
-                                    result.source || "PubMed"
-                                  )
-                                }
-                                title={
-                                  isBookmarked(idType)
-                                    ? "Bookmarked"
-                                    : "Bookmark this article"
-                                }
-                              />
-
+  icon={isBookmarked(idType) ? solidBookmark : regularBookmark}
+  size="l"
+  style={{
+    color: isBookmarked(idType) ? "#0071bc" : "black",
+    cursor: "pointer",
+    display: displayIfLoggedIn,
+  }}
+  onClick={() =>
+    handleBookmarkClick(
+      idType,
+      result.article_title,
+      result.source || "PubMed"
+    )
+  }
+  title={
+    isBookmarked(idType)
+      ? "Bookmarked"
+      : "Bookmark this article"
+  }
+/>
                               {isModalOpen && (
                                 <div className="bookmark-modal-overlay">
                                   <div className="modal-content" ref={modalRef}>
-                                    <h3>Save Bookmark</h3>
                                     {/* Existing Collections */}
-                                    {Object.keys(collections).length > 0 && (
-                                      <>
-                                        <h4>Save to existing collection:</h4>
-                                        <ul>
-                                          {Object.keys(collections).map(
-                                            (collectionName, index) => (
-                                              <li key={index}>
-                                                {" "}
-                                                {/* using index as key since collection names are unique */}
-                                                <button
-                                                  onClick={() =>
-                                                    handleSaveToExisting(
-                                                      collectionName
-                                                    )
-                                                  }
-                                                >
-                                                  {collectionName}
-                                                </button>
-                                              </li>
-                                            )
-                                          )}
-                                        </ul>
-                                      </>
-                                    )}
 
                                     {/* Create New Collection */}
                                     <h4>Create a new collection:</h4>
@@ -1822,23 +1725,57 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                                         setNewCollectionName(e.target.value)
                                       }
                                       placeholder="New collection name"
-                                    />
+                                      />
                                     <div
-                                      style={{ display: "flex", gap: "20px" }}
-                                    >
+                                      style={{ display: "flex", gap: "20px",marginBottom:"15px" }}
+                                      >
                                       <button
                                         onClick={handleCreateNewCollection}
                                         disabled={!newCollectionName}
-                                      >
+                                        >
                                         Create
                                       </button>
 
                                       <button
                                         onClick={() => setIsModalOpen(false)}
-                                      >
+                                        >
                                         Cancel
                                       </button>
                                     </div>
+                                    
+                                  {Object.keys(collections).length > 0 && (
+                                    <>
+                                      <h4>Save to existing collection:</h4>
+                                      <ul>
+                                        {Object.keys(collections).map(
+                                          (collectionName, index) => (
+                                            <ul key={index}>
+                                              
+                                              {/* using index as key since collection names are unique */}
+                                              <li onClick={() =>
+                                                  handleSaveToExisting(
+                                                    collectionName
+                                                  )
+                                                }><span className="collection-name">{collectionName}</span>
+                                                <span className="collection-article-count">
+                                                  {collections[collectionName].length} articles
+                                                </span>
+                                                </li>
+                                              {/* <button
+                                                onClick={() =>
+                                                  handleSaveToExisting(
+                                                    collectionName
+                                                  )
+                                                }
+                                              >
+                                                {collectionName}
+                                              </button> */}
+                                            </ul>
+                                          )
+                                        )}
+                                      </ul>
+                                    </>
+                                  )}
                                   </div>
                                 </div>
                               )}
@@ -1905,7 +1842,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                             <p className="searchresult-authors">{`Published on: ${result.publication_date}`}</p>
                             <div className="searchresult-ID">
                               <p className="searchresult-pmid">{`ID: ${idType}`}</p>
-                              {result.doi ? (
+                              {/* {result.doi ? (
                                 <p className="searchresult-pmid">
                                   {" "}
                                   DoI:
@@ -1917,7 +1854,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                                 </p>
                               ) : (
                                 ""
-                              )}
+                              )} */}
                             </div>
                             <p
                               className="searchresult-description"

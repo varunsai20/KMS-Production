@@ -151,7 +151,7 @@ const Researchers = () => {
           <tbody>
             {userData.map((user) => (
               <tr key={user.email}>
-                <td>{user.fullname}</td>
+                <td><a style={{cursor:"pointer"}}onClick={() => handleEditClick(user.user_id)}>{user.fullname}</a></td>
                 <td>{user.email}</td>
                 <td>{user.department}</td>
                 <td>
@@ -161,7 +161,7 @@ const Researchers = () => {
                 </td>
                 <td>{user.role}</td>
                 <td>
-                  <div className="action-dropdown" ref={dropdownRef}>
+                  <div className="action-dropdown" >
                     <div
                       className="action-icon"
                       onClick={() => toggleDropdown(user.email)}

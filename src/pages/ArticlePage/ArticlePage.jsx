@@ -3,6 +3,7 @@ import axios from "axios";
 import { useSelector, useDispatch } from "react-redux";
 import { useParams, useLocation } from "react-router-dom";
 import "./ArticlePage.css";
+import Loading from "../../components/Loading";
 import Button from "../../components/Buttons";
 import { Typography } from "@mui/material";
 import flag from "../../assets/images/flash.svg";
@@ -14,6 +15,7 @@ import { CircularProgress } from "@mui/material";
 import { TextField } from "@mui/material";
 import Annotation from "../../components/Annotaions";
 import { faBookmark as regularBookmark } from "@fortawesome/free-regular-svg-icons";
+import { faBookmark as solidBookmark } from "@fortawesome/free-solid-svg-icons";
 import notesicon from "../../assets/images/note-2.svg";
 import rehypeRaw from "rehype-raw";
 import Logo from "../../assets/images/Logo_New.svg";
@@ -27,6 +29,7 @@ import { IoMdPaperPlane } from "react-icons/io";
 import Notes from "../NotesPage/Notes";
 import { login, logout } from "../../redux/reducers/LoginAuth"; // Import login and logout actions
 import ProfileIcon from "../../assets/images/Profile-dummy.svg";
+import { toast } from "react-toastify";
 
 const ArticlePage = () => {
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
@@ -34,12 +37,14 @@ const ArticlePage = () => {
   const widthIfLoggedIn = isLoggedIn ? null : "100%";
   const { pmid } = useParams();
   const { user } = useSelector((state) => state.auth);
+  const profilePictureUrl = user?.profile_picture_url;
   const token = useSelector((state) => state.auth.access_token);
   const dispatch = useDispatch();
   const user_id = user?.user_id;
   const [type, id1] = pmid.split(":");
   const id = Number(id1);
   const [source, setSource] = useState();
+  const [annotateLoading, setAnnotateLoading] = useState(false);
   const location = useLocation();
   const { data } = location.state || { data: [] };
   const [searchTerm, setSearchTerm] = useState("");
@@ -48,7 +53,7 @@ const ArticlePage = () => {
   const [query, setQuery] = useState("");
   const [response, setResponse] = useState("");
   const [loading, setLoading] = useState(false);
-  const annotateData = location.state.annotateData || { annotateData: [] };
+  const [annotateData, setAnnotateData] = useState(location.state?.annotateData || "");
   const endOfMessagesRef = useRef(null);
   const [chatHistory, setChatHistory] = useState(() => {
     const storedHistory = sessionStorage.getItem("chatHistory");
@@ -64,8 +69,18 @@ const ArticlePage = () => {
       setChatHistory(JSON.parse(storedChatHistory));
       setShowStreamingSection(true);
     }
-    console.log(storedChatHistory);
   }, []);
+  useEffect(() => {
+    if (annotateLoading) {
+      document.body.style.overflow = "hidden"; // Prevent scrolling
+    } else {
+      document.body.style.overflow = "auto"; // Enable scrolling
+    }
+
+    return () => {
+      document.body.style.overflow = "auto"; // Cleanup on unmount
+    };
+  }, [annotateLoading]);
   const [showStreamingSection, setShowStreamingSection] = useState(false);
   // const [chatInput, setChatInput] = useState(true);
   const [openAnnotate, setOpenAnnotate] = useState(false);
@@ -111,7 +126,6 @@ const ArticlePage = () => {
       fetchCollections();
     }
   }, [user_id, token]);
-  console.log(collections);
   const isBookmarked = (idType) => {
     // Convert idType to a number for comparison
     const numericIdType = Number(idType);
@@ -138,7 +152,7 @@ const ArticlePage = () => {
   const [currentid, setCurrentid] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newCollectionName, setNewCollectionName] = useState("");
-
+  const [hasFetchedAnnotateData, setHasFetchedAnnotateData] = useState(false);
   const [sessions, setSessions] = useState([]);
   const [editingSessionId, setEditingSessionId] = useState(null);
 
@@ -172,7 +186,6 @@ const ArticlePage = () => {
     }
   }, [openAnnotate, openNotes]);
 
-  console.log(id);
   useEffect(() => {
     if (type === "bioRxiv_id") {
       setSource("biorxiv");
@@ -342,7 +355,6 @@ const ArticlePage = () => {
       return 0;
     }
   };
-  console.log(ratingsList);
 
   const handleRatingChange = async (uniqueId, newRating) => {
     // Ensure ratingsList is an array
@@ -475,25 +487,37 @@ const ArticlePage = () => {
       );
 
       if (response.status === 201) {
-        const updatedCollections = collections.map((collection) => {
-          if (collection === collectionName) {
-            // Append the new article ID to the articles if it doesn't already exist
-            return {
-              ...collection,
-              articles: [...(collection.articles || []), currentid],
-            };
-          }
-          return collection;
-        });
+        const updatedCollections = {
+          ...collections,
+          [collectionName]: [
+            ...(collections[collectionName] || []),
+            {
+              article_id: String(currentid),
+              article_title: articleTitle,
+              article_source: source,
+            },
+          ],
+        };
 
         setCollections(updatedCollections);
         localStorage.setItem("collections", JSON.stringify(updatedCollections));
+        toast.success("Successfully added to Existing Collection", {
+          position: "top-right",
+          autoClose: 1000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+        });
 
         await fetchCollections(); // Refetch collections after successful addition
 
         setIsModalOpen(false);
       }
     } catch (error) {
+      toast.error("Failed to Add to the collection");
       console.error("Error adding bookmark to existing collection:", error);
     }
   };
@@ -521,13 +545,22 @@ const ArticlePage = () => {
       );
 
       if (response.status === 201) {
-        const updatedCollections = [...collections, response.data];
-        setCollections(updatedCollections);
-        localStorage.setItem("collections", JSON.stringify(updatedCollections));
+        toast.success("Collection Created", {
+          position: "top-right",
+          autoClose: 1000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+        });
+        await fetchCollections(); // Refetch collections after successful creation
         setNewCollectionName("");
         setIsModalOpen(false);
       }
     } catch (error) {
+      toast.error("Failed to CreateCollection");
       console.error("Error creating new collection:", error);
     }
   };
@@ -756,7 +789,6 @@ const ArticlePage = () => {
     }
   };
 
-  console.log(chatHistory);
 
   const handlePromptClick = (queryText) => {
     setQuery(queryText);
@@ -794,10 +826,64 @@ const ArticlePage = () => {
     // Replace the search term in the text with markdown bold syntax
     return text.replace(regex, "**$1**");
   };
+  console.log(annotateData)
   const handleAnnotate = () => {
-    setOpenAnnotate((prevOpenAnnotate) => !prevOpenAnnotate);
-  };
 
+    // Replace `desiredId` with the actual ID you want to match against
+    const matchingIdExists = annotateData && annotateData.some(item => item.id === id);
+
+
+    if ((!annotateData || !matchingIdExists) && !hasFetchedAnnotateData) {
+        handleAnnotateClick();
+    } else {
+        setOpenAnnotate((prevOpenAnnotate) => !prevOpenAnnotate); // Open immediately if matching ID is present
+    }
+};
+
+  
+  const handleAnnotateClick = async () => {
+    // Define the request body according to source and id
+    let requestBody = {};
+    if (source === "pubmed" && id) {
+      requestBody = { pubmed: [id] };
+    } else if (source === "biorxiv" && id) {
+      requestBody = { biorxiv: [id] };
+    } else if (source === "plos" && id) {
+      requestBody = { plos: [id] };
+    }
+  
+    setAnnotateLoading(true);
+    try {
+      const response = await axios.post(
+        "http://13.127.207.184:80/core_search/annotate",
+        requestBody,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      const data = response.data;
+      setAnnotateData(data);
+      setHasFetchedAnnotateData(true); // Set flag after successful fetch
+      setOpenAnnotate(true); // Open annotation panel after data is received
+    } catch (error) {
+      console.error("Error fetching data from the API", error);
+    } finally {
+      setAnnotateLoading(false);
+    }
+  };
+  
+  // Optional: useEffect for clearing flag if needed, such as when sources change
+  useEffect(() => {
+    if (!annotateData) {
+      setHasFetchedAnnotateData(false);
+    }
+  }, [annotateData, source, id]);
+  
+  
+  console.log(annotateData)
   const handleNotes = () => {
     setOpenNotes((prevOpenNotes) => !prevOpenNotes);
   };
@@ -822,7 +908,7 @@ const ArticlePage = () => {
       </div>
     );
   };
-
+  
   const renderContentInOrder = (content, isAbstract = false) => {
     const sortedKeys = Object.keys(content).sort(
       (a, b) => parseInt(a) - parseInt(b)
@@ -934,9 +1020,17 @@ const ArticlePage = () => {
             },
           }
         );
-        console.log(response);
         if (response.data?.sessions) {
-          setSessions(response.data.sessions); // Set the sessions array from the response
+          const sessionsData = response.data.sessions;
+  
+          // Completely swap the first two sessions if the array has at least two items
+          if (sessionsData.length >= 2) {
+            const temp = sessionsData[0];
+            sessionsData[0] = sessionsData[1];
+            sessionsData[1] = temp;
+          }
+  
+          setSessions(sessionsData); // Set the modified sessions array to state
         }
       } catch (error) {
         console.error("Error fetching chat history:", error);
@@ -947,8 +1041,7 @@ const ArticlePage = () => {
       fetchSessions();
     }
   }, [user_id, token, refreshSessions]);
-  console.log(sessions);
-  console.log(token);
+
   // Edit functions
   const handleEditClick = (sessionId, title) => {
     setEditingSessionId(sessionId);
@@ -1004,7 +1097,6 @@ const ArticlePage = () => {
       setShowStreamingSection(false); // Default to false if no stored chat history
     }
 
-    console.log("Stored Chat History:", storedChatHistory);
   }, [location.state]); // Add location.state as a dependency to re-run on navigation
 
   const handleSessionClick = async (article_id, source, session_id) => {
@@ -1103,8 +1195,8 @@ const ArticlePage = () => {
                   style={{ cursor: "pointer", height: "35px" }}
                 >
                   <img
-                    src={ProfileIcon}
-                    style={{ width: "35px" }}
+                                    src={profilePictureUrl || ProfileIcon} // Use profilePictureUrl if available, else fallback to ProfileIcon
+                                    style={{ width: "35px",borderRadius:"16px" }}
                     alt="Profile"
                     className="profile-icon"
                   />
@@ -1124,6 +1216,7 @@ const ArticlePage = () => {
             )}
           </div>
         </header>
+        {annotateLoading ? <Loading /> : ""}
         <div className="content">
           <div
             className="history-pagination"
@@ -1234,28 +1327,29 @@ const ArticlePage = () => {
                       <span>Rate the article </span>
                     </div>
                     <div className="rate">
-                      {[5, 4, 3, 2, 1].map((value) => (
+                    {[5, 4, 3, 2, 1].map((value) => {
+                      const existingRating = Array.isArray(ratingsList) &&
+                        ratingsList.find((item) => item.uniqueId === uniqueId)?.rating;
+
+                      return (
                         <React.Fragment key={value}>
                           <input
                             type="radio"
                             id={`star${value}-${uniqueId}`}
                             name={`rate_${uniqueId}`}
                             value={value}
-                            // Check if ratingsList is an array and find the cached rating if it exists
-                            checked={
-                              (Array.isArray(ratingsList) &&
-                                ratingsList.find(
-                                  (item) => item.uniqueId === uniqueId
-                                )?.rating) === value
-                            }
+                            checked={existingRating === value}
                             onChange={() => handleRatingChange(uniqueId, value)}
+                            disabled={!!existingRating} // Disable if a rating already exists
                           />
                           <label
                             htmlFor={`star${value}-${uniqueId}`}
                             title={`${value} star`}
                           />
                         </React.Fragment>
-                      ))}
+                      );
+                    })}
+
                     </div>
                   </div>
                 </div>
@@ -1272,10 +1366,10 @@ const ArticlePage = () => {
                     {articleData.article.article_title}
                   </p>
                   <FontAwesomeIcon
-                    icon={regularBookmark}
+                    icon={isBookmarked(id) ? solidBookmark : regularBookmark}
                     size="l"
                     style={{
-                      color: isBookmarked(id) ? "blue" : "black",
+                      color: isBookmarked(id) ? "#0071bc" : "black",
                       cursor: "pointer",
                       display: displayIfLoggedIn,
                     }}
@@ -1291,58 +1385,74 @@ const ArticlePage = () => {
                     }
                   />
 
-                  {isModalOpen && (
-                    <div className="bookmark-modal-overlay">
-                      <div className="modal-content" ref={modalRef}>
-                        <h3>Save Bookmark</h3>
-                        {console.log("Collections data:", collections)}
-                        {/* Existing Collections */}
-                        {Object.keys(collections).length > 0 && (
-                          <>
-                            <h4>Save to existing collection:</h4>
-                            <ul>
-                              {Object.keys(collections).map(
-                                (collectionName, index) => (
-                                  <li key={index}>
-                                    {" "}
-                                    {/* using index as key since collection names are unique */}
-                                    <button
-                                      onClick={() =>
-                                        handleSaveToExisting(collectionName)
+{isModalOpen && (
+                                <div className="bookmark-modal-overlay">
+                                  <div className="modal-content" ref={modalRef}>
+                                    {/* Existing Collections */}
+
+                                    {/* Create New Collection */}
+                                    <h4>Create a new collection:</h4>
+                                    <input
+                                      type="text"
+                                      value={newCollectionName}
+                                      onChange={(e) =>
+                                        setNewCollectionName(e.target.value)
                                       }
-                                    >
-                                      {collectionName}
-                                    </button>
-                                  </li>
-                                )
+                                      placeholder="New collection name"
+                                      />
+                                    <div
+                                      style={{ display: "flex", gap: "20px",marginBottom:"15px" }}
+                                      >
+                                      <button
+                                        onClick={handleCreateNewCollection}
+                                        disabled={!newCollectionName}
+                                        >
+                                        Create
+                                      </button>
+
+                                      <button
+                                        onClick={() => setIsModalOpen(false)}
+                                        >
+                                        Cancel
+                                      </button>
+                                    </div>
+                                    
+                                  {Object.keys(collections).length > 0 && (
+                                    <>
+                                      <h4>Save to existing collection:</h4>
+                                      <ul>
+                                        {Object.keys(collections).map(
+                                          (collectionName, index) => (
+                                            <ul key={index}>
+                                              
+                                              {/* using index as key since collection names are unique */}
+                                              <li onClick={() =>
+                                                  handleSaveToExisting(
+                                                    collectionName
+                                                  )
+                                                }><span className="collection-name">{collectionName}</span>
+                                                <span className="collection-article-count">
+                                                  {collections[collectionName].length} articles
+                                                </span>
+                                                </li>
+                                              {/* <button
+                                                onClick={() =>
+                                                  handleSaveToExisting(
+                                                    collectionName
+                                                  )
+                                                }
+                                              >
+                                                {collectionName}
+                                              </button> */}
+                                            </ul>
+                                          )
+                                        )}
+                                      </ul>
+                                    </>
+                                  )}
+                                  </div>
+                                </div>
                               )}
-                            </ul>
-                          </>
-                        )}
-
-                        {/* Create New Collection */}
-                        <h4>Create a new collection:</h4>
-                        <input
-                          type="text"
-                          value={newCollectionName}
-                          onChange={(e) => setNewCollectionName(e.target.value)}
-                          placeholder="New collection name"
-                        />
-                        <div style={{ display: "flex", gap: "20px" }}>
-                          <button
-                            onClick={handleCreateNewCollection}
-                            disabled={!newCollectionName}
-                          >
-                            Create
-                          </button>
-
-                          <button onClick={() => setIsModalOpen(false)}>
-                            Cancel
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
                 </div>
               </div>
 
@@ -1526,17 +1636,12 @@ const ArticlePage = () => {
               <div
                 className={`search-annotate-icon ${
                   openAnnotate ? "open" : "closed"
-                } ${annotateData && annotateData.length > 0 ? "" : "disabled"}`}
+                }`}
                 onClick={
-                  annotateData && annotateData.length > 0
-                    ? handleAnnotate
-                    : null
+                 handleAnnotate
                 }
                 style={{
-                  cursor:
-                    annotateData && annotateData.length > 0
-                      ? "pointer"
-                      : "not-allowed",
+                  
                   opacity: annotateData && annotateData.length > 0 ? 1 : 1, // Adjust visibility when disabled
                 }}
               >

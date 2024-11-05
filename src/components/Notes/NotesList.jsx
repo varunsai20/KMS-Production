@@ -14,12 +14,16 @@ const NotesList = ({
   onEditNote,
   onDeleteNote,
   isOpenNotes,
+
+  fetchNotes,
+
   height,
   oncloseNotes,
 }) => {
   const [filteredNotes, setFilteredNotes] = useState(notes);
 
   useEffect(() => {
+    fetchNotes()
     if (filterText.trim() === "") {
       setFilteredNotes(notes);
     } else {

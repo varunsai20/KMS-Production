@@ -307,7 +307,7 @@ button {
 }
 
 .SearchResult-Annotate {
-  display: flex;
+  /* display: flex; */
   align-items: center;
   gap: 10px;
   border-radius: 40px;
@@ -557,19 +557,20 @@ button {
   background-color: white;
   padding: 20px;
   border-radius: 8px;
-  max-width: 500px;
+  max-width: 300px;
   width: 100%;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   z-index: 1001;
 }
-
+.modal-content h4{
+  margin: 0;
+}
 .modal-content h3,
 .modal-content p {
   margin-bottom: 15px;
 }
 
 .modal-content button {
-  margin-top: 10px;
   padding: 10px 20px;
   border: none;
   background-color: #007bff;
@@ -584,8 +585,8 @@ button {
 }
 
 .modal-content input {
-  width: 100%;
-  padding: 8px;
+  width: 97%;
+  padding: 8px 0 8px 8px;
   margin-top: 10px;
   margin-bottom: 15px;
   border-radius: 5px;
@@ -595,12 +596,19 @@ button {
 .modal-content ul {
   list-style-type: none;
   padding-left: 0;
+  margin-top: 0;
 }
 
 .modal-content ul li {
-  margin-bottom: 10px;
+  margin: 10px 0;
+  display: flex;
+  justify-content: space-between;
+  cursor: pointer;
+  padding: 10px 0;
 }
-
+.modal-content ul li:hover{
+  background-color: #dddddd70;
+}
 .searchresult-authors {
   font-size: 14px;
   color: black;

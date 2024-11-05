@@ -40,8 +40,16 @@
               Authorization: `Bearer ${token}`,
             },
           });
-          console.log(response)
-          setFormData(response.data.user_profile);
+          const userProfile = response.data.user_profile;
+  
+          setFormData(userProfile);
+          
+          // Check if profile_picture_url is available and set profileImage accordingly
+          if (userProfile.profile_picture_url) {
+            setProfileImage(userProfile.profile_picture_url);
+          } else {
+            setProfileImage(profile);
+          }
         } catch (error) {
           console.error('Error fetching user details:', error);
         }
@@ -51,7 +59,6 @@
         fetchUserDetails();
       }
     }, [user_id, token]);
-
     console.log(formData)
     // Handle image upload
     const handleImageChange = async (e) => {
