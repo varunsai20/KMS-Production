@@ -18,7 +18,7 @@ const Header = () => {
   const { user, profileUpdated } = useSelector((state) => state.auth);
 
   useEffect(() => {
-    setCurrentProfileImage(user.profile_picture_url?.profile_picture_url || ProfileIcon);
+    setCurrentProfileImage(user?.profile_picture_url || ProfileIcon);
   }, [user.profile_picture_url, profileUpdated]); // Re-run when profileUpdated changes
 
   const userId = user?.user_id;
