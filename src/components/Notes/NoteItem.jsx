@@ -50,11 +50,15 @@ const NoteItem = ({ note, onEdit, onDelete, isOpenNotes }) => {
       );
 
       if (response.status === 200) {
-        toast.success("Email sent successfully");
+        toast.success("Email sent successfully", {
+          autoClose: 2000,
+        });
         console.log("Email sent successfully to:", email);
         handleCloseEmailModal();
       } else {
-        toast.error("Failed to send email:");
+        toast.error("Failed to send email:", {
+          autoClose: 2000,
+        });
         console.error("Failed to send email:", response);
       }
     } catch (error) {
@@ -105,6 +109,12 @@ const NoteItem = ({ note, onEdit, onDelete, isOpenNotes }) => {
   const handleOpen = () => {
     onEdit(note);
     setIsMenuOpen(false);
+  };
+  const handleKeyDown = (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault(); // Prevents default form submission
+      handleSendEmail();
+    }
   };
 
   return (
@@ -306,6 +316,7 @@ const NoteItem = ({ note, onEdit, onDelete, isOpenNotes }) => {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Email"
                 className="email-input"
+                onKeyDown={handleKeyDown}
               />
 
               <button onClick={handleSendEmail} className="send-button">

@@ -28,6 +28,7 @@ const Createnotes = ({
   note,
   isOpenNotes,
   height,
+  fetchNotes,
 }) => {
   //console.log(selectedText);
   const [title, setTitle] = useState("");
@@ -57,6 +58,7 @@ const Createnotes = ({
   const [email, setEmail] = useState("");
   const [subject, setSubject] = useState("");
   const [titleError, setTitleError] = useState("");
+  const initialContent = useRef("");
 
   const handleEmailClick = () => {
     setIsEmailModalOpen(true);
@@ -126,9 +128,17 @@ const Createnotes = ({
         // .trim();
         editorRef.current.innerHTML = newContent;
         setNoteContent(newContent);
+
+        if (newContent !== initialContent.current) {
+          setUnsavedChanges(true);
+        }
       }
     }
   }, [textToSave]);
+  useEffect(() => {
+    // Store initial content for comparison
+    initialContent.current = editorRef.current?.innerHTML || "";
+  }, []);
 
   const handleInput = (e) => {
     setNoteContent(e.target.innerText);
@@ -221,6 +231,8 @@ const Createnotes = ({
         toast.success("Notes Saved Successfully", {
           autoClose: 1000,
         });
+        setUnsavedChanges(false);
+        fetchNotes();
       }
 
       onClose();
@@ -329,7 +341,7 @@ const Createnotes = ({
                   className="dropdown-button-noteslist"
                 >
                   <HiOutlineMenuAlt1
-                    size={16}
+                    size={20}
                     style={{ marginRight: "10px" }}
                   />
                   <span>Notes List</span>
@@ -374,7 +386,10 @@ const Createnotes = ({
           text="Save"
           onClick={handleSubmit}
         >
-          <div className="save-in" style={{ display: "flex", gap: "3px" }}>
+          <div
+            className="save-in"
+            style={{ display: "flex", gap: "3px", alignItems: "center" }}
+          >
             <CgNotes size={17} />
             <span>save</span>
           </div>
@@ -435,7 +450,8 @@ const Createnotes = ({
           value={title}
           onChange={(e) => {
             setTitle(e.target.value);
-            setTitleError(""); // Clear error on input change
+            setTitleError("");
+            setUnsavedChanges(true);
           }}
           autoFocus
           style={{

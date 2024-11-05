@@ -51,6 +51,7 @@ const Editnotes = ({
   const [email, setEmail] = useState("");
   const [showConfirmSave, setShowConfirmSave] = useState(false);
   const [unsavedChanges, setUnsavedChanges] = useState(false);
+  const initialText = useRef("");
   //const [subject, setSubject] = useState("");
 
   const handleShare = () => {
@@ -75,9 +76,18 @@ const Editnotes = ({
 
         editorRef.current.innerHTML = newContent;
         setNoteContent(newContent);
+        if (newContent !== initialText.current) {
+          setUnsavedChanges(true);
+        }
       }
     }
   }, [textToSave]);
+  useEffect(() => {
+    if (note.content) {
+      setNoteContent(note.content);
+      initialText.current = note.content; // Store initial content for comparison
+    }
+  }, [note.content]);
 
   const handleInput = (e) => {
     setNoteContent(e.target.innerText);
@@ -146,11 +156,15 @@ const Editnotes = ({
       );
 
       if (response.status === 200) {
-        toast.success("Email sent successfully");
+        toast.success("Email sent successfully", {
+          autoClose: 2000,
+        });
         console.log("Email sent successfully to:", email);
         handleCloseEmailModal(); // Close the modal after sending
       } else {
-        toast.error("Failed to send email:");
+        toast.error("Failed to send email:", {
+          autoClose: 2000,
+        });
         console.error("Failed to send email:", response);
       }
     } catch (error) {
@@ -166,18 +180,6 @@ const Editnotes = ({
     setShowConfirmSave(false);
   };
 
-  // useEffect(() => {
-  //   // Populate editor with note details and handle placeholder visibility
-  //   if (note.content?.trim() === "") {
-  //     setIsPlaceholderVisible(true);
-  //     setTitle("");
-  //   } else {
-  //     setIsPlaceholderVisible(false);
-  //     if (editorRef.current) {
-  //       editorRef.current.innerHTML = note.content;
-  //     }
-  //   }
-  // }, [note.content]);
   useEffect(() => {
     if (note.content?.trim() === "") {
       setIsPlaceholderVisible(true);
@@ -255,6 +257,8 @@ const Editnotes = ({
           toast.success("Notes Saved Successfully", {
             autoClose: 1000,
           });
+          setUnsavedChanges(false); // Reset unsaved changes after saving
+          initialText.current = updatedNote.content;
           console.log("Note updated:", updatedNote);
         } else {
           toast.error("Failed to update note:", {
@@ -322,29 +326,14 @@ const Editnotes = ({
       }));
     }
   };
-
-  // const handleShare = () => {
-  //   const noteDetails = editorRef.current.innerHTML;
-  //   const noteTitle = title || "Untitled Note";
-
-  //   // Create a shareable text (you can customize this as needed)
-  //   const shareText = `${noteTitle}\n\n${noteDetails.replace(/<[^>]+>/g, "")}`; // Stripping HTML tags
-
-  //   // Copy to clipboard
-  //   navigator.clipboard.writeText(shareText).then(
-  //     () => {
-  //       setShareMessage("Note copied to clipboard!");
-  //       // Remove the message after 3 seconds
-  //       setTimeout(() => setShareMessage(""), 3000);
-  //     },
-  //     (err) => {
-  //       console.error("Could not copy text: ", err);
-  //       setShareMessage("Failed to copy note.");
-  //       setTimeout(() => setShareMessage(""), 3000);
-  //     }
-  //   );
-  // };
   console.log(notesHeight);
+
+  const handleKeyDown = (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      handleSendEmail();
+    }
+  };
 
   return (
     <section className="edit-note">
@@ -376,7 +365,10 @@ const Editnotes = ({
           onClick={handleForm}
           aria-label="Save Note"
         >
-          <div className="save-in-edit" style={{ display: "flex", gap: "3px" }}>
+          <div
+            className="save-in-edit"
+            style={{ display: "flex", gap: "3px", alignItems: "center" }}
+          >
             <CgNotes size={16} />
             <span>save</span>
           </div>
@@ -394,7 +386,10 @@ const Editnotes = ({
           type="text"
           placeholder="Title"
           value={title}
-          onChange={(e) => setTitle(e.target.value)}
+          onChange={(e) => {
+            setTitle(e.target.value);
+            setUnsavedChanges(true);
+          }}
           autoFocus
           className={
             isOpenNotes ? "lander-edit-note__title" : "edit-note__title"
@@ -577,6 +572,7 @@ const Editnotes = ({
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Email"
                 className="email-input"
+                onKeyDown={handleKeyDown}
               />
 
               <button onClick={handleSendEmail} className="send-button">

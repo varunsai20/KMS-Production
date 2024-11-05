@@ -20,7 +20,7 @@ import Analytics from "../../assets/images/Lander-Analytics.svg";
 import { IoCloseOutline } from "react-icons/io5";
 import "./Lander-Logedin.css";
 import { useNavigate } from "react-router-dom";
-import axios from "axios"
+import axios from "axios";
 //import Draggable from "react-draggable";
 import Collection from "../../components/Collection";
 
@@ -31,7 +31,7 @@ const Lander = () => {
   const [sessions, setSessions] = useState([]);
   const [isLanderNotesOpen, setIsLanderNotesOpen] = useState(false);
   const [refreshSessions, setRefreshSessions] = useState(false);
-  console.log(sessions)
+  console.log(sessions);
   const [isCollectionOpen, setIsCollectionOpen] = useState(false);
   const [dimensions, setDimensions] = useState({ width: 400, height: 400 });
   const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -63,29 +63,29 @@ const Lander = () => {
             },
           }
         );
-  
+
         if (response.data?.sessions) {
           const sessionsData = response.data.sessions;
-  
+
           // Completely swap the first two sessions if the array has at least two items
           if (sessionsData.length >= 2) {
             const temp = sessionsData[0];
             sessionsData[0] = sessionsData[1];
             sessionsData[1] = temp;
           }
-  
+
           setSessions(sessionsData); // Set the modified sessions array to state
         }
       } catch (error) {
         console.error("Error fetching chat history:", error);
       }
     };
-  
+
     if (user_id && token) {
       fetchSessions();
     }
   }, [user_id, token]);
-  console.log(sessions[0])  
+  console.log(sessions[0]);
 
   const handleSessionClick = async () => {
     if (sessions.length === 0) return; // Ensure there is a session to work with
@@ -93,59 +93,63 @@ const Lander = () => {
     const { article_id, source, session_id } = sessions[0]; // Destructure values from the first session
 
     try {
-        const conversationResponse = await axios.get(
-            `http://13.127.207.184:80/history/conversations/history/${user_id}/${session_id}`,
-            {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            }
-        );
-
-        const formattedChatHistory = [];
-        let currentEntry = {};
-
-        conversationResponse.data.conversation.forEach((entry) => {
-            if (entry.role === "user") {
-                if (currentEntry.query) {
-                    formattedChatHistory.push(currentEntry);
-                    currentEntry = {};
-                }
-                currentEntry.query = entry.parts.join(" ");
-            } else if (entry.role === "model") {
-                currentEntry.response = entry.parts.join(" ");
-                formattedChatHistory.push(currentEntry);
-                currentEntry = {};
-            }
-        });
-
-        if (currentEntry.query) {
-            formattedChatHistory.push(currentEntry);
+      const conversationResponse = await axios.get(
+        `http://13.127.207.184:80/history/conversations/history/${user_id}/${session_id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
+      );
 
-        console.log(formattedChatHistory);
+      const formattedChatHistory = [];
+      let currentEntry = {};
 
-        sessionStorage.setItem("chatHistory", JSON.stringify(formattedChatHistory));
+      conversationResponse.data.conversation.forEach((entry) => {
+        if (entry.role === "user") {
+          if (currentEntry.query) {
+            formattedChatHistory.push(currentEntry);
+            currentEntry = {};
+          }
+          currentEntry.query = entry.parts.join(" ");
+        } else if (entry.role === "model") {
+          currentEntry.response = entry.parts.join(" ");
+          formattedChatHistory.push(currentEntry);
+          currentEntry = {};
+        }
+      });
 
-        const sourceType =
-            source === "biorxiv" ? "bioRxiv_id" : source === "plos" ? "plos_id" : "pmid";
+      if (currentEntry.query) {
+        formattedChatHistory.push(currentEntry);
+      }
 
-        navigate(`/article/${sourceType}:${article_id}`, {
-            state: {
-                id: article_id,
-                source: sourceType,
-                token: token,
-                user: { access_token: token, user_id: user_id },
-            },
-        });
-        console.log(conversationResponse);
+      console.log(formattedChatHistory);
+
+      sessionStorage.setItem(
+        "chatHistory",
+        JSON.stringify(formattedChatHistory)
+      );
+
+      const sourceType =
+        source === "biorxiv"
+          ? "bioRxiv_id"
+          : source === "plos"
+          ? "plos_id"
+          : "pmid";
+
+      navigate(`/article/${sourceType}:${article_id}`, {
+        state: {
+          id: article_id,
+          source: sourceType,
+          token: token,
+          user: { access_token: token, user_id: user_id },
+        },
+      });
+      console.log(conversationResponse);
     } catch (error) {
-        console.error("Error fetching article or conversation data:", error);
+      console.error("Error fetching article or conversation data:", error);
     }
-};
-
-
-
+  };
 
   useEffect(() => {
     if (isLanderNotesOpen) {
@@ -208,7 +212,9 @@ const Lander = () => {
               <a href="#" onClick={handleOpenCollection}>
                 Bookmarks
               </a>
-              <a href="#" onClick={handleSessionClick}>Conversations</a>
+              <a href="#" onClick={handleSessionClick}>
+                Conversations
+              </a>
               <a href="#" onClick={handleOpenNotes}>
                 Notes
               </a>
@@ -310,6 +316,7 @@ const Lander = () => {
           onDragStop={(e, d) => {
             setPosition({ x: d.x, y: d.y });
           }}
+          style={{ zIndex: 1 }}
           onResizeStop={(e, direction, ref, delta, position) => {
             setDimensions({
               width: parseInt(ref.style.width, 10),
@@ -332,6 +339,7 @@ const Lander = () => {
             bottomLeft: true,
             topLeft: true,
           }}
+          dragHandleClassName="draggable-header" // Make only the header draggable
         >
           <div
             className="notes-modal"
@@ -343,10 +351,16 @@ const Lander = () => {
               border: "1px solid #ddd",
             }}
           >
-            <div className="draggable-header"></div>
-            {/* <button className="close-modal-notes" onClick={handleCloseNotes}>
-              <IoCloseOutline size={30} color="white" />
-            </button> */}
+            <div
+              className="draggable-header"
+              style={{
+                cursor: "move",
+                padding: "10px",
+                position: "absolute",
+                height: "2.5vh",
+                width: "95%",
+              }}
+            ></div>
 
             <div style={{ flex: 1 }}>
               <Notes
