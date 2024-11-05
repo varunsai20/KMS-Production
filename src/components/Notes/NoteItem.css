@@ -141,3 +141,48 @@
 .confirm-keep-button:hover {
   background-color: #5a6268;
 }
+.noteItem-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.noteItem-modal-content {
+  background: white;
+  padding: 20px;
+  width: 25vw;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.noteItem-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.noteItem-modal-close-button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.email-input,
+.subject-input {
+  width: 100%;
+  padding: 10px 0 10px 6px;
+  font-size: 16px;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+}

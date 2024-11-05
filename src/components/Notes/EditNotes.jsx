@@ -1,8 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { IoIosArrowBack } from "react-icons/io";
-// import { RiDeleteBin6Line } from "react-icons/ri";
 import axios from "axios";
-import useCreateDate from "./UseCreateDate";
+//import useCreateDate from "./UseCreateDate";
 import { FiBold } from "react-icons/fi";
 import { GoItalic } from "react-icons/go";
 import { FiUnderline } from "react-icons/fi";
@@ -12,7 +11,11 @@ import { BsListOl } from "react-icons/bs";
 import { IoCloseOutline, IoShareSocial } from "react-icons/io5";
 import { MdEmail } from "react-icons/md";
 import { IoCopyOutline } from "react-icons/io5";
+import { CgNotes } from "react-icons/cg";
+import DOMPurify from "dompurify";
 import "./EditNotes.css"; // Import CSS for styling
+import ConfirmSave from "../../utils/ConfirmSave";
+import { toast } from "react-toastify";
 
 import { useSelector } from "react-redux";
 const Editnotes = ({
@@ -22,12 +25,13 @@ const Editnotes = ({
   notesHeight,
   isOpenNotes,
   height,
+  textToSave,
 }) => {
   const { user } = useSelector((state) => state.auth);
 
   const user_id = user?.user_id;
   const token = useSelector((state) => state.auth.access_token);
-
+  const [noteContent, setNoteContent] = useState("");
   const [title, setTitle] = useState(note.title);
   const [note_id, setNote_id] = useState(note.note_id);
   const [isPlaceholderVisible, setIsPlaceholderVisible] = useState(false);
@@ -41,27 +45,88 @@ const Editnotes = ({
   });
   const [shareMessage, setShareMessage] = useState(""); // State for feedback message
   const editorRef = useRef(null);
-  const date = useCreateDate();
+  //const date = useCreateDate();
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [email, setEmail] = useState("");
-  const [subject, setSubject] = useState("");
+  const [showConfirmSave, setShowConfirmSave] = useState(false);
+  const [unsavedChanges, setUnsavedChanges] = useState(false);
+  //const [subject, setSubject] = useState("");
 
   const handleShare = () => {
     setIsShareModalOpen(true);
+  };
+  useEffect(() => {
+    if (textToSave && editorRef.current) {
+      const sanitizedTexts = textToSave.map((text) =>
+        DOMPurify.sanitize(text.trim())
+      );
+      const currentContent = editorRef.current.innerHTML.trim();
+
+      const textsToAdd = sanitizedTexts.filter(
+        (text) => !currentContent.includes(text)
+      );
+
+      if (textsToAdd.length > 0) {
+        const newContent = [currentContent, ...textsToAdd]
+          .filter(Boolean)
+          .join("<br> ");
+        //.trim();
+
+        editorRef.current.innerHTML = newContent;
+        setNoteContent(newContent);
+      }
+    }
+  }, [textToSave]);
+
+  const handleInput = (e) => {
+    setNoteContent(e.target.innerText);
+    setUnsavedChanges(true);
   };
 
   const handleCopy = () => {
     const noteDetails = editorRef.current.innerHTML;
     const noteTitle = title || "Untitled Note";
-    const shareText = `${noteTitle}\n\n${noteDetails.replace(/<[^>]+>/g, "")}`;
-    navigator.clipboard.writeText(shareText).then(
-      () => setShareMessage("Note copied to clipboard!"),
-      (err) => setShareMessage("Failed to copy note.")
-    );
+    const shareText = `${noteTitle}\n\n${noteDetails.replace(/<[^>]+>/g, "")}`; // Remove HTML tags
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard
+        .writeText(shareText)
+        .then(() => {
+          setShareMessage("Note copied to clipboard!");
+        })
+        .catch((err) => {
+          console.error("Could not copy text: ", err);
+          fallbackCopyToClipboard(shareText);
+        });
+    } else {
+      fallbackCopyToClipboard(shareText);
+    }
+
     setTimeout(() => setShareMessage(""), 3000);
     setIsShareModalOpen(false);
   };
+
+  const fallbackCopyToClipboard = (text) => {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.position = "fixed"; // Prevents scrolling to the bottom of the page in some browsers
+    textArea.style.opacity = "0"; // Hide the textarea
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+
+    try {
+      document.execCommand("copy");
+      setShareMessage("Note copied to clipboard!");
+    } catch (err) {
+      console.error("Fallback: Could not copy text", err);
+      setShareMessage("Failed to copy note.");
+    }
+
+    document.body.removeChild(textArea);
+  };
+
   const handleSendEmail = async () => {
     const requestData = {
       user_id: user_id, // make sure user_id is accessible from your component's state or props
@@ -81,12 +146,15 @@ const Editnotes = ({
       );
 
       if (response.status === 200) {
+        toast.success("Email sent successfully");
         console.log("Email sent successfully to:", email);
         handleCloseEmailModal(); // Close the modal after sending
       } else {
+        toast.error("Failed to send email:");
         console.error("Failed to send email:", response);
       }
     } catch (error) {
+      toast.error("Error sending email:");
       console.error("Error sending email:", error);
     }
   };
@@ -94,6 +162,9 @@ const Editnotes = ({
   const handleEmailClick = () => setIsEmailModalOpen(true);
   const handleCloseModal = () => setIsShareModalOpen(false);
   const handleCloseEmailModal = () => setIsEmailModalOpen(false);
+  const handleCancel = () => {
+    setShowConfirmSave(false);
+  };
 
   // useEffect(() => {
   //   // Populate editor with note details and handle placeholder visibility
@@ -151,17 +222,21 @@ const Editnotes = ({
     const noteDetails = editorRef.current.innerHTML;
 
     if (title && noteDetails && noteDetails !== "Take your note...") {
-      const note = { title, details: noteDetails, note_id };
+      const updatedNote = {
+        ...note,
+        title: title.trim() || "Untitled Note",
+        content: noteDetails,
+      };
 
       try {
         // Post the note to the server
-        await axios.put(
+        const response = await axios.put(
           "http://13.127.207.184:80/notes/updatenote",
           {
             user_id, // Ensure `user_id` is defined and available in your component
-            title: note.title,
-            content: note.details,
-            note_id: note.note_id,
+            title: updatedNote.title,
+            content: updatedNote.content,
+            note_id: updatedNote.note_id,
           },
           {
             headers: {
@@ -170,17 +245,39 @@ const Editnotes = ({
           }
         );
 
-        // Add this note to the notes array
-        setNotes((prevNotes) => [note, ...prevNotes]);
-        console.log("Note saved:", note);
-        onClose(); // Return to Notes list
+        if (response.status === 200) {
+          // Update the note in the notes array
+          setNotes((prevNotes) =>
+            prevNotes.map((n) =>
+              n.note_id === updatedNote.note_id ? updatedNote : n
+            )
+          );
+          toast.success("Notes Saved Successfully", {
+            autoClose: 1000,
+          });
+          console.log("Note updated:", updatedNote);
+        } else {
+          toast.error("Failed to update note:", {
+            autoClose: 1000,
+          });
+          console.error("Failed to update note:", response);
+        }
+        onClose();
 
         // Clear inputs
         setTitle("");
         editorRef.current.innerHTML = "";
+        setUnsavedChanges(false);
       } catch (error) {
         console.error("Error saving note:", error);
       }
+    }
+  };
+  const handleCloseClick = () => {
+    if (unsavedChanges) {
+      setShowConfirmSave(true);
+    } else {
+      onClose();
     }
   };
 
@@ -256,11 +353,22 @@ const Editnotes = ({
           className={
             isOpenNotes ? "lander-edit-back-button" : "edit-back-button"
           }
-          onClick={onClose}
+          onClick={handleCloseClick}
           aria-label="Go Back"
         >
           <IoIosArrowBack />
         </button>
+        {showConfirmSave && (
+          <ConfirmSave
+            message="Are you sure you want to leave without saving?"
+            onSave={handleForm}
+            onDiscard={() => {
+              setShowConfirmSave(false);
+              onClose();
+            }}
+            onCancel={handleCancel}
+          />
+        )}
         <button
           className={
             isOpenNotes ? "lander-edit-save-button" : "edit-save-button"
@@ -268,7 +376,10 @@ const Editnotes = ({
           onClick={handleForm}
           aria-label="Save Note"
         >
-          save
+          <div className="save-in-edit" style={{ display: "flex", gap: "3px" }}>
+            <CgNotes size={16} />
+            <span>save</span>
+          </div>
         </button>
         {/* <button className="edit-delete-button" onClick={handleDelete}>
           <RiDeleteBin6Line />
@@ -299,6 +410,7 @@ const Editnotes = ({
           suppressContentEditableWarning={true}
           onClick={handleEditorClick}
           onBlur={handleBlur}
+          onInput={handleInput}
         >
           {isPlaceholderVisible && "Take your note..."}
         </div>
