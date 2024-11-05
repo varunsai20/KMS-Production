@@ -1,7 +1,8 @@
   import React, { useState, useEffect } from 'react';
   import axios from 'axios';
-  import { useSelector } from 'react-redux';
-  import './Profile.css';
+  import { useSelector, useDispatch } from 'react-redux';
+  import { updateProfilePicture } from '../redux/reducers/LoginAuth';
+    import './Profile.css';
   import profile from '../assets/images/Profile-start.svg';
   import upload from '../assets/images/Upload.svg';
   import Header from './Header-New';
@@ -11,7 +12,7 @@
   import { useNavigate } from 'react-router-dom';
   const Profile = () => {
     const { user } = useSelector((state) => state.auth);
-    
+    const dispatch = useDispatch();
     const user_id = user?.user_id;
     const token = useSelector((state) => state.auth.access_token);
     const userRole = user?.role;
@@ -43,7 +44,7 @@
           const userProfile = response.data.user_profile;
   
           setFormData(userProfile);
-          
+          console.log(userProfile)
           // Check if profile_picture_url is available and set profileImage accordingly
           if (userProfile.profile_picture_url) {
             setProfileImage(userProfile.profile_picture_url);
@@ -66,12 +67,12 @@
       if (file) {
         const imageUrl = URL.createObjectURL(file);
         setProfileImage(imageUrl);
-
+  
         const formData = new FormData();
         formData.append("file", file);
-
+  
         try {
-          await axios.post(
+          const response = await axios.post(
             `http://13.127.207.184/user/upload_profile_picture?user_id=${user_id}`,
             formData,
             {
@@ -79,11 +80,16 @@
             }
           );
           console.log("Profile picture uploaded successfully.");
+          console.log(response)
+          // Dispatch the updateProfilePicture action to update Redux state
+          if (response.data.url) {
+            dispatch(updateProfilePicture({ profile_picture_url: response.data.url }));          }
         } catch (error) {
           console.error("Error uploading profile picture:", error);
         }
       }
     };
+  
 
     const handleInputChange = (e) => {
       const { name, value } = e.target;
