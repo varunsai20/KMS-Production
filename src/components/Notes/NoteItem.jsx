@@ -157,7 +157,7 @@ const NoteItem = ({ note, onEdit, onDelete, isOpenNotes }) => {
           </button>
         ) : (
           <p id="date" style={{ fontSize: "0.9em", color: "#555", margin: 0 }}>
-            {note.created_at}
+            {note.last_updated_at}
           </p>
         )}
       </div>
