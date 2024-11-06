@@ -3,7 +3,7 @@
   top: 0;
   z-index: 1;
   background: white;
-  margin: 0.5% 0 1% 0;
+  /* margin: 0.5% 0 1% 0; */
 }
 .search-header {
   width: 93.61%;
@@ -1008,6 +1008,11 @@ td {
   margin-bottom: 20px;
   padding: 10px;
   z-index: 10;
+}
+
+.bookmark-existing-collections{
+  height: 250px;
+    overflow-y: overlay;
 }
 
 .search-note-taking {

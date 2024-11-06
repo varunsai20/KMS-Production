@@ -4,7 +4,9 @@
   flex-direction: column;
   place-items: center;
 }
-
+.ArticlePage_Header{
+  width: 100%;
+}
 .header {
   width: 93.61%;
   display: flex;
@@ -81,8 +83,7 @@
 }
 .history-pagination {
   margin-left: 1%;
-  width: 20%;
-
+  width: 20%; 
   padding: 27px, 0px, 27px, 0px;
   /* height: 70vh; */
   max-height: 700px;
@@ -198,18 +199,21 @@
 }
 .history-pagination h5 {
   width: fit-content;
-  font-size: 14px;
+  font-size: 18px;
   font-weight: 600;
   text-align: start;
-  margin-left: 10%;
-  margin: auto;
-  margin-top: 30px;
+  margin-left: 1%;
+  /* margin: auto; */
+  margin-top: 3%;
+  margin-bottom: 2%;
+  padding: 0 8px;
 }
 
 .history-pagination ul {
   list-style: none;
   padding: 0;
   justify-content: start;
+  margin-top: 3%;
 }
 
 .history-pagination ul li {

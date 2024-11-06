@@ -7,25 +7,28 @@ import axios from 'axios';
 import departments from "../../assets/Data/Departments.json"
 import primaryResearchAreas from "../../assets/Data/PrimaryResearchAreas.json";
 import researchInterests from "../../assets/Data/ResearchInterests.json";
+import Arrow from "../../assets/images/back-arrow.svg";
 const CreateResearcher = () => {
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
   const user_id = user?.user_id;
   const token = useSelector((state) => state.auth.access_token);
 
-  const [formData, setFormData] = useState({
+  // Define initial form state
+  const initialFormData = {
     fullname: '',
     email: '',
     role: '',
     password: '',
     department: '',
     job_title: '',
-    organization_name:user?.organization_name,
+    organization_name: user?.organization_name,
     primary_research_area: '',
     technical_skills: '',
     research_interests: '',
-  });
+  };
 
+  const [formData, setFormData] = useState(initialFormData);
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
 
@@ -81,7 +84,7 @@ const CreateResearcher = () => {
         technical_skills: formData.technical_skills.split(',').map(skill => skill.trim()),
         research_interests: formData.research_interests.split(',').map(interest => interest.trim()),
       };
-  
+
       try {
         const response = await axios.post(
           `http://13.127.207.184:80/admin/create-user/${user_id}`,
@@ -92,32 +95,39 @@ const CreateResearcher = () => {
             },
           }
         );
-  
+
         if (response.status === 201) {
           navigate('/admin/users');
         }
       } catch (error) {
         if (error.response && error.response.status === 400) {
-          // Access the message from the response data and set it as a general form error
           setErrors({
             ...errors,
-            form: error.response.data.msg, // Set the msg directly as a form-level error
+            form: error.response.data.msg,
           });
-          
         } else {
           console.error('Error creating user:', error);
         }
       }
     }
   };
-  
+
+  // Reset form to initial state
+  const handleReset = () => {
+    setFormData(initialFormData);
+    setErrors({});
+  };
     
   return (
     <div style={{ margin: '0 2%' }}>
       <div className="create-researcher-header">
-        <button className="back-button" onClick={handleBackClick}>
-          ←
-        </button>
+        <div className="back-button" onClick={handleBackClick}>
+        <img
+                      src={Arrow}
+                      style={{ width: "14px" }}
+                      alt="arrow-icon"
+                    ></img>
+        </div>
         <h2 style={{ margin: 0 }}>Add User</h2>
       </div>
 
@@ -291,11 +301,11 @@ const CreateResearcher = () => {
 
         {/* Action Buttons */}
         <div className="form-actions">
-          <button type="button" className="cancel-button" onClick={handleBackClick}>
-            Cancel
+          <button type="button" className="cancel-button" onClick={handleReset}>
+            Reset
           </button>
           <button type="submit" className="create-button">
-            Add
+            Create
           </button>
         </div>
       </form>

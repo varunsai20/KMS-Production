@@ -13,9 +13,11 @@ const Header = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  
+
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
   const { user, profileUpdated } = useSelector((state) => state.auth);
+
+  const [currentProfileImage, setCurrentProfileImage] = useState(ProfileIcon);
 
   useEffect(() => {
     setCurrentProfileImage(user?.profile_picture_url || ProfileIcon);
@@ -23,18 +25,6 @@ const Header = () => {
 
   const userId = user?.user_id;
   const userRole = user?.role;
-  const profilePictureUrl = user?.profile_picture_url;
-  
-  const [currentProfileImage, setCurrentProfileImage] = useState(ProfileIcon);
-  console.log(currentProfileImage)
-  // useEffect(() => {
-  //   // Update current profile image when profilePictureUrl changes
-  //   if (profilePictureUrl) {
-  //     setCurrentProfileImage(profilePictureUrl);
-  //   } else {
-  //     setCurrentProfileImage(ProfileIcon); // Fallback to default icon
-  //   }
-  // }, [profilePictureUrl]);
 
   // Function to check if the current path matches the link's href
   const isActive = (path) => location.pathname === path;
@@ -69,7 +59,10 @@ const Header = () => {
   };
 
   return (
-    <div className="Navbar-Header">
+    <div
+      className="Navbar-Header"
+      style={{ width: location.pathname.startsWith("/article") ? "100%" : "auto" }} // Set width conditionally
+    >
       <div className="Navbar-Header-Items">
         <Link to="/">
           <img className="Search-nav-logo" src={Logo} alt="Infer logo" />
@@ -89,7 +82,7 @@ const Header = () => {
             <div onClick={handleProfileClick} style={{ cursor: "pointer", height: "35px" }}>
               <img
                 src={currentProfileImage}
-                style={{ width: "35px",height:"35px", borderRadius: "50%" }}
+                style={{ width: "35px", height: "35px", borderRadius: "50%" }}
                 alt="Profile"
                 className="profile-icon"
               />
