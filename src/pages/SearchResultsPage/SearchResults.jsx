@@ -19,7 +19,8 @@ import { login, logout } from "../../redux/reducers/LoginAuth"; // Import login 
 import Button from "../../components/Buttons";
 import Logo from "../../assets/images/Logo_New.svg";
 import ProfileIcon from "../../assets/images/Profile-dummy.svg";
-import { toast } from "react-toastify";
+import { toast } from "react-toastify"
+import Header from "../../components/Header-New";
 const ITEMS_PER_PAGE = 10;
 const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   const location = useLocation(); // Access the passed state
@@ -98,19 +99,21 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       fetchCollections();
     }
   }, [user_id, token]);
-  const isBookmarked = (idType) => {
-    // Convert idType to a number for comparison
-    const numericIdType = Number(idType);
+  // const isBookmarked = (idType) => {
+  //   // Convert idType to a number for comparison
+  //   const numericIdType = Number(idType);
 
-    // Check if the article is bookmarked
-    const result = Object.values(collections).some((articleArray) =>
-      articleArray.some(
-        (article) => Number(article.article_id) === numericIdType
-      )
-    );
+  //   // Check if the article is bookmarked
+  //   const result = Object.values(collections).some((articleArray) =>
+  //     articleArray.some(
+  //       (article) => Number(article.article_id) === numericIdType
+  //     )
+  //   );
 
-    return result;
-  };
+  //   return result;
+  // };
+  
+  
 
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const handleEmailClick = () => setIsEmailModalOpen(true);
@@ -357,33 +360,34 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   //
 
   useEffect(() => {
-    // Retrieve the stored page number from sessionStorage when the component loads
-    const storedPage = sessionStorage.getItem('currentPage');
-    console.log(storedPage)
+    // Check for updates in sortedData and reset pagination if there's a change
+    setCurrentPage(1);
+    setPageInput(1);
+    // sessionStorage.setItem("currentPage", 1);
+  }, [location.state.data]); // Reset pagination only when sortedData changes
+  
+  useEffect(() => {
+    // Retrieve the stored page number from sessionStorage when the component first loads
+    const storedPage = sessionStorage.getItem("currentPage");
     if (storedPage) {
-      console.log("set")
       setCurrentPage(Number(storedPage));
-      console.log(storedPage)
-      console.log("enterd")
-      console.log(storedPage)
       setPageInput(Number(storedPage));
     }
-  }, []);
-
+  }, []); // This effect runs only once on component mount
   
-
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
   const paginatedArticles = sortedData.slice(startIndex, endIndex);
-
+  
   const handlePageChange = (newPage) => {
     if (newPage > 0 && newPage <= Math.ceil(sortedData.length / ITEMS_PER_PAGE)) {
       setCurrentPage(newPage);
       setPageInput(newPage);
-      sessionStorage.setItem('currentPage', newPage);
+      sessionStorage.setItem("currentPage", newPage);
       scrollToTop();
     }
   };
+  
   // useEffect(() => {
   //   // Store the current page number in sessionStorage whenever it changes
   //   
@@ -439,14 +443,72 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       document.removeEventListener("mousedown", handleClickOutside); // Clean up the event listener
     };
   }, [isModalOpen]);
-
-  const handleBookmarkClick = (idType, title, source) => {
-    setCurrentIdType(idType);
-    setArticleTitle(title);
-    setSource(source);
-    setIsModalOpen(true); // Open the modal for collection selection
+  
+  const isArticleBookmarked = (idType) => {
+    const numericIdType = Number(idType);
+    
+    // Loop through each collection to check if the article is bookmarked
+    for (const [collectionName, articleArray] of Object.entries(collections)) {
+      const found = articleArray.some(
+        (article) => Number(article.article_id) === numericIdType
+      );
+  
+      if (found) {
+        return { isBookmarked: true, collectionName }; // Return true with collection name
+      }
+    }
+  
+    return { isBookmarked: false, collectionName: null }; // Not found in any collection
   };
-
+  
+  const handleBookmarkClick = async (idType, title, source) => {
+    const { isBookmarked, collectionName } = isArticleBookmarked(idType);
+  
+    if (isBookmarked) {
+      try {
+        const response = await axios.delete(
+          `http://13.127.207.184:80/bookmarks/users/${user_id}/collections/${collectionName}/${idType}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+  
+        if (response.status === 200) {
+          // Remove the bookmark from local collections state
+          const updatedCollections = {
+            ...collections,
+            [collectionName]: collections[collectionName].filter(
+              (article) => article.article_id !== String(idType)
+            ),
+          };
+  
+          setCollections(updatedCollections);
+          localStorage.setItem("collections", JSON.stringify(updatedCollections));
+          toast.success("Bookmark deleted successfully", {
+            position: "top-right",
+            autoClose: 1000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "colored",
+          });
+  
+          await fetchCollections(); // Refetch collections after successful deletion
+        }
+      } catch (error) {
+        console.error("Error deleting bookmark:", error);
+      }
+    } else {
+      // Open modal for adding bookmark
+      setCurrentIdType(idType);
+      setArticleTitle(title);
+      setSource(source);
+      setIsModalOpen(true);
+    }
+  };
+  
   const handleSaveToExisting = async (collectionName) => {
     const bookmarkData = {
       user_id,
@@ -590,10 +652,15 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   };
   
   const fetchFilteredResults = ({ sourceTypes = [], dateRange, startDate, endDate, articleTypes = [] }) => {  
+    // Check if all filters are empty
+    if (sourceTypes.length === 0 && articleTypes.length === 0 && !dateRange) {
+        navigate("/search", { state: { data: searchResults, searchTerm } });
+        return;
+    }
+
     // Base URL for the API
     let apiUrl = `http://13.127.207.184:80/core_search/?term=${encodeURIComponent(searchTerm)}`;
-    console.log(sourceTypes)
-    console.log(articleTypes)
+
     // Add sources if provided
     if (sourceTypes.length > 0) {
         const sourceParams = sourceTypes.map((source) => `source=${encodeURIComponent(source)}`).join("&");
@@ -616,41 +683,37 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
         }
     }
 
-    // Only proceed if any filters are active
-    if (sourceTypes.length > 0 || articleTypes.length > 0 || dateRange) {
-        setLoading(true);
+    setLoading(true);
 
-        axios
-            .get(apiUrl, {
-                headers: { Authorization: `Bearer ${token}` },
-            })
-            .then((response) => {
-                setResults(response.data);
-                setLoading(false);
+    axios
+        .get(apiUrl, {
+            headers: { Authorization: `Bearer ${token}` },
+        })
+        .then((response) => {
+            setResults(response.data);
+            setLoading(false);
 
-                // Save the filter state to localStorage for persistence
-                localStorage.setItem(
-                    "filters",
-                    JSON.stringify({
-                        sourceTypes,
-                        dateRange,
-                        customStartDate: dateRange === "custom" ? startDate : "",
-                        customEndDate: dateRange === "custom" ? endDate : "",
-                        articleTypes,
-                    })
-                );
+            // Save the filter state to localStorage for persistence
+            localStorage.setItem(
+                "filters",
+                JSON.stringify({
+                    sourceTypes,
+                    dateRange,
+                    customStartDate: dateRange === "custom" ? startDate : "",
+                    customEndDate: dateRange === "custom" ? endDate : "",
+                    articleTypes,
+                })
+            );
 
-                navigate("/search", { state: { data: response.data, searchTerm } });
-            })
-            .catch((error) => {
-                console.error("Error fetching data from the API", error);
-                setLoading(false);
-                navigate("/search", { state: { data: [], searchTerm } });
-            });
-    } else {
-        console.log("No filters applied; skipping API call.");
-    }
+            navigate("/search", { state: { data: response.data, searchTerm } });
+        })
+        .catch((error) => {
+            console.error("Error fetching data from the API", error);
+            setLoading(false);
+            navigate("/search", { state: { data: [], searchTerm } });
+        });
 };
+
 
   
   const formatDate = (dateString) => {
@@ -1130,58 +1193,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   return (
     <div className="Container" ref={contentRightRef}>
       <div className="search-container-content">
-        <header className="search-header">
-          <div className="search-header-logo" style={{ margin: "20px 0" }}>
-            <a href="/">
-              <img href="/" src={Logo} alt="Infer Logo" />
-            </a>
-          </div>
-          <nav className="nav-menu">
-            <ul>
-              {/* <li>
-                <a href="/">Home</a>
-              </li> */}
-              {/* <li>
-                <a href="#why-infer">Why Infer?</a>
-              </li> */}
-              {/* <li>
-                <a href="#FAQ's">FAQs</a>
-              </li> */}
-            </ul>
-          </nav>
-          <div
-            className="search-header-auth-buttons"
-            style={{ margin: "20px 26px 20px 0", display: "flex", gap: "10px" }}
-          >
-            {isLoggedIn ? (
-              <>
-                <div
-                  onClick={handleProfileClick}
-                  style={{ cursor: "pointer", height: "35px" }}
-                >
-                  <img
-                                    src={profilePictureUrl || ProfileIcon} // Use profilePictureUrl if available, else fallback to ProfileIcon
-
-                    style={{ width: "35px",borderRadius:"16px" }}
-                    alt="Profile"
-                    className="profile-icon"
-                  />
-                </div>
-                <Button
-                  text="Logout"
-                  className="logout-btn"
-                  onClick={handleLogout}
-                />
-              </>
-            ) : (
-              <Button
-                text="Login"
-                className="login-btn"
-                onClick={handleLogin}
-              />
-            )}
-          </div>
-        </header>
+        <Header />
       </div>
       <SearchBar className="searchResults-Bar"></SearchBar>
 
@@ -1476,13 +1488,13 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                   >
                     Share
                   </button>
-                  <button
+                  {/* <button
                     style={{ display: displayIfLoggedIn }}
                     className="SearchResult-Save"
                     title="Save selected articles"
                   >
                     Save
-                  </button>
+                  </button> */}
                 </div>
                 <div
                   style={{
@@ -1691,10 +1703,10 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                                 </h3>
                               </div>
                               <FontAwesomeIcon
-  icon={isBookmarked(idType) ? solidBookmark : regularBookmark}
+  icon={isArticleBookmarked(idType).isBookmarked ? solidBookmark : regularBookmark}
   size="l"
   style={{
-    color: isBookmarked(idType) ? "#0071bc" : "black",
+    color: isArticleBookmarked(idType).isBookmarked ? "#0071bc" : "black",
     cursor: "pointer",
     display: displayIfLoggedIn,
   }}
@@ -1706,11 +1718,12 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
     )
   }
   title={
-    isBookmarked(idType)
+    isArticleBookmarked(idType).isBookmarked
       ? "Bookmarked"
       : "Bookmark this article"
   }
 />
+
                               {isModalOpen && (
                                 <div className="bookmark-modal-overlay">
                                   <div className="modal-content" ref={modalRef}>
@@ -1736,17 +1749,17 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                                         Create
                                       </button>
 
-                                      <button
+                                      {/* <button
                                         onClick={() => setIsModalOpen(false)}
                                         >
                                         Cancel
-                                      </button>
+                                      </button> */}
                                     </div>
                                     
                                   {Object.keys(collections).length > 0 && (
                                     <>
                                       <h4>Save to existing collection:</h4>
-                                      <ul>
+                                      <ul className="bookmark-existing-collections">
                                         {Object.keys(collections).map(
                                           (collectionName, index) => (
                                             <ul key={index}>

@@ -30,6 +30,7 @@ import Notes from "../NotesPage/Notes";
 import { login, logout } from "../../redux/reducers/LoginAuth"; // Import login and logout actions
 import ProfileIcon from "../../assets/images/Profile-dummy.svg";
 import { toast } from "react-toastify";
+import Header from "../../components/Header-New";
 
 const ArticlePage = () => {
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
@@ -1214,7 +1215,7 @@ const ArticlePage = () => {
           </div>
         </header>
         {annotateLoading ? <Loading /> : ""}
-        <div className="content">
+        <div className="content" style={{ width: widthIfLoggedIn }}>
           <div
             className="history-pagination"
             style={{ display: displayIfLoggedIn }}
@@ -1297,7 +1298,7 @@ const ArticlePage = () => {
               className="article-content"
               onMouseUp={handleMouseUp}
               ref={contentRef}
-              style={{ width: widthIfLoggedIn }}
+              style={{ height: heightIfLoggedIn }}
             >
               <div className="article-title">
                 <div
