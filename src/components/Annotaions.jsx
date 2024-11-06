@@ -92,81 +92,79 @@ const Annotation = ({
   };
 
   const renderAnnotations = () => {
-    // Ensure `annotateData` is an object; if not, default it to an empty object
     const annotationEntries = annotateData && typeof annotateData === "object" ? Object.entries(annotateData) : [];
   
     return annotationEntries.flatMap(([pmid, categories]) => {
       const rows = [];
-      const isExpanded = expandedPmids[pmid];
+      const isExpanded = expandedPmids[pmid] || false; // Initially set expanded state to false if not set
   
-      // Sort categories by annotation score if available, in descending order
       const sortedCategories = Object.entries(categories).sort(
         ([, a], [, b]) => (b.annotation_score || 0) - (a.annotation_score || 0)
       );
   
-      // Render the first row (expanded or collapsed state)
       sortedCategories.forEach(([category, values], index) => {
-        if (category === "annotation_score") return; // Skip annotation score as a category
+        if (category === "annotation_score") return;
         const categoryKey = `${pmid}-${category}`;
         const isTextExpanded = expandedTexts[categoryKey];
   
         const annotationScore = values.annotation_score
           ? `${(values.annotation_score).toFixed(2)}%`
           : "N/A";
-        console.log(values.annotation_score)
-        // Collect all text values for the category, excluding `annotation_score`
+  
         const categoryTexts = Object.entries(values)
           .filter(([key]) => key !== "annotation_score")
           .map(([key]) => key)
           .join(", ");
   
-        // Define the display text based on expansion state
         const displayText = isTextExpanded
           ? categoryTexts
-          : categoryTexts.slice(0, 30); // Show first 30 characters if not expanded
+          : categoryTexts.slice(0, 30);
   
-        // Add the category row to rows array
-        rows.push(
-          <tr className="search-table-body" key={categoryKey}>
-            <td style={{ paddingLeft: index === 0 ? 0 : 30 }}>
-              {index === 0 && (
-                <button onClick={() => toggleExpandPmid(pmid)}>
-                  {isExpanded ? "▼" : "▶"}
-                </button>
-              )}
-              {index === 0 && (
-                <a
-                  style={{ color: "#1a82ff", fontWeight: 600, cursor: "pointer" }}
-                  onClick={() => handleNavigate(pmid)}
-                >
-                  {pmid}
-                </a>
-              )}
-            </td>
-            <td>{annotationScore}</td>
-            <td>{capitalizeFirstLetter(category)}</td>
-            <td>
-              {displayText}
-              {categoryTexts.length > 30 && (
-                <span
-                  style={{
-                    color: "blue",
-                    cursor: "pointer",
-                    marginLeft: "5px",
-                  }}
-                  onClick={() => toggleExpandText(categoryKey)}
-                >
-                  {isTextExpanded ? "" : "..."}
-                </span>
-              )}
-            </td>
-          </tr>
-        );
+        // Only display the first row initially if `isExpanded` is false
+        if (index === 0 || isExpanded) {
+          rows.push(
+            <tr className="search-table-body" key={categoryKey}>
+              <td style={{ paddingLeft: index === 0 ? 0 : 30 }}>
+                {index === 0 && (
+                  <button onClick={() => toggleExpandPmid(pmid)}>
+                    {isExpanded ? "▼" : "▶"}
+                  </button>
+                )}
+                {index === 0 && (
+                  <a
+                    style={{ color: "#1a82ff", fontWeight: 600, cursor: "pointer" }}
+                    onClick={() => handleNavigate(pmid)}
+                  >
+                    {pmid}
+                  </a>
+                )}
+              </td>
+              <td>{annotationScore}</td>
+              <td>{capitalizeFirstLetter(category)}</td>
+              <td>
+                {displayText}
+                {categoryTexts.length > 30 && (
+                  <span
+                    style={{
+                      color: "blue",
+                      cursor: "pointer",
+                      marginLeft: "5px",
+                    }}
+                    onClick={() => toggleExpandText(categoryKey)}
+                  >
+                    {isTextExpanded ? "" : "..."}
+                  </span>
+                )}
+              </td>
+            </tr>
+          );
+        }
       });
   
       return rows;
     });
   };
+  
   
   
 

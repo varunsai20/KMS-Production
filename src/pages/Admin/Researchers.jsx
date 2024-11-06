@@ -97,6 +97,7 @@ const Researchers = () => {
 
       if (response.status === 200) {
         // Update userData to reflect the new status
+        setIsOpen(false)
         setUserData((prevData) =>
           prevData.map((user) =>
             user.user_id === userId ? { ...user, user_status: newStatus } : user
@@ -136,7 +137,7 @@ const Researchers = () => {
           },
         }
       );
-
+      setIsOpen(false)
       setUserData(userData.filter((user) => user.user_id !== userId));
     } catch (error) {
       console.error("Error deleting user:", error);

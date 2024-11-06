@@ -393,11 +393,12 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   //   
   // }, [handlePageChange]);
   const handleAnnotate = () => {
+    console.log("clicked")
     if (openAnnotate) {
       setOpenAnnotate(false);
     } else {
       setOpenAnnotate(true);
-      setOpenNotes(false);
+      // setOpenNotes(false);
     }
   };
   const handleNotes = () => {
@@ -2139,7 +2140,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                     annotateData && annotateData.length > 0 ? "" : "disabled"
                   }`}
                   onClick={
-                    annotateData && annotateData.length > 0
+                    annotateData 
                       ? handleAnnotate
                       : null
                   }

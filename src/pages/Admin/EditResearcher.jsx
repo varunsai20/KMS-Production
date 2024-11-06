@@ -6,6 +6,7 @@ import './EditResearcher.css';
 import departments from "../../assets/Data/Departments.json"
 import primaryResearchAreas from "../../assets/Data/PrimaryResearchAreas.json";
 import researchInterests from "../../assets/Data/ResearchInterests.json";
+import Arrow from "../../assets/images/back-arrow.svg";
 const EditResearcher = () => {
   const { user_id } = useParams();
   const navigate = useNavigate();
@@ -134,8 +135,11 @@ const EditResearcher = () => {
     <div style={{ margin: '0 2%' }}>
       <div className="edit-researcher-header">
         <button className="back-button" onClick={handleBackClick}>
-          ←
-        </button>
+        <img
+                      src={Arrow}
+                      style={{ width: "14px" }}
+                      alt="arrow-icon"
+                    ></img>        </button>
         <h2 style={{ margin: 0 }}>Edit User</h2>
       </div>
 
