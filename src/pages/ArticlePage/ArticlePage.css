@@ -699,3 +699,48 @@ td {
 
 .Article-data-not-found .history-pagination {
 }
+.Article-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.Article-popup-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+  width: 300px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.Article-confirm-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 15px;
+}
+
+.Article-confirm-buttons button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.Article-confirm-buttons button:first-of-type {
+  background-color: #0071bc; /* OK button color */
+  color: white;
+}
+
+.Article-confirm-buttons button:last-of-type {
+  background-color: #bbb;
+  color: black;
+}

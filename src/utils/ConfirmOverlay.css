@@ -10,7 +10,10 @@
   align-items: center;
   z-index: 1000;
 }
-
+.confirm-header {
+  display: flex;
+  justify-content: space-between;
+}
 .confirm-dialog {
   background-color: white;
   padding: 20px;
@@ -26,10 +29,11 @@
   color: #333;
 }
 
-.confirm-buttons {
+.save-confirm-buttons {
+  margin-top: 20px;
   display: flex;
   justify-content: space-between;
-  gap: 10px;
+  gap: 30px;
 }
 
 .confirm-save-button,
@@ -49,7 +53,7 @@
 }
 
 .confirm-discard-button {
-  background-color: #f44336;
+  background-color: #e57373;
   color: white;
 }
 

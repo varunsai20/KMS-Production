@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import useCreateDate from "./UseCreateDate";
+//import useCreateDate from "./UseCreateDate";
 import { HiOutlineMenuAlt1 } from "react-icons/hi";
 import { IoCloseOutline } from "react-icons/io5";
 //import { RiDeleteBin6Line } from "react-icons/ri";
@@ -13,11 +13,12 @@ import DOMPurify from "dompurify";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import { MdEmail } from "react-icons/md";
-import { IoCopyOutline } from "react-icons/io5";
-import { CgNotes } from "react-icons/cg";
+//import { IoCopyOutline } from "react-icons/io5";
+//import { CgNotes } from "react-icons/cg";
 import "./CreateNote.css";
 import ConfirmSave from "../../utils/ConfirmSave";
 import { toast } from "react-toastify";
+import { BiSave } from "react-icons/bi";
 const Createnotes = ({
   setNotes,
   onClose,
@@ -30,10 +31,10 @@ const Createnotes = ({
   height,
   fetchNotes,
 }) => {
-  //console.log(selectedText);
+  console.log(textToSave);
   const [title, setTitle] = useState("");
   const [isOpenDropdown, setIsOpenDropdown] = useState(false);
-  const date = useCreateDate();
+  //const date = useCreateDate();
   const headerRef = useRef(null);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [unsavedChanges, setUnsavedChanges] = useState(false); // Track unsaved changes
@@ -49,7 +50,7 @@ const Createnotes = ({
   });
   const editorRef = useRef(null);
   const [noteContent, setNoteContent] = useState("");
-  const [shareMessage, setShareMessage] = useState("");
+  //const [shareMessage, setShareMessage] = useState("");
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const { user } = useSelector((state) => state.auth);
   const user_id = user?.user_id;
@@ -59,6 +60,13 @@ const Createnotes = ({
   const [subject, setSubject] = useState("");
   const [titleError, setTitleError] = useState("");
   const initialContent = useRef("");
+
+  useEffect(() => {
+    const localUnsavedChanges = localStorage.getItem("unsavedChanges");
+    if (localUnsavedChanges === "true") {
+      setUnsavedChanges(true);
+    }
+  }, []);
 
   const handleEmailClick = () => {
     setIsEmailModalOpen(true);
@@ -131,6 +139,7 @@ const Createnotes = ({
 
         if (newContent !== initialContent.current) {
           setUnsavedChanges(true);
+          localStorage.setItem("unsavedChanges", "true");
         }
       }
     }
@@ -143,6 +152,7 @@ const Createnotes = ({
   const handleInput = (e) => {
     setNoteContent(e.target.innerText);
     setUnsavedChanges(true);
+    localStorage.setItem("unsavedChanges", "true");
   };
 
   const handleEditorClick = () => {
@@ -240,7 +250,8 @@ const Createnotes = ({
       setNoteContent("");
       setTitle("");
       editorRef.current.innerHTML = "";
-      setUnsavedChanges(false); // Mark changes as saved
+      setUnsavedChanges(false);
+      localStorage.removeItem("unsavedChanges");
     } catch (error) {
       toast.error("Error saving note:", {
         autoClose: 1000,
@@ -250,18 +261,20 @@ const Createnotes = ({
     //}
   };
   console.log("text is saved", textToSave);
+  // const handleCloseClick = () => {
+  //   if (unsavedChanges) {
+  //     setShowConfirm(true);
+  //   } else {
+  //     onClose();
+  //   }
+  // };
   const handleCloseClick = () => {
-    if (unsavedChanges) {
+    const localUnsavedChanges = localStorage.getItem("unsavedChanges");
+    if (unsavedChanges || localUnsavedChanges === "true") {
       setShowConfirm(true);
     } else {
       onClose();
     }
-  };
-
-  const initiateDelete = (e) => {
-    e.stopPropagation();
-    //setIsMenuOpen(false);
-    setShowConfirmDelete(true);
   };
 
   const confirmDelete = (e) => {
@@ -277,38 +290,12 @@ const Createnotes = ({
     setShowConfirmDelete(false);
   };
   const handleOpenNotesList = () => {
-    onClose(); // Return to Notes list
-  };
-
-  // Modified handleShare to open the modal
-  const handleShare = () => {
-    setIsShareModalOpen(true);
-  };
-
-  // Handle the copy action inside the modal
-  const handleCopy = () => {
-    const noteDetails = editorRef.current.innerHTML;
-    const noteTitle = title || "Untitled Note";
-
-    // Create a shareable text (you can customize this as needed)
-    const shareText = `${noteTitle}\n\n${noteDetails.replace(/<[^>]+>/g, "")}`; // Stripping HTML tags
-
-    // Copy to clipboard
-    navigator.clipboard.writeText(shareText).then(
-      () => {
-        setShareMessage("Note copied to clipboard!");
-        // Remove the message after 3 seconds
-        setTimeout(() => setShareMessage(""), 3000);
-      },
-      (err) => {
-        console.error("Could not copy text: ", err);
-        setShareMessage("Failed to copy note.");
-        setTimeout(() => setShareMessage(""), 3000);
-      }
-    );
-
-    // Optionally, close the modal after copying
-    setIsShareModalOpen(false);
+    //onClose();
+    if (unsavedChanges) {
+      setShowConfirm(true);
+    } else {
+      onClose();
+    }
   };
 
   // Handle closing the modal
@@ -390,8 +377,7 @@ const Createnotes = ({
             className="save-in"
             style={{ display: "flex", gap: "3px", alignItems: "center" }}
           >
-            <CgNotes size={17} />
-            <span>save</span>
+            <BiSave size={25} color="#1a82ff" />
           </div>
         </button>
         <div
@@ -423,10 +409,11 @@ const Createnotes = ({
           />
           {showConfirm && (
             <ConfirmSave
-              message="Are you sure you want to leave without saving?"
+              message="Leave without saving?"
               onSave={handleSubmit}
               onDiscard={() => {
                 setShowConfirm(false);
+                localStorage.removeItem("unsavedChanges");
                 onClose();
               }}
               onCancel={handleCancel}
@@ -481,7 +468,7 @@ const Createnotes = ({
       </form>
 
       {/* Feedback Message */}
-      {shareMessage && <div className="share-message">{shareMessage}</div>}
+      {/* {shareMessage && <div className="share-message">{shareMessage}</div>} */}
 
       <div className={isOpenNotes ? "lander-toolbar" : "toolbar"}>
         <button
@@ -587,23 +574,6 @@ const Createnotes = ({
                   </span>
                 </button>
               </div>
-              <button onClick={handleCopy} className="createNotes-copy">
-                {/* <RxCopy size={50} /> */}
-                <div
-                  style={{
-                    backgroundColor: "#A5A5A5",
-                    padding: "5px 10px",
-                    borderRadius: "10px",
-                  }}
-                >
-                  <IoCopyOutline size={40} color="white" />
-                </div>
-                <span
-                  style={{ fontSize: "16px", color: "black", padding: "3px" }}
-                >
-                  Copy
-                </span>
-              </button>
             </div>
           </div>
         </div>
