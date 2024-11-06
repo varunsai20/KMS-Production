@@ -53,7 +53,9 @@ const ArticlePage = () => {
   const [query, setQuery] = useState("");
   const [response, setResponse] = useState("");
   const [loading, setLoading] = useState(false);
-  const [annotateData, setAnnotateData] = useState(location.state?.annotateData || "");
+  const [annotateData, setAnnotateData] = useState(
+    location.state?.annotateData || ""
+  );
   const endOfMessagesRef = useRef(null);
   const [chatHistory, setChatHistory] = useState(() => {
     const storedHistory = sessionStorage.getItem("chatHistory");
@@ -167,11 +169,11 @@ const ArticlePage = () => {
   const maxHeight = 60;
 
   // Add this useEffect to reset savedText when openNotes becomes false
-  useEffect(() => {
-    if (!openNotes) {
-      setSavedText(""); // Reset savedText when notes are closed
-    }
-  }, [openNotes]);
+  // useEffect(() => {
+  //   if (!openNotes) {
+  //     setSavedText(""); // Reset savedText when notes are closed
+  //   }
+  // }, [openNotes]);
 
   useEffect(() => {
     if (openAnnotate && !openNotes) {
@@ -574,7 +576,7 @@ const ArticlePage = () => {
     if (!openNotes) {
       setOpenNotes(true);
     }
-
+    console.log(textToSave);
     // Hide the popup after saving
     if (popupRef.current) {
       popupRef.current.style.display = "none";
@@ -789,7 +791,6 @@ const ArticlePage = () => {
     }
   };
 
-
   const handlePromptClick = (queryText) => {
     setQuery(queryText);
     setTriggerAskClick(true);
@@ -826,21 +827,19 @@ const ArticlePage = () => {
     // Replace the search term in the text with markdown bold syntax
     return text.replace(regex, "**$1**");
   };
-  console.log(annotateData)
+  console.log(annotateData);
   const handleAnnotate = () => {
-
     // Replace `desiredId` with the actual ID you want to match against
-    const matchingIdExists = annotateData && annotateData.some(item => item.id === id);
-
+    const matchingIdExists =
+      annotateData && annotateData.some((item) => item.id === id);
 
     if ((!annotateData || !matchingIdExists) && !hasFetchedAnnotateData) {
-        handleAnnotateClick();
+      handleAnnotateClick();
     } else {
-        setOpenAnnotate((prevOpenAnnotate) => !prevOpenAnnotate); // Open immediately if matching ID is present
+      setOpenAnnotate((prevOpenAnnotate) => !prevOpenAnnotate); // Open immediately if matching ID is present
     }
-};
+  };
 
-  
   const handleAnnotateClick = async () => {
     // Define the request body according to source and id
     let requestBody = {};
@@ -851,7 +850,7 @@ const ArticlePage = () => {
     } else if (source === "plos" && id) {
       requestBody = { plos: [id] };
     }
-  
+
     setAnnotateLoading(true);
     try {
       const response = await axios.post(
@@ -863,7 +862,7 @@ const ArticlePage = () => {
           },
         }
       );
-  
+
       const data = response.data;
       setAnnotateData(data);
       setHasFetchedAnnotateData(true); // Set flag after successful fetch
@@ -874,16 +873,15 @@ const ArticlePage = () => {
       setAnnotateLoading(false);
     }
   };
-  
+
   // Optional: useEffect for clearing flag if needed, such as when sources change
   useEffect(() => {
     if (!annotateData) {
       setHasFetchedAnnotateData(false);
     }
   }, [annotateData, source, id]);
-  
-  
-  console.log(annotateData)
+
+  console.log(annotateData);
   const handleNotes = () => {
     setOpenNotes((prevOpenNotes) => !prevOpenNotes);
   };
@@ -908,7 +906,7 @@ const ArticlePage = () => {
       </div>
     );
   };
-  
+
   const renderContentInOrder = (content, isAbstract = false) => {
     const sortedKeys = Object.keys(content).sort(
       (a, b) => parseInt(a) - parseInt(b)
@@ -1022,14 +1020,14 @@ const ArticlePage = () => {
         );
         if (response.data?.sessions) {
           const sessionsData = response.data.sessions;
-  
+
           // Completely swap the first two sessions if the array has at least two items
           if (sessionsData.length >= 2) {
             const temp = sessionsData[0];
             sessionsData[0] = sessionsData[1];
             sessionsData[1] = temp;
           }
-  
+
           setSessions(sessionsData); // Set the modified sessions array to state
         }
       } catch (error) {
@@ -1096,7 +1094,6 @@ const ArticlePage = () => {
     } else {
       setShowStreamingSection(false); // Default to false if no stored chat history
     }
-
   }, [location.state]); // Add location.state as a dependency to re-run on navigation
 
   const handleSessionClick = async (article_id, source, session_id) => {
@@ -1195,8 +1192,8 @@ const ArticlePage = () => {
                   style={{ cursor: "pointer", height: "35px" }}
                 >
                   <img
-                                    src={profilePictureUrl || ProfileIcon} // Use profilePictureUrl if available, else fallback to ProfileIcon
-                                    style={{ width: "35px",borderRadius:"16px" }}
+                    src={profilePictureUrl || ProfileIcon} // Use profilePictureUrl if available, else fallback to ProfileIcon
+                    style={{ width: "35px", borderRadius: "16px" }}
                     alt="Profile"
                     className="profile-icon"
                   />
@@ -1327,29 +1324,32 @@ const ArticlePage = () => {
                       <span>Rate the article </span>
                     </div>
                     <div className="rate">
-                    {[5, 4, 3, 2, 1].map((value) => {
-                      const existingRating = Array.isArray(ratingsList) &&
-                        ratingsList.find((item) => item.uniqueId === uniqueId)?.rating;
+                      {[5, 4, 3, 2, 1].map((value) => {
+                        const existingRating =
+                          Array.isArray(ratingsList) &&
+                          ratingsList.find((item) => item.uniqueId === uniqueId)
+                            ?.rating;
 
-                      return (
-                        <React.Fragment key={value}>
-                          <input
-                            type="radio"
-                            id={`star${value}-${uniqueId}`}
-                            name={`rate_${uniqueId}`}
-                            value={value}
-                            checked={existingRating === value}
-                            onChange={() => handleRatingChange(uniqueId, value)}
-                            disabled={!!existingRating} // Disable if a rating already exists
-                          />
-                          <label
-                            htmlFor={`star${value}-${uniqueId}`}
-                            title={`${value} star`}
-                          />
-                        </React.Fragment>
-                      );
-                    })}
-
+                        return (
+                          <React.Fragment key={value}>
+                            <input
+                              type="radio"
+                              id={`star${value}-${uniqueId}`}
+                              name={`rate_${uniqueId}`}
+                              value={value}
+                              checked={existingRating === value}
+                              onChange={() =>
+                                handleRatingChange(uniqueId, value)
+                              }
+                              disabled={!!existingRating} // Disable if a rating already exists
+                            />
+                            <label
+                              htmlFor={`star${value}-${uniqueId}`}
+                              title={`${value} star`}
+                            />
+                          </React.Fragment>
+                        );
+                      })}
                     </div>
                   </div>
                 </div>
@@ -1385,57 +1385,60 @@ const ArticlePage = () => {
                     }
                   />
 
-{isModalOpen && (
-                                <div className="bookmark-modal-overlay">
-                                  <div className="modal-content" ref={modalRef}>
-                                    {/* Existing Collections */}
+                  {isModalOpen && (
+                    <div className="bookmark-modal-overlay">
+                      <div className="modal-content" ref={modalRef}>
+                        {/* Existing Collections */}
 
-                                    {/* Create New Collection */}
-                                    <h4>Create a new collection:</h4>
-                                    <input
-                                      type="text"
-                                      value={newCollectionName}
-                                      onChange={(e) =>
-                                        setNewCollectionName(e.target.value)
+                        {/* Create New Collection */}
+                        <h4>Create a new collection:</h4>
+                        <input
+                          type="text"
+                          value={newCollectionName}
+                          onChange={(e) => setNewCollectionName(e.target.value)}
+                          placeholder="New collection name"
+                        />
+                        <div
+                          style={{
+                            display: "flex",
+                            gap: "20px",
+                            marginBottom: "15px",
+                          }}
+                        >
+                          <button
+                            onClick={handleCreateNewCollection}
+                            disabled={!newCollectionName}
+                          >
+                            Create
+                          </button>
+
+                          <button onClick={() => setIsModalOpen(false)}>
+                            Cancel
+                          </button>
+                        </div>
+
+                        {Object.keys(collections).length > 0 && (
+                          <>
+                            <h4>Save to existing collection:</h4>
+                            <ul>
+                              {Object.keys(collections).map(
+                                (collectionName, index) => (
+                                  <ul key={index}>
+                                    {/* using index as key since collection names are unique */}
+                                    <li
+                                      onClick={() =>
+                                        handleSaveToExisting(collectionName)
                                       }
-                                      placeholder="New collection name"
-                                      />
-                                    <div
-                                      style={{ display: "flex", gap: "20px",marginBottom:"15px" }}
-                                      >
-                                      <button
-                                        onClick={handleCreateNewCollection}
-                                        disabled={!newCollectionName}
-                                        >
-                                        Create
-                                      </button>
-
-                                      <button
-                                        onClick={() => setIsModalOpen(false)}
-                                        >
-                                        Cancel
-                                      </button>
-                                    </div>
-                                    
-                                  {Object.keys(collections).length > 0 && (
-                                    <>
-                                      <h4>Save to existing collection:</h4>
-                                      <ul>
-                                        {Object.keys(collections).map(
-                                          (collectionName, index) => (
-                                            <ul key={index}>
-                                              
-                                              {/* using index as key since collection names are unique */}
-                                              <li onClick={() =>
-                                                  handleSaveToExisting(
-                                                    collectionName
-                                                  )
-                                                }><span className="collection-name">{collectionName}</span>
-                                                <span className="collection-article-count">
-                                                  {collections[collectionName].length} articles
-                                                </span>
-                                                </li>
-                                              {/* <button
+                                    >
+                                      <span className="collection-name">
+                                        {collectionName}
+                                      </span>
+                                      <span className="collection-article-count">
+                                        {collections[collectionName].length}{" "}
+                                        articles
+                                      </span>
+                                    </li>
+                                    {/* <button
                                                 onClick={() =>
                                                   handleSaveToExisting(
                                                     collectionName
@@ -1444,15 +1447,15 @@ const ArticlePage = () => {
                                               >
                                                 {collectionName}
                                               </button> */}
-                                            </ul>
-                                          )
-                                        )}
-                                      </ul>
-                                    </>
-                                  )}
-                                  </div>
-                                </div>
+                                  </ul>
+                                )
                               )}
+                            </ul>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -1637,11 +1640,8 @@ const ArticlePage = () => {
                 className={`search-annotate-icon ${
                   openAnnotate ? "open" : "closed"
                 }`}
-                onClick={
-                 handleAnnotate
-                }
+                onClick={handleAnnotate}
                 style={{
-                  
                   opacity: annotateData && annotateData.length > 0 ? 1 : 1, // Adjust visibility when disabled
                 }}
               >

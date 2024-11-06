@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import NotesList from "../../components/Notes/NotesList";
 import Createnotes from "../../components/Notes/CreateNotes";
 import Editnotes from "../../components/Notes/EditNotes";
-
 import "./Notes.css";
 
 import { useSelector } from "react-redux";
@@ -28,18 +27,37 @@ const NotesManager = ({
   const [selectedNote, setSelectedNote] = useState(null);
   const [lastOpenView, setLastOpenView] = useState("list");
 
+  // useEffect(() => {
+  //   if (propSelectedText) {
+  //     setTextToSave((prevText) => [...prevText, propSelectedText.trim()]);
+  //     if (currentView !== "edit") {
+  //       setCurrentView("create");
+  //     } else if (currentView === "edit") {
+  //       setEditTextToSave((prev) => [...prev, propSelectedText.trim()]);
+  //     }
+  //   }
+  // }, [propSelectedText]);
+
   useEffect(() => {
     if (propSelectedText) {
-      setTextToSave((prevText) => [...prevText, propSelectedText.trim()]);
-      if (currentView !== "edit") {
-        setCurrentView("create");
-      } else if (currentView === "edit") {
-        setEditTextToSave((prev) => [...prev, propSelectedText.trim()]);
-      }
+      setTextToSave((prevText) => {
+        if (prevText[0] === propSelectedText.trim()) {
+          return prevText;
+        }
+        if (currentView !== "edit") {
+          setCurrentView("create");
+        } else {
+          setEditTextToSave((prevEditText) => [
+            ...prevEditText,
+            propSelectedText.trim(),
+          ]);
+        }
+        return [propSelectedText.trim(), ...prevText];
+      });
     }
   }, [propSelectedText]);
 
-  console.log(propSelectedText);
+  console.log(textToSave);
 
   const fetchNotes = async () => {
     try {
@@ -82,7 +100,6 @@ const NotesManager = ({
     }
   }, [isOpenNotes, lastOpenView]);
 
-  // Update filterText when returning to "list" view
   useEffect(() => {
     if (currentView === "list") {
       setFilterText("");
@@ -110,7 +127,6 @@ const NotesManager = ({
     setEditTextToSave([]);
     setCurrentView("list");
   };
-  // setNotes(updatedNotesArray);
 
   const handleDeleteNote = async (noteId) => {
     try {
@@ -143,7 +159,6 @@ const NotesManager = ({
 
   return (
     <div className={isOpenNotes ? "Lander-manager" : "notes-manager-content"}>
-      {/* <button onClick={oncloseNotes}>hdvbvhcaskv</button> */}
       {currentView === "list" && (
         <NotesList
           notes={notes}

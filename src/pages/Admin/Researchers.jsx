@@ -8,6 +8,8 @@ import SearchIcon from "../../assets/images/Search.svg";
 const Researchers = () => {
   const [isOpen, setIsOpen] = useState(null);
   const [userData, setUserData] = useState([]);
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [userIdToDelete, setUserIdToDelete] = useState(null);
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
 
@@ -105,24 +107,41 @@ const Researchers = () => {
       console.error("Error updating user status:", error);
     }
   };
+  const initialDelete = (userId) => {
+    setIsOpen(false);
+    setShowConfirmDelete(true);
+    setUserIdToDelete(userId);
+  };
+
+  const confirmDelete = () => {
+    if (userIdToDelete) {
+      handleDeleteClick(userIdToDelete);
+      setShowConfirmDelete(false);
+    }
+  };
+  const cancelDelete = (e) => {
+    e.stopPropagation();
+    setShowConfirmDelete(false);
+  };
 
   const handleDeleteClick = async (userId) => {
-    if (window.confirm("Are you sure you want to delete this user?")) {
-      try {
-        await axios.delete(
-          `http://13.127.207.184:80/admin/delete_user/${userId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        // Refresh the user list after successful deletion
-        setUserData(userData.filter((user) => user.user_id !== userId));
-      } catch (error) {
-        console.error("Error deleting user:", error);
-      }
+    // if (window.confirm("Are you sure you want to delete this user?")) {
+    //e.stopPropagation();
+    try {
+      await axios.delete(
+        `http://13.127.207.184:80/admin/delete_user/${userId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setUserData(userData.filter((user) => user.user_id !== userId));
+    } catch (error) {
+      console.error("Error deleting user:", error);
     }
+    // }
   };
   return (
     <div style={{ margin: "0 2%" }}>
@@ -151,7 +170,14 @@ const Researchers = () => {
           <tbody>
             {userData.map((user) => (
               <tr key={user.email}>
-                <td><a style={{cursor:"pointer"}}onClick={() => handleEditClick(user.user_id)}>{user.fullname}</a></td>
+                <td>
+                  <a
+                    style={{ cursor: "pointer" }}
+                    onClick={() => handleEditClick(user.user_id)}
+                  >
+                    {user.fullname}
+                  </a>
+                </td>
                 <td>{user.email}</td>
                 <td>{user.department}</td>
                 <td>
@@ -161,7 +187,7 @@ const Researchers = () => {
                 </td>
                 <td>{user.role}</td>
                 <td>
-                  <div className="action-dropdown" >
+                  <div className="action-dropdown">
                     <div
                       className="action-icon"
                       onClick={() => toggleDropdown(user.email)}
@@ -188,7 +214,10 @@ const Researchers = () => {
                         </li>
                         <li
                           className="dropdown-item delete"
-                          onClick={() => handleDeleteClick(user.user_id)}
+                          // onClick={() => handleDeleteClick(user.user_id)}
+                          onClick={() => {
+                            initialDelete(user.user_id);
+                          }}
                         >
                           Delete
                         </li>
@@ -198,6 +227,28 @@ const Researchers = () => {
                 </td>
               </tr>
             ))}
+            {showConfirmDelete && (
+              <div className="confirm-overlay">
+                <div className="confirm-popup">
+                  <p>Are you sure you want to delete this note?</p>
+                  <div className="confirm-buttons">
+                    <button
+                      className="confirm-delete-button"
+                      //onClick={handleDeleteClick(user.user.id)}
+                      onClick={confirmDelete}
+                    >
+                      Delete
+                    </button>
+                    <button
+                      className="confirm-keep-button"
+                      onClick={cancelDelete}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </tbody>
         </table>
       </div>

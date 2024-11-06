@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { IoIosArrowBack } from "react-icons/io";
 import axios from "axios";
-//import useCreateDate from "./UseCreateDate";
 import { FiBold } from "react-icons/fi";
 import { GoItalic } from "react-icons/go";
 import { FiUnderline } from "react-icons/fi";
@@ -11,7 +10,8 @@ import { BsListOl } from "react-icons/bs";
 import { IoCloseOutline, IoShareSocial } from "react-icons/io5";
 import { MdEmail } from "react-icons/md";
 import { IoCopyOutline } from "react-icons/io5";
-import { CgNotes } from "react-icons/cg";
+//import { IoSaveOutline } from "react-icons/io5";
+import { BiSave } from "react-icons/bi";
 import DOMPurify from "dompurify";
 import "./EditNotes.css"; // Import CSS for styling
 import ConfirmSave from "../../utils/ConfirmSave";
@@ -53,6 +53,12 @@ const Editnotes = ({
   const [unsavedChanges, setUnsavedChanges] = useState(false);
   const initialText = useRef("");
   //const [subject, setSubject] = useState("");
+  useEffect(() => {
+    const localUnsavedChanges = localStorage.getItem("unsavedChanges");
+    if (localUnsavedChanges === "true") {
+      setUnsavedChanges(true);
+    }
+  }, []);
 
   const handleShare = () => {
     setIsShareModalOpen(true);
@@ -77,6 +83,7 @@ const Editnotes = ({
         editorRef.current.innerHTML = newContent;
         setNoteContent(newContent);
         if (newContent !== initialText.current) {
+          localStorage.setItem("unsavedChanges", "true");
           setUnsavedChanges(true);
         }
       }
@@ -92,6 +99,7 @@ const Editnotes = ({
   const handleInput = (e) => {
     setNoteContent(e.target.innerText);
     setUnsavedChanges(true);
+    localStorage.setItem("unsavedChanges", "true");
   };
 
   const handleCopy = () => {
@@ -139,9 +147,9 @@ const Editnotes = ({
 
   const handleSendEmail = async () => {
     const requestData = {
-      user_id: user_id, // make sure user_id is accessible from your component's state or props
-      note_id: note_id, // replace noteId with the actual note ID you want to share
-      email: email, // assuming `email` is the recipient's email in your component's state
+      user_id: user_id,
+      note_id: note_id,
+      email: email,
     };
 
     try {
@@ -242,7 +250,7 @@ const Editnotes = ({
           },
           {
             headers: {
-              Authorization: `Bearer ${token}`, // Ensure `token` is defined
+              Authorization: `Bearer ${token}`,
             },
           }
         );
@@ -272,13 +280,15 @@ const Editnotes = ({
         setTitle("");
         editorRef.current.innerHTML = "";
         setUnsavedChanges(false);
+        localStorage.removeItem("unsavedChanges");
       } catch (error) {
         console.error("Error saving note:", error);
       }
     }
   };
   const handleCloseClick = () => {
-    if (unsavedChanges) {
+    const localUnsavedChanges = localStorage.getItem("unsavedChanges");
+    if (unsavedChanges || localUnsavedChanges === "true") {
       setShowConfirmSave(true);
     } else {
       onClose();
@@ -345,14 +355,15 @@ const Editnotes = ({
           onClick={handleCloseClick}
           aria-label="Go Back"
         >
-          <IoIosArrowBack />
+          <IoIosArrowBack size={20} />
         </button>
         {showConfirmSave && (
           <ConfirmSave
-            message="Are you sure you want to leave without saving?"
+            message="Leave without saving?"
             onSave={handleForm}
             onDiscard={() => {
               setShowConfirmSave(false);
+              localStorage.removeItem("unsavedChanges");
               onClose();
             }}
             onCancel={handleCancel}
@@ -369,8 +380,10 @@ const Editnotes = ({
             className="save-in-edit"
             style={{ display: "flex", gap: "3px", alignItems: "center" }}
           >
-            <CgNotes size={16} />
-            <span>save</span>
+            {/* <CgNotes size={16} /> */}
+            {/* <IoSaveOutline size={20} /> */}
+            <BiSave size={25} color="#1a82ff" />
+            {/* <span>save</span> */}
           </div>
         </button>
         {/* <button className="edit-delete-button" onClick={handleDelete}>

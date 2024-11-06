@@ -10,8 +10,8 @@ import { IoCloseOutline } from "react-icons/io5";
 import { toast } from "react-toastify";
 
 const NoteItem = ({ note, onEdit, onDelete, isOpenNotes }) => {
-  const [isHovered, setIsHovered] = useState(false); // Track hover state
-  const [isMenuOpen, setIsMenuOpen] = useState(false); // Track menu visibility
+  const [isHovered, setIsHovered] = useState(false); 
+  const [isMenuOpen, setIsMenuOpen] = useState(false); 
   const [showConfirmDelete, setShowConfirmDelete] = useState(false); // Track confirmation popup visibility
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [email, setEmail] = useState("");

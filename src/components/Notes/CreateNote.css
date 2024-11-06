@@ -38,15 +38,6 @@
 .close-button {
   background-color: blueviolet;
 }
-.note-save-button {
-  color: #1a82ff;
-  font-size: 20px;
-  background: none;
-  border-radius: 10px;
-  width: 20%;
-  margin: 3px;
-  height: 40px;
-}
 .dropdown {
   width: 93%;
   background-color: white; /* or your preferred background color */
@@ -144,13 +135,13 @@
 .note-save-button {
   margin: 2%;
   font-size: 16px;
-  width: 16%;
+  /* width: 16%; */
   height: 30px;
   color: white;
 
-  border-radius: 34px;
-  background-color: #1a82ff;
-  box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+  border-radius: 8px;
+  /* background-color: #1a82ff; */
+  /* box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px; */
   /* padding-top: 10px; */
 }
 .custom-ordered-list {
