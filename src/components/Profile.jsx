@@ -83,7 +83,7 @@
           console.log(response)
           // Dispatch the updateProfilePicture action to update Redux state
           if (response.data.url) {
-            dispatch(updateProfilePicture({ profile_picture_url: response.data.url }));          }
+            dispatch(updateProfilePicture(response.data.url ));          }
         } catch (error) {
           console.error("Error uploading profile picture:", error);
         }

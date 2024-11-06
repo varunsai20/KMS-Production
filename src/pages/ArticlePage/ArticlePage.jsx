@@ -30,11 +30,13 @@ import Notes from "../NotesPage/Notes";
 import { login, logout } from "../../redux/reducers/LoginAuth"; // Import login and logout actions
 import ProfileIcon from "../../assets/images/Profile-dummy.svg";
 import { toast } from "react-toastify";
+import Header from "../../components/Header-New";
 
 const ArticlePage = () => {
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
   const displayIfLoggedIn = isLoggedIn ? null : "none";
-  const widthIfLoggedIn = isLoggedIn ? null : "100%";
+  const widthIfLoggedIn = isLoggedIn ? null : "80%";
+  const heightIfLoggedIn=isLoggedIn? null:"80vh";
   const { pmid } = useParams();
   const { user } = useSelector((state) => state.auth);
   const profilePictureUrl = user?.profile_picture_url;
@@ -126,29 +128,7 @@ const ArticlePage = () => {
       fetchCollections();
     }
   }, [user_id, token]);
-  const isBookmarked = (idType) => {
-    // Convert idType to a number for comparison
-    const numericIdType = Number(idType);
-
-    // console.log(`Checking for idType: ${numericIdType}`);
-
-    // Loop through each collection and log article IDs as numbers
-    // Object.entries(collections).forEach(([collectionName, articleArray]) => {
-    //   console.log(`Collection: ${collectionName}`);
-    //   articleArray.forEach((article) => {
-    //     console.log(`article_id: ${Number(article.article_id)}`);
-    //   });
-    // });
-
-    // Check if the article is bookmarked
-    const result = Object.values(collections).some((articleArray) =>
-      articleArray.some(
-        (article) => Number(article.article_id) === numericIdType
-      )
-    );
-
-    return result;
-  };
+  
   const [currentid, setCurrentid] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newCollectionName, setNewCollectionName] = useState("");
@@ -457,11 +437,69 @@ const ArticlePage = () => {
     };
   }, [isModalOpen]);
 
-  const handleBookmarkClick = (id, title, source) => {
-    setCurrentid(id);
-    setArticleTitle(title);
-    setSource(source);
-    setIsModalOpen(true); // Open the modal for collection selection
+  const isArticleBookmarked = (idType) => {
+    const numericIdType = Number(idType);
+    
+    // Loop through each collection to check if the article is bookmarked
+    for (const [collectionName, articleArray] of Object.entries(collections)) {
+      const found = articleArray.some(
+        (article) => Number(article.article_id) === numericIdType
+      );
+  
+      if (found) {
+        return { isBookmarked: true, collectionName }; // Return true with collection name
+      }
+    }
+  
+    return { isBookmarked: false, collectionName: null }; // Not found in any collection
+  };
+  
+  const handleBookmarkClick = async (idType, title, source) => {
+    const { isBookmarked, collectionName } = isArticleBookmarked(idType);
+  
+    if (isBookmarked) {
+      try {
+        const response = await axios.delete(
+          `http://13.127.207.184:80/bookmarks/users/${user_id}/collections/${collectionName}/${idType}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+  
+        if (response.status === 200) {
+          // Remove the bookmark from local collections state
+          const updatedCollections = {
+            ...collections,
+            [collectionName]: collections[collectionName].filter(
+              (article) => article.article_id !== String(idType)
+            ),
+          };
+  
+          setCollections(updatedCollections);
+          localStorage.setItem("collections", JSON.stringify(updatedCollections));
+          toast.success("Bookmark deleted successfully", {
+            position: "top-right",
+            autoClose: 1000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "colored",
+          });
+  
+          await fetchCollections(); // Refetch collections after successful deletion
+        }
+      } catch (error) {
+        console.error("Error deleting bookmark:", error);
+      }
+    } else {
+      // Open modal for adding bookmark
+      setCurrentid(idType);
+      setArticleTitle(title);
+      setSource(source);
+      setIsModalOpen(true);
+    }
   };
 
   const handleSaveToExisting = async (collectionName) => {
@@ -1156,59 +1194,9 @@ const ArticlePage = () => {
   return (
     <>
       <div className="container">
-        <header className="header">
-          <div className="logo" style={{ margin: "20px 0" }}>
-            <a href="/">
-              <img href="/" src={Logo} alt="Infer Logo" />
-            </a>
-          </div>
-          <nav className="nav-menu">
-            <ul>
-              {/* <li>
-                <a href="/">Home</a>
-              </li> */}
-              {/* <li>
-                <a href="#why-infer">Why Infer?</a>
-              </li> */}
-              {/* <li>
-                <a href="#FAQ's">FAQs</a>
-              </li> */}
-            </ul>
-          </nav>
-          <div
-            className="auth-buttons"
-            style={{ margin: "20px 26px 20px 0", display: "flex", gap: "10px" }}
-          >
-            {isLoggedIn ? (
-              <>
-                <div
-                  onClick={handleProfileClick}
-                  style={{ cursor: "pointer", height: "35px" }}
-                >
-                  <img
-                                    src={profilePictureUrl || ProfileIcon} // Use profilePictureUrl if available, else fallback to ProfileIcon
-                                    style={{ width: "35px",borderRadius:"16px" }}
-                    alt="Profile"
-                    className="profile-icon"
-                  />
-                </div>
-                <Button
-                  text="Logout"
-                  className="logout-btn"
-                  onClick={handleLogout}
-                />
-              </>
-            ) : (
-              <Button
-                text="Login"
-                className="login-btn"
-                onClick={handleLogin}
-              />
-            )}
-          </div>
-        </header>
+      <Header style={{width:"100%"}}/>
         {annotateLoading ? <Loading /> : ""}
-        <div className="content">
+        <div className="content" style={{ width: widthIfLoggedIn }}>
           <div
             className="history-pagination"
             style={{ display: displayIfLoggedIn }}
@@ -1291,7 +1279,7 @@ const ArticlePage = () => {
               className="article-content"
               onMouseUp={handleMouseUp}
               ref={contentRef}
-              style={{ width: widthIfLoggedIn }}
+              style={{ height: heightIfLoggedIn }}
             >
               <div className="article-title">
                 <div
@@ -1357,24 +1345,26 @@ const ArticlePage = () => {
                     {articleData.article.article_title}
                   </p>
                   <FontAwesomeIcon
-                    icon={isBookmarked(id) ? solidBookmark : regularBookmark}
-                    size="l"
-                    style={{
-                      color: isBookmarked(id) ? "#0071bc" : "black",
-                      cursor: "pointer",
-                      display: displayIfLoggedIn,
-                    }}
-                    onClick={() =>
-                      handleBookmarkClick(
-                        id,
-                        articleData.article.article_title,
-                        source || "PubMed"
-                      )
-                    }
-                    title={
-                      isBookmarked(id) ? "Bookmarked" : "Bookmark this article"
-                    }
-                  />
+  icon={isArticleBookmarked(id).isBookmarked ? solidBookmark : regularBookmark}
+  size="l"
+  style={{
+    color: isArticleBookmarked(id).isBookmarked ? "#0071bc" : "black",
+    cursor: "pointer",
+    display: displayIfLoggedIn,
+  }}
+  onClick={() =>
+    handleBookmarkClick(
+      id,
+      articleData.article.article_title,
+      source || "PubMed"
+    )
+  }
+  title={
+    isArticleBookmarked(id).isBookmarked
+      ? "Bookmarked"
+      : "Bookmark this article"
+  }
+/>
 
 {isModalOpen && (
                                 <div className="bookmark-modal-overlay">
@@ -1401,17 +1391,17 @@ const ArticlePage = () => {
                                         Create
                                       </button>
 
-                                      <button
+                                      {/* <button
                                         onClick={() => setIsModalOpen(false)}
                                         >
                                         Cancel
-                                      </button>
+                                      </button> */}
                                     </div>
                                     
                                   {Object.keys(collections).length > 0 && (
                                     <>
                                       <h4>Save to existing collection:</h4>
-                                      <ul>
+                                      <ul className="bookmark-existing-collections">
                                         {Object.keys(collections).map(
                                           (collectionName, index) => (
                                             <ul key={index}>
