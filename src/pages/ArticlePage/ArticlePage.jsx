@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { useSelector, useDispatch } from "react-redux";
@@ -35,7 +36,8 @@ import Header from "../../components/Header-New";
 const ArticlePage = () => {
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
   const displayIfLoggedIn = isLoggedIn ? null : "none";
-  const widthIfLoggedIn = isLoggedIn ? null : "100%";
+  const widthIfLoggedIn = isLoggedIn ? null : "80%";
+  const heightIfLoggedIn=isLoggedIn? null:"80vh";
   const { pmid } = useParams();
   const { user } = useSelector((state) => state.auth);
   const profilePictureUrl = user?.profile_picture_url;
@@ -54,9 +56,7 @@ const ArticlePage = () => {
   const [query, setQuery] = useState("");
   const [response, setResponse] = useState("");
   const [loading, setLoading] = useState(false);
-  const [annotateData, setAnnotateData] = useState(
-    location.state?.annotateData || ""
-  );
+  const [annotateData, setAnnotateData] = useState(location.state?.annotateData || "");
   const endOfMessagesRef = useRef(null);
   const [chatHistory, setChatHistory] = useState(() => {
     const storedHistory = sessionStorage.getItem("chatHistory");
@@ -129,29 +129,7 @@ const ArticlePage = () => {
       fetchCollections();
     }
   }, [user_id, token]);
-  const isBookmarked = (idType) => {
-    // Convert idType to a number for comparison
-    const numericIdType = Number(idType);
-
-    // console.log(`Checking for idType: ${numericIdType}`);
-
-    // Loop through each collection and log article IDs as numbers
-    // Object.entries(collections).forEach(([collectionName, articleArray]) => {
-    //   console.log(`Collection: ${collectionName}`);
-    //   articleArray.forEach((article) => {
-    //     console.log(`article_id: ${Number(article.article_id)}`);
-    //   });
-    // });
-
-    // Check if the article is bookmarked
-    const result = Object.values(collections).some((articleArray) =>
-      articleArray.some(
-        (article) => Number(article.article_id) === numericIdType
-      )
-    );
-
-    return result;
-  };
+  
   const [currentid, setCurrentid] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newCollectionName, setNewCollectionName] = useState("");
@@ -170,11 +148,11 @@ const ArticlePage = () => {
   const maxHeight = 60;
 
   // Add this useEffect to reset savedText when openNotes becomes false
-  // useEffect(() => {
-  //   if (!openNotes) {
-  //     setSavedText(""); // Reset savedText when notes are closed
-  //   }
-  // }, [openNotes]);
+  useEffect(() => {
+    if (!openNotes) {
+      setSavedText(""); // Reset savedText when notes are closed
+    }
+  }, [openNotes]);
 
   useEffect(() => {
     if (openAnnotate && !openNotes) {
@@ -229,7 +207,7 @@ const ArticlePage = () => {
 
   useEffect(() => {
     // Determine the source based on `type`
-
+    setAnnotateLoading(true)
     // Perform GET request to fetch article data
     if (source && id) {
       const fetchArticleData = async () => {
@@ -244,7 +222,7 @@ const ArticlePage = () => {
           );
           const article = response.data; // Assuming response contains article data directly
           setArticleData(article);
-
+          setAnnotateLoading(false)
           // Retrieve saved search term from session storage
           const savedTerm = sessionStorage.getItem("SearchTerm");
           setSearchTerm(savedTerm);
@@ -460,11 +438,69 @@ const ArticlePage = () => {
     };
   }, [isModalOpen]);
 
-  const handleBookmarkClick = (id, title, source) => {
-    setCurrentid(id);
-    setArticleTitle(title);
-    setSource(source);
-    setIsModalOpen(true); // Open the modal for collection selection
+  const isArticleBookmarked = (idType) => {
+    const numericIdType = Number(idType);
+    
+    // Loop through each collection to check if the article is bookmarked
+    for (const [collectionName, articleArray] of Object.entries(collections)) {
+      const found = articleArray.some(
+        (article) => Number(article.article_id) === numericIdType
+      );
+  
+      if (found) {
+        return { isBookmarked: true, collectionName }; // Return true with collection name
+      }
+    }
+  
+    return { isBookmarked: false, collectionName: null }; // Not found in any collection
+  };
+  
+  const handleBookmarkClick = async (idType, title, source) => {
+    const { isBookmarked, collectionName } = isArticleBookmarked(idType);
+  
+    if (isBookmarked) {
+      try {
+        const response = await axios.delete(
+          `http://13.127.207.184:80/bookmarks/users/${user_id}/collections/${collectionName}/${idType}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+  
+        if (response.status === 200) {
+          // Remove the bookmark from local collections state
+          const updatedCollections = {
+            ...collections,
+            [collectionName]: collections[collectionName].filter(
+              (article) => article.article_id !== String(idType)
+            ),
+          };
+  
+          setCollections(updatedCollections);
+          localStorage.setItem("collections", JSON.stringify(updatedCollections));
+          toast.success("Bookmark deleted successfully", {
+            position: "top-right",
+            autoClose: 1000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "colored",
+          });
+  
+          await fetchCollections(); // Refetch collections after successful deletion
+        }
+      } catch (error) {
+        console.error("Error deleting bookmark:", error);
+      }
+    } else {
+      // Open modal for adding bookmark
+      setCurrentid(idType);
+      setArticleTitle(title);
+      setSource(source);
+      setIsModalOpen(true);
+    }
   };
 
   const handleSaveToExisting = async (collectionName) => {
@@ -577,7 +613,7 @@ const ArticlePage = () => {
     if (!openNotes) {
       setOpenNotes(true);
     }
-    console.log(textToSave);
+
     // Hide the popup after saving
     if (popupRef.current) {
       popupRef.current.style.display = "none";
@@ -792,6 +828,7 @@ const ArticlePage = () => {
     }
   };
 
+
   const handlePromptClick = (queryText) => {
     setQuery(queryText);
     setTriggerAskClick(true);
@@ -828,19 +865,19 @@ const ArticlePage = () => {
     // Replace the search term in the text with markdown bold syntax
     return text.replace(regex, "**$1**");
   };
-  console.log(annotateData);
+  console.log(annotateData)
   const handleAnnotate = () => {
     // Replace `desiredId` with the actual ID you want to match against
-    const matchingIdExists =
-      annotateData && annotateData.some((item) => item.id === id);
-
+    const matchingIdExists = annotateData && Object.prototype.hasOwnProperty.call(annotateData, id);
     if ((!annotateData || !matchingIdExists) && !hasFetchedAnnotateData) {
-      handleAnnotateClick();
+        handleAnnotateClick();
     } else {
-      setOpenAnnotate((prevOpenAnnotate) => !prevOpenAnnotate); // Open immediately if matching ID is present
+        setOpenAnnotate((prevOpenAnnotate) => !prevOpenAnnotate); // Open immediately if matching ID is present
     }
-  };
+};
 
+
+  
   const handleAnnotateClick = async () => {
     // Define the request body according to source and id
     let requestBody = {};
@@ -851,7 +888,7 @@ const ArticlePage = () => {
     } else if (source === "plos" && id) {
       requestBody = { plos: [id] };
     }
-
+  
     setAnnotateLoading(true);
     try {
       const response = await axios.post(
@@ -863,7 +900,7 @@ const ArticlePage = () => {
           },
         }
       );
-
+  
       const data = response.data;
       setAnnotateData(data);
       setHasFetchedAnnotateData(true); // Set flag after successful fetch
@@ -874,15 +911,16 @@ const ArticlePage = () => {
       setAnnotateLoading(false);
     }
   };
-
+  
   // Optional: useEffect for clearing flag if needed, such as when sources change
   useEffect(() => {
     if (!annotateData) {
       setHasFetchedAnnotateData(false);
     }
   }, [annotateData, source, id]);
-
-  console.log(annotateData);
+  
+  
+  console.log(annotateData)
   const handleNotes = () => {
     setOpenNotes((prevOpenNotes) => !prevOpenNotes);
   };
@@ -907,7 +945,7 @@ const ArticlePage = () => {
       </div>
     );
   };
-
+  
   const renderContentInOrder = (content, isAbstract = false) => {
     const sortedKeys = Object.keys(content).sort(
       (a, b) => parseInt(a) - parseInt(b)
@@ -1010,36 +1048,29 @@ const ArticlePage = () => {
 
   useEffect(() => {
     const fetchSessions = async () => {
-      try {
-        const response = await axios.get(
-          `http://13.127.207.184:80/history/conversations/sessions/${user_id}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        if (response.data?.sessions) {
-          const sessionsData = response.data.sessions;
-
-          // Completely swap the first two sessions if the array has at least two items
-          if (sessionsData.length >= 2) {
-            const temp = sessionsData[0];
-            sessionsData[0] = sessionsData[1];
-            sessionsData[1] = temp;
-          }
-
-          setSessions(sessionsData); // Set the modified sessions array to state
+        try {
+            const response = await axios.get(
+                `http://13.127.207.184:80/history/conversations/sessions/${user_id}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+            if (response.data?.sessions) {
+                const sessionsData = response.data.sessions.reverse(); // Reverse the array order
+                setSessions(sessionsData); // Set the reversed sessions array to state
+            }
+        } catch (error) {
+            console.error("Error fetching chat history:", error);
         }
-      } catch (error) {
-        console.error("Error fetching chat history:", error);
-      }
     };
 
     if (user_id && token) {
-      fetchSessions();
+        fetchSessions();
     }
-  }, [user_id, token, refreshSessions]);
+}, [user_id, token, refreshSessions]);
+
 
   // Edit functions
   const handleEditClick = (sessionId, title) => {
@@ -1095,6 +1126,7 @@ const ArticlePage = () => {
     } else {
       setShowStreamingSection(false); // Default to false if no stored chat history
     }
+
   }, [location.state]); // Add location.state as a dependency to re-run on navigation
 
   const handleSessionClick = async (article_id, source, session_id) => {
@@ -1163,57 +1195,7 @@ const ArticlePage = () => {
   return (
     <>
       <div className="container">
-        <header className="header">
-          <div className="logo" style={{ margin: "20px 0" }}>
-            <a href="/">
-              <img href="/" src={Logo} alt="Infer Logo" />
-            </a>
-          </div>
-          <nav className="nav-menu">
-            <ul>
-              {/* <li>
-                <a href="/">Home</a>
-              </li> */}
-              {/* <li>
-                <a href="#why-infer">Why Infer?</a>
-              </li> */}
-              {/* <li>
-                <a href="#FAQ's">FAQs</a>
-              </li> */}
-            </ul>
-          </nav>
-          <div
-            className="auth-buttons"
-            style={{ margin: "20px 26px 20px 0", display: "flex", gap: "10px" }}
-          >
-            {isLoggedIn ? (
-              <>
-                <div
-                  onClick={handleProfileClick}
-                  style={{ cursor: "pointer", height: "35px" }}
-                >
-                  <img
-                    src={profilePictureUrl || ProfileIcon} // Use profilePictureUrl if available, else fallback to ProfileIcon
-                    style={{ width: "35px", borderRadius: "16px" }}
-                    alt="Profile"
-                    className="profile-icon"
-                  />
-                </div>
-                <Button
-                  text="Logout"
-                  className="logout-btn"
-                  onClick={handleLogout}
-                />
-              </>
-            ) : (
-              <Button
-                text="Login"
-                className="login-btn"
-                onClick={handleLogin}
-              />
-            )}
-          </div>
-        </header>
+      <Header style={{width:"100%"}}/>
         {annotateLoading ? <Loading /> : ""}
         <div className="content" style={{ width: widthIfLoggedIn }}>
           <div
@@ -1325,32 +1307,29 @@ const ArticlePage = () => {
                       <span>Rate the article </span>
                     </div>
                     <div className="rate">
-                      {[5, 4, 3, 2, 1].map((value) => {
-                        const existingRating =
-                          Array.isArray(ratingsList) &&
-                          ratingsList.find((item) => item.uniqueId === uniqueId)
-                            ?.rating;
+                    {[5, 4, 3, 2, 1].map((value) => {
+                      const existingRating = Array.isArray(ratingsList) &&
+                        ratingsList.find((item) => item.uniqueId === uniqueId)?.rating;
 
-                        return (
-                          <React.Fragment key={value}>
-                            <input
-                              type="radio"
-                              id={`star${value}-${uniqueId}`}
-                              name={`rate_${uniqueId}`}
-                              value={value}
-                              checked={existingRating === value}
-                              onChange={() =>
-                                handleRatingChange(uniqueId, value)
-                              }
-                              disabled={!!existingRating} // Disable if a rating already exists
-                            />
-                            <label
-                              htmlFor={`star${value}-${uniqueId}`}
-                              title={`${value} star`}
-                            />
-                          </React.Fragment>
-                        );
-                      })}
+                      return (
+                        <React.Fragment key={value}>
+                          <input
+                            type="radio"
+                            id={`star${value}-${uniqueId}`}
+                            name={`rate_${uniqueId}`}
+                            value={value}
+                            checked={existingRating === value}
+                            onChange={() => handleRatingChange(uniqueId, value)}
+                            disabled={!!existingRating} // Disable if a rating already exists
+                          />
+                          <label
+                            htmlFor={`star${value}-${uniqueId}`}
+                            title={`${value} star`}
+                          />
+                        </React.Fragment>
+                      );
+                    })}
+
                     </div>
                   </div>
                 </div>
@@ -1367,79 +1346,78 @@ const ArticlePage = () => {
                     {articleData.article.article_title}
                   </p>
                   <FontAwesomeIcon
-                    icon={isBookmarked(id) ? solidBookmark : regularBookmark}
-                    size="l"
-                    style={{
-                      color: isBookmarked(id) ? "#0071bc" : "black",
-                      cursor: "pointer",
-                      display: displayIfLoggedIn,
-                    }}
-                    onClick={() =>
-                      handleBookmarkClick(
-                        id,
-                        articleData.article.article_title,
-                        source || "PubMed"
-                      )
-                    }
-                    title={
-                      isBookmarked(id) ? "Bookmarked" : "Bookmark this article"
-                    }
-                  />
+  icon={isArticleBookmarked(id).isBookmarked ? solidBookmark : regularBookmark}
+  size="l"
+  style={{
+    color: isArticleBookmarked(id).isBookmarked ? "#0071bc" : "black",
+    cursor: "pointer",
+    display: displayIfLoggedIn,
+  }}
+  onClick={() =>
+    handleBookmarkClick(
+      id,
+      articleData.article.article_title,
+      source || "PubMed"
+    )
+  }
+  title={
+    isArticleBookmarked(id).isBookmarked
+      ? "Bookmarked"
+      : "Bookmark this article"
+  }
+/>
 
-                  {isModalOpen && (
-                    <div className="bookmark-modal-overlay">
-                      <div className="modal-content" ref={modalRef}>
-                        {/* Existing Collections */}
+{isModalOpen && (
+                                <div className="bookmark-modal-overlay">
+                                  <div className="modal-content" ref={modalRef}>
+                                    {/* Existing Collections */}
 
-                        {/* Create New Collection */}
-                        <h4>Create a new collection:</h4>
-                        <input
-                          type="text"
-                          value={newCollectionName}
-                          onChange={(e) => setNewCollectionName(e.target.value)}
-                          placeholder="New collection name"
-                        />
-                        <div
-                          style={{
-                            display: "flex",
-                            gap: "20px",
-                            marginBottom: "15px",
-                          }}
-                        >
-                          <button
-                            onClick={handleCreateNewCollection}
-                            disabled={!newCollectionName}
-                          >
-                            Create
-                          </button>
-
-                          <button onClick={() => setIsModalOpen(false)}>
-                            Cancel
-                          </button>
-                        </div>
-
-                        {Object.keys(collections).length > 0 && (
-                          <>
-                            <h4>Save to existing collection:</h4>
-                            <ul>
-                              {Object.keys(collections).map(
-                                (collectionName, index) => (
-                                  <ul key={index}>
-                                    {/* using index as key since collection names are unique */}
-                                    <li
-                                      onClick={() =>
-                                        handleSaveToExisting(collectionName)
+                                    {/* Create New Collection */}
+                                    <h4>Create a new collection:</h4>
+                                    <input
+                                      type="text"
+                                      value={newCollectionName}
+                                      onChange={(e) =>
+                                        setNewCollectionName(e.target.value)
                                       }
-                                    >
-                                      <span className="collection-name">
-                                        {collectionName}
-                                      </span>
-                                      <span className="collection-article-count">
-                                        {collections[collectionName].length}{" "}
-                                        articles
-                                      </span>
-                                    </li>
-                                    {/* <button
+                                      placeholder="New collection name"
+                                      />
+                                    <div
+                                      style={{ display: "flex", gap: "20px",marginBottom:"15px" }}
+                                      >
+                                      <button
+                                        onClick={handleCreateNewCollection}
+                                        disabled={!newCollectionName}
+                                        >
+                                        Create
+                                      </button>
+
+                                      {/* <button
+                                        onClick={() => setIsModalOpen(false)}
+                                        >
+                                        Cancel
+                                      </button> */}
+                                    </div>
+                                    
+                                  {Object.keys(collections).length > 0 && (
+                                    <>
+                                      <h4>Save to existing collection:</h4>
+                                      <ul className="bookmark-existing-collections">
+                                        {Object.keys(collections).map(
+                                          (collectionName, index) => (
+                                            <ul key={index}>
+                                              
+                                              {/* using index as key since collection names are unique */}
+                                              <li onClick={() =>
+                                                  handleSaveToExisting(
+                                                    collectionName
+                                                  )
+                                                }><span className="collection-name">{collectionName}</span>
+                                                <span className="collection-article-count">
+                                                  {collections[collectionName].length} articles
+                                                </span>
+                                                </li>
+                                              {/* <button
                                                 onClick={() =>
                                                   handleSaveToExisting(
                                                     collectionName
@@ -1448,15 +1426,15 @@ const ArticlePage = () => {
                                               >
                                                 {collectionName}
                                               </button> */}
-                                  </ul>
-                                )
+                                            </ul>
+                                          )
+                                        )}
+                                      </ul>
+                                    </>
+                                  )}
+                                  </div>
+                                </div>
                               )}
-                            </ul>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  )}
                 </div>
               </div>
 
@@ -1641,8 +1619,11 @@ const ArticlePage = () => {
                 className={`search-annotate-icon ${
                   openAnnotate ? "open" : "closed"
                 }`}
-                onClick={handleAnnotate}
+                onClick={
+                 handleAnnotate
+                }
                 style={{
+                  
                   opacity: annotateData && annotateData.length > 0 ? 1 : 1, // Adjust visibility when disabled
                 }}
               >

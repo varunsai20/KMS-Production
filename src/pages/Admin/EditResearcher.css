@@ -1,10 +1,10 @@
 .edit-researcher-header {
     display: flex;
     align-items: center;
-    gap: 10px;
+    /* gap: 10px; */
     margin-bottom: 1rem;
   }
-  select:not  (:-internal-list-box) {
+  select:not(:-internal-list-box) {
     height: 40px; /* Set the default height for the non-expanded select box */
     font-size: 16px;
     padding: 5px;
