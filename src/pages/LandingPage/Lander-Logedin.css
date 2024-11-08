@@ -313,21 +313,20 @@
 }
 .close-collection {
   position: absolute;
-  top: calc(42% - 35vh);
-  right: calc(10% - 20px);
-  background-color: transparent;
+  top: calc(48% - 35vh);
+  right: calc(2% - 20px);
   border: none;
   cursor: pointer;
   z-index: 1001;
 }
 
-.close-collection:hover {
+/* .close-collection:hover {
   color: #1a82ff;
-}
+} */
 
-.close-collection:hover {
+/* .close-collection:hover {
   background-color: rgba(235, 235, 247, 0.5);
-}
+} */
 .close-modal-notes:hover {
   background-color: rgba(235, 235, 247, 0.5);
 }

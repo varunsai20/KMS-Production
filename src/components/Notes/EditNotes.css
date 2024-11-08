@@ -61,6 +61,11 @@
   overflow-y: auto;
   text-align: start;
 }
+.edit-note__details:empty::before {
+  content: "Take your note...";
+  color: #aaa;
+  font-style: italic;
+}
 .edit-note__details ol {
   margin: 0px 0px 0px 16px;
   padding: 0;

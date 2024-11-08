@@ -125,21 +125,12 @@
 }
 
 .confirm-delete-button {
-  background-color: #dc3545; /* Bootstrap's danger color */
+  background-color: #e57373; /* Bootstrap's danger color */
   color: #fff;
 }
 
 .confirm-delete-button:hover {
   background-color: #c82333;
-}
-
-.confirm-keep-button {
-  background-color: #6c757d; /* Bootstrap's secondary color */
-  color: #fff;
-}
-
-.confirm-keep-button:hover {
-  background-color: #5a6268;
 }
 .noteItem-modal-overlay {
   position: fixed;

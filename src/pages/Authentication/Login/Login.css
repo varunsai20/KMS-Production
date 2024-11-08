@@ -134,7 +134,9 @@
     border: 1px solid #2d79f3;
     ;
   }
-  
+  .apple svg {
+    width: 20px;
+}
       
   .error {
     color: red;

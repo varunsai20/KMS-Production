@@ -17,12 +17,12 @@ import History from "../../assets/images/Lander-History.svg";
 import Help from "../../assets/images/Lander-Help.svg";
 import Utilities from "../../assets/images/Lander-Utilities.svg";
 import Analytics from "../../assets/images/Lander-Analytics.svg";
-import { IoCloseOutline } from "react-icons/io5";
 import "./Lander-Logedin.css";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 //import Draggable from "react-draggable";
 import Collection from "../../components/Collection";
+import DeriveInsights from "../ArticlePage/DeriveInsights";
 
 import Notes from "../NotesPage/Notes";
 
@@ -30,9 +30,11 @@ const Lander = () => {
   const isLoggedIn = useSelector((state) => state.auth?.isLoggedIn);
   const [sessions, setSessions] = useState([]);
   const [isLanderNotesOpen, setIsLanderNotesOpen] = useState(false);
+  //const [openInsights, setOpenInsights] = useState(false);
   const [refreshSessions, setRefreshSessions] = useState(false);
   console.log(sessions);
   const [isCollectionOpen, setIsCollectionOpen] = useState(false);
+  const [openInsights, setOpenInsights] = useState(false);
   const [dimensions, setDimensions] = useState({ width: 400, height: 400 });
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const { user } = useSelector((state) => state.auth);
@@ -52,36 +54,37 @@ const Lander = () => {
   const handleCloseCollection = () => {
     setIsCollectionOpen(false);
   };
+  // const handleOpenInsights = () => {
+  //   setOpenInsights(true);
+  //   navigate("/deriveinsights")
+  // };
+  // const handleCloseInsights = () => {};
   useEffect(() => {
     const fetchSessions = async () => {
-
-        try {
-            const response = await axios.get(
-                `http://13.127.207.184:80/history/conversations/sessions/${user_id}`,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                }
-            );
-            if (response.data?.sessions) {
-                const sessionsData = response.data.sessions.reverse(); // Reverse the array order
-                setSessions(sessionsData); // Set the reversed sessions array to state
-            }
-        } catch (error) {
-            console.error("Error fetching chat history:", error);
-
+      try {
+        const response = await axios.get(
+          `http://13.127.207.184:80/history/conversations/sessions/${user_id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        if (response.data?.sessions) {
+          const sessionsData = response.data.sessions.reverse(); // Reverse the array order
+          setSessions(sessionsData); // Set the reversed sessions array to state
         }
+      } catch (error) {
+        console.error("Error fetching chat history:", error);
+      }
     };
 
     if (user_id && token) {
-        fetchSessions();
+      fetchSessions();
     }
+  }, [user_id, token]);
 
-}, [user_id, token]);
-
-  console.log(sessions[0])  
-
+  console.log(sessions[0]);
 
   const handleSessionClick = async () => {
     if (sessions.length === 0) return; // Ensure there is a session to work with
@@ -225,7 +228,7 @@ const Lander = () => {
 
               <a href="#">Dashboard</a>
               <a href="#">Reports</a>
-              <a href="#">Predictive Analysis</a>
+              <a href="/deriveinsights">Derive Insights</a>
             </div>
             <div className="Feature-Item">
               <img
@@ -372,15 +375,10 @@ const Lander = () => {
       {isCollectionOpen && (
         <>
           <div className="blur-overlay">
-            <button
-              className="close-collection"
-              onClick={handleCloseCollection}
-            >
-              <IoCloseOutline size={30} color="white" />
-            </button>
-          </div>
+            
           <div className="collection-modal">
-            <Collection />
+            <Collection setIsCollectionOpen={setIsCollectionOpen}/>
+          </div>
           </div>
         </>
       )}

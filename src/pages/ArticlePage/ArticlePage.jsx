@@ -1,11 +1,9 @@
-
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { useSelector, useDispatch } from "react-redux";
 import { useParams, useLocation } from "react-router-dom";
 import "./ArticlePage.css";
 import Loading from "../../components/Loading";
-import Button from "../../components/Buttons";
 import { Typography } from "@mui/material";
 import flag from "../../assets/images/flash.svg";
 import Arrow from "../../assets/images/back-arrow.svg";
@@ -16,7 +14,10 @@ import { CircularProgress } from "@mui/material";
 import { TextField } from "@mui/material";
 import Annotation from "../../components/Annotaions";
 import { faBookmark as regularBookmark } from "@fortawesome/free-regular-svg-icons";
-import { faBookmark as solidBookmark } from "@fortawesome/free-solid-svg-icons";
+import {
+  faL,
+  faBookmark as solidBookmark,
+} from "@fortawesome/free-solid-svg-icons";
 import notesicon from "../../assets/images/note-2.svg";
 import rehypeRaw from "rehype-raw";
 import Logo from "../../assets/images/Logo_New.svg";
@@ -37,7 +38,7 @@ const ArticlePage = () => {
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
   const displayIfLoggedIn = isLoggedIn ? null : "none";
   const widthIfLoggedIn = isLoggedIn ? null : "80%";
-  const heightIfLoggedIn=isLoggedIn? null:"80vh";
+  const heightIfLoggedIn = isLoggedIn ? null : "80vh";
   const { pmid } = useParams();
   const { user } = useSelector((state) => state.auth);
   const profilePictureUrl = user?.profile_picture_url;
@@ -54,9 +55,12 @@ const ArticlePage = () => {
   const [articleData, setArticleData] = useState(null);
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
+  const [searchCollection, setSearchCollection] = useState(""); 
   const [response, setResponse] = useState("");
   const [loading, setLoading] = useState(false);
-  const [annotateData, setAnnotateData] = useState(location.state?.annotateData || "");
+  const [annotateData, setAnnotateData] = useState(
+    location.state?.annotateData || ""
+  );
   const endOfMessagesRef = useRef(null);
   const [chatHistory, setChatHistory] = useState(() => {
     const storedHistory = sessionStorage.getItem("chatHistory");
@@ -99,6 +103,8 @@ const ArticlePage = () => {
   const [editedTitle, setEditedTitle] = useState("");
   const [articleTitle, setArticleTitle] = useState("");
   const [collections, setCollections] = useState([]);
+  const [showConfirmPopup, setShowConfirmPopup] = useState(false);
+  const [showConfirmIcon, setShowConfirmIcon] = useState(false);
 
   const fetchCollections = async () => {
     try {
@@ -129,7 +135,7 @@ const ArticlePage = () => {
       fetchCollections();
     }
   }, [user_id, token]);
-  
+
   const [currentid, setCurrentid] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newCollectionName, setNewCollectionName] = useState("");
@@ -207,7 +213,7 @@ const ArticlePage = () => {
 
   useEffect(() => {
     // Determine the source based on `type`
-    setAnnotateLoading(true)
+    setAnnotateLoading(true);
     // Perform GET request to fetch article data
     if (source && id) {
       const fetchArticleData = async () => {
@@ -222,7 +228,7 @@ const ArticlePage = () => {
           );
           const article = response.data; // Assuming response contains article data directly
           setArticleData(article);
-          setAnnotateLoading(false)
+          setAnnotateLoading(false);
           // Retrieve saved search term from session storage
           const savedTerm = sessionStorage.getItem("SearchTerm");
           setSearchTerm(savedTerm);
@@ -381,49 +387,50 @@ const ArticlePage = () => {
       console.error("Error saving rating:", error);
     }
   };
-
   const handleMouseUp = (event) => {
     if (!contentRef.current.contains(event.target)) {
-      return; // Exit if the selection is outside .article-content
+      return;
     }
 
     const selection = window.getSelection();
-
     if (selection.rangeCount > 0) {
       const range = selection.getRangeAt(0);
       const selectedText = selection.toString().trim();
 
       if (selectedText) {
-        const rect = range.getClientRects();
-        const lastRect = rect[rect.length - 1];
+        const rects = range.getClientRects();
+        const lastRect = rects[rects.length - 1];
+        if (lastRect) {
+          selectedTextRef.current = selectedText;
+          popupPositionRef.current = {
+            x: lastRect.right + window.scrollX,
+            y: lastRect.bottom + window.scrollY,
+          };
 
-        selectedTextRef.current = selectedText;
-        popupPositionRef.current = {
-          x: lastRect.right + window.scrollX,
-          y: lastRect.bottom + window.scrollY,
-        };
-
-        // Position the popup without triggering re-render
-        if (popupRef.current) {
-          popupRef.current.style.left = `${popupPositionRef.current.x}px`;
-          popupRef.current.style.top = `${popupPositionRef.current.y + 5}px`; // Adjust offset for better visibility
-          popupRef.current.style.display = "block"; // Show the popup
+          if (popupRef.current) {
+            popupRef.current.style.left = `${popupPositionRef.current.x}px`;
+            popupRef.current.style.top = `${popupPositionRef.current.y + 5}px`;
+            popupRef.current.style.display = "block";
+          }
+        } else {
+          if (popupRef.current) {
+            popupRef.current.style.display = "none";
+          }
         }
       } else {
         if (popupRef.current) {
-          popupRef.current.style.display = "none"; // Hide the popup if no selection
+          popupRef.current.style.display = "none";
         }
       }
     }
   };
 
-  const modalRef = useRef(null); // Ref for modal content
+  const modalRef = useRef(null);
 
-  // Handle clicks outside the modal to close it
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (modalRef.current && !modalRef.current.contains(event.target)) {
-        setIsModalOpen(false); // Close modal if clicked outside
+        setIsModalOpen(false);
       }
     };
 
@@ -434,30 +441,27 @@ const ArticlePage = () => {
     }
 
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside); // Clean up the event listener
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isModalOpen]);
 
   const isArticleBookmarked = (idType) => {
     const numericIdType = Number(idType);
-    
-    // Loop through each collection to check if the article is bookmarked
     for (const [collectionName, articleArray] of Object.entries(collections)) {
       const found = articleArray.some(
         (article) => Number(article.article_id) === numericIdType
       );
-  
+
       if (found) {
-        return { isBookmarked: true, collectionName }; // Return true with collection name
+        return { isBookmarked: true, collectionName };
       }
     }
-  
-    return { isBookmarked: false, collectionName: null }; // Not found in any collection
+    return { isBookmarked: false, collectionName: null };
   };
-  
+
   const handleBookmarkClick = async (idType, title, source) => {
     const { isBookmarked, collectionName } = isArticleBookmarked(idType);
-  
+
     if (isBookmarked) {
       try {
         const response = await axios.delete(
@@ -466,18 +470,20 @@ const ArticlePage = () => {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
-  
+
         if (response.status === 200) {
-          // Remove the bookmark from local collections state
           const updatedCollections = {
             ...collections,
             [collectionName]: collections[collectionName].filter(
               (article) => article.article_id !== String(idType)
             ),
           };
-  
+
           setCollections(updatedCollections);
-          localStorage.setItem("collections", JSON.stringify(updatedCollections));
+          localStorage.setItem(
+            "collections",
+            JSON.stringify(updatedCollections)
+          );
           toast.success("Bookmark deleted successfully", {
             position: "top-right",
             autoClose: 1000,
@@ -488,14 +494,13 @@ const ArticlePage = () => {
             progress: undefined,
             theme: "colored",
           });
-  
-          await fetchCollections(); // Refetch collections after successful deletion
+
+          await fetchCollections();
         }
       } catch (error) {
         console.error("Error deleting bookmark:", error);
       }
     } else {
-      // Open modal for adding bookmark
       setCurrentid(idType);
       setArticleTitle(title);
       setSource(source);
@@ -551,7 +556,7 @@ const ArticlePage = () => {
           theme: "colored",
         });
 
-        await fetchCollections(); // Refetch collections after successful addition
+        await fetchCollections();
 
         setIsModalOpen(false);
       }
@@ -566,7 +571,7 @@ const ArticlePage = () => {
       user_id,
       collection_name: newCollectionName,
       bookmark: {
-        article_id: String(currentid), // Convert to string
+        article_id: String(currentid),
         article_title: articleTitle,
         article_source: source,
       },
@@ -594,7 +599,7 @@ const ArticlePage = () => {
           progress: undefined,
           theme: "colored",
         });
-        await fetchCollections(); // Refetch collections after successful creation
+        await fetchCollections();
         setNewCollectionName("");
         setIsModalOpen(false);
       }
@@ -605,7 +610,7 @@ const ArticlePage = () => {
   };
 
   const handleSaveToNote = () => {
-    const textToSave = selectedTextRef.current; // Get the selected text from ref
+    const textToSave = selectedTextRef.current;
     if (textToSave) {
       setSavedText(textToSave);
       // You can save the text to notes or perform any other action here.
@@ -650,8 +655,8 @@ const ArticlePage = () => {
   const uniqueId = getid();
 
   useEffect(() => {
-    const articleContent = document.querySelector(".article-content");
-
+    const articleContent = document.querySelector(".meta");
+    console.log(articleContent)
     const handleScroll = () => {
       if (articleContent.scrollTop > 20) {
         document.getElementById("scrollTopBtn").style.display = "block"; // Show the button
@@ -674,7 +679,7 @@ const ArticlePage = () => {
   });
 
   function scrollToTop() {
-    const articleContent = document.querySelector(".article-content");
+    const articleContent = document.querySelector(".meta");
     if (articleContent) {
       articleContent.scrollTo({
         top: 0,
@@ -828,7 +833,6 @@ const ArticlePage = () => {
     }
   };
 
-
   const handlePromptClick = (queryText) => {
     setQuery(queryText);
     setTriggerAskClick(true);
@@ -846,8 +850,26 @@ const ArticlePage = () => {
   };
 
   const handleBackClick = () => {
+    const unsavedChanges = localStorage.getItem("unsavedChanges");
+    if (unsavedChanges === "true") {
+      setShowConfirmPopup(true);
+      //navigate(-1);
+    } else {
+      navigate(-1);
+    }
+    //localStorage.removeItem("unsavedChanges");
+    //navigate(-1);
+  };
+
+  const handleCancelConfirm = () => {
+    setShowConfirmPopup(false);
+  };
+  const handleOk = () => {
+    setShowConfirmPopup(false);
+    localStorage.removeItem("unsavedChanges");
     navigate(-1);
   };
+
   const handleNavigationClick = (section) => {
     setActiveSection(section);
   };
@@ -865,19 +887,18 @@ const ArticlePage = () => {
     // Replace the search term in the text with markdown bold syntax
     return text.replace(regex, "**$1**");
   };
-  console.log(annotateData)
+  console.log(annotateData);
   const handleAnnotate = () => {
     // Replace `desiredId` with the actual ID you want to match against
-    const matchingIdExists = annotateData && Object.prototype.hasOwnProperty.call(annotateData, id);
+    const matchingIdExists =
+      annotateData && Object.prototype.hasOwnProperty.call(annotateData, id);
     if ((!annotateData || !matchingIdExists) && !hasFetchedAnnotateData) {
-        handleAnnotateClick();
+      handleAnnotateClick();
     } else {
-        setOpenAnnotate((prevOpenAnnotate) => !prevOpenAnnotate); // Open immediately if matching ID is present
+      setOpenAnnotate((prevOpenAnnotate) => !prevOpenAnnotate); // Open immediately if matching ID is present
     }
-};
+  };
 
-
-  
   const handleAnnotateClick = async () => {
     // Define the request body according to source and id
     let requestBody = {};
@@ -888,7 +909,7 @@ const ArticlePage = () => {
     } else if (source === "plos" && id) {
       requestBody = { plos: [id] };
     }
-  
+
     setAnnotateLoading(true);
     try {
       const response = await axios.post(
@@ -900,7 +921,7 @@ const ArticlePage = () => {
           },
         }
       );
-  
+
       const data = response.data;
       setAnnotateData(data);
       setHasFetchedAnnotateData(true); // Set flag after successful fetch
@@ -911,18 +932,31 @@ const ArticlePage = () => {
       setAnnotateLoading(false);
     }
   };
-  
+
   // Optional: useEffect for clearing flag if needed, such as when sources change
   useEffect(() => {
     if (!annotateData) {
       setHasFetchedAnnotateData(false);
     }
   }, [annotateData, source, id]);
-  
-  
-  console.log(annotateData)
+
+  console.log(annotateData);
   const handleNotes = () => {
-    setOpenNotes((prevOpenNotes) => !prevOpenNotes);
+    const unsavedforIcon = localStorage.getItem("unsavedChanges");
+    if (unsavedforIcon === "true") {
+      setShowConfirmIcon(true);
+    } else {
+      setOpenNotes((prevOpenNotes) => !prevOpenNotes);
+    }
+    //localStorage.removeItem("unsavedChanges");
+  };
+  const handleCancelIcon = () => {
+    setShowConfirmIcon(false);
+  };
+  const handleCloseIcon = () => {
+    setShowConfirmIcon(false);
+    setOpenNotes(false);
+    localStorage.removeItem("unsavedChanges");
   };
 
   // Dynamically render the nested content in order, removing numbers, and using keys as side headings
@@ -945,7 +979,7 @@ const ArticlePage = () => {
       </div>
     );
   };
-  
+
   const renderContentInOrder = (content, isAbstract = false) => {
     const sortedKeys = Object.keys(content).sort(
       (a, b) => parseInt(a) - parseInt(b)
@@ -1048,29 +1082,28 @@ const ArticlePage = () => {
 
   useEffect(() => {
     const fetchSessions = async () => {
-        try {
-            const response = await axios.get(
-                `http://13.127.207.184:80/history/conversations/sessions/${user_id}`,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                }
-            );
-            if (response.data?.sessions) {
-                const sessionsData = response.data.sessions.reverse(); // Reverse the array order
-                setSessions(sessionsData); // Set the reversed sessions array to state
-            }
-        } catch (error) {
-            console.error("Error fetching chat history:", error);
+      try {
+        const response = await axios.get(
+          `http://13.127.207.184:80/history/conversations/sessions/${user_id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        if (response.data?.sessions) {
+          const sessionsData = response.data.sessions.reverse(); // Reverse the array order
+          setSessions(sessionsData); // Set the reversed sessions array to state
         }
+      } catch (error) {
+        console.error("Error fetching chat history:", error);
+      }
     };
 
     if (user_id && token) {
-        fetchSessions();
+      fetchSessions();
     }
-}, [user_id, token, refreshSessions]);
-
+  }, [user_id, token, refreshSessions]);
 
   // Edit functions
   const handleEditClick = (sessionId, title) => {
@@ -1126,7 +1159,6 @@ const ArticlePage = () => {
     } else {
       setShowStreamingSection(false); // Default to false if no stored chat history
     }
-
   }, [location.state]); // Add location.state as a dependency to re-run on navigation
 
   const handleSessionClick = async (article_id, source, session_id) => {
@@ -1195,7 +1227,7 @@ const ArticlePage = () => {
   return (
     <>
       <div className="container">
-      <Header style={{width:"100%"}}/>
+        <Header style={{ width: "100%" }} />
         {annotateLoading ? <Loading /> : ""}
         <div className="content" style={{ width: widthIfLoggedIn }}>
           <div
@@ -1299,6 +1331,17 @@ const ArticlePage = () => {
                     ></img>
                     <button className="back-button">Back</button>
                   </div>
+                  {showConfirmPopup && (
+                    <div className="Article-popup-overlay">
+                      <div className="Article-popup-content">
+                        <p>Are you sure you want to leave without saving?</p>
+                        <div className="Article-confirm-buttons">
+                          <button onClick={handleOk}>OK</button>
+                          <button onClick={handleCancelConfirm}>Cancel</button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                   <div
                     className="Rate-Article"
                     style={{ display: displayIfLoggedIn }}
@@ -1307,29 +1350,32 @@ const ArticlePage = () => {
                       <span>Rate the article </span>
                     </div>
                     <div className="rate">
-                    {[5, 4, 3, 2, 1].map((value) => {
-                      const existingRating = Array.isArray(ratingsList) &&
-                        ratingsList.find((item) => item.uniqueId === uniqueId)?.rating;
+                      {[5, 4, 3, 2, 1].map((value) => {
+                        const existingRating =
+                          Array.isArray(ratingsList) &&
+                          ratingsList.find((item) => item.uniqueId === uniqueId)
+                            ?.rating;
 
-                      return (
-                        <React.Fragment key={value}>
-                          <input
-                            type="radio"
-                            id={`star${value}-${uniqueId}`}
-                            name={`rate_${uniqueId}`}
-                            value={value}
-                            checked={existingRating === value}
-                            onChange={() => handleRatingChange(uniqueId, value)}
-                            disabled={!!existingRating} // Disable if a rating already exists
-                          />
-                          <label
-                            htmlFor={`star${value}-${uniqueId}`}
-                            title={`${value} star`}
-                          />
-                        </React.Fragment>
-                      );
-                    })}
-
+                        return (
+                          <React.Fragment key={value}>
+                            <input
+                              type="radio"
+                              id={`star${value}-${uniqueId}`}
+                              name={`rate_${uniqueId}`}
+                              value={value}
+                              checked={existingRating === value}
+                              onChange={() =>
+                                handleRatingChange(uniqueId, value)
+                              }
+                              disabled={!!existingRating} // Disable if a rating already exists
+                            />
+                            <label
+                              htmlFor={`star${value}-${uniqueId}`}
+                              title={`${value} star`}
+                            />
+                          </React.Fragment>
+                        );
+                      })}
                     </div>
                   </div>
                 </div>
@@ -1346,95 +1392,97 @@ const ArticlePage = () => {
                     {articleData.article.article_title}
                   </p>
                   <FontAwesomeIcon
-  icon={isArticleBookmarked(id).isBookmarked ? solidBookmark : regularBookmark}
-  size="l"
-  style={{
-    color: isArticleBookmarked(id).isBookmarked ? "#0071bc" : "black",
-    cursor: "pointer",
-    display: displayIfLoggedIn,
-  }}
-  onClick={() =>
-    handleBookmarkClick(
-      id,
-      articleData.article.article_title,
-      source || "PubMed"
-    )
-  }
-  title={
-    isArticleBookmarked(id).isBookmarked
-      ? "Bookmarked"
-      : "Bookmark this article"
-  }
-/>
+                    icon={
+                      isArticleBookmarked(id).isBookmarked
+                        ? solidBookmark
+                        : regularBookmark
+                    }
+                    size="l"
+                    style={{
+                      color: isArticleBookmarked(id).isBookmarked
+                        ? "#0071bc"
+                        : "black",
+                      cursor: "pointer",
+                      display: displayIfLoggedIn,
+                    }}
+                    onClick={() =>
+                      handleBookmarkClick(
+                        id,
+                        articleData.article.article_title,
+                        source || "PubMed"
+                      )
+                    }
+                    title={
+                      isArticleBookmarked(id).isBookmarked
+                        ? "Bookmarked"
+                        : "Bookmark this article"
+                    }
+                  />
 
 {isModalOpen && (
-                                <div className="bookmark-modal-overlay">
-                                  <div className="modal-content" ref={modalRef}>
-                                    {/* Existing Collections */}
+  <div className="bookmark-modal-overlay">
+    <div className="modal-content" ref={modalRef}>
+      {/* Existing Collections */}
 
-                                    {/* Create New Collection */}
-                                    <h4>Create a new collection:</h4>
-                                    <input
-                                      type="text"
-                                      value={newCollectionName}
-                                      onChange={(e) =>
-                                        setNewCollectionName(e.target.value)
-                                      }
-                                      placeholder="New collection name"
-                                      />
-                                    <div
-                                      style={{ display: "flex", gap: "20px",marginBottom:"15px" }}
-                                      >
-                                      <button
-                                        onClick={handleCreateNewCollection}
-                                        disabled={!newCollectionName}
-                                        >
-                                        Create
-                                      </button>
+      {/* Create New Collection */}
+      <h4>Create a new collection:</h4>
+      <input
+        type="text"
+        value={newCollectionName}
+        onChange={(e) => setNewCollectionName(e.target.value)}
+        placeholder="New collection name"
+      />
+      <div
+        style={{ display: "flex", gap: "20px", marginBottom: "15px" }}
+      >
+        <button
+          onClick={handleCreateNewCollection}
+          disabled={!newCollectionName}
+        >
+          Create
+        </button>
+      </div>
 
-                                      {/* <button
-                                        onClick={() => setIsModalOpen(false)}
-                                        >
-                                        Cancel
-                                      </button> */}
-                                    </div>
-                                    
-                                  {Object.keys(collections).length > 0 && (
-                                    <>
-                                      <h4>Save to existing collection:</h4>
-                                      <ul className="bookmark-existing-collections">
-                                        {Object.keys(collections).map(
-                                          (collectionName, index) => (
-                                            <ul key={index}>
-                                              
-                                              {/* using index as key since collection names are unique */}
-                                              <li onClick={() =>
-                                                  handleSaveToExisting(
-                                                    collectionName
-                                                  )
-                                                }><span className="collection-name">{collectionName}</span>
-                                                <span className="collection-article-count">
-                                                  {collections[collectionName].length} articles
-                                                </span>
-                                                </li>
-                                              {/* <button
-                                                onClick={() =>
-                                                  handleSaveToExisting(
-                                                    collectionName
-                                                  )
-                                                }
-                                              >
-                                                {collectionName}
-                                              </button> */}
-                                            </ul>
-                                          )
-                                        )}
-                                      </ul>
-                                    </>
-                                  )}
-                                  </div>
-                                </div>
-                              )}
+      {Object.keys(collections).length > 0 && (
+        <>
+          <h4>Save to existing collection:</h4>
+
+          {/* Search bar for collections */}
+          <input
+
+            type="text"
+            value={searchCollection}
+            onChange={(e) => setSearchCollection(e.target.value)}
+            placeholder="Search collections"
+            style={{ marginBottom: "10px", padding: "8px 0 8px 8px" }}
+          />
+
+          {/* Filter collections based on search term */}
+          <ul className="bookmark-existing-collections">
+            {Object.keys(collections)
+              .filter((collectionName) =>
+                collectionName
+                  .toLowerCase()
+                  .includes(searchCollection.toLowerCase())
+              )
+              .map((collectionName, index) => (
+                <ul key={index}>
+                  <li
+                    onClick={() => handleSaveToExisting(collectionName)}
+                  >
+                    <span className="collection-name">{collectionName}</span>
+                    <span className="collection-article-count">
+                      {collections[collectionName].length} articles
+                    </span>
+                  </li>
+                </ul>
+              ))}
+          </ul>
+        </>
+      )}
+    </div>
+  </div>
+)}
                 </div>
               </div>
 
@@ -1606,7 +1654,10 @@ const ArticlePage = () => {
                   style={{ height: `${notesHeight}vh` }}
                 >
                   <Notes selectedText={savedText} notesHeight={notesHeight} />
-                  <div className="notes-line1" />
+                  <div
+                    className="notes-line1"
+                    onMouseDown={handleNotesResize}
+                  />
                   <div
                     className="notes-line2"
                     onMouseDown={handleNotesResize}
@@ -1619,11 +1670,8 @@ const ArticlePage = () => {
                 className={`search-annotate-icon ${
                   openAnnotate ? "open" : "closed"
                 }`}
-                onClick={
-                 handleAnnotate
-                }
+                onClick={handleAnnotate}
                 style={{
-                  
                   opacity: annotateData && annotateData.length > 0 ? 1 : 1, // Adjust visibility when disabled
                 }}
               >
@@ -1633,20 +1681,30 @@ const ArticlePage = () => {
                 className={`notes-icon ${openNotes ? "open" : "closed"}`}
                 onClick={() => {
                   handleNotes();
-                  // handleResize();
                 }}
               >
                 <img src={notesicon} alt="notes-icon" />
               </div>
+              {showConfirmIcon && (
+                <div className="Article-popup-overlay">
+                  <div className="Article-popup-content">
+                    <p>Are you sure you want to leave without saving?</p>
+                    <div className="Article-confirm-buttons">
+                      <button onClick={handleCloseIcon}>OK</button>
+                      <button onClick={handleCancelIcon}>Cancel</button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
       </div>
 
       <div
-        className="chat-query"
+        className="article-chat-query"
         style={{
-          width: openNotes ? contentWidth : "69%",
+          width: openAnnotate || openNotes ? contentWidth : "69%",
           display: displayIfLoggedIn,
         }}
       >

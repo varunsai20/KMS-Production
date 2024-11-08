@@ -4,7 +4,7 @@
   flex-direction: column;
   place-items: center;
 }
-.ArticlePage_Header{
+.ArticlePage_Header {
   width: 100%;
 }
 .header {
@@ -78,13 +78,12 @@
   width: 92.91%;
   display: flex;
 
-  margin: 0 1% .5% 1%;
-  margin-top: 0;
+  margin: 1%;
   color: #333;
 }
 .history-pagination {
   margin-left: 1%;
-  width: 20%; 
+  width: 20%;
   padding: 27px, 0px, 27px, 0px;
   /* height: 70vh; */
   max-height: 700px;
@@ -97,16 +96,15 @@
 
 .article-content {
   width: 43.61%;
-  height: 70vh;
+  height: 67vh;
   /* max-height: 300px; */
-  /* overflow-y: auto; */
-  overflow-y: hidden;
+  overflow-y: auto;
   text-align: start;
-  margin: 0% .5%;
+  margin: 0% 1%;
   gap: 28px;
   border-radius: 20px;
   flex: 1;
-  /* padding: 0 20px 20px 20px; */
+  padding: 0 20px 20px 20px;
   border: 1px solid rgba(235, 235, 243, 1);
 }
 .article-title {
@@ -117,20 +115,13 @@
   font-size: 16px;
   position: sticky;
   top: 0;
-  z-index: 1;
+  /* z-index: 1000; */
   background: #fff;
   padding-bottom: 10px;
-  border-radius: 20px;
-  padding: 0 20px 10px 20px;
 }
 .content-brake {
   border: 1px solid #97b0c8;
   margin-bottom: 2%;
-}
-.meta{
-  height: 55vh;
-  overflow-y: auto;
-  padding-left: 20px;
 }
 .article-content .meta p {
   font-weight: 600;
@@ -283,7 +274,7 @@
 .custom-bold {
   font-weight: 900; /* Increase the boldness */
 }
-.article-chat-query {
+.chat-query {
   position: absolute;
   /* bottom: 10px; */
   left: 24%;
@@ -396,7 +387,7 @@
   position: absolute;
   bottom: 1px;
   left: 50%;
-  width: 17px;
+  width: 20px;
   height: 1px;
   cursor: ns-resize;
   background-color: black;
@@ -413,17 +404,17 @@
   position: absolute;
   top: 3px;
   left: 50%;
-  width: 17px;
+  width: 20px;
   height: 1px;
   background-color: black;
-  transform: translateX(-50%);
   cursor: ns-resize;
+  transform: translateX(-50%);
 }
 .notes-line2 {
   position: absolute;
   top: 0;
   left: 50%;
-  width: 29px;
+  width: 30px;
   height: 1px;
   cursor: ns-resize;
   background-color: black;
@@ -432,7 +423,6 @@
 .icons-group {
   display: flex;
   flex-direction: column;
-  gap: 2px;
 }
 .annotate-icon {
   border: 1px solid rgba(235, 235, 243, 1);
