@@ -37,8 +37,8 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   const contentRightRef = useRef(null); // Ref for searchContent-right
   const [result, setResults] = useState();
   const [loading, setLoading] = useState(false);
-
-  const [selectedArticles, setSelectedArticles] = useState([]);
+  const [searchCollection, setSearchCollection] = useState(""); 
+    const [selectedArticles, setSelectedArticles] = useState([]);
   const [bioRxivArticles, setBioRxivArticles] = useState([]);
   const [plosArticles, setPlosArticles] = useState([]);
   const totalArticles = useMemo(() => {
@@ -120,7 +120,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   //const handleCloseEmailModal = () => setIsEmailModalOpen(false);
   const [email, setEmail] = useState();
   const [emailSubject, setEmailSubject] = useState();
-
+    
   const [newCollectionName, setNewCollectionName] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageInput, setPageInput] = useState(1); // Separate state for the page input
@@ -1349,7 +1349,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       </label>
 
       {selectedDateRange === "custom" && (
-        <div className="custom-date-range">
+        <div className="custom-date-range custom-date-input">
           <label>
             Start Date:
             <input
@@ -1468,7 +1468,19 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                       )}
                     </div>
                   </div>
-
+                  <div
+                    className="SearchResult-Option-Left"
+                    style={{
+                      cursor: selectedArticles.length > 0 ? "pointer" : "",
+                      opacity: selectedArticles.length > 0 ? 1 : "", // Change opacity for a disabled effect
+                      display: displayIfLoggedIn,
+                    }}
+                    title={
+                      selectedArticles.length === 0
+                        ? "Select an article to share"
+                        : "Share selected articles"
+                    }
+                  >  
                   <button
                     style={{ display: displayIfLoggedIn }}
                     onClick={
@@ -1489,6 +1501,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                   >
                     Share
                   </button>
+                  </div>  
                   {/* <button
                     style={{ display: displayIfLoggedIn }}
                     className="SearchResult-Save"
@@ -1725,74 +1738,71 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   }
 />
 
-                              {isModalOpen && (
-                                <div className="bookmark-modal-overlay">
-                                  <div className="modal-content" ref={modalRef}>
-                                    {/* Existing Collections */}
+{isModalOpen && (
+  <div className="bookmark-modal-overlay">
+    <div className="modal-content" ref={modalRef}>
+      {/* Existing Collections */}
 
-                                    {/* Create New Collection */}
-                                    <h4>Create a new collection:</h4>
-                                    <input
-                                      type="text"
-                                      value={newCollectionName}
-                                      onChange={(e) =>
-                                        setNewCollectionName(e.target.value)
-                                      }
-                                      placeholder="New collection name"
-                                      />
-                                    <div
-                                      style={{ display: "flex", gap: "20px",marginBottom:"15px" }}
-                                      >
-                                      <button
-                                        onClick={handleCreateNewCollection}
-                                        disabled={!newCollectionName}
-                                        >
-                                        Create
-                                      </button>
+      {/* Create New Collection */}
+      <h4>Create a new collection:</h4>
+      <input
+        type="text"
+        value={newCollectionName}
+        onChange={(e) => setNewCollectionName(e.target.value)}
+        placeholder="New collection name"
+      />
+      <div
+        style={{ display: "flex", gap: "20px", marginBottom: "15px" }}
+      >
+        <button
+          onClick={handleCreateNewCollection}
+          disabled={!newCollectionName}
+        >
+          Create
+        </button>
+      </div>
 
-                                      {/* <button
-                                        onClick={() => setIsModalOpen(false)}
-                                        >
-                                        Cancel
-                                      </button> */}
-                                    </div>
-                                    
-                                  {Object.keys(collections).length > 0 && (
-                                    <>
-                                      <h4>Save to existing collection:</h4>
-                                      <ul className="bookmark-existing-collections">
-                                        {Object.keys(collections).map(
-                                          (collectionName, index) => (
-                                            <ul key={index}>
-                                              
-                                              {/* using index as key since collection names are unique */}
-                                              <li onClick={() =>
-                                                  handleSaveToExisting(
-                                                    collectionName
-                                                  )
-                                                }><span className="collection-name">{collectionName}</span>
-                                                <span className="collection-article-count">
-                                                  {collections[collectionName].length} articles
-                                                </span>
-                                                </li>
-                                              {/* <button
-                                                onClick={() =>
-                                                  handleSaveToExisting(
-                                                    collectionName
-                                                  )
-                                                }
-                                              >
-                                                {collectionName}
-                                              </button> */}
-                                            </ul>
-                                          )
-                                        )}
-                                      </ul>
-                                    </>
-                                  )}
-                                  </div>
-                                </div>
-                              )}
+      {Object.keys(collections).length > 0 && (
+        <>
+          <h4>Save to existing collection:</h4>
+
+          {/* Search bar for collections */}
+          <input
+
+            type="text"
+            value={searchCollection}
+            onChange={(e) => setSearchCollection(e.target.value)}
+            placeholder="Search collections"
+            style={{ marginBottom: "10px", padding: "8px 0 8px 8px" }}
+          />
+
+          {/* Filter collections based on search term */}
+          <ul className="bookmark-existing-collections">
+            {Object.keys(collections)
+              .filter((collectionName) =>
+                collectionName
+                  .toLowerCase()
+                  .includes(searchCollection.toLowerCase())
+              )
+              .map((collectionName, index) => (
+                <ul key={index}>
+                  <li
+                    onClick={() => handleSaveToExisting(collectionName)}
+                  >
+                    <span className="collection-name">{collectionName}</span>
+                    <span className="collection-article-count">
+                      {collections[collectionName].length} articles
+                    </span>
+                  </li>
+                </ul>
+              ))}
+          </ul>
+        </>
+      )}
+    </div>
+  </div>
+)}
+
                               {isEmailModalOpen && (
                                 <div
                                   className="email-modal-overlay"

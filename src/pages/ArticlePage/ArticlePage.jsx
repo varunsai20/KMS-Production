@@ -55,6 +55,7 @@ const ArticlePage = () => {
   const [articleData, setArticleData] = useState(null);
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
+  const [searchCollection, setSearchCollection] = useState(""); 
   const [response, setResponse] = useState("");
   const [loading, setLoading] = useState(false);
   const [annotateData, setAnnotateData] = useState(
@@ -654,8 +655,8 @@ const ArticlePage = () => {
   const uniqueId = getid();
 
   useEffect(() => {
-    const articleContent = document.querySelector(".article-content");
-
+    const articleContent = document.querySelector(".meta");
+    console.log(articleContent)
     const handleScroll = () => {
       if (articleContent.scrollTop > 20) {
         document.getElementById("scrollTopBtn").style.display = "block"; // Show the button
@@ -678,7 +679,7 @@ const ArticlePage = () => {
   });
 
   function scrollToTop() {
-    const articleContent = document.querySelector(".article-content");
+    const articleContent = document.querySelector(".meta");
     if (articleContent) {
       articleContent.scrollTo({
         top: 0,
@@ -1418,79 +1419,70 @@ const ArticlePage = () => {
                     }
                   />
 
-                  {isModalOpen && (
-                    <div className="bookmark-modal-overlay">
-                      <div className="modal-content" ref={modalRef}>
-                        {/* Existing Collections */}
+{isModalOpen && (
+  <div className="bookmark-modal-overlay">
+    <div className="modal-content" ref={modalRef}>
+      {/* Existing Collections */}
 
-                        {/* Create New Collection */}
-                        <h4>Create a new collection:</h4>
-                        <input
-                          type="text"
-                          value={newCollectionName}
-                          onChange={(e) => setNewCollectionName(e.target.value)}
-                          placeholder="New collection name"
-                        />
-                        <div
-                          style={{
-                            display: "flex",
-                            gap: "20px",
-                            marginBottom: "15px",
-                          }}
-                        >
-                          <button
-                            onClick={handleCreateNewCollection}
-                            disabled={!newCollectionName}
-                          >
-                            Create
-                          </button>
+      {/* Create New Collection */}
+      <h4>Create a new collection:</h4>
+      <input
+        type="text"
+        value={newCollectionName}
+        onChange={(e) => setNewCollectionName(e.target.value)}
+        placeholder="New collection name"
+      />
+      <div
+        style={{ display: "flex", gap: "20px", marginBottom: "15px" }}
+      >
+        <button
+          onClick={handleCreateNewCollection}
+          disabled={!newCollectionName}
+        >
+          Create
+        </button>
+      </div>
 
-                          {/* <button
-                                        onClick={() => setIsModalOpen(false)}
-                                        >
-                                        Cancel
-                                      </button> */}
-                        </div>
+      {Object.keys(collections).length > 0 && (
+        <>
+          <h4>Save to existing collection:</h4>
 
-                        {Object.keys(collections).length > 0 && (
-                          <>
-                            <h4>Save to existing collection:</h4>
-                            <ul className="bookmark-existing-collections">
-                              {Object.keys(collections).map(
-                                (collectionName, index) => (
-                                  <ul key={index}>
-                                    {/* using index as key since collection names are unique */}
-                                    <li
-                                      onClick={() =>
-                                        handleSaveToExisting(collectionName)
-                                      }
-                                    >
-                                      <span className="collection-name">
-                                        {collectionName}
-                                      </span>
-                                      <span className="collection-article-count">
-                                        {collections[collectionName].length}{" "}
-                                        articles
-                                      </span>
-                                    </li>
-                                    {/* <button
-                                                onClick={() =>
-                                                  handleSaveToExisting(
-                                                    collectionName
-                                                  )
-                                                }
-                                              >
-                                                {collectionName}
-                                              </button> */}
-                                  </ul>
-                                )
-                              )}
-                            </ul>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  )}
+          {/* Search bar for collections */}
+          <input
+
+            type="text"
+            value={searchCollection}
+            onChange={(e) => setSearchCollection(e.target.value)}
+            placeholder="Search collections"
+            style={{ marginBottom: "10px", padding: "8px 0 8px 8px" }}
+          />
+
+          {/* Filter collections based on search term */}
+          <ul className="bookmark-existing-collections">
+            {Object.keys(collections)
+              .filter((collectionName) =>
+                collectionName
+                  .toLowerCase()
+                  .includes(searchCollection.toLowerCase())
+              )
+              .map((collectionName, index) => (
+                <ul key={index}>
+                  <li
+                    onClick={() => handleSaveToExisting(collectionName)}
+                  >
+                    <span className="collection-name">{collectionName}</span>
+                    <span className="collection-article-count">
+                      {collections[collectionName].length} articles
+                    </span>
+                  </li>
+                </ul>
+              ))}
+          </ul>
+        </>
+      )}
+    </div>
+  </div>
+)}
                 </div>
               </div>
 
@@ -1712,7 +1704,7 @@ const ArticlePage = () => {
       <div
         className="chat-query"
         style={{
-          width: openNotes ? contentWidth : "69%",
+          width: openAnnotate || openNotes ? contentWidth : "69%",
           display: displayIfLoggedIn,
         }}
       >

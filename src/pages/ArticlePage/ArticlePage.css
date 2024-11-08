@@ -96,15 +96,15 @@
 
 .article-content {
   width: 43.61%;
-  height: 67vh;
+  height: 70vh;
   /* max-height: 300px; */
-  overflow-y: auto;
+  /* overflow-y: auto; */
   text-align: start;
-  margin: 0% 1%;
+  margin: 0% .5%;
   gap: 28px;
   border-radius: 20px;
   flex: 1;
-  padding: 0 20px 20px 20px;
+  /* padding: 0 20px 20px 20px; */
   border: 1px solid rgba(235, 235, 243, 1);
 }
 .article-title {
@@ -118,10 +118,17 @@
   z-index: 1;
   background: #fff;
   padding-bottom: 10px;
+  border-radius: 20px;
+  padding: 0 20px 10px 20px;
 }
 .content-brake {
   border: 1px solid #97b0c8;
   margin-bottom: 2%;
+}
+.meta{
+  height: 55vh;
+  overflow-y: auto;
+  padding-left: 20px;
 }
 .article-content .meta p {
   font-weight: 600;
@@ -409,6 +416,7 @@
   background-color: black;
   cursor: ns-resize;
   transform: translateX(-50%);
+  cursor: ns-resize;
 }
 .notes-line2 {
   position: absolute;
