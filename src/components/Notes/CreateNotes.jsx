@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
-//import useCreateDate from "./UseCreateDate";
 import { HiOutlineMenuAlt1 } from "react-icons/hi";
 import { IoCloseOutline } from "react-icons/io5";
-//import { RiDeleteBin6Line } from "react-icons/ri";
 import { RxDotsHorizontal } from "react-icons/rx";
 import Button from "../Buttons";
 import { FiBold, FiUnderline } from "react-icons/fi";
@@ -13,8 +11,6 @@ import DOMPurify from "dompurify";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import { MdEmail } from "react-icons/md";
-//import { IoCopyOutline } from "react-icons/io5";
-//import { CgNotes } from "react-icons/cg";
 import "./CreateNote.css";
 import ConfirmSave from "../../utils/ConfirmSave";
 import { toast } from "react-toastify";
@@ -205,37 +201,30 @@ const Createnotes = ({
     e.preventDefault();
     const noteContent = editorRef.current.innerHTML;
     if (!title.trim()) {
-      // If title is empty, set error message and exit function
       setTitleError("Add title to save");
       return;
     } else {
-      setTitleError(""); // Clear error if title is provided
+      setTitleError("");
     }
-
-    // if (title && noteContent && noteContent !== "Take your note...") {
-    //   const note = { title, content: noteContent };
     const note = {
       title: title || noteContent.slice(0, 25) || "Untitled Note",
       content: noteContent,
     };
 
     try {
-      // Post the note to the server
       const response = await axios.post(
         "http://13.127.207.184:80/notes/createnote",
         {
-          user_id, // Ensure `user_id` is defined and available in your component
+          user_id,
           title: note.title,
           content: note.content,
         },
         {
           headers: {
-            Authorization: `Bearer ${token}`, // Ensure `token` is defined
+            Authorization: `Bearer ${token}`,
           },
         }
       );
-
-      // Add this note to the notes array
       if (response.status === 201) {
         setNotes((prevNotes) => [note, ...prevNotes]);
         toast.success("Notes Saved Successfully", {
@@ -279,10 +268,9 @@ const Createnotes = ({
 
   const confirmDelete = (e) => {
     if (note && note.id) {
-      // Check if the note and its ID are valid
-      onDelete(note.id); // Call the onDelete handler with the note ID
+      onDelete(note.id);
     }
-    setShowConfirmDelete(false); // Close confirmation popup
+    setShowConfirmDelete(false);
   };
 
   const cancelDelete = (e) => {
@@ -333,14 +321,6 @@ const Createnotes = ({
                   />
                   <span>Notes List</span>
                 </button>
-                {/* <button
-                  // onClick={handleDeleteNotes}
-                  onClick={initiateDelete}
-                  className="dropdown-button-deletenotes"
-                >
-                  <RiDeleteBin6Line style={{ marginRight: "5px" }} /> Delete
-                  Notes
-                </button> */}
                 {showConfirmDelete && (
                   <div className="confirm-overlay">
                     <div className="confirm-popup">
@@ -461,10 +441,7 @@ const Createnotes = ({
             textAlign: "start",
             overflowY: "auto",
           }}
-        >
-          {/* Placeholder logic can be enhanced if needed */}
-          {/* Note details */}
-        </div>
+        ></div>
       </form>
 
       {/* Feedback Message */}
@@ -527,15 +504,6 @@ const Createnotes = ({
         >
           <BsListOl size={20} />
         </button>
-        {/* Share Button */}
-        {/* <button
-          onClick={handleShare}
-          title="Share"
-          className="share-button"
-          aria-label="Share Note"
-        >
-          <IoShareSocial size={20} />
-        </button> */}
       </div>
 
       {/* Share Modal */}

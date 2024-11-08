@@ -19,21 +19,26 @@ const NotesList = ({
 }) => {
   const [filteredNotes, setFilteredNotes] = useState(notes);
 
- useEffect(() => {
-  // Filter and sort notes based on last_updated_at
-  if (filterText.trim() === "") {
-    setFilteredNotes([...notes].sort((a, b) => new Date(b.last_updated_at) - new Date(a.last_updated_at)));
-  } else {
-    setFilteredNotes(
-      notes
-        .filter((note) => 
-          note.title.toLowerCase().includes(filterText.toLowerCase())
+  useEffect(() => {
+    // Filter and sort notes based on last_updated_at
+    if (filterText.trim() === "") {
+      setFilteredNotes(
+        [...notes].sort(
+          (a, b) => new Date(b.last_updated_at) - new Date(a.last_updated_at)
         )
-        .sort((a, b) => new Date(b.last_updated_at) - new Date(a.last_updated_at))
-    );
-  }
-}, [filterText, notes]);
-
+      );
+    } else {
+      setFilteredNotes(
+        notes
+          .filter((note) =>
+            note.title.toLowerCase().includes(filterText.toLowerCase())
+          )
+          .sort(
+            (a, b) => new Date(b.last_updated_at) - new Date(a.last_updated_at)
+          )
+      );
+    }
+  }, [filterText, notes]);
 
   const handleSearch = (e) => {
     setFilterText(e.target.value);
@@ -54,13 +59,12 @@ const NotesList = ({
           >
             <LuPlus />
           </button>
-          <button
-            className="close-notes-in"
-            onClick={oncloseNotes}
-            style={{ zIndex: 1 }}
-          >
-            <IoCloseOutline size={30} color="white" />
-          </button>
+          {isOpenNotes && (
+            <button onClick={oncloseNotes} style={{ zIndex: 1 }}>
+              <IoCloseOutline size={30} color="white" />
+            </button>
+          )}
+
           <div className={isOpenNotes ? "lander-p" : "note-p"}>
             <p id="p">Notes</p>
           </div>
