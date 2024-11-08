@@ -4,7 +4,6 @@ import { useSelector, useDispatch } from "react-redux";
 import { useParams, useLocation } from "react-router-dom";
 import "./ArticlePage.css";
 import Loading from "../../components/Loading";
-import Button from "../../components/Buttons";
 import { Typography } from "@mui/material";
 import flag from "../../assets/images/flash.svg";
 import Arrow from "../../assets/images/back-arrow.svg";
@@ -388,49 +387,50 @@ const ArticlePage = () => {
       console.error("Error saving rating:", error);
     }
   };
-
   const handleMouseUp = (event) => {
     if (!contentRef.current.contains(event.target)) {
-      return; // Exit if the selection is outside .article-content
+      return;
     }
 
     const selection = window.getSelection();
-
     if (selection.rangeCount > 0) {
       const range = selection.getRangeAt(0);
       const selectedText = selection.toString().trim();
 
       if (selectedText) {
-        const rect = range.getClientRects();
-        const lastRect = rect[rect.length - 1];
+        const rects = range.getClientRects();
+        const lastRect = rects[rects.length - 1];
+        if (lastRect) {
+          selectedTextRef.current = selectedText;
+          popupPositionRef.current = {
+            x: lastRect.right + window.scrollX,
+            y: lastRect.bottom + window.scrollY,
+          };
 
-        selectedTextRef.current = selectedText;
-        popupPositionRef.current = {
-          x: lastRect.right + window.scrollX,
-          y: lastRect.bottom + window.scrollY,
-        };
-
-        // Position the popup without triggering re-render
-        if (popupRef.current) {
-          popupRef.current.style.left = `${popupPositionRef.current.x}px`;
-          popupRef.current.style.top = `${popupPositionRef.current.y + 5}px`; // Adjust offset for better visibility
-          popupRef.current.style.display = "block"; // Show the popup
+          if (popupRef.current) {
+            popupRef.current.style.left = `${popupPositionRef.current.x}px`;
+            popupRef.current.style.top = `${popupPositionRef.current.y + 5}px`;
+            popupRef.current.style.display = "block";
+          }
+        } else {
+          if (popupRef.current) {
+            popupRef.current.style.display = "none";
+          }
         }
       } else {
         if (popupRef.current) {
-          popupRef.current.style.display = "none"; // Hide the popup if no selection
+          popupRef.current.style.display = "none";
         }
       }
     }
   };
 
-  const modalRef = useRef(null); // Ref for modal content
+  const modalRef = useRef(null);
 
-  // Handle clicks outside the modal to close it
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (modalRef.current && !modalRef.current.contains(event.target)) {
-        setIsModalOpen(false); // Close modal if clicked outside
+        setIsModalOpen(false);
       }
     };
 
@@ -441,25 +441,22 @@ const ArticlePage = () => {
     }
 
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside); // Clean up the event listener
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isModalOpen]);
 
   const isArticleBookmarked = (idType) => {
     const numericIdType = Number(idType);
-
-    // Loop through each collection to check if the article is bookmarked
     for (const [collectionName, articleArray] of Object.entries(collections)) {
       const found = articleArray.some(
         (article) => Number(article.article_id) === numericIdType
       );
 
       if (found) {
-        return { isBookmarked: true, collectionName }; // Return true with collection name
+        return { isBookmarked: true, collectionName };
       }
     }
-
-    return { isBookmarked: false, collectionName: null }; // Not found in any collection
+    return { isBookmarked: false, collectionName: null };
   };
 
   const handleBookmarkClick = async (idType, title, source) => {
@@ -475,7 +472,6 @@ const ArticlePage = () => {
         );
 
         if (response.status === 200) {
-          // Remove the bookmark from local collections state
           const updatedCollections = {
             ...collections,
             [collectionName]: collections[collectionName].filter(
@@ -499,13 +495,12 @@ const ArticlePage = () => {
             theme: "colored",
           });
 
-          await fetchCollections(); // Refetch collections after successful deletion
+          await fetchCollections();
         }
       } catch (error) {
         console.error("Error deleting bookmark:", error);
       }
     } else {
-      // Open modal for adding bookmark
       setCurrentid(idType);
       setArticleTitle(title);
       setSource(source);
@@ -561,7 +556,7 @@ const ArticlePage = () => {
           theme: "colored",
         });
 
-        await fetchCollections(); // Refetch collections after successful addition
+        await fetchCollections();
 
         setIsModalOpen(false);
       }
@@ -576,7 +571,7 @@ const ArticlePage = () => {
       user_id,
       collection_name: newCollectionName,
       bookmark: {
-        article_id: String(currentid), // Convert to string
+        article_id: String(currentid),
         article_title: articleTitle,
         article_source: source,
       },
@@ -604,7 +599,7 @@ const ArticlePage = () => {
           progress: undefined,
           theme: "colored",
         });
-        await fetchCollections(); // Refetch collections after successful creation
+        await fetchCollections();
         setNewCollectionName("");
         setIsModalOpen(false);
       }
@@ -615,7 +610,7 @@ const ArticlePage = () => {
   };
 
   const handleSaveToNote = () => {
-    const textToSave = selectedTextRef.current; // Get the selected text from ref
+    const textToSave = selectedTextRef.current;
     if (textToSave) {
       setSavedText(textToSave);
       // You can save the text to notes or perform any other action here.
@@ -862,7 +857,7 @@ const ArticlePage = () => {
     } else {
       navigate(-1);
     }
-    localStorage.removeItem("unsavedChanges");
+    //localStorage.removeItem("unsavedChanges");
     //navigate(-1);
   };
 
@@ -871,6 +866,7 @@ const ArticlePage = () => {
   };
   const handleOk = () => {
     setShowConfirmPopup(false);
+    localStorage.removeItem("unsavedChanges");
     navigate(-1);
   };
 
@@ -952,7 +948,7 @@ const ArticlePage = () => {
     } else {
       setOpenNotes((prevOpenNotes) => !prevOpenNotes);
     }
-    localStorage.removeItem("unsavedChanges");
+    //localStorage.removeItem("unsavedChanges");
   };
   const handleCancelIcon = () => {
     setShowConfirmIcon(false);
@@ -960,6 +956,7 @@ const ArticlePage = () => {
   const handleCloseIcon = () => {
     setShowConfirmIcon(false);
     setOpenNotes(false);
+    localStorage.removeItem("unsavedChanges");
   };
 
   // Dynamically render the nested content in order, removing numbers, and using keys as side headings
@@ -1657,7 +1654,10 @@ const ArticlePage = () => {
                   style={{ height: `${notesHeight}vh` }}
                 >
                   <Notes selectedText={savedText} notesHeight={notesHeight} />
-                  <div className="notes-line1" />
+                  <div
+                    className="notes-line1"
+                    onMouseDown={handleNotesResize}
+                  />
                   <div
                     className="notes-line2"
                     onMouseDown={handleNotesResize}

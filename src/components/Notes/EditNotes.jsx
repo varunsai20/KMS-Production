@@ -303,12 +303,12 @@ const Editnotes = ({
     }
   };
 
-  const handleBlur = () => {
-    if (editorRef.current.innerText.trim() === "") {
-      setIsPlaceholderVisible(true);
-      editorRef.current.innerHTML = "Take your note...";
-    }
-  };
+  // const handleBlur = () => {
+  //   if (editorRef.current.innerText.trim() === "") {
+  //     setIsPlaceholderVisible(true);
+  //     editorRef.current.innerHTML = "Take your note...";
+  //   }
+  // };
 
   const handleFormat = (command) => {
     document.execCommand(command, false, null);
@@ -380,15 +380,10 @@ const Editnotes = ({
             className="save-in-edit"
             style={{ display: "flex", gap: "3px", alignItems: "center" }}
           >
-            {/* <CgNotes size={16} /> */}
-            {/* <IoSaveOutline size={20} /> */}
             <BiSave size={25} color="#1a82ff" />
             {/* <span>save</span> */}
           </div>
         </button>
-        {/* <button className="edit-delete-button" onClick={handleDelete}>
-          <RiDeleteBin6Line />
-        </button> */}
       </header>
       <form
         className="edit-note__form"
@@ -417,10 +412,10 @@ const Editnotes = ({
           contentEditable={true}
           suppressContentEditableWarning={true}
           onClick={handleEditorClick}
-          onBlur={handleBlur}
+          // onBlur={handleBlur}
           onInput={handleInput}
         >
-          {isPlaceholderVisible && "Take your note..."}
+          {/* {isPlaceholderVisible && "Take your note..."} */}
         </div>
       </form>
       {/* Feedback Message */}

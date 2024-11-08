@@ -16,6 +16,7 @@ import Profile from "./components/Profile";
 import EditResearcher from "./pages/Admin/EditResearcher";
 import ProtectedRoute from "./protectedRoute";
 import { login, updateTokens } from "./redux/reducers/LoginAuth"; // Import login action
+import DeriveInsights from "./pages/ArticlePage/DeriveInsights";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -70,6 +71,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<SignUpForm />} />
 
+          <Route path="/deriveinsights" element={<DeriveInsights />} />
           {/* Protected Routes */}
           <Route path="/search" element={<SearchResults />} />
           <Route path="/article/:pmid" element={<ArticlePage />} />
