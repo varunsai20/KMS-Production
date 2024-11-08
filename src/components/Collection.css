@@ -124,7 +124,6 @@
 .articles-list {
   flex: 2;
   padding-left: 15px;
-  overflow-y: auto;
 }
 .articles-list li {
   list-style: none;
@@ -191,4 +190,41 @@
 
 .Search-collection-input:focus {
   border-color: #1a73e8;
+}
+.articles-list table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.articles-list thead th {
+  position: sticky;
+  top: 0;
+  background-color: #ffffff;
+  z-index: 1;
+}
+
+.articles-list tbody {
+  display: block;
+  max-height: 400px; /* Adjust this height as needed */
+  overflow-y: auto;
+  width: 100%;
+}
+
+.articles-list tr {
+  display: table;
+  table-layout: fixed;
+  width: 100%;
+}
+
+.articles-list th, .articles-list td {
+  padding: 10px;
+  text-align: left;
+  font-size: 15px;
+}
+.bookmark-articleId 
+{
+width: 15%;
+}
+.bookmark-Source{
+  width: 15%;
 }

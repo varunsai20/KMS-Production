@@ -604,7 +604,7 @@ button {
   display: flex;
   justify-content: space-between;
   cursor: pointer;
-  padding: 10px 0;
+  padding: 10px 10px 10px 0;
 }
 .modal-content ul li:hover{
   background-color: #dddddd70;

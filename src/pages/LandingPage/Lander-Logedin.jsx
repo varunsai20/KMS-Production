@@ -17,7 +17,6 @@ import History from "../../assets/images/Lander-History.svg";
 import Help from "../../assets/images/Lander-Help.svg";
 import Utilities from "../../assets/images/Lander-Utilities.svg";
 import Analytics from "../../assets/images/Lander-Analytics.svg";
-import { IoCloseOutline } from "react-icons/io5";
 import "./Lander-Logedin.css";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -372,15 +371,10 @@ const Lander = () => {
       {isCollectionOpen && (
         <>
           <div className="blur-overlay">
-            <button
-              className="close-collection"
-              onClick={handleCloseCollection}
-            >
-              <IoCloseOutline size={30} color="white" />
-            </button>
-          </div>
+            
           <div className="collection-modal">
-            <Collection />
+            <Collection setIsCollectionOpen={setIsCollectionOpen}/>
+          </div>
           </div>
         </>
       )}

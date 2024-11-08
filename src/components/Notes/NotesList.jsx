@@ -54,13 +54,11 @@ const NotesList = ({
           >
             <LuPlus />
           </button>
-          <button
-            className="close-notes-in"
-            onClick={oncloseNotes}
-            style={{ zIndex: 1 }}
-          >
-            <IoCloseOutline size={30} color="white" />
-          </button>
+          {isOpenNotes && (
+            <button onClick={oncloseNotes} style={{ zIndex: 1 }}>
+              <IoCloseOutline size={30} color="white" />
+            </button>
+          )}
           <div className={isOpenNotes ? "lander-p" : "note-p"}>
             <p id="p">Notes</p>
           </div>
