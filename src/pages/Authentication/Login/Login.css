@@ -3,6 +3,7 @@
   align-items: center;
   justify-content: center;
   height: 100%; /* Ensure it takes up the full height of the viewport */
+  overflow-y: hidden;
 }
 
 .form {
