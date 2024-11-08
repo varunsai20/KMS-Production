@@ -1702,7 +1702,7 @@ const ArticlePage = () => {
       </div>
 
       <div
-        className="chat-query"
+        className="article-chat-query"
         style={{
           width: openAnnotate || openNotes ? contentWidth : "69%",
           display: displayIfLoggedIn,
