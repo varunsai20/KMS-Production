@@ -97,7 +97,7 @@ const Researchers = () => {
 
       if (response.status === 200) {
         // Update userData to reflect the new status
-        setIsOpen(false)
+        setIsOpen(false);
         setUserData((prevData) =>
           prevData.map((user) =>
             user.user_id === userId ? { ...user, user_status: newStatus } : user
@@ -137,7 +137,7 @@ const Researchers = () => {
           },
         }
       );
-      setIsOpen(false)
+      setIsOpen(false);
       setUserData(userData.filter((user) => user.user_id !== userId));
     } catch (error) {
       console.error("Error deleting user:", error);
@@ -231,20 +231,23 @@ const Researchers = () => {
             {showConfirmDelete && (
               <div className="confirm-overlay">
                 <div className="confirm-popup">
-                  <p>Are you sure you want to delete this note?</p>
+                  <p className="Delete-user">Delete User</p>
+                  <p id="confirming">
+                    Are you sure you want to delete this user?
+                  </p>
                   <div className="confirm-buttons">
+                    <button
+                      className="confirm-keep-button"
+                      onClick={cancelDelete}
+                    >
+                      Cancel
+                    </button>
                     <button
                       className="confirm-delete-button"
                       //onClick={handleDeleteClick(user.user.id)}
                       onClick={confirmDelete}
                     >
                       Delete
-                    </button>
-                    <button
-                      className="confirm-keep-button"
-                      onClick={cancelDelete}
-                    >
-                      Cancel
                     </button>
                   </div>
                 </div>

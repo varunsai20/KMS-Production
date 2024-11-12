@@ -7,14 +7,15 @@ const ConfirmSave = ({ message, onSave, onDiscard, onCancel }) => {
     <div className="confirm-overlay">
       <div className="confirm-dialog">
         <div className="confirm-header">
-          <p className="confirm-message">
-            {message ||
-              "You have unsaved changes. Would you like to save before leaving?"}
-          </p>
+          <p className="Saving-note"> Saving Note</p>
           <button onClick={onCancel} className="confirm-cancel-butto">
             <IoCloseOutline size={20} />
           </button>
         </div>
+        <p id="confirming">
+          {message ||
+            "You have unsaved changes. Would you like to save before leaving?"}
+        </p>
         <div className="save-confirm-buttons">
           <button onClick={onSave} className="confirm-save-button">
             Save

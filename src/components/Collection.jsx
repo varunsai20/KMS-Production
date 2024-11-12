@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import SearchIcon from "../assets/images/Search.svg";
@@ -7,7 +6,7 @@ import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { IoCloseOutline } from "react-icons/io5";
 
-const Collection = ({setIsCollectionOpen}) => {
+const Collection = ({ setIsCollectionOpen }) => {
   const [collections, setCollections] = useState([]);
   const [selectedCollection, setSelectedCollection] = useState(null);
   const [text, setText] = useState("");
@@ -139,48 +138,50 @@ const Collection = ({setIsCollectionOpen}) => {
               />
             </div>
             <table>
-  <thead>
-    <tr className="heading-row">
-      <th className="bookmark-articleId">ArticleId</th>
-      <th className="bookmark-Title">Title</th>
-      <th className="bookmark-Source">Source</th>
-      <th style={{width:"1%"}}></th>
-    </tr>
-  </thead>
-  <div className="scrollable-tbody">
-    <tbody>
-      {filteredArticles.map((article) => (
-        <tr
-          key={article.article_id}
-          className="article-item"
-          onClick={() =>
-            handleArticleClick(
-              article.article_id,
-              article.article_source
-            )
-          }
-        >
-          <td className="bookmark-articleId">{article.article_id}</td>
-          <td className="bookmark-Title">{article.article_title}</td>
-          <td className="bookmark-Source">{article.article_source}</td>
-          <td style={{width:"1%"}}>⋮</td>
-        </tr>
-      ))}
-    </tbody>
-  </div>
-</table>
-
+              <thead>
+                <tr className="heading-row">
+                  <th className="bookmark-articleId">ArticleId</th>
+                  <th className="bookmark-Title">Title</th>
+                  <th className="bookmark-Source">Source</th>
+                  <th style={{ width: "1%" }}></th>
+                </tr>
+              </thead>
+              <div className="scrollable-tbody">
+                <tbody>
+                  {filteredArticles.map((article) => (
+                    <tr
+                      key={article.article_id}
+                      className="article-item"
+                      onClick={() =>
+                        handleArticleClick(
+                          article.article_id,
+                          article.article_source
+                        )
+                      }
+                    >
+                      <td className="bookmark-articleId">
+                        {article.article_id}
+                      </td>
+                      <td className="bookmark-Title">
+                        {article.article_title}
+                      </td>
+                      <td className="bookmark-Source">
+                        {article.article_source}
+                      </td>
+                      <td style={{ width: "1%" }}>⋮</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </div>
+            </table>
           </>
         ) : (
           <p>Select a collection to view articles.</p>
         )}
       </div>
-      <button
-              className="close-collection"
-              onClick={handleCloseCollection}
-            >
-              <IoCloseOutline size={30} color="black" />
-            </button>
+      <button className="close-collection" onClick={handleCloseCollection}>
+        <IoCloseOutline size={30} color="black" />
+      </button>
     </>
   );
 };

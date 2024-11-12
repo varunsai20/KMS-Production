@@ -46,34 +46,26 @@ const NotesList = ({
 
   return (
     <section className={isOpenNotes ? "Lander-Notes-List" : "Notes-List"}>
-      <header
-        className={
-          isOpenNotes ? "Lander-Notes-List-header" : "Notes-List-header"
-        }
-      >
-        <div className={isOpenNotes ? "lander-plus-dots" : "plus-dots"}>
+      <header className="Notes-List-header">
+        <div className="plus-dots">
           <button
             title="New Note"
             className={isOpenNotes ? "lander-button-plus" : "button-plus"}
             onClick={onAddNewNote}
           >
-            <LuPlus />
+            <LuPlus size={20} />
           </button>
           {isOpenNotes && (
             <button onClick={oncloseNotes} style={{ zIndex: 1 }}>
               <IoCloseOutline size={30} color="white" />
             </button>
-
           )}
-
 
           <div className={isOpenNotes ? "lander-p" : "note-p"}>
             <p id="p">Notes</p>
           </div>
         </div>
-        <div
-          className={isOpenNotes ? "lander-Search-wrapper" : "Search-wrapper"}
-        >
+        <div className="Search-wrapper">
           <img src={SearchIcon} alt="search" className="Search-icon" />
           <input
             type="text"
@@ -81,7 +73,7 @@ const NotesList = ({
             onChange={handleSearch}
             autoFocus
             placeholder="Search..."
-            className={isOpenNotes ? "lander-Search-input" : "Search-input"}
+            className="Search-input"
           />
         </div>
       </header>

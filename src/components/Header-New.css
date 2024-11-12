@@ -1,46 +1,63 @@
 .Navbar-Header {
-    height: 70px;
-    display: flex;
-    justify-content: space-between;
-    color: black;
-    border-bottom: 1px solid #555;
-    margin-bottom: 1%;
+  height: 70px;
+  display: flex;
+  justify-content: space-between;
+  color: black;
+  /* margin-bottom: 1%; */
+  background: linear-gradient(
+    90deg,
+    rgba(254, 118, 117, 0.08) 0%,
+    rgba(204, 129, 185, 0.08) 34.2%,
+    rgba(26, 168, 210, 0.08) 68.81%,
+    rgba(76, 210, 217, 0.08) 100%
+  );
 }
 
 .Navbar-Header-Items {
-    display: flex;
-    gap: 20px;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px 32px;
+  display: flex;
+  gap: 20px;
+  justify-content: space-between;
+  align-items: center;
+  padding: 23px 58px;
 }
 
 .Navbar-Header-Link {
-    position: relative;
-    text-decoration: none;
-    color: black;
+  position: relative;
+  text-decoration: none;
+  color: black;
 }
 
 .Navbar-Header-Link.active-link::after {
-    content: "";
-    position: absolute;
-    left: 5%;
-    bottom: -5px;
-    width: 50%;
-    height: 2px;
-    background-color: #007BFF;
+  content: "";
+  position: absolute;
+  left: 5%;
+  bottom: -5px;
+  width: 50%;
+  height: 2px;
+  background-color: #007bff;
 }
 
 .Search-nav-logo {
-    display: flex;
-    width: 90px;
-    height: 34.66px;
+  display: flex;
+  width: 90px;
+  height: 34.66px;
+  /* border-right: 1px solid rgba(0, 0, 0, 0.1); */
 }
-
+.line-between {
+  height: 30px;
+  width: 1px;
+  background-color: rgba(0, 0, 0, 0.1);
+  border: 1px;
+}
+.line-in-between {
+  height: 20px;
+  width: 1px;
+  color: rgba(0, 0, 0, 0.1);
+}
 .Search-nav-login {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 10px;
-    padding: 20px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 20px 32px;
 }

@@ -4,10 +4,10 @@ import { useSelector } from "react-redux";
 import Header from "../../components/Header-New";
 import Footer from "../../components/Footer-New";
 import LandingImage from "../../assets/images/image 1.svg";
-import Left1 from "../../assets/images/Left1.svg";
-import Left2 from "../../assets/images/Left2.svg";
-import Right2 from "../../assets/images/Right2.svg";
-import Right1 from "../../assets/images/Right1.svg";
+import circle from "../../assets/images/Left1.svg";
+import ReactLogo from "../../assets/images/Left2.svg";
+import Bulb from "../../assets/images/Right2.svg";
+import Molecules from "../../assets/images/Right1.svg";
 import SearchBar from "../../components/SearchBar";
 import points1 from "../../assets/images/points1.svg";
 import points2 from "../../assets/images/points2.svg";
@@ -161,7 +161,7 @@ const Lander = () => {
   return (
     <div
       className="Landing-Container"
-      style={isLoggedIn ? { height: `${100}vh` } : {}}
+      // style={isLoggedIn ? { height: `${100}vh` } : {}}
     >
       <div className="Landing-Header">
         <Header />
@@ -169,22 +169,22 @@ const Lander = () => {
 
       <div className="Landing-Content">
         <div className="Landing-Content-Left">
-          <img className="Left1" src={Left2} alt="Left Graphic 1" />
-          <img className="Right2" src={Right2} alt="Right Graphic 2" />
-          <img className="Left2" src={Left1} alt="Left Graphic 2" />
-          <img className="Right1" src={Right1} alt="Right Graphic 1" />
-          <div className="Landing-Content-Left-Content">
-            <div>
-              <h3 className="Landing-Welcome">
-                Welcome to <span className="Landing-Infer">Infer!</span>
-              </h3>
-              <p className="Landing-Welcome-desc">
-                Lorem Ipsum is simply dummy text of the printing and typesetting
-                industry. Lorem Ipsum has been the industry's standard dummy.
-              </p>
-              <SearchBar className={`Landing-Searchbar`} />
-            </div>
+          {/* <div className="Landing-Content-Left-Content"> */}
+          <img className="Right2" src={ReactLogo} alt="Right Graphic 2" />
+          <img className="Left1" src={Bulb} alt="Left Graphic 1" />
+          <img className="Left2" src={circle} alt="Left Graphic 2" />
+          <img className="Right1" src={Molecules} alt="Right Graphic 1" />
+          <div className="welcome-search">
+            <h3 className="Landing-Welcome">
+              Welcome to <span className="Landing-Infer">Infer!</span>
+            </h3>
+            <p className="Landing-Welcome-desc">
+              Lorem Ipsum is simply dummy text of the printing and typesetting
+              industry. Lorem Ipsum has been the industry's standard dummy.
+            </p>
+            <SearchBar className={`Landing-Searchbar`} />
           </div>
+          {/* </div> */}
         </div>
 
         <div className="Landing-Content-Right">
@@ -192,6 +192,12 @@ const Lander = () => {
             className="Landing-Content-Right-Image"
             src={LandingImage}
             alt="Landing Graphic"
+            style={{
+              width: "85%",
+              height: "auto",
+              maxWidth: "234px",
+              maxHeight: "254px",
+            }}
           />
         </div>
       </div>
@@ -375,10 +381,9 @@ const Lander = () => {
       {isCollectionOpen && (
         <>
           <div className="blur-overlay">
-            
-          <div className="collection-modal">
-            <Collection setIsCollectionOpen={setIsCollectionOpen}/>
-          </div>
+            <div className="collection-modal">
+              <Collection setIsCollectionOpen={setIsCollectionOpen} />
+            </div>
           </div>
         </>
       )}

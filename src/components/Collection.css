@@ -216,15 +216,15 @@
   width: 100%;
 }
 
-.articles-list th, .articles-list td {
+.articles-list th,
+.articles-list td {
   padding: 10px;
   text-align: left;
   font-size: 15px;
 }
-.bookmark-articleId 
-{
-width: 15%;
+.bookmark-articleId {
+  width: 15%;
 }
-.bookmark-Source{
+.bookmark-Source {
   width: 15%;
 }
