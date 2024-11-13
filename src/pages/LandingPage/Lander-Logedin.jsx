@@ -67,7 +67,7 @@ const Lander = () => {
   const handleCloseCitations = () => {
     setIsCitationsOpen(false);
   };
-\
+
   const handleOpenAnnotate = () => {
     setIsAnnotateOpen(true);
   };
@@ -274,10 +274,10 @@ const Lander = () => {
               />
               <h4>Utilities</h4>
 
-              <a href="#annotate" onClick={handleOpenAnnotate}>
+              <a href="#" onClick={handleOpenAnnotate}>
                 Annotations
               </a>
-              <a href="#citations" onClick={handleOpenCitations}>
+              <a href="#" onClick={handleOpenCitations}>
                 Citation
               </a>
               <a href="#">Protocol</a>
