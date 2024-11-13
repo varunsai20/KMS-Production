@@ -299,6 +299,12 @@ const Researchers = () => {
                     >
                       Cancel
                     </button>
+                    <button
+                      className="confirm-delete-button"
+                      onClick={confirmDelete}
+                    >
+                      Delete
+                    </button>
                   </div>
                 </div>
               </div>

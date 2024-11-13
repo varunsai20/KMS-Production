@@ -12,6 +12,7 @@
     rgba(76, 210, 217, 0.08) 100%
   );
   box-shadow: 0px 4px 28.8px 0px rgba(0, 0, 0, 0.08);
+  min-width: 100%;
 }
 
 .Navbar-Header-Items {

@@ -71,7 +71,7 @@ const Lander = () => {
     const fetchSessions = async () => {
       try {
         const response = await axios.get(
-          `http://13.127.207.184:80/history/conversations/sessions/${user_id}`,
+          `http://13.127.207.184:80/history/conversations/history/${user_id}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
