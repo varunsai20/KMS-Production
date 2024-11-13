@@ -71,7 +71,7 @@ const DeriveInsights = () => {
       alert("Please enter a query or upload a file");
       return;
     }
- 
+  
     setLoading(true);
     const newChatEntry = {
       query,
@@ -80,54 +80,62 @@ const DeriveInsights = () => {
       showDot: true,
     };
     setChatHistory((prevChatHistory) => [...prevChatHistory, newChatEntry]);
- 
+  
     try {
       let url = "http://13.127.207.184:80/insights/upload";
       const headers = {
         Authorization: `Bearer ${token}`,
         "ngrok-skip-browser-warning": true,
       };
- 
+  
       // Initialize FormData
-      const formData = new FormData();
-      formData.append("question", query);
-      formData.append("userid", user.user_id);
- 
+const formData = new FormData();
+formData.append("question", query);
+
+// Conditionally set user_id or userid based on session_id existence
+if (session_id) {
+  formData.append("user_id", user.user_id);
+  formData.append("session_id", session_id);
+} else {
+  formData.append("userid", user.user_id);
+}
+
+
+
       if (uploadedFile) {
         formData.append("file", uploadedFile);
       }
- 
+  
       if (session_id) {
         url = "http://13.127.207.184:80/insights/ask";
-        formData.append("session_id", session_id);
       }
- 
+  
       // Use fetch instead of axios to handle streaming response
       const response = await fetch(url, {
         method: "POST",
         headers: headers,
         body: formData,
       });
- 
+  
       if (!response.ok) throw new Error("Network response was not ok");
- 
+  
       // Stream response and update chat history
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let buffer = "";
       let apiResponse = ""; // To accumulate the full response
- 
+  
       const readStream = async () => {
         let done = false;
         const delay = 100;
- 
+  
         while (!done) {
           const { value, done: streamDone } = await reader.read();
           done = streamDone;
- 
+  
           if (value) {
             buffer += decoder.decode(value, { stream: true });
- 
+  
             // Process chunks of JSON-like data
             while (buffer.indexOf("{") !== -1 && buffer.indexOf("}") !== -1) {
               let start = buffer.indexOf("{");
@@ -135,12 +143,18 @@ const DeriveInsights = () => {
               if (start !== -1 && end !== -1) {
                 const jsonChunk = buffer.slice(start, end + 1);
                 buffer = buffer.slice(end + 1);
- 
+  
                 try {
                   const parsedData = JSON.parse(jsonChunk);
                   const answer = parsedData.answer;
                   apiResponse += answer + " "; // Accumulate the full response
- 
+  
+                  // Store session_id if not already stored
+                  if (!session_id && parsedData.session_id) {
+                    setSessionId(parsedData.session_id);
+                    sessionStorage.setItem("session_id", parsedData.session_id);
+                  }
+  
                   setChatHistory((chatHistory) => {
                     const updatedChatHistory = [...chatHistory];
                     const lastEntryIndex = updatedChatHistory.length - 1;
@@ -153,7 +167,7 @@ const DeriveInsights = () => {
                     }
                     return updatedChatHistory;
                   });
- 
+  
                   if (endOfMessagesRef.current) {
                     endOfMessagesRef.current.scrollIntoView({
                       behavior: "smooth",
@@ -169,13 +183,14 @@ const DeriveInsights = () => {
         setLoading(false);
         sessionStorage.setItem("chatHistory", JSON.stringify(chatHistory));
       };
- 
+  
       readStream();
     } catch (error) {
       console.error("Error fetching or reading stream:", error);
       setLoading(false);
     }
   };
+  
  
  
   const handleFileUpload = (e) => {

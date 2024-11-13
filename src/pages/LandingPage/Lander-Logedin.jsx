@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Rnd } from "react-rnd";
-import { useSelector } from "react-redux";
+import { useDispatch,useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { setDeriveInsights } from "../../redux/reducers/deriveInsights";
 import Header from "../../components/Header-New";
 import Footer from "../../components/Footer-New";
 import LandingImage from "../../assets/images/image 1.svg";
@@ -18,7 +20,6 @@ import Help from "../../assets/images/Lander-Help.svg";
 import Utilities from "../../assets/images/Lander-Utilities.svg";
 import Analytics from "../../assets/images/Lander-Analytics.svg";
 import "./Lander-Logedin.css";
-import { useNavigate } from "react-router-dom";
 import axios from "axios";
 //import Draggable from "react-draggable";
 import Collection from "../../components/Collection";
@@ -28,6 +29,7 @@ import GenerateAnnotate from "../../components/GenerateAnnotate";
 import Notes from "../NotesPage/Notes";
 
 const Lander = () => {
+  const dispatch = useDispatch();
   const isLoggedIn = useSelector((state) => state.auth?.isLoggedIn);
   const [sessions, setSessions] = useState([]);
   const [isLanderNotesOpen, setIsLanderNotesOpen] = useState(false);
@@ -44,6 +46,7 @@ const Lander = () => {
   const { user } = useSelector((state) => state.auth);
   const token = useSelector((state) => state.auth.access_token);
   const user_id = user?.user_id;
+  const [isDeriveInsights, setIsDeriveInsights] = useState(false);
   const navigate = useNavigate();
   const handleOpenNotes = () => {
     setIsLanderNotesOpen(true);
@@ -64,16 +67,23 @@ const Lander = () => {
   const handleCloseCitations = () => {
     setIsCitationsOpen(false);
   };
+\
   const handleOpenAnnotate = () => {
     setIsAnnotateOpen(true);
   };
   const handleCloseAnnotate = () => {
     setIsAnnotateOpen(false);
   };
-  // const handleOpenInsights = () => {
-  //   setOpenInsights(true);
-  //   navigate("/deriveinsights")
-  // };
+
+  const handleOpenInsights = () => {
+    dispatch(setDeriveInsights(true)); // Set deriveInsights in Redux state
+    navigate("/article", {
+      state: {
+        deriveInsights: true,
+      },
+    });
+  };
+
   // const handleCloseInsights = () => {};
   useEffect(() => {
     const fetchSessions = async () => {
@@ -97,7 +107,10 @@ const Lander = () => {
 
     if (user_id && token) {
       fetchSessions();
+      dispatch(setDeriveInsights(false));
+      sessionStorage.setItem("chatHistory",[])
     }
+    
   }, [user_id, token]);
 
   console.log(sessions[0]);
@@ -210,9 +223,10 @@ const Lander = () => {
             alt="Landing Graphic"
             style={{
               width: "85%",
-              height: "auto",
+              height: "-webkit-fill-available",
               maxWidth: "234px",
-              maxHeight: "254px",
+              // maxHeight: "254px",
+              mixBlendMode:"color-burn",
             }}
           />
         </div>
@@ -250,8 +264,8 @@ const Lander = () => {
 
               <a href="#">Dashboard</a>
               <a href="#">Reports</a>
-              <a href="/deriveinsights">Derive Insights</a>
-            </div>
+              <a onClick={handleOpenInsights}>Derive Insights</a>    
+              </div>
             <div className="Feature-Item">
               <img
                 className="Landing-Utilities-Icon"
