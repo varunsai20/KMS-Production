@@ -15,16 +15,21 @@ import Researchers from "./pages/Admin/Researchers";
 import Profile from "./components/Profile";
 import EditResearcher from "./pages/Admin/EditResearcher";
 import ProtectedRoute from "./protectedRoute";
-import { login, updateTokens } from "./redux/reducers/LoginAuth"; // Import login action
+import { login, updateTokens } from "./redux/reducers/LoginAuth";
 import DeriveInsights from "./pages/ArticlePage/DeriveInsights";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 function App() {
   const dispatch = useDispatch();
-  const { access_token, refresh_token, user_id, iat, exp } = useSelector(
+  const { access_token, refresh_token, exp } = useSelector(
     (state) => state.auth
   );
+  const deriveInsights = useSelector((state) => state.deriveInsights?.active); // assuming deriveInsights is in Redux state
+  console.log(deriveInsights)
+  // Conditionally set the article route path based on deriveInsights state
+  const articlePath = deriveInsights ? "/article" : "/article/:pmid";
+
   const checkAndRefreshToken = async () => {
     const now = dayjs().unix();
     const expirationTime = exp - 60; // Check for refresh 1 minute before expiration
@@ -57,7 +62,7 @@ function App() {
       if (access_token && refresh_token && exp) {
         checkAndRefreshToken();
       }
-    }, 1800 * 1000); // Check every minute (60,000 milliseconds)
+    }, 1800 * 1000);
 
     return () => clearInterval(interval);
   });
@@ -70,11 +75,13 @@ function App() {
           <Route path="/" element={<Lander />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<SignUpForm />} />
-
           <Route path="/deriveinsights" element={<DeriveInsights />} />
+
           {/* Protected Routes */}
           <Route path="/search" element={<SearchResults />} />
-          <Route path="/article/:pmid" element={<ArticlePage />} />
+
+          {/* Conditional Article Route */}
+          <Route path={articlePath} element={<ArticlePage />} />
 
           <Route
             path="/admin"

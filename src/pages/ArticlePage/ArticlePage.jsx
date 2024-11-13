@@ -37,6 +37,8 @@ import Header from "../../components/Header-New";
 
 const ArticlePage = () => {
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
+  const deriveInsights = useSelector((state) => state.deriveInsights?.active); // assuming deriveInsights is in Redux state
+  console.log(deriveInsights)
   const displayIfLoggedIn = isLoggedIn ? null : "none";
   const widthIfLoggedIn = isLoggedIn ? null : "80%";
   const heightIfLoggedIn = isLoggedIn ? null : "80vh";
@@ -46,7 +48,7 @@ const ArticlePage = () => {
   const token = useSelector((state) => state.auth.access_token);
   const dispatch = useDispatch();
   const user_id = user?.user_id;
-  const [type, id1] = pmid.split(":");
+  const [type, id1] = pmid?pmid.split(":"):"";
   const id = Number(id1);
   const [source, setSource] = useState();
   const [annotateLoading, setAnnotateLoading] = useState(false);
@@ -214,9 +216,10 @@ const ArticlePage = () => {
 
   useEffect(() => {
     // Determine the source based on `type`
-    setAnnotateLoading(true);
+    
     // Perform GET request to fetch article data
-    if (source && id) {
+    if (source && id && !deriveInsights) {
+      setAnnotateLoading(true);
       const fetchArticleData = async () => {
         try {
           const response = await axios.get(
