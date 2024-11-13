@@ -183,7 +183,9 @@ const Annotation = ({
     >
       <div
         style={{
-          background: "rgba(251, 251, 253, 1)",
+          // background: "rgba(251, 251, 253, 1)",
+          background:
+            "linear-gradient(90deg,rgba(254, 118, 117, 0.7) -21.07%,rgba(204, 129, 185, 0.7) 37.85%,rgba(26, 168, 210, 0.7) 97.5%,rgba(76, 210, 217, 0.7) 151.24%)",
           borderRadius: "16px 16px 0 0",
           padding: "5px",
         }}

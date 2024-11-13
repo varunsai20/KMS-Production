@@ -15,8 +15,8 @@ const NoteItem = ({ note, onEdit, onDelete, isOpenNotes }) => {
   const [showConfirmDelete, setShowConfirmDelete] = useState(false); // Track confirmation popup visibility
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [email, setEmail] = useState("");
-  const [subject, setSubject] = useState("");
-  const [recipient_name, setRecipientName] = useState("");
+  // const [subject, setSubject] = useState("");
+  // const [recipient_name, setRecipientName] = useState("");
   const menuRef = useRef(null); // Reference to the popup menu
   const { user } = useSelector((state) => state.auth);
   const user_id = user?.user_id;
@@ -38,8 +38,8 @@ const NoteItem = ({ note, onEdit, onDelete, isOpenNotes }) => {
       user_id: user_id,
       note_id: note.note_id,
       email: email,
-      recipient_name: recipient_name,
-      subject: subject,
+      // recipient_name: recipient_name,
+      // subject: subject,
     };
 
     try {
@@ -362,18 +362,18 @@ const NoteItem = ({ note, onEdit, onDelete, isOpenNotes }) => {
                     paddingBottom: "5px",
                   }}
                 >
-                  Email
+                  To*
                 </label>
               </div>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter Email ID"
+                placeholder=" Email ID"
                 className="email-input"
                 onKeyDown={handleKeyDown}
               />
-              <input
+              {/* <input
                 type="text"
                 value={recipient_name}
                 onChange={(e) => setRecipientName(e.target.value)}
@@ -388,7 +388,7 @@ const NoteItem = ({ note, onEdit, onDelete, isOpenNotes }) => {
                 placeholder="Subject"
                 className="subject-input"
                 onKeyDown={handleKeyDown}
-              />
+              /> */}
               <div className="email-button-group">
                 <button
                   className="email-cancel-button"

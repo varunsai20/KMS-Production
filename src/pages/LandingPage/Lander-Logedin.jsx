@@ -24,6 +24,7 @@ import axios from "axios";
 //import Draggable from "react-draggable";
 import Collection from "../../components/Collection";
 import Citations from "../../components/Citations";
+import GenerateAnnotate from "../../components/GenerateAnnotate";
 
 import Notes from "../NotesPage/Notes";
 
@@ -37,6 +38,7 @@ const Lander = () => {
   console.log(sessions);
   const [isCollectionOpen, setIsCollectionOpen] = useState(false);
   const [isCitationsOpen, setIsCitationsOpen] = useState(false);
+  const [isAnnotateOpen, setIsAnnotateOpen] = useState(false);
 
   const [openInsights, setOpenInsights] = useState(false);
   const [dimensions, setDimensions] = useState({ width: 400, height: 400 });
@@ -65,6 +67,14 @@ const Lander = () => {
   const handleCloseCitations = () => {
     setIsCitationsOpen(false);
   };
+
+  const handleOpenAnnotate = () => {
+    setIsAnnotateOpen(true);
+  };
+  const handleCloseAnnotate = () => {
+    setIsAnnotateOpen(false);
+  };
+
   const handleOpenInsights = () => {
     dispatch(setDeriveInsights(true)); // Set deriveInsights in Redux state
     navigate("/article", {
@@ -73,6 +83,7 @@ const Lander = () => {
       },
     });
   };
+
   // const handleCloseInsights = () => {};
   useEffect(() => {
     const fetchSessions = async () => {
@@ -97,7 +108,11 @@ const Lander = () => {
     if (user_id && token) {
       fetchSessions();
       dispatch(setDeriveInsights(false));
+
+      sessionStorage.setItem("chatHistory",[])
+
     }
+    
   }, [user_id, token]);
 
   console.log(sessions[0]);
@@ -210,9 +225,10 @@ const Lander = () => {
             alt="Landing Graphic"
             style={{
               width: "85%",
-              height: "auto",
+              height: "-webkit-fill-available",
               maxWidth: "234px",
-              maxHeight: "254px",
+              // maxHeight: "254px",
+              mixBlendMode:"color-burn",
             }}
           />
         </div>
@@ -250,10 +266,10 @@ const Lander = () => {
 
               <a href="#">Dashboard</a>
               <a href="#">Reports</a>
-              <a href="#" onClick={handleOpenInsights}>
-                Derive Insights
-              </a>
-            </div>
+
+              <a onClick={handleOpenInsights}>Derive Insights</a>    
+              </div>
+
             <div className="Feature-Item">
               <img
                 className="Landing-Utilities-Icon"
@@ -262,8 +278,10 @@ const Lander = () => {
               />
               <h4>Utilities</h4>
 
-              <a href="#">Annotations</a>
-              <a href="#citations" onClick={handleOpenCitations}>
+              <a href="#" onClick={handleOpenAnnotate}>
+                Annotations
+              </a>
+              <a href="#" onClick={handleOpenCitations}>
                 Citation
               </a>
               <a href="#">Protocol</a>
@@ -410,11 +428,17 @@ const Lander = () => {
       {isCitationsOpen && (
         <>
           <div className="citation-overlay">
-            {/* <button className="citation-close" onClick={handleCloseCitations}>
-              close
-            </button> */}
             <div className="citation-modal">
               <Citations handleCloseCitations={handleCloseCitations} />
+            </div>
+          </div>
+        </>
+      )}
+      {isAnnotateOpen && (
+        <>
+          <div className="annotate-overlay">
+            <div className="annotate-modal">
+              <GenerateAnnotate handleCloseAnnotate={handleCloseAnnotate} />
             </div>
           </div>
         </>

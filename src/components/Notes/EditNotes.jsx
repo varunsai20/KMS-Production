@@ -49,8 +49,8 @@ const Editnotes = ({
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [email, setEmail] = useState("");
-  const [recipient_name, setRecipientName] = useState("");
-  const [subject, setSubject] = useState("");
+  //const [recipient_name, setRecipientName] = useState("");
+  //const [subject, setSubject] = useState("");
   const [showConfirmSave, setShowConfirmSave] = useState(false);
   const [unsavedChanges, setUnsavedChanges] = useState(false);
   const initialText = useRef("");
@@ -152,8 +152,8 @@ const Editnotes = ({
       user_id: user_id,
       note_id: note_id,
       email: email,
-      recipient_name: recipient_name,
-      subject: subject,
+      // recipient_name: recipient_name,
+      //subject: subject,
     };
 
     try {
@@ -171,7 +171,7 @@ const Editnotes = ({
         toast.success("Email sent successfully", {
           position: "top-center",
           autoClose: 2000,
-          
+
           style: {
             backgroundColor: "rgba(237, 254, 235, 1)",
             borderLeft: "5px solid rgba(15, 145, 4, 1)",
@@ -296,7 +296,7 @@ const Editnotes = ({
           toast.success("Notes Saved Successfully", {
             position: "top-center",
             autoClose: 1000,
-           
+
             style: {
               backgroundColor: "rgba(237, 254, 235, 1)",
               borderLeft: "5px solid rgba(15, 145, 4, 1)",
@@ -636,15 +636,19 @@ const Editnotes = ({
                   Email
                 </label>
               </div>
+              <label htmlFor="email" aria-required="true">
+                To*
+              </label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Email ID"
                 className="email-input"
+                required
                 onKeyDown={handleKeyDown}
               />
-              <input
+              {/* <input
                 type="text"
                 value={recipient_name}
                 onChange={(e) => setRecipientName(e.target.value)}
@@ -659,7 +663,7 @@ const Editnotes = ({
                 placeholder="Subject"
                 className="subject-input"
                 onKeyDown={handleKeyDown}
-              />
+              /> */}
 
               <div className="email-button-group">
                 <button

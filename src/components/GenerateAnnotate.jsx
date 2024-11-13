@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import "./Citations.css";
+import "./GenerateAnnotate.css";
 import uploadLogo from "../assets/images/uploadDocx.svg";
 import { IoCloseOutline } from "react-icons/io5";
 
-const Citations = ({ handleCloseCitations }) => {
+const GenerateAnnotate = ({ handleCloseAnnotate }) => {
   const [uploadedFile, setUploadedFile] = useState(null);
 
   const handleFileUpload = (e) => {
@@ -19,9 +19,9 @@ const Citations = ({ handleCloseCitations }) => {
 
   return (
     <>
-      <div className="citation-container">
-        <div className="citation-file-upload">
-          <h3>Generate Citation</h3>
+      <div className="annotate-container">
+        <div className="annotate-file-upload">
+          <h3>Generate Annotations</h3>
           <div className="upload-file" onClick={triggerFileUpload}>
             <img src={uploadLogo} alt="upload-logo" />
             <input
@@ -33,20 +33,18 @@ const Citations = ({ handleCloseCitations }) => {
             />
             <span>Upload File</span>
           </div>
-          <div className="citations-buttons">
+          <div className="annotates-buttons">
             <button className="start-new">Start New</button>
             <button className="generate-button">Generate</button>
           </div>
         </div>
-        <div className="citation-annotations">
-          
-        </div>
+        <div className="annotate-annotations"></div>
       </div>
-      <button className="close-collection" onClick={handleCloseCitations}>
+      <button className="close-collection" onClick={handleCloseAnnotate}>
         <IoCloseOutline size={30} color="black" />
       </button>
     </>
   );
 };
 
-export default Citations;
+export default GenerateAnnotate;

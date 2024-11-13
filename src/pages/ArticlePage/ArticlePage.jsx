@@ -11,6 +11,8 @@ import annotate from "../../assets/images/task-square.svg";
 import { useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import { CircularProgress } from "@mui/material";
+import uploadimage from "../../assets/images/Upload.svg";
+import FileIconForDocument from "../../assets/images/FileIconforDocument.svg"
 import { TextField } from "@mui/material";
 import Annotation from "../../components/Annotaions";
 import { faBookmark as regularBookmark } from "@fortawesome/free-regular-svg-icons";
@@ -25,7 +27,6 @@ import pen from "../../assets/images/16px.svg";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTelegram } from "@fortawesome/free-brands-svg-icons";
 import { faPen } from "@fortawesome/free-solid-svg-icons";
-import { faAnglesUp } from "@fortawesome/free-solid-svg-icons";
 import { LiaTelegramPlane } from "react-icons/lia";
 //import { BiSolidPaperPlane } from "react-icons/bi";
 import { IoMdPaperPlane } from "react-icons/io";
@@ -33,13 +34,15 @@ import Notes from "../NotesPage/Notes";
 import { login, logout } from "../../redux/reducers/LoginAuth"; // Import login and logout actions
 import ProfileIcon from "../../assets/images/Profile-dummy.svg";
 import { toast } from "react-toastify";
+import { faTimes, faAnglesUp } from "@fortawesome/free-solid-svg-icons";
+import { TbFileUpload } from "react-icons/tb";
 import Header from "../../components/Header-New";
-import { setDeriveInsights } from "../../redux/reducers/deriveInsights";
 
+import uploadDocx from "../../assets/images/uploadDocx.svg"
 const ArticlePage = () => {
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
   const deriveInsights = useSelector((state) => state.deriveInsights?.active); // assuming deriveInsights is in Redux state
-  console.log(deriveInsights);
+
   const displayIfLoggedIn = isLoggedIn ? null : "none";
   const widthIfLoggedIn = isLoggedIn ? null : "80%";
   const heightIfLoggedIn = isLoggedIn ? null : "80vh";
@@ -661,7 +664,8 @@ const ArticlePage = () => {
   };
   useEffect(() => {
     document.addEventListener("mouseup", handleMouseUp);
-
+    sessionStorage.setItem("session_id","")
+    sessionStorage.setItem("chatHistory",[])
     return () => {
       document.removeEventListener("mouseup", handleMouseUp);
     };
@@ -691,7 +695,6 @@ const ArticlePage = () => {
 
   useEffect(() => {
     const articleContent = document.querySelector(".meta");
-    console.log(articleContent);
     const handleScroll = () => {
       if (articleContent.scrollTop > 20) {
         document.getElementById("scrollTopBtn").style.display = "block"; // Show the button
@@ -867,7 +870,8 @@ const ArticlePage = () => {
       setLoading(false);
     }
   };
-
+  console.log(chatHistory)
+  console.log(chatHistory.file_url)
   const handlePromptClick = (queryText) => {
     setQuery(queryText);
     setTriggerAskClick(true);
@@ -883,7 +887,139 @@ const ArticlePage = () => {
       handleAskClick();
     }
   };
+  const handleDeriveClick = async () => {
+    if (!query && !uploadedFile) {
+      alert("Please enter a query or upload a file");
+      return;
+    }
+    removeUploadedFile();
+    setQuery("");
+    const storedSessionId =
+      sessionStorage.getItem("session_id");
+    setLoading(true);
+    const newChatEntry = {
+      query,
+      file: uploadedFile,
+      response: "",
+      showDot: true,
+    };
+    setChatHistory((prevChatHistory) => [...prevChatHistory, newChatEntry]);
+  
+    try {
+      let url = "http://13.127.207.184:80/insights/upload";
+      const headers = {
+        Authorization: `Bearer ${token}`,
+        "ngrok-skip-browser-warning": true,
+      };
+  
+      // Initialize FormData
+const formData = new FormData();
+formData.append("question", query);
 
+// Conditionally set user_id or userid based on session_id existence
+if (storedSessionId) {
+  formData.append("user_id", user.user_id);
+  formData.append("session_id", storedSessionId);
+} else {
+  formData.append("userid", user.user_id);
+}
+
+
+
+      if (uploadedFile) {
+        formData.append("file", uploadedFile);
+      }
+  
+      if (storedSessionId) {
+        url = "http://13.127.207.184:80/insights/ask";
+      }
+  
+      // Use fetch instead of axios to handle streaming response
+      const response = await fetch(url, {
+        method: "POST",
+        headers: headers,
+        body: formData,
+      });
+  
+      if (!response.ok) throw new Error("Network response was not ok");
+  
+      // Stream response and update chat history
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let apiResponse = ""; // To accumulate the full response
+  
+      const readStream = async () => {
+        let done = false;
+        const delay = 100;
+  
+        while (!done) {
+          const { value, done: streamDone } = await reader.read();
+          done = streamDone;
+  
+          if (value) {
+            buffer += decoder.decode(value, { stream: true });
+  
+            // Process chunks of JSON-like data
+            while (buffer.indexOf("{") !== -1 && buffer.indexOf("}") !== -1) {
+              let start = buffer.indexOf("{");
+              let end = buffer.indexOf("}", start);
+              if (start !== -1 && end !== -1) {
+                const jsonChunk = buffer.slice(start, end + 1);
+                buffer = buffer.slice(end + 1);
+  
+                try {
+                  const parsedData = JSON.parse(jsonChunk);
+                  const answer = parsedData.answer;
+                  apiResponse += answer + " "; // Accumulate the full response
+  
+                  // Store session_id if not already stored
+                  if (!storedSessionId && parsedData.session_id) {
+                    // setSessionId(parsedData.session_id);
+                    sessionStorage.setItem("session_id", parsedData.session_id);
+                  }
+  
+                  setChatHistory((chatHistory) => {
+                    const updatedChatHistory = [...chatHistory];
+                    const lastEntryIndex = updatedChatHistory.length - 1;
+                    if (lastEntryIndex >= 0) {
+                      updatedChatHistory[lastEntryIndex] = {
+                        ...updatedChatHistory[lastEntryIndex],
+                        response: apiResponse.trim(),
+                        showDot: false,
+                      };
+                    }
+                    return updatedChatHistory;
+                  });
+  
+                  if (endOfMessagesRef.current) {
+                    endOfMessagesRef.current.scrollIntoView({
+                      behavior: "smooth",
+                    });
+                  }
+                } catch (error) {
+                  console.error("Error parsing JSON chunk:", error);
+                }
+              }
+            }
+          }
+        }
+        setRefreshSessions((prev) => !prev);
+        setLoading(false);
+        sessionStorage.setItem("chatHistory", JSON.stringify(chatHistory));
+      };
+  
+      readStream();
+    } catch (error) {
+      console.error("Error fetching or reading stream:", error);
+      setLoading(false);
+    }
+  };
+  const handleDeriveKeyDown = (e) => {
+    if (e.key === "Enter") {
+      handleDeriveClick();
+    }
+  };
   const handleBackClick = () => {
     const unsavedChanges = localStorage.getItem("unsavedChanges");
     if (unsavedChanges === "true") {
@@ -922,7 +1058,6 @@ const ArticlePage = () => {
     // Replace the search term in the text with markdown bold syntax
     return text.replace(regex, "**$1**");
   };
-  console.log(annotateData);
   const handleAnnotate = () => {
     // Replace `desiredId` with the actual ID you want to match against
     const matchingIdExists =
@@ -975,7 +1110,6 @@ const ArticlePage = () => {
     }
   }, [annotateData, source, id]);
 
-  console.log(annotateData);
   const handleNotes = () => {
     const unsavedforIcon = localStorage.getItem("unsavedChanges");
     if (unsavedforIcon === "true") {
@@ -993,7 +1127,6 @@ const ArticlePage = () => {
     setOpenNotes(false);
     localStorage.removeItem("unsavedChanges");
   };
-
   // Dynamically render the nested content in order, removing numbers, and using keys as side headings
   // Helper function to capitalize the first letter of each word
   const capitalizeFirstLetter = (text) => {
@@ -1197,7 +1330,7 @@ const ArticlePage = () => {
     }
   }, [location.state]); // Add location.state as a dependency to re-run on navigation
 
-  const handleSessionClick = async (article_id, source, session_id) => {
+  const handleSessionClick = async (article_id, source, session_id, session_type) => {
     try {
       const conversationResponse = await axios.get(
         `http://13.127.207.184:80/history/conversations/history/${user_id}/${session_id}`,
@@ -1207,12 +1340,17 @@ const ArticlePage = () => {
           },
         }
       );
-
+  
       const formattedChatHistory = [];
       let currentEntry = {};
-
+  
       conversationResponse.data.conversation.forEach((entry) => {
         if (entry.role === "user") {
+          // Add file_url if it exists in the entry
+          if (entry.file_url) {
+            currentEntry.file_url = entry.file_url;
+          }
+  
           if (currentEntry.query) {
             formattedChatHistory.push(currentEntry);
             currentEntry = {};
@@ -1224,18 +1362,15 @@ const ArticlePage = () => {
           currentEntry = {};
         }
       });
-
+  
       if (currentEntry.query) {
         formattedChatHistory.push(currentEntry);
       }
-
+  
       console.log(formattedChatHistory);
-
-      sessionStorage.setItem(
-        "chatHistory",
-        JSON.stringify(formattedChatHistory)
-      );
-
+  
+      sessionStorage.setItem("chatHistory", JSON.stringify(formattedChatHistory));
+  
       // Update `source` based on its value
       const sourceType =
         source === "biorxiv"
@@ -1243,15 +1378,18 @@ const ArticlePage = () => {
           : source === "plos"
           ? "plos_id"
           : "pmid";
-
-      navigate(`/article/${sourceType}:${article_id}`, {
+  
+      // Determine navigation path based on `session_type`
+      const navigatePath = session_type ? "/article" : `/article/${sourceType}:${article_id}`;
+  
+      navigate(navigatePath, {
         state: {
           id: article_id,
           source: sourceType,
           token: token,
           user: { access_token: token, user_id: user_id },
-          annotateData: location.state.annotateData,
-          data: location.state.data,
+          annotateData: location.state?.annotateData,
+          data: location.state?.data,
         },
       });
       console.log(conversationResponse);
@@ -1259,7 +1397,21 @@ const ArticlePage = () => {
       console.error("Error fetching article or conversation data:", error);
     }
   };
+  
+  const [uploadedFile, setUploadedFile] = useState(null);
 
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setUploadedFile(file);
+    }
+  };
+  const removeUploadedFile = () => {
+    setUploadedFile(null);
+  };
+  const handleUploadClick = () => {
+    document.getElementById("file-upload").click();
+  };
   return (
     <>
       <div className="container">
@@ -1319,12 +1471,13 @@ const ArticlePage = () => {
                               session.article_id,
                               session.source,
                               session.session_id,
-                              user_id
+                              user_id,
+                              session.session_type,
                             );
                           }}
                         >
-                          {mappedTitle.slice(0, 20)}
-                          {mappedTitle.length > 20 ? "..." : ""}
+                          {mappedTitle.slice(0, 30)}
+                          {mappedTitle.length > 30 ? "..." : ""}
                         </a>
                       )}
                       <img
@@ -1677,18 +1830,92 @@ const ArticlePage = () => {
               </div>
             </div>
           ) : (
-            <div
-              className="Article-data-not-found"
-              style={{
-                width: widthIfLoggedIn,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                height: "70vh",
-              }}
-            >
-              <p style={{}}>Data not found for the given PMID</p>
-            </div>
+            <div className="derive-article-content">
+            {/* Conditionally render file upload if chatHistory is empty */}
+            {chatHistory.length === 0 && (
+              <div className="derive-insights-file-upload" onClick={handleUploadClick} style={{ cursor: "pointer" }}>
+                <img src={uploadDocx} style={{width:"40%"}}alt="upload-img" />
+                <div className="choosing-file">
+                  <input
+                    id="file-upload"
+                    type="file"
+                    accept=".pdf,.docx,.txt"
+                    onChange={handleFileUpload}
+                    style={{ display: "none" }}
+                  />
+                  <span>Drag & drop files here or <a href="#">Upload</a></span>
+                </div>
+              </div>
+            )}
+ 
+            {/* Display File, Query, and Response */}
+            {chatHistory.length > 0 ? (
+  <div className="streaming-section">
+    <div className="streaming-content">
+    {chatHistory.map((chat, index) => (
+  <div key={index}>
+    {/* Display file_url if it exists */}
+    {chat.file_url ? (
+  <div className="chat-file">
+    <div>
+      <img src={FileIconForDocument} alt="File Icon" />
+    </div>
+    <div style={{ display: "flex", flexDirection: "column" }}>
+      {/* Display the file name and extension from file_url */}
+      <span><strong>{decodeURIComponent(chat.file_url.split('/').pop())}</strong></span>
+      <span>{chat.file_url.split('.').pop().toUpperCase()}</span>
+    </div>
+  </div>
+) : (
+  chat.file && (
+    <div className="chat-file">
+      <div>
+        <img src={FileIconForDocument} alt="File Icon" />
+      </div>
+      <div style={{ display: "flex", flexDirection: "column" }}>
+        {/* Display the file name and extension from chat.file.name */}
+        <span><strong>{chat.file.name}</strong></span>
+        <span>{chat.file.name.split('.').pop().toUpperCase()}</span>
+      </div>
+    </div>
+  )
+)}
+
+
+    {/* Display the query */}
+    <div className="query-asked">
+      <span>
+        {chat.query === "Summarize this article"
+          ? "Summarize"
+          : chat.query === "what can we conclude from this article"
+          ? "Conclusion"
+          : chat.query === "what are the key highlights from this article"
+          ? "Key Highlights"
+          : chat.query}
+      </span>
+    </div>
+
+    {/* Display the response */}
+    <div className="response" style={{ textAlign: "left" }}>
+      {chat.response ? (
+        <span>
+          <ReactMarkdown>{chat.response}</ReactMarkdown>
+        </span>
+      ) : (
+        <div className="loading-dots">
+          <span>•••</span>
+        </div>
+      )}
+    </div>
+  </div>
+))}
+
+      <div ref={endOfMessagesRef} />
+    </div>
+  </div>
+) : ""}
+
+          </div>
           )}
 
           <div className="right-aside" style={{ display: displayIfLoggedIn }}>
@@ -1767,7 +1994,7 @@ const ArticlePage = () => {
         </div>
       </div>
 
-      <div
+      {articleData?<div
         className="article-chat-query"
         style={{
           width: openAnnotate || openNotes ? contentWidth : "69%",
@@ -1821,7 +2048,40 @@ const ArticlePage = () => {
           {/* </button> */}
         </div>
       </div>
-
+    :<div className="derive-chat-query" style={{ width: "69%", display: displayIfLoggedIn }}>
+    <div className="derive-stream-input">
+      <label htmlFor="file-upload" className="custom-file-upload">
+        <TbFileUpload size={25} />
+      </label>
+      <input
+        id="file-upload"
+        type="file"
+        accept=".pdf,.docx,.txt"
+        onChange={handleFileUpload}
+        style={{ display: "none" }}
+      />
+      <div className="query-file-input">
+        {uploadedFile && (
+          <span className="uploaded-file-indicator">
+            {uploadedFile.name}
+            <FontAwesomeIcon icon={faTimes} onClick={removeUploadedFile} className="cancel-file" />
+          </span>
+        )}
+        <input
+          type="text"
+          placeholder="Ask anything..."
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={handleDeriveKeyDown}
+        />
+      </div>
+      {loading ? (
+        <CircularProgress className="button" size={24} style={{ marginLeft: "1.5%" }} color="white" />
+      ) : (
+        <FontAwesomeIcon className="button" onClick={handleDeriveClick} icon={faTelegram} size={"xl"} />
+      )}
+    </div>
+  </div>}
       <div className="ScrollTop">
         <button onClick={scrollToTop} id="scrollTopBtn" title="Go to top">
           <FontAwesomeIcon icon={faAnglesUp} />
