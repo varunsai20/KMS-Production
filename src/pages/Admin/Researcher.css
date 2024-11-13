@@ -37,6 +37,7 @@
   opacity: 0px;
 }
 .Researcher-List {
+
   margin-top: 20px;
   height: 60vh; /* Set a static height for the table container based on viewport */
   overflow-y: auto; /* Allow vertical scrolling */
@@ -84,6 +85,7 @@
 .custom-table tbody tr:hover {
   background-color: #e8efff;
 }
+
 
 /* Container for action dropdown */
 .action-dropdown {

@@ -8,6 +8,8 @@ import SearchIcon from "../../assets/images/Search.svg";
 const Researchers = () => {
   const [isOpen, setIsOpen] = useState(null);
   const [userData, setUserData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [userIdToDelete, setUserIdToDelete] = useState(null);
   const navigate = useNavigate();
@@ -19,10 +21,6 @@ const Researchers = () => {
   const organizationName = user?.organization_name;
   const userRole = user?.role;
   const token = useSelector((state) => state.auth.access_token);
-  console.log(user);
-  console.log(useSelector((state) => state.auth));
-  console.log(token);
-  // Log Redux data to verify
 
   // Redirect if not an Admin
   useEffect(() => {
@@ -39,11 +37,12 @@ const Researchers = () => {
           `http://13.127.207.184:80/admin/all_users/${adminId}/${organizationName}`,
           {
             headers: {
-              Authorization: `Bearer ${token}`, // Include the Bearer token
+              Authorization: `Bearer ${token}`,
             },
           }
         );
-        setUserData(response.data.users); // Assuming API returns a `users` array
+        setUserData(response.data.users);
+        setFilteredData(response.data.users);
       } catch (error) {
         console.error("Error fetching users:", error);
       }
@@ -65,6 +64,17 @@ const Researchers = () => {
     };
   }, []);
 
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+
+    // Filter user data based on search term
+    const filtered = userData.filter((user) =>
+      user.fullname.toLowerCase().includes(value.toLowerCase())
+    );
+    setFilteredData(filtered);
+  };
+
   const toggleDropdown = (email) => {
     setIsOpen(isOpen === email ? null : email);
   };
@@ -76,6 +86,7 @@ const Researchers = () => {
   const handleEditClick = (userId) => {
     navigate(`/admin/users/edit/${userId}`);
   };
+
   const handleSuspendClick = async (userId, currentStatus) => {
     const normalizedStatus = currentStatus.toLowerCase();
     const newStatus = normalizedStatus === "active" ? "Inactive" : "active";
@@ -96,9 +107,14 @@ const Researchers = () => {
       );
 
       if (response.status === 200) {
-        // Update userData to reflect the new status
+
         setIsOpen(false);
         setUserData((prevData) =>
+          prevData.map((user) =>
+            user.user_id === userId ? { ...user, user_status: newStatus } : user
+          )
+        );
+        setFilteredData((prevData) =>
           prevData.map((user) =>
             user.user_id === userId ? { ...user, user_status: newStatus } : user
           )
@@ -108,6 +124,7 @@ const Researchers = () => {
       console.error("Error updating user status:", error);
     }
   };
+
   const initialDelete = (userId) => {
     setIsOpen(false);
     setShowConfirmDelete(true);
@@ -120,14 +137,13 @@ const Researchers = () => {
       setShowConfirmDelete(false);
     }
   };
+
   const cancelDelete = (e) => {
     e.stopPropagation();
     setShowConfirmDelete(false);
   };
 
   const handleDeleteClick = async (userId) => {
-    // if (window.confirm("Are you sure you want to delete this user?")) {
-    //e.stopPropagation();
     try {
       await axios.delete(
         `http://13.127.207.184:80/admin/delete_user/${userId}`,
@@ -139,17 +155,22 @@ const Researchers = () => {
       );
       setIsOpen(false);
       setUserData(userData.filter((user) => user.user_id !== userId));
+      setFilteredData(filteredData.filter((user) => user.user_id !== userId));
     } catch (error) {
       console.error("Error deleting user:", error);
     }
-    // }
   };
+
   return (
     <div style={{ margin: "0 2%" }}>
       <h2 className="ResearcherHeading">Manage Users</h2>
       <div className="Manage-Researchers">
         <div className="Manage-Researcher-Input">
-          <input placeholder="Search by name or ID" />
+          <input
+            placeholder="Search by name or ID"
+            value={searchTerm}
+            onChange={handleSearchChange}
+          />
           <img src={SearchIcon} alt="search-icon" />
         </div>
         <button onClick={handleCreateClick} className="Admin-create">
@@ -169,7 +190,7 @@ const Researchers = () => {
             </tr>
           </thead>
           <tbody>
-            {userData.map((user) => (
+            {filteredData.map((user) => (
               <tr key={user.email}>
                 <td>
                   <a
@@ -188,7 +209,7 @@ const Researchers = () => {
                 </td>
                 <td>{user.role}</td>
                 <td>
-                  <div className="action-dropdown">
+                  <div className="action-dropdown" >
                     <div
                       className="action-icon"
                       onClick={() => toggleDropdown(user.email)}
@@ -196,18 +217,26 @@ const Researchers = () => {
                       ⋮
                     </div>
                     {isOpen === user.email && (
-                      <ul className="dropdown-menu">
+                      <ul
+                        ref={dropdownRef}
+                        className="dropdown-menu"
+                        onClick={(e) => e.stopPropagation()} // Prevents click inside from closing
+                      >
                         <li
                           className="dropdown-item"
-                          onClick={() => handleEditClick(user.user_id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEditClick(user.user_id);
+                          }}
                         >
                           Edit
                         </li>
                         <li
                           className="dropdown-item delete"
-                          onClick={() =>
-                            handleSuspendClick(user.user_id, user.user_status)
-                          }
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleSuspendClick(user.user_id, user.user_status);
+                          }}
                         >
                           {user.user_status.toLowerCase() === "active"
                             ? "Suspend"
@@ -215,8 +244,8 @@ const Researchers = () => {
                         </li>
                         <li
                           className="dropdown-item delete"
-                          // onClick={() => handleDeleteClick(user.user_id)}
-                          onClick={() => {
+                          onClick={(e) => {
+                            e.stopPropagation();
                             initialDelete(user.user_id);
                           }}
                         >
@@ -244,7 +273,6 @@ const Researchers = () => {
                     </button>
                     <button
                       className="confirm-delete-button"
-                      //onClick={handleDeleteClick(user.user.id)}
                       onClick={confirmDelete}
                     >
                       Delete
