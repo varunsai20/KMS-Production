@@ -627,7 +627,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
         toast.success("Collection Created", {
           position: "top-center",
           autoClose: 2000,
-          
+
           style: {
             backgroundColor: "rgba(237, 254, 235, 1)",
             borderLeft: "5px solid rgba(15, 145, 4, 1)",
@@ -1106,7 +1106,8 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
 
     const emailData = {
       email: email, // assuming `email` state holds the email input value
-      subject: emailSubject || "Check out this article", // default subject if none provided
+      // subject: emailSubject || searchTerm,
+      subject: searchTerm,
       content: links, // the concatenated URLs
     };
     console.log(links);
@@ -1258,6 +1259,12 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       ...prevState,
       [key]: !prevState[key], // Toggle between full text and sliced text for a specific row
     }));
+  };
+  const handleKeyDown = (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault(); // Prevents default form submission
+      handleSendEmail();
+    }
   };
 
   return (
@@ -1954,20 +1961,28 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                                       className="email-modal-body"
                                       style={{
                                         display: "flex",
-                                        gap: "20px",
+                                        // gap: "20px",
                                         flexDirection: "column",
                                       }}
                                     >
+                                      <label
+                                        htmlFor="email"
+                                        aria-required="true"
+                                      >
+                                        To*
+                                      </label>
                                       <input
                                         type="email"
                                         value={email}
                                         onChange={(e) =>
                                           setEmail(e.target.value)
                                         }
+                                        required
                                         placeholder="Email ID"
                                         className="email-input"
+                                        onKeyDown={handleKeyDown}
                                       />
-                                      <input
+                                      {/* <input
                                         type="text"
                                         value={emailSubject}
                                         onChange={(e) =>
@@ -1975,7 +1990,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                                         }
                                         placeholder="Subject"
                                         className="email-input"
-                                      />
+                                      /> */}
                                       <div className="confirm-buttons">
                                         <button
                                           onClick={handleCloseEmailModal}
