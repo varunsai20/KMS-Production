@@ -11,6 +11,7 @@
     rgba(26, 168, 210, 0.08) 68.81%,
     rgba(76, 210, 217, 0.08) 100%
   );
+  min-width: 100%;
 }
 
 .Navbar-Header-Items {
