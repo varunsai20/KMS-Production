@@ -86,9 +86,9 @@
   margin-left: 1%;
   width: 20%;
   padding: 27px, 0px, 27px, 0px;
-  /* height: 70vh; */
-  max-height: 700px;
-  overflow-y: auto;
+  height: 70vh;
+  /* max-height: 700px; */
+  overflow-y: hidden;
   color: #333;
   border-radius: 20px;
   border: 1px solid #ebebf3;
@@ -222,7 +222,9 @@
   list-style: none;
   padding: 0px 15px 0px 15px;
   justify-content: start;
-  margin-top: 15%;
+  margin-top: 5%;
+  height: -webkit-fill-available;
+  overflow: auto;
 }
 
 .history-pagination ul li {
@@ -858,4 +860,26 @@ td {
 .collection-article-count {
   font-size: 16px;
   font-weight: 500;
+}
+.derive-insights-file-upload{
+  margin: auto;
+  display: flex;
+  gap: 20px;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 60px;
+  border: 1px dashed rgba(0, 0, 0, 0.2);
+  border-radius: 16px;
+}
+.chat-file{
+  display: flex;
+  width: fit-content;
+  flex-direction: row;
+  /* justify-content: flex-start; */
+  float: right;
+  background: aquamarine;
+  padding: 10px;
+  border-radius: 12px;
+  align-items: flex-end;
+  gap: 10px;
 }

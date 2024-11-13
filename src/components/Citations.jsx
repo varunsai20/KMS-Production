@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import "./Citations.css";
-import uploadLogo from "../assets/images/upload-file 1.svg";
+import uploadLogo from "../assets/images/uploadDocx.svg";
 import { IoCloseOutline } from "react-icons/io5";
 
 const Citations = ({ handleCloseCitations }) => {

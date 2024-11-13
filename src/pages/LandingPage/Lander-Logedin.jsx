@@ -96,7 +96,10 @@ const Lander = () => {
 
     if (user_id && token) {
       fetchSessions();
+      dispatch(setDeriveInsights(false));
+      sessionStorage.setItem("chatHistory",[])
     }
+    
   }, [user_id, token]);
 
   console.log(sessions[0]);
@@ -209,9 +212,10 @@ const Lander = () => {
             alt="Landing Graphic"
             style={{
               width: "85%",
-              height: "auto",
+              height: "-webkit-fill-available",
               maxWidth: "234px",
-              maxHeight: "254px",
+              // maxHeight: "254px",
+              mixBlendMode:"color-burn",
             }}
           />
         </div>
@@ -249,7 +253,7 @@ const Lander = () => {
 
               <a href="#">Dashboard</a>
               <a href="#">Reports</a>
-              <a href="#" onClick={handleOpenInsights}>Derive Insights</a>    
+              <a onClick={handleOpenInsights}>Derive Insights</a>    
               </div>
             <div className="Feature-Item">
               <img
