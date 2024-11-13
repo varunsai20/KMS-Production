@@ -144,7 +144,17 @@ const NotesManager = ({
           prevNotes.filter((note) => note.note_id !== noteId)
         );
         toast.success("Deleted Successfully", {
-          autoClose: 2000,
+          position: "top-center",
+          autoClose: 3000,
+    
+          style: {
+            backgroundColor: "rgba(237, 254, 235, 1)",
+            borderLeft: "5px solid rgba(15, 145, 4, 1)",
+            color: "rgba(15, 145, 4, 1)",
+          },
+          progressStyle: {
+            backgroundColor: "rgba(15, 145, 4, 1)",
+          },
         });
 
         console.log("Note deleted successfully");
@@ -156,6 +166,9 @@ const NotesManager = ({
             backgroundColor: "rgba(254, 235, 235, 1)",
             borderLeft: "5px solid rgba(145, 4, 4, 1)",
             color: "background: rgba(145, 4, 4, 1)",
+          },
+          progressStyle: {
+            backgroundColor: "rgba(145, 4, 4, 1)",
           },
         });
         console.error("Failed to delete note:", response);

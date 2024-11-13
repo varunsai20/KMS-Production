@@ -49,6 +49,8 @@ const Editnotes = ({
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [email, setEmail] = useState("");
+  const [recipient_name, setRecipientName] = useState("");
+  const [subject, setSubject] = useState("");
   const [showConfirmSave, setShowConfirmSave] = useState(false);
   const [unsavedChanges, setUnsavedChanges] = useState(false);
   const initialText = useRef("");
@@ -150,6 +152,8 @@ const Editnotes = ({
       user_id: user_id,
       note_id: note_id,
       email: email,
+      recipient_name: recipient_name,
+      subject: subject,
     };
 
     try {
@@ -167,16 +171,14 @@ const Editnotes = ({
         toast.success("Email sent successfully", {
           position: "top-center",
           autoClose: 2000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "colored",
+          
           style: {
             backgroundColor: "rgba(237, 254, 235, 1)",
             borderLeft: "5px solid rgba(15, 145, 4, 1)",
             color: "rgba(15, 145, 4, 1)",
+          },
+          progressStyle: {
+            backgroundColor: "rgba(15, 145, 4, 1)",
           },
         });
         console.log("Email sent successfully to:", email);
@@ -201,6 +203,9 @@ const Editnotes = ({
           backgroundColor: "rgba(254, 235, 235, 1)",
           borderLeft: "5px solid rgba(145, 4, 4, 1)",
           color: "background: rgba(145, 4, 4, 1)",
+        },
+        progressStyle: {
+          backgroundColor: "rgba(145, 4, 4, 1)",
         },
       });
       console.error("Error sending email:", error);
@@ -291,16 +296,14 @@ const Editnotes = ({
           toast.success("Notes Saved Successfully", {
             position: "top-center",
             autoClose: 1000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "colored",
+           
             style: {
               backgroundColor: "rgba(237, 254, 235, 1)",
               borderLeft: "5px solid rgba(15, 145, 4, 1)",
               color: "rgba(15, 145, 4, 1)",
+            },
+            progressStyle: {
+              backgroundColor: "rgba(15, 145, 4, 1)",
             },
           });
           setUnsavedChanges(false); // Reset unsaved changes after saving
@@ -314,6 +317,9 @@ const Editnotes = ({
               backgroundColor: "rgba(254, 235, 235, 1)",
               borderLeft: "5px solid rgba(145, 4, 4, 1)",
               color: "background: rgba(145, 4, 4, 1)",
+            },
+            progressStyle: {
+              backgroundColor: "rgba(145, 4, 4, 1)",
             },
           });
           console.error("Failed to update note:", response);
@@ -432,7 +438,7 @@ const Editnotes = ({
       <form
         className="edit-note__form"
         onSubmit={handleForm}
-        style={{ height: `${notesHeight - 11.6}vh` }}
+        style={{ height: `${notesHeight - 13}vh` }}
       >
         <input
           type="text"
@@ -634,10 +640,27 @@ const Editnotes = ({
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter Email ID"
+                placeholder="Email ID"
                 className="email-input"
                 onKeyDown={handleKeyDown}
               />
+              <input
+                type="text"
+                value={recipient_name}
+                onChange={(e) => setRecipientName(e.target.value)}
+                placeholder="Recipient Name"
+                className="recipient-input"
+                onKeyDown={handleKeyDown}
+              />
+              <input
+                type="text"
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+                placeholder="Subject"
+                className="subject-input"
+                onKeyDown={handleKeyDown}
+              />
+
               <div className="email-button-group">
                 <button
                   className="email-cancel-button"

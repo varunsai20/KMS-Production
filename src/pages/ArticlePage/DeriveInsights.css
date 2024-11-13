@@ -257,11 +257,11 @@
   margin: auto;
   justify-content: space-between;
 }
-.query-file-input{
+.query-file-input {
   width: -webkit-fill-available;
   display: flex;
 }
-.uploaded-file-indicator{
+.uploaded-file-indicator {
   display: flex;
   /* justify-content: space-evenly; */
   align-items: center;
@@ -323,22 +323,4 @@
 
 #derive-scrollTopBtn:hover {
   background-color: #555;
-}
-.derive-insights-file-upload {
-  display: flex;
-    width: 50%;
-    border-style: dashed;
-    border-radius: 20px;
-    /* border: 1px solid #999999; */
-    padding: 30px;
-    margin: auto;
-    transform: translate(0, 0);
-    align-items: baseline;
-    justify-content: center;
-    gap: 5px;
-}
-.choosing-file {
-  display: grid;
-  justify-content: center;
-  align-items: center;
 }

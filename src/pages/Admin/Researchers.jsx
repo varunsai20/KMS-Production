@@ -4,6 +4,7 @@ import { useSelector } from "react-redux";
 import axios from "axios";
 import "./Researcher.css";
 import SearchIcon from "../../assets/images/Search.svg";
+import { toast } from "react-toastify";
 
 const Researchers = () => {
   const [isOpen, setIsOpen] = useState(null);
@@ -107,7 +108,6 @@ const Researchers = () => {
       );
 
       if (response.status === 200) {
-
         setIsOpen(false);
         setUserData((prevData) =>
           prevData.map((user) =>
@@ -153,10 +153,35 @@ const Researchers = () => {
           },
         }
       );
+      toast.success("User Deleted successfully", {
+        position: "top-center",
+        autoClose: 2000,
+
+        style: {
+          backgroundColor: "rgba(237, 254, 235, 1)",
+          borderLeft: "5px solid rgba(15, 145, 4, 1)",
+          color: "rgba(15, 145, 4, 1)",
+        },
+        progressStyle: {
+          backgroundColor: "rgba(15, 145, 4, 1)",
+        },
+      });
       setIsOpen(false);
       setUserData(userData.filter((user) => user.user_id !== userId));
       setFilteredData(filteredData.filter((user) => user.user_id !== userId));
     } catch (error) {
+      toast.error("Error deleting user:", {
+        position: "top-center",
+        autoClose: 2000,
+        style: {
+          backgroundColor: "rgba(254, 235, 235, 1)",
+          borderLeft: "5px solid rgba(145, 4, 4, 1)",
+          color: "background: rgba(145, 4, 4, 1)",
+        },
+        progressStyle: {
+          backgroundColor: "rgba(145, 4, 4, 1)",
+        },
+      });
       console.error("Error deleting user:", error);
     }
   };
@@ -209,7 +234,7 @@ const Researchers = () => {
                 </td>
                 <td>{user.role}</td>
                 <td>
-                  <div className="action-dropdown" >
+                  <div className="action-dropdown">
                     <div
                       className="action-icon"
                       onClick={() => toggleDropdown(user.email)}
@@ -260,11 +285,14 @@ const Researchers = () => {
             {showConfirmDelete && (
               <div className="confirm-overlay">
                 <div className="confirm-popup">
-                  <p className="Delete-user">Delete User</p>
-                  <p id="confirming">
-                    Are you sure you want to delete this user?
-                  </p>
+                  <p>Are you sure you want to delete this note?</p>
                   <div className="confirm-buttons">
+                    <button
+                      className="confirm-delete-button"
+                      onClick={confirmDelete}
+                    >
+                      Delete
+                    </button>
                     <button
                       className="confirm-keep-button"
                       onClick={cancelDelete}

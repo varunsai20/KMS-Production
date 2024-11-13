@@ -230,16 +230,14 @@ const Createnotes = ({
         toast.success("Notes Saved Successfully", {
           position: "top-center",
           autoClose: 1000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "colored",
+
           style: {
             backgroundColor: "rgba(237, 254, 235, 1)",
             borderLeft: "5px solid rgba(15, 145, 4, 1)",
             color: "rgba(15, 145, 4, 1)",
+          },
+          progressStyle: {
+            backgroundColor: "rgba(15, 145, 4, 1)",
           },
         });
         setUnsavedChanges(false);
@@ -261,6 +259,9 @@ const Createnotes = ({
           backgroundColor: "rgba(254, 235, 235, 1)",
           borderLeft: "5px solid rgba(145, 4, 4, 1)",
           color: "background: rgba(145, 4, 4, 1)",
+        },
+        progressStyle: {
+          backgroundColor: "rgba(145, 4, 4, 1)",
         },
       });
       console.error("Error saving note:", error);
@@ -403,7 +404,7 @@ const Createnotes = ({
         style={
           isOpenNotes
             ? { height: `${height - 86}px` }
-            : { height: `${notesHeight - 13.1}vh` }
+            : { height: `${notesHeight - 13.5}vh` }
         }
       >
         <input

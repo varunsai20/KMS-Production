@@ -485,15 +485,18 @@ const ArticlePage = () => {
             "collections",
             JSON.stringify(updatedCollections)
           );
-          toast.success("Bookmark deleted successfully", {
-            position: "center",
-            autoClose: 1000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "colored",
+          toast.success("Bookmark unsaved successfully", {
+            position: "top-center",
+            autoClose: 2000,
+            
+            style: {
+              backgroundColor: "rgba(237, 254, 235, 1)",
+              borderLeft: "5px solid rgba(15, 145, 4, 1)",
+              color: "rgba(15, 145, 4, 1)",
+            },
+            progressStyle: {
+              backgroundColor: "rgba(15, 145, 4, 1)",
+            },
           });
 
           await fetchCollections();
@@ -546,15 +549,17 @@ const ArticlePage = () => {
 
         setCollections(updatedCollections);
         localStorage.setItem("collections", JSON.stringify(updatedCollections));
-        toast.success("Successfully added to Existing Collection", {
-          position: "top-right",
-          autoClose: 1000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "colored",
+        toast.success("Added to Existing Collection", {
+          position: "top-center",
+          autoClose: 2000,
+          style: {
+            backgroundColor: "rgba(237, 254, 235, 1)",
+            borderLeft: "5px solid rgba(15, 145, 4, 1)",
+            color: "rgba(15, 145, 4, 1)",
+          },
+          progressStyle: {
+            backgroundColor: "rgba(15, 145, 4, 1)",
+          },
         });
 
         await fetchCollections();
@@ -569,6 +574,9 @@ const ArticlePage = () => {
           backgroundColor: "rgba(254, 235, 235, 1)",
           borderLeft: "5px solid rgba(145, 4, 4, 1)",
           color: "background: rgba(145, 4, 4, 1)",
+        },
+        progressStyle: {
+          backgroundColor: "rgba(145, 4, 4, 1)",
         },
       });
       console.error("Error adding bookmark to existing collection:", error);
@@ -599,14 +607,17 @@ const ArticlePage = () => {
 
       if (response.status === 201) {
         toast.success("Collection Created", {
-          position: "top-right",
+          position: "top-center",
           autoClose: 1000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "colored",
+          
+          style: {
+            backgroundColor: "rgba(237, 254, 235, 1)",
+            borderLeft: "5px solid rgba(15, 145, 4, 1)",
+            color: "rgba(15, 145, 4, 1)",
+          },
+          progressStyle: {
+            backgroundColor: "rgba(15, 145, 4, 1)",
+          },
         });
         await fetchCollections();
         setNewCollectionName("");
@@ -620,6 +631,9 @@ const ArticlePage = () => {
           backgroundColor: "rgba(254, 235, 235, 1)",
           borderLeft: "5px solid rgba(145, 4, 4, 1)",
           color: "background: rgba(145, 4, 4, 1)",
+        },
+        progressStyle: {
+          backgroundColor: "rgba(145, 4, 4, 1)",
         },
       });
       console.error("Error creating new collection:", error);
@@ -1360,16 +1374,16 @@ const ArticlePage = () => {
                         </p>
                         <div className="Article-confirm-buttons">
                           <button
-                            className="overlay-ok-button"
-                            onClick={handleOk}
-                          >
-                            Leave
-                          </button>
-                          <button
                             className="overlay-cancel-button"
                             onClick={handleCancelConfirm}
                           >
                             Cancel
+                          </button>
+                          <button
+                            className="overlay-ok-button"
+                            onClick={handleOk}
+                          >
+                            Leave
                           </button>
                         </div>
                       </div>
@@ -1456,6 +1470,9 @@ const ArticlePage = () => {
                     <div className="bookmark-modal-overlay">
                       <div className="modal-content" ref={modalRef}>
                         {/* Existing Collections */}
+                        <div className="bookmark-p">
+                          <p className="bookmark-para">Bookmarks</p>
+                        </div>
 
                         {/* Create New Collection */}
                         <h4>Create a new collection:</h4>
@@ -1648,13 +1665,7 @@ const ArticlePage = () => {
                     className="Popup-buttons"
                     title="Send to Notes"
                   >
-                    {/* <BiSolidPaperPlane size={25} color="black" /> */}
-                    {/* <IoMdPaperPlane size={25} color="black" /> */}
-
                     <LiaTelegramPlane size={25} color="black" />
-                    {/* <span style={{ color: "black", fontSize: "17px" }}>
-                      send to notes
-                    </span> */}
                   </button>
                 </div>
               </div>
@@ -1739,8 +1750,8 @@ const ArticlePage = () => {
                       Are you sure you want to leave without saving?
                     </p>
                     <div className="Article-confirm-buttons">
-                      <button onClick={handleCloseIcon}>Leave</button>
                       <button onClick={handleCancelIcon}>Cancel</button>
+                      <button onClick={handleCloseIcon}>Leave</button>
                     </div>
                   </div>
                 </div>
