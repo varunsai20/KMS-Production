@@ -34,9 +34,9 @@
 
 .save-confirm-buttons {
   margin-top: 20px;
-  width: 30px;
+  /* width: 30px; */
   display: flex;
-  justify-content: space-evenly;
+  justify-content: flex-end;
   gap: 30px;
 }
 

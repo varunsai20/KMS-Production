@@ -15,6 +15,8 @@ const NoteItem = ({ note, onEdit, onDelete, isOpenNotes }) => {
   const [showConfirmDelete, setShowConfirmDelete] = useState(false); // Track confirmation popup visibility
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [email, setEmail] = useState("");
+  const [subject, setSubject] = useState("");
+  const [recipient_name, setRecipientName] = useState("");
   const menuRef = useRef(null); // Reference to the popup menu
   const { user } = useSelector((state) => state.auth);
   const user_id = user?.user_id;
@@ -36,6 +38,8 @@ const NoteItem = ({ note, onEdit, onDelete, isOpenNotes }) => {
       user_id: user_id,
       note_id: note.note_id,
       email: email,
+      recipient_name: recipient_name,
+      subject: subject,
     };
 
     try {
@@ -51,7 +55,18 @@ const NoteItem = ({ note, onEdit, onDelete, isOpenNotes }) => {
 
       if (response.status === 200) {
         toast.success("Email sent successfully", {
+          position: "top-center",
           autoClose: 2000,
+
+          theme: "colored",
+          style: {
+            backgroundColor: "rgba(237, 254, 235, 1)",
+            borderLeft: "5px solid rgba(15, 145, 4, 1)",
+            color: "rgba(15, 145, 4, 1)",
+          },
+          progressStyle: {
+            backgroundColor: "rgba(15, 145, 4, 1)",
+          },
         });
         console.log("Email sent successfully to:", email);
         handleCloseEmailModal();
@@ -64,6 +79,9 @@ const NoteItem = ({ note, onEdit, onDelete, isOpenNotes }) => {
             borderLeft: "5px solid rgba(145, 4, 4, 1)",
             color: "background: rgba(145, 4, 4, 1)",
           },
+          progressStyle: {
+            backgroundColor: "rgba(145, 4, 4, 1)",
+          },
         });
         console.error("Failed to send email:", response);
       }
@@ -75,6 +93,9 @@ const NoteItem = ({ note, onEdit, onDelete, isOpenNotes }) => {
           backgroundColor: "rgba(254, 235, 235, 1)",
           borderLeft: "5px solid rgba(145, 4, 4, 1)",
           color: "background: rgba(145, 4, 4, 1)",
+        },
+        progressStyle: {
+          backgroundColor: "rgba(145, 4, 4, 1)",
         },
       });
       console.error("Error sending email:", error);
@@ -350,6 +371,22 @@ const NoteItem = ({ note, onEdit, onDelete, isOpenNotes }) => {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter Email ID"
                 className="email-input"
+                onKeyDown={handleKeyDown}
+              />
+              <input
+                type="text"
+                value={recipient_name}
+                onChange={(e) => setRecipientName(e.target.value)}
+                placeholder="Recipient Name"
+                className="recipient-input"
+                onKeyDown={handleKeyDown}
+              />
+              <input
+                type="text"
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+                placeholder="Subject"
+                className="subject-input"
                 onKeyDown={handleKeyDown}
               />
               <div className="email-button-group">

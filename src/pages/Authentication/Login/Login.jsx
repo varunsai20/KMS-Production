@@ -5,8 +5,8 @@ import { useDispatch } from "react-redux";
 import axios from "axios";
 import { login } from "../../../redux/reducers/LoginAuth"; // Import login action
 import { toast } from "react-toastify";
-import Logo from "../../../assets/images/InfersolD17aR04aP01ZL-Polk4a 1@2x.png";
-import { SiFacebook } from "react-icons/si";
+import Logo from "../../../assets/images/InfersolD17aR04aP01ZL-Polk4a 1.svg";
+//import { SiFacebook } from "react-icons/si";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -98,13 +98,16 @@ const Login = () => {
           );
           toast.success("Loged in Successfully", {
             position: "top-center",
-            autoClose: 3000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "colored",
+            autoClose: 2000,
+            
+            style: {
+              backgroundColor: "rgba(237, 254, 235, 1)",
+              borderLeft: "5px solid rgba(15, 145, 4, 1)",
+              color: "rgba(15, 145, 4, 1)",
+            },
+            progressStyle: {
+              backgroundColor: "rgba(15, 145, 4, 1)",
+            },
           });
 
           // Redirect based on role
@@ -115,6 +118,18 @@ const Login = () => {
           }
         }
       } catch (error) {
+        toast.error("Login failed. Please check your credentials.", {
+          position: "top-center",
+          autoClose: 2000,
+          style: {
+            backgroundColor: "rgba(254, 235, 235, 1)",
+            borderLeft: "5px solid rgba(145, 4, 4, 1)",
+            color: "background: rgba(145, 4, 4, 1)",
+          },
+          progressStyle: {
+            backgroundColor: "rgba(145, 4, 4, 1)",
+          },
+        });
         console.error("Login or profile fetch failed:", error);
         setloginError("Login failed. Please check your credentials.");
       }
@@ -126,7 +141,7 @@ const Login = () => {
       <div className="Login-Form">
         <img src={Logo} alt="logo" className="logo-in-login" />
         <form className="form" onSubmit={handleSubmit}>
-          <h2>Login</h2>
+          <h2 style={{ margin: "0" }}>Login</h2>
 
           <div className="flex-column">
             <label>Username</label>

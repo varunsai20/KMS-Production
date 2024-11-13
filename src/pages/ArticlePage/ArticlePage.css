@@ -752,7 +752,7 @@ td {
 .Article-confirm-buttons {
   display: flex;
   gap: 10px;
-  justify-content: space-evenly;
+  justify-content: flex-end;
   margin-top: 15px;
 }
 
@@ -764,13 +764,13 @@ td {
 }
 
 .Article-confirm-buttons button:first-of-type {
-  background: rgba(248, 29, 82, 1);
-  color: white;
+  color: rgba(78, 78, 86, 1);
+  background: rgba(234, 234, 236, 1);
 }
 
 .Article-confirm-buttons button:last-of-type {
-  color: rgba(78, 78, 86, 1);
-  background: rgba(234, 234, 236, 1);
+  background: rgba(248, 29, 82, 1);
+  color: white;
 }
 .bookmark-modal-overlay {
   position: fixed;
@@ -850,4 +850,12 @@ td {
 }
 .modal-content ul li:hover {
   background-color: #dddddd70;
+}
+.collection-name {
+  font-size: 16px;
+  font-weight: 500;
+}
+.collection-article-count {
+  font-size: 16px;
+  font-weight: 500;
 }

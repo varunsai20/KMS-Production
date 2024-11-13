@@ -2,10 +2,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-direction: column;
   height: 100%; /* Ensure it takes up the full height of the viewport */
   overflow-y: hidden;
 }
 .logo-in-login {
+  margin-bottom: 3%;
 }
 
 .form {

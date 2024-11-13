@@ -22,7 +22,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 //import Draggable from "react-draggable";
 import Collection from "../../components/Collection";
-import DeriveInsights from "../ArticlePage/DeriveInsights";
+import Citations from "../../components/Citations";
 
 import Notes from "../NotesPage/Notes";
 
@@ -34,6 +34,8 @@ const Lander = () => {
   const [refreshSessions, setRefreshSessions] = useState(false);
   console.log(sessions);
   const [isCollectionOpen, setIsCollectionOpen] = useState(false);
+  const [isCitationsOpen, setIsCitationsOpen] = useState(false);
+
   const [openInsights, setOpenInsights] = useState(false);
   const [dimensions, setDimensions] = useState({ width: 400, height: 400 });
   const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -53,6 +55,12 @@ const Lander = () => {
   };
   const handleCloseCollection = () => {
     setIsCollectionOpen(false);
+  };
+  const handleOpenCitations = () => {
+    setIsCitationsOpen(true);
+  };
+  const handleCloseCitations = () => {
+    setIsCitationsOpen(false);
   };
   // const handleOpenInsights = () => {
   //   setOpenInsights(true);
@@ -245,7 +253,9 @@ const Lander = () => {
               <h4>Utilities</h4>
 
               <a href="#">Annotations</a>
-              <a href="#">Citation</a>
+              <a href="#citations" onClick={handleOpenCitations}>
+                Citation
+              </a>
               <a href="#">Protocol</a>
             </div>
             <div className="Feature-Item">
@@ -383,6 +393,18 @@ const Lander = () => {
           <div className="blur-overlay">
             <div className="collection-modal">
               <Collection setIsCollectionOpen={setIsCollectionOpen} />
+            </div>
+          </div>
+        </>
+      )}
+      {isCitationsOpen && (
+        <>
+          <div className="citation-overlay">
+            {/* <button className="citation-close" onClick={handleCloseCitations}>
+              close
+            </button> */}
+            <div className="citation-modal">
+              <Citations handleCloseCitations={handleCloseCitations} />
             </div>
           </div>
         </>

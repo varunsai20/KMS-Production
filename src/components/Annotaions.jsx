@@ -127,7 +127,11 @@ const Annotation = ({
         if (index === 0 || isExpanded) {
           rows.push(
             <tr className="search-table-body" key={categoryKey}>
-              <td style={{ paddingLeft: index === 0 ? 0 : 30 }}>
+              <td
+                style={{
+                  paddingLeft: index === 0 ? 0 : 30,
+                }}
+              >
                 {index === 0 && (
                   <button onClick={() => toggleExpandPmid(pmid)}>
                     {isExpanded ? "▼" : "▶"}

@@ -488,15 +488,17 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
             "collections",
             JSON.stringify(updatedCollections)
           );
-          toast.success("Bookmark deleted successfully", {
+          toast.success("Bookmark unsaved successfully", {
             position: "top-center",
-            autoClose: 1000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "colored",
+            autoClose: 2000,
+            style: {
+              backgroundColor: "rgba(237, 254, 235, 1)",
+              borderLeft: "5px solid rgba(15, 145, 4, 1)",
+              color: "rgba(15, 145, 4, 1)",
+            },
+            progressStyle: {
+              backgroundColor: "rgba(15, 145, 4, 1)",
+            },
           });
 
           await fetchCollections(); // Refetch collections after successful deletion
@@ -565,15 +567,17 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
 
         setCollections(updatedCollections);
         localStorage.setItem("collections", JSON.stringify(updatedCollections));
-        toast.success("Successfully added to Existing Collection", {
-          position: "top-right",
-          autoClose: 1000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "colored",
+        toast.success("Added to Existing Collection", {
+          position: "top-center",
+          autoClose: 2000,
+          style: {
+            backgroundColor: "rgba(237, 254, 235, 1)",
+            borderLeft: "5px solid rgba(15, 145, 4, 1)",
+            color: "rgba(15, 145, 4, 1)",
+          },
+          progressStyle: {
+            backgroundColor: "rgba(15, 145, 4, 1)",
+          },
         });
 
         await fetchCollections(); // Refetch collections after successful addition
@@ -588,6 +592,9 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
           backgroundColor: "rgba(254, 235, 235, 1)",
           borderLeft: "5px solid rgba(145, 4, 4, 1)",
           color: "background: rgba(145, 4, 4, 1)",
+        },
+        progressStyle: {
+          backgroundColor: "rgba(145, 4, 4, 1)",
         },
       });
       console.error("Error adding bookmark to existing collection:", error);
@@ -618,14 +625,17 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
 
       if (response.status === 201) {
         toast.success("Collection Created", {
-          position: "top-right",
-          autoClose: 1000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "colored",
+          position: "top-center",
+          autoClose: 2000,
+          
+          style: {
+            backgroundColor: "rgba(237, 254, 235, 1)",
+            borderLeft: "5px solid rgba(15, 145, 4, 1)",
+            color: "rgba(15, 145, 4, 1)",
+          },
+          progressStyle: {
+            backgroundColor: "rgba(15, 145, 4, 1)",
+          },
         });
         await fetchCollections(); // Refetch collections after successful creation
         setNewCollectionName("");
@@ -1113,7 +1123,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
 
       if (response.status === 200) {
         toast.success("Email sent successfully", {
-          position: "top-right",
+          position: "top-center",
           autoClose: 3000,
           hideProgressBar: false,
           closeOnClick: true,
@@ -1121,6 +1131,14 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
           draggable: true,
           progress: undefined,
           theme: "colored",
+          style: {
+            backgroundColor: "rgba(237, 254, 235, 1)",
+            borderLeft: "5px solid rgba(15, 145, 4, 1)",
+            color: "rgba(15, 145, 4, 1)",
+          },
+          progressStyle: {
+            backgroundColor: "rgba(15, 145, 4, 1)",
+          },
         });
         console.log("Email sent successfully");
         setEmail("");
@@ -1136,6 +1154,9 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
           backgroundColor: "rgba(254, 235, 235, 1)",
           borderLeft: "5px solid rgba(145, 4, 4, 1)",
           color: "background: rgba(145, 4, 4, 1)",
+        },
+        progressStyle: {
+          backgroundColor: "rgba(145, 4, 4, 1)",
         },
       });
     }
@@ -1943,7 +1964,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                                         onChange={(e) =>
                                           setEmail(e.target.value)
                                         }
-                                        placeholder="Enter Email ID"
+                                        placeholder="Email ID"
                                         className="email-input"
                                       />
                                       <input
@@ -1952,7 +1973,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                                         onChange={(e) =>
                                           setEmailSubject(e.target.value)
                                         }
-                                        placeholder="Enter Subject"
+                                        placeholder="Subject"
                                         className="email-input"
                                       />
                                       <div className="confirm-buttons">
@@ -1972,7 +1993,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                                           onClick={handleSendEmail}
                                           style={{
                                             borderRadius: "30px",
-                                            // width: "50%",
+                                            width: "20%",
                                             // margin: "auto",
                                           }}
                                           className="send-button"

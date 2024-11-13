@@ -6,7 +6,7 @@ import Button from "./Buttons";
 import "../styles/variables.css";
 import "./Header-New.css";
 //import Logo from "../assets/images/Logo_New.svg";
-import Logo from "../assets/images/InfersolD17aR04aP01ZL-Polk4a 1@2x.png";
+import Logo from "../assets/images/InfersolD17aR04aP01ZL-Polk4a 1.svg";
 import ProfileIcon from "../assets/images/Profile-start.svg";
 
 import axios from "axios";
@@ -66,7 +66,7 @@ const Header = () => {
     <div
       className="Navbar-Header"
       style={{
-        width: location.pathname.startsWith("/article") ? "100%" : "auto",
+        width: location.pathname.startsWith("/article") ? "100%" : "100%",
       }} // Set width conditionally
     >
       <div className="Navbar-Header-Items">
