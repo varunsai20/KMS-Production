@@ -1165,11 +1165,20 @@ td {
 .pagination-controls button:hover:not(:disabled) {
   color: #0056b3; /* Button hover color */
 }
-
-/* Align the input with other elements */
 button input {
   padding: 0;
   background: none;
   border: none;
   outline: none;
-} /* Styles for disabled buttons */
+}
+@media (min-width: 768px) and (max-width: 1366px) {
+  .SearchResult-Option-Left {
+    height: 3vh;
+  }
+  .searchContent-left {
+    width: 24%;
+  }
+  .searchresult-item {
+    height: 10vh;
+  }
+}

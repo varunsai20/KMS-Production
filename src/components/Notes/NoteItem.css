@@ -129,7 +129,7 @@
   background: rgba(234, 234, 236, 1);
 }
 .confirm-delete-button {
-  background: rgba(248, 29, 82, 1);
+  background: #e57373;
   color: white;
 }
 .confirm-keep-button:hover {

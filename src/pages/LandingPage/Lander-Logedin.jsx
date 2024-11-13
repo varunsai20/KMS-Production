@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Rnd } from "react-rnd";
-import { useDispatch,useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { setDeriveInsights } from "../../redux/reducers/deriveInsights";
 import Header from "../../components/Header-New";
@@ -96,6 +96,7 @@ const Lander = () => {
 
     if (user_id && token) {
       fetchSessions();
+      dispatch(setDeriveInsights(false));
     }
   }, [user_id, token]);
 
@@ -249,8 +250,10 @@ const Lander = () => {
 
               <a href="#">Dashboard</a>
               <a href="#">Reports</a>
-              <a href="#" onClick={handleOpenInsights}>Derive Insights</a>    
-              </div>
+              <a href="#" onClick={handleOpenInsights}>
+                Derive Insights
+              </a>
+            </div>
             <div className="Feature-Item">
               <img
                 className="Landing-Utilities-Icon"

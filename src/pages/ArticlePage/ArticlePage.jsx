@@ -34,11 +34,12 @@ import { login, logout } from "../../redux/reducers/LoginAuth"; // Import login 
 import ProfileIcon from "../../assets/images/Profile-dummy.svg";
 import { toast } from "react-toastify";
 import Header from "../../components/Header-New";
+import { setDeriveInsights } from "../../redux/reducers/deriveInsights";
 
 const ArticlePage = () => {
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
   const deriveInsights = useSelector((state) => state.deriveInsights?.active); // assuming deriveInsights is in Redux state
-  console.log(deriveInsights)
+  console.log(deriveInsights);
   const displayIfLoggedIn = isLoggedIn ? null : "none";
   const widthIfLoggedIn = isLoggedIn ? null : "80%";
   const heightIfLoggedIn = isLoggedIn ? null : "80vh";
@@ -48,7 +49,7 @@ const ArticlePage = () => {
   const token = useSelector((state) => state.auth.access_token);
   const dispatch = useDispatch();
   const user_id = user?.user_id;
-  const [type, id1] = pmid?pmid.split(":"):"";
+  const [type, id1] = pmid ? pmid.split(":") : "";
   const id = Number(id1);
   const [source, setSource] = useState();
   const [annotateLoading, setAnnotateLoading] = useState(false);
@@ -216,7 +217,7 @@ const ArticlePage = () => {
 
   useEffect(() => {
     // Determine the source based on `type`
-    
+
     // Perform GET request to fetch article data
     if (source && id && !deriveInsights) {
       setAnnotateLoading(true);
@@ -392,7 +393,7 @@ const ArticlePage = () => {
     }
   };
   const handleMouseUp = (event) => {
-    if (!contentRef.current.contains(event.target)) {
+    if (!contentRef.current || !contentRef.current.contains(event.target)) {
       return;
     }
 
@@ -491,7 +492,7 @@ const ArticlePage = () => {
           toast.success("Bookmark unsaved successfully", {
             position: "top-center",
             autoClose: 2000,
-            
+
             style: {
               backgroundColor: "rgba(237, 254, 235, 1)",
               borderLeft: "5px solid rgba(15, 145, 4, 1)",
@@ -612,7 +613,7 @@ const ArticlePage = () => {
         toast.success("Collection Created", {
           position: "top-center",
           autoClose: 1000,
-          
+
           style: {
             backgroundColor: "rgba(237, 254, 235, 1)",
             borderLeft: "5px solid rgba(15, 145, 4, 1)",
@@ -1125,6 +1126,7 @@ const ArticlePage = () => {
             },
           }
         );
+
         if (response.data?.sessions) {
           const sessionsData = response.data.sessions.reverse(); // Reverse the array order
           setSessions(sessionsData); // Set the reversed sessions array to state
@@ -1668,7 +1670,8 @@ const ArticlePage = () => {
                     className="Popup-buttons"
                     title="Send to Notes"
                   >
-                    <LiaTelegramPlane size={25} color="black" />
+                    <span className="send-to-notes">send to notes</span>
+                    <LiaTelegramPlane size={20} color="black" />
                   </button>
                 </div>
               </div>
