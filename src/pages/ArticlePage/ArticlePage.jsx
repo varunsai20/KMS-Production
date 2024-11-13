@@ -37,10 +37,12 @@ import { toast } from "react-toastify";
 import { faTimes, faAnglesUp } from "@fortawesome/free-solid-svg-icons";
 import { TbFileUpload } from "react-icons/tb";
 import Header from "../../components/Header-New";
+
 import uploadDocx from "../../assets/images/uploadDocx.svg"
 const ArticlePage = () => {
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
   const deriveInsights = useSelector((state) => state.deriveInsights?.active); // assuming deriveInsights is in Redux state
+
   const displayIfLoggedIn = isLoggedIn ? null : "none";
   const widthIfLoggedIn = isLoggedIn ? null : "80%";
   const heightIfLoggedIn = isLoggedIn ? null : "80vh";
@@ -50,7 +52,7 @@ const ArticlePage = () => {
   const token = useSelector((state) => state.auth.access_token);
   const dispatch = useDispatch();
   const user_id = user?.user_id;
-  const [type, id1] = pmid?pmid.split(":"):"";
+  const [type, id1] = pmid ? pmid.split(":") : "";
   const id = Number(id1);
   const [source, setSource] = useState();
   const [annotateLoading, setAnnotateLoading] = useState(false);
@@ -218,7 +220,7 @@ const ArticlePage = () => {
 
   useEffect(() => {
     // Determine the source based on `type`
-    
+
     // Perform GET request to fetch article data
     if (source && id && !deriveInsights) {
       setAnnotateLoading(true);
@@ -493,7 +495,7 @@ const ArticlePage = () => {
           toast.success("Bookmark unsaved successfully", {
             position: "top-center",
             autoClose: 2000,
-            
+
             style: {
               backgroundColor: "rgba(237, 254, 235, 1)",
               borderLeft: "5px solid rgba(15, 145, 4, 1)",
@@ -614,7 +616,7 @@ const ArticlePage = () => {
         toast.success("Collection Created", {
           position: "top-center",
           autoClose: 1000,
-          
+
           style: {
             backgroundColor: "rgba(237, 254, 235, 1)",
             borderLeft: "5px solid rgba(15, 145, 4, 1)",
@@ -1257,6 +1259,7 @@ if (storedSessionId) {
             },
           }
         );
+
         if (response.data?.sessions) {
           const sessionsData = response.data.sessions.reverse(); // Reverse the array order
           setSessions(sessionsData); // Set the reversed sessions array to state
@@ -1820,7 +1823,8 @@ if (storedSessionId) {
                     className="Popup-buttons"
                     title="Send to Notes"
                   >
-                    <LiaTelegramPlane size={25} color="black" />
+                    <span className="send-to-notes">send to notes</span>
+                    <LiaTelegramPlane size={20} color="black" />
                   </button>
                 </div>
               </div>
