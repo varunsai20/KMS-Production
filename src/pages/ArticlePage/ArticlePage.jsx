@@ -21,6 +21,7 @@ import {
 import notesicon from "../../assets/images/note-2.svg";
 import rehypeRaw from "rehype-raw";
 import Logo from "../../assets/images/Logo_New.svg";
+import pen from "../../assets/images/16px.svg";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTelegram } from "@fortawesome/free-brands-svg-icons";
 import { faPen } from "@fortawesome/free-solid-svg-icons";
@@ -55,7 +56,7 @@ const ArticlePage = () => {
   const [articleData, setArticleData] = useState(null);
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
-  const [searchCollection, setSearchCollection] = useState(""); 
+  const [searchCollection, setSearchCollection] = useState("");
   const [response, setResponse] = useState("");
   const [loading, setLoading] = useState(false);
   const [annotateData, setAnnotateData] = useState(
@@ -485,7 +486,7 @@ const ArticlePage = () => {
             JSON.stringify(updatedCollections)
           );
           toast.success("Bookmark deleted successfully", {
-            position: "top-right",
+            position: "center",
             autoClose: 1000,
             hideProgressBar: false,
             closeOnClick: true,
@@ -561,7 +562,15 @@ const ArticlePage = () => {
         setIsModalOpen(false);
       }
     } catch (error) {
-      toast.error("Failed to Add to the collection");
+      toast.error("Failed to Add to the collection", {
+        position: "top-center",
+        autoClose: 2000,
+        style: {
+          backgroundColor: "rgba(254, 235, 235, 1)",
+          borderLeft: "5px solid rgba(145, 4, 4, 1)",
+          color: "background: rgba(145, 4, 4, 1)",
+        },
+      });
       console.error("Error adding bookmark to existing collection:", error);
     }
   };
@@ -604,7 +613,15 @@ const ArticlePage = () => {
         setIsModalOpen(false);
       }
     } catch (error) {
-      toast.error("Failed to CreateCollection");
+      toast.error("Failed to CreateCollection", {
+        position: "top-center",
+        autoClose: 2000,
+        style: {
+          backgroundColor: "rgba(254, 235, 235, 1)",
+          borderLeft: "5px solid rgba(145, 4, 4, 1)",
+          color: "background: rgba(145, 4, 4, 1)",
+        },
+      });
       console.error("Error creating new collection:", error);
     }
   };
@@ -656,7 +673,7 @@ const ArticlePage = () => {
 
   useEffect(() => {
     const articleContent = document.querySelector(".meta");
-    console.log(articleContent)
+    console.log(articleContent);
     const handleScroll = () => {
       if (articleContent.scrollTop > 20) {
         document.getElementById("scrollTopBtn").style.display = "block"; // Show the button
@@ -1084,7 +1101,7 @@ const ArticlePage = () => {
     const fetchSessions = async () => {
       try {
         const response = await axios.get(
-          `http://13.127.207.184:80/history/conversations/sessions/${user_id}`,
+          `http://13.127.207.184:80/history/conversations/history/${user_id}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -1234,7 +1251,7 @@ const ArticlePage = () => {
             className="history-pagination"
             style={{ display: displayIfLoggedIn }}
           >
-            <h5>Recent Interactions</h5>
+            <p>Recent Interactions</p>
             <ul>
               {sessions.length > 0 ? (
                 sessions.map((session) => {
@@ -1259,9 +1276,10 @@ const ArticlePage = () => {
                           style={{
                             padding: "0",
                             height: "20px",
-                            width: "100%", // Adjust width as needed
-                            fontSize: "16px", // Adjust font size as needed
-                            // Add any additional styles you need
+                            width: "100%",
+                            fontSize: "16px",
+                            outline: "none",
+                            borderColor: editedTitle ? "#1a82ff" : "#1a82ff",
                           }}
                           value={editedTitle}
                           onChange={handleTitleChange}
@@ -1286,13 +1304,15 @@ const ArticlePage = () => {
                             );
                           }}
                         >
-                          {mappedTitle.slice(0, 30)}
-                          {mappedTitle.length > 30 ? "..." : ""}
+                          {mappedTitle.slice(0, 20)}
+                          {mappedTitle.length > 20 ? "..." : ""}
                         </a>
                       )}
-                      <FontAwesomeIcon
+                      <img
+                        src={pen}
+                        alt="pen-icon"
                         title="Rename the title"
-                        icon={faPen}
+                        //icon={faPen}
                         onClick={() =>
                           handleEditClick(session.session_id, mappedTitle)
                         }
@@ -1334,10 +1354,23 @@ const ArticlePage = () => {
                   {showConfirmPopup && (
                     <div className="Article-popup-overlay">
                       <div className="Article-popup-content">
-                        <p>Are you sure you want to leave without saving?</p>
+                        <p className="Saving-note">Saving Note</p>
+                        <p id="confirming">
+                          Are you sure you want to leave without saving?
+                        </p>
                         <div className="Article-confirm-buttons">
-                          <button onClick={handleOk}>OK</button>
-                          <button onClick={handleCancelConfirm}>Cancel</button>
+                          <button
+                            className="overlay-ok-button"
+                            onClick={handleOk}
+                          >
+                            Leave
+                          </button>
+                          <button
+                            className="overlay-cancel-button"
+                            onClick={handleCancelConfirm}
+                          >
+                            Cancel
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -1419,70 +1452,83 @@ const ArticlePage = () => {
                     }
                   />
 
-{isModalOpen && (
-  <div className="bookmark-modal-overlay">
-    <div className="modal-content" ref={modalRef}>
-      {/* Existing Collections */}
+                  {isModalOpen && (
+                    <div className="bookmark-modal-overlay">
+                      <div className="modal-content" ref={modalRef}>
+                        {/* Existing Collections */}
 
-      {/* Create New Collection */}
-      <h4>Create a new collection:</h4>
-      <input
-        type="text"
-        value={newCollectionName}
-        onChange={(e) => setNewCollectionName(e.target.value)}
-        placeholder="New collection name"
-      />
-      <div
-        style={{ display: "flex", gap: "20px", marginBottom: "15px" }}
-      >
-        <button
-          onClick={handleCreateNewCollection}
-          disabled={!newCollectionName}
-        >
-          Create
-        </button>
-      </div>
+                        {/* Create New Collection */}
+                        <h4>Create a new collection:</h4>
+                        <input
+                          type="text"
+                          value={newCollectionName}
+                          onChange={(e) => setNewCollectionName(e.target.value)}
+                          placeholder="New collection name"
+                        />
+                        <div
+                          style={{
+                            display: "flex",
+                            gap: "20px",
+                            marginBottom: "15px",
+                          }}
+                        >
+                          <button
+                            onClick={handleCreateNewCollection}
+                            disabled={!newCollectionName}
+                          >
+                            Create
+                          </button>
+                        </div>
 
-      {Object.keys(collections).length > 0 && (
-        <>
-          <h4>Save to existing collection:</h4>
+                        {Object.keys(collections).length > 0 && (
+                          <>
+                            <h4>Save to existing collection:</h4>
 
-          {/* Search bar for collections */}
-          <input
+                            {/* Search bar for collections */}
+                            <input
+                              type="text"
+                              value={searchCollection}
+                              onChange={(e) =>
+                                setSearchCollection(e.target.value)
+                              }
+                              placeholder="Search collections"
+                              style={{
+                                marginBottom: "10px",
+                                padding: "8px 0 8px 8px",
+                              }}
+                            />
 
-            type="text"
-            value={searchCollection}
-            onChange={(e) => setSearchCollection(e.target.value)}
-            placeholder="Search collections"
-            style={{ marginBottom: "10px", padding: "8px 0 8px 8px" }}
-          />
-
-          {/* Filter collections based on search term */}
-          <ul className="bookmark-existing-collections">
-            {Object.keys(collections)
-              .filter((collectionName) =>
-                collectionName
-                  .toLowerCase()
-                  .includes(searchCollection.toLowerCase())
-              )
-              .map((collectionName, index) => (
-                <ul key={index}>
-                  <li
-                    onClick={() => handleSaveToExisting(collectionName)}
-                  >
-                    <span className="collection-name">{collectionName}</span>
-                    <span className="collection-article-count">
-                      {collections[collectionName].length} articles
-                    </span>
-                  </li>
-                </ul>
-              ))}
-          </ul>
-        </>
-      )}
-    </div>
-  </div>
-)}
+                            {/* Filter collections based on search term */}
+                            <ul className="bookmark-existing-collections">
+                              {Object.keys(collections)
+                                .filter((collectionName) =>
+                                  collectionName
+                                    .toLowerCase()
+                                    .includes(searchCollection.toLowerCase())
+                                )
+                                .map((collectionName, index) => (
+                                  <ul key={index}>
+                                    <li
+                                      onClick={() =>
+                                        handleSaveToExisting(collectionName)
+                                      }
+                                    >
+                                      <span className="collection-name">
+                                        {collectionName}
+                                      </span>
+                                      <span className="collection-article-count">
+                                        {collections[collectionName].length}{" "}
+                                        articles
+                                      </span>
+                                    </li>
+                                  </ul>
+                                ))}
+                            </ul>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -1688,9 +1734,12 @@ const ArticlePage = () => {
               {showConfirmIcon && (
                 <div className="Article-popup-overlay">
                   <div className="Article-popup-content">
-                    <p>Are you sure you want to leave without saving?</p>
+                    <p className="Saving-note">Saving Note</p>
+                    <p id="confirming">
+                      Are you sure you want to leave without saving?
+                    </p>
                     <div className="Article-confirm-buttons">
-                      <button onClick={handleCloseIcon}>OK</button>
+                      <button onClick={handleCloseIcon}>Leave</button>
                       <button onClick={handleCancelIcon}>Cancel</button>
                     </div>
                   </div>

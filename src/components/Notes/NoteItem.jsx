@@ -10,8 +10,8 @@ import { IoCloseOutline } from "react-icons/io5";
 import { toast } from "react-toastify";
 
 const NoteItem = ({ note, onEdit, onDelete, isOpenNotes }) => {
-  const [isHovered, setIsHovered] = useState(false); 
-  const [isMenuOpen, setIsMenuOpen] = useState(false); 
+  const [isHovered, setIsHovered] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false); // Track confirmation popup visibility
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [email, setEmail] = useState("");
@@ -57,12 +57,26 @@ const NoteItem = ({ note, onEdit, onDelete, isOpenNotes }) => {
         handleCloseEmailModal();
       } else {
         toast.error("Failed to send email:", {
+          position: "top-center",
           autoClose: 2000,
+          style: {
+            backgroundColor: "rgba(254, 235, 235, 1)",
+            borderLeft: "5px solid rgba(145, 4, 4, 1)",
+            color: "background: rgba(145, 4, 4, 1)",
+          },
         });
         console.error("Failed to send email:", response);
       }
     } catch (error) {
-      toast.error("Error sending email:");
+      toast.error("Error sending email:", {
+        position: "top-center",
+        autoClose: 2000,
+        style: {
+          backgroundColor: "rgba(254, 235, 235, 1)",
+          borderLeft: "5px solid rgba(145, 4, 4, 1)",
+          color: "background: rgba(145, 4, 4, 1)",
+        },
+      });
       console.error("Error sending email:", error);
     }
   };
@@ -119,7 +133,7 @@ const NoteItem = ({ note, onEdit, onDelete, isOpenNotes }) => {
 
   return (
     <div
-      className={isOpenNotes ? "Lander-NoteItem" : "NoteItem"}
+      className="NoteItem"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={() => onEdit(note)} // Open note on click
@@ -268,13 +282,14 @@ const NoteItem = ({ note, onEdit, onDelete, isOpenNotes }) => {
       {showConfirmDelete && (
         <div className="confirm-overlay">
           <div className="confirm-popup">
-            <p>Are you sure you want to delete this note?</p>
+            <p className="Saving-note">Delete Notes</p>
+            <p id="confirming">Are you sure you want to delete this note?</p>
             <div className="confirm-buttons">
-              <button className="confirm-delete-button" onClick={confirmDelete}>
-                Delete
-              </button>
               <button className="confirm-keep-button" onClick={cancelDelete}>
                 Cancel
+              </button>
+              <button className="confirm-delete-button" onClick={confirmDelete}>
+                Delete
               </button>
             </div>
           </div>
@@ -298,30 +313,56 @@ const NoteItem = ({ note, onEdit, onDelete, isOpenNotes }) => {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="noteItem-modal-header">
-              <h3 style={{ color: "black" }}>Send to</h3>
-              <button
+              <p
+                style={{
+                  color: "black",
+                  borderBottom: "1px solid rgba(0,0,0,0.1)",
+                  textAlign: "start",
+                  fontWeight: "600",
+                  padding: "10px 0px 10px 0px",
+                }}
+              >
+                Share with
+              </p>
+              {/* <button
                 className="noteItem-modal-close-button"
                 onClick={handleCloseEmailModal}
               >
                 <IoCloseOutline size={20} />
-              </button>
+              </button> */}
             </div>
-            <div
-              className="noteItem-modal-body"
-              style={{ display: "flex", gap: "10px" }}
-            >
+            <div className="noteItem-modal-body" style={{ gap: "10px" }}>
+              <div className="email-label">
+                <label
+                  htmlFor="email"
+                  style={{
+                    color: "black",
+                    fontWeight: "600",
+                    paddingBottom: "5px",
+                  }}
+                >
+                  Email
+                </label>
+              </div>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="Email"
+                placeholder="Enter Email ID"
                 className="email-input"
                 onKeyDown={handleKeyDown}
               />
-
-              <button onClick={handleSendEmail} className="send-button">
-                Send
-              </button>
+              <div className="email-button-group">
+                <button
+                  className="email-cancel-button"
+                  onClick={handleCloseEmailModal}
+                >
+                  Cancel
+                </button>
+                <button onClick={handleSendEmail} className="email-send-button">
+                  Send
+                </button>
+              </div>
             </div>
           </div>
         </div>

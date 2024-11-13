@@ -228,7 +228,19 @@ const Createnotes = ({
       if (response.status === 201) {
         setNotes((prevNotes) => [note, ...prevNotes]);
         toast.success("Notes Saved Successfully", {
+          position: "top-center",
           autoClose: 1000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+          style: {
+            backgroundColor: "rgba(237, 254, 235, 1)",
+            borderLeft: "5px solid rgba(15, 145, 4, 1)",
+            color: "rgba(15, 145, 4, 1)",
+          },
         });
         setUnsavedChanges(false);
         fetchNotes();
@@ -243,7 +255,13 @@ const Createnotes = ({
       localStorage.removeItem("unsavedChanges");
     } catch (error) {
       toast.error("Error saving note:", {
-        autoClose: 1000,
+        position: "top-center",
+        autoClose: 2000,
+        style: {
+          backgroundColor: "rgba(254, 235, 235, 1)",
+          borderLeft: "5px solid rgba(145, 4, 4, 1)",
+          color: "background: rgba(145, 4, 4, 1)",
+        },
       });
       console.error("Error saving note:", error);
     }
@@ -293,20 +311,9 @@ const Createnotes = ({
 
   return (
     <section className="notes">
-      <header
-        className="note-header"
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          width: "100%",
-        }}
-        ref={headerRef}
-      >
+      <header className="note-header" ref={headerRef}>
         {isOpenDropdown && (
-          <div
-            className="dropdown"
-            style={{ position: "absolute", zIndex: 1000 }}
-          >
+          <div className="dropdown">
             <div className="open-header-dropdown">
               {/* Include your dropdown content here, such as other buttons or options */}
               <div className="colors-section">{/* <Colors /> */}</div>
@@ -346,18 +353,12 @@ const Createnotes = ({
             </div>
           </div>
         )}
-        <button
-          className={
-            isOpenNotes ? "lander-note-save-button" : "note-save-button"
-          }
-          text="Save"
-          onClick={handleSubmit}
-        >
+        <button className="note-save-button" text="Save" onClick={handleSubmit}>
           <div
             className="save-in"
             style={{ display: "flex", gap: "3px", alignItems: "center" }}
           >
-            <BiSave size={25} color="#1a82ff" />
+            <BiSave size={25} color="white" />
           </div>
         </button>
         <div
@@ -373,17 +374,12 @@ const Createnotes = ({
             title="Options"
           >
             <RxDotsHorizontal
-              color={isOpenNotes ? "#1a82ff" : "#1a82ff"}
+              color={isOpenNotes ? "white" : "white"}
               size={25}
             />
           </button>
           <Button
-            text={
-              <IoCloseOutline
-                color={isOpenNotes ? "#1a82ff" : "#1a82ff"}
-                size={25}
-              />
-            }
+            text={<IoCloseOutline color="white" size={25} />}
             className="notes-cancel-button"
             onClick={handleCloseClick}
           />
@@ -411,7 +407,7 @@ const Createnotes = ({
         }
       >
         <input
-          className={isOpenNotes ? "lander-note-input" : "note-input"}
+          className="note-input"
           type="text"
           placeholder={titleError || "Title"}
           value={title}
@@ -426,7 +422,7 @@ const Createnotes = ({
           }}
         />
         <div
-          className={isOpenNotes ? "lander-note-taking" : "note-taking"}
+          className="note-taking"
           ref={editorRef}
           contentEditable={true}
           suppressContentEditableWarning={true}
@@ -447,7 +443,7 @@ const Createnotes = ({
       {/* Feedback Message */}
       {/* {shareMessage && <div className="share-message">{shareMessage}</div>} */}
 
-      <div className={isOpenNotes ? "lander-toolbar" : "toolbar"}>
+      <div className="toolbar">
         <button
           onClick={() => handleFormat("bold")}
           title="Bold"

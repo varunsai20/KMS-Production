@@ -165,18 +165,44 @@ const Editnotes = ({
 
       if (response.status === 200) {
         toast.success("Email sent successfully", {
+          position: "top-center",
           autoClose: 2000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+          style: {
+            backgroundColor: "rgba(237, 254, 235, 1)",
+            borderLeft: "5px solid rgba(15, 145, 4, 1)",
+            color: "rgba(15, 145, 4, 1)",
+          },
         });
         console.log("Email sent successfully to:", email);
         handleCloseEmailModal(); // Close the modal after sending
       } else {
         toast.error("Failed to send email:", {
+          position: "top-center",
           autoClose: 2000,
+          style: {
+            backgroundColor: "rgba(254, 235, 235, 1)",
+            borderLeft: "5px solid rgba(145, 4, 4, 1)",
+            color: "background: rgba(145, 4, 4, 1)",
+          },
         });
         console.error("Failed to send email:", response);
       }
     } catch (error) {
-      toast.error("Error sending email:");
+      toast.error("Error sending email:", {
+        position: "top-center",
+        autoClose: 2000,
+        style: {
+          backgroundColor: "rgba(254, 235, 235, 1)",
+          borderLeft: "5px solid rgba(145, 4, 4, 1)",
+          color: "background: rgba(145, 4, 4, 1)",
+        },
+      });
       console.error("Error sending email:", error);
     }
   };
@@ -263,14 +289,32 @@ const Editnotes = ({
             )
           );
           toast.success("Notes Saved Successfully", {
+            position: "top-center",
             autoClose: 1000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "colored",
+            style: {
+              backgroundColor: "rgba(237, 254, 235, 1)",
+              borderLeft: "5px solid rgba(15, 145, 4, 1)",
+              color: "rgba(15, 145, 4, 1)",
+            },
           });
           setUnsavedChanges(false); // Reset unsaved changes after saving
           initialText.current = updatedNote.content;
           console.log("Note updated:", updatedNote);
         } else {
           toast.error("Failed to update note:", {
-            autoClose: 1000,
+            position: "top-center",
+            autoClose: 2000,
+            style: {
+              backgroundColor: "rgba(254, 235, 235, 1)",
+              borderLeft: "5px solid rgba(145, 4, 4, 1)",
+              color: "background: rgba(145, 4, 4, 1)",
+            },
           });
           console.error("Failed to update note:", response);
         }
@@ -355,7 +399,7 @@ const Editnotes = ({
           onClick={handleCloseClick}
           aria-label="Go Back"
         >
-          <IoIosArrowBack size={20} />
+          <IoIosArrowBack size={20} color="white" />
         </button>
         {showConfirmSave && (
           <ConfirmSave
@@ -380,7 +424,7 @@ const Editnotes = ({
             className="save-in-edit"
             style={{ display: "flex", gap: "3px", alignItems: "center" }}
           >
-            <BiSave size={25} color="#1a82ff" />
+            <BiSave size={25} color="white" />
             {/* <span>save</span> */}
           </div>
         </button>
@@ -492,26 +536,26 @@ const Editnotes = ({
           className={
             isOpenNotes
               ? "lander-createNotes-modal-overlay"
-              : "createNotes-modal-overlay"
+              : "editNotes-modal-overlay"
           }
           onClick={handleCloseModal}
         >
           <div
-            className="createNotes-modal-content"
+            className="editNotes-modal-content"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="createNotes-modal-header">
-              <h3>Share Note</h3>
+            <div className="editNotes-modal-header">
+              <p className="share-note">Share Note</p>
               <button
-                className="createNotes-modal-close-button"
+                className="editNotes-modal-close-button"
                 onClick={handleCloseModal}
               >
                 <IoCloseOutline size={20} />
               </button>
             </div>
-            <div className="createNotes-modal-body">
-              <div className="createNotes-email">
-                <button className="createNotes-Email">
+            <div className="editNotes-modal-body">
+              <div className="editNotes-email">
+                <button className="editNotes-Email">
                   <div
                     style={{
                       backgroundColor: "#A5A5A5",
@@ -529,7 +573,7 @@ const Editnotes = ({
                   </span>
                 </button>
               </div>
-              <button onClick={handleCopy} className="createNotes-copy">
+              <button onClick={handleCopy} className="editNotes-copy">
                 <div
                   style={{
                     backgroundColor: "#A5A5A5",
@@ -562,30 +606,49 @@ const Editnotes = ({
             onClick={(e) => e.stopPropagation()}
           >
             <div className="email-modal-header">
-              <h3>Send to</h3>
-              <button
-                className="email-modal-close-button"
-                onClick={handleCloseEmailModal}
+              <p
+                style={{
+                  color: "black",
+                  textAlign: "start",
+                  fontWeight: "600",
+                  padding: "0px 0px 0px 0px",
+                }}
               >
-                <IoCloseOutline size={20} />
-              </button>
+                Send with
+              </p>
             </div>
-            <div
-              className="email-modal-body"
-              style={{ display: "flex", gap: "10px" }}
-            >
+            <div className="email-modal-body" style={{ gap: "10px" }}>
+              <div className="email-label">
+                <label
+                  htmlFor="email"
+                  style={{
+                    color: "black",
+                    fontWeight: "600",
+                    paddingBottom: "5px",
+                  }}
+                >
+                  Email
+                </label>
+              </div>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="Email"
+                placeholder="Enter Email ID"
                 className="email-input"
                 onKeyDown={handleKeyDown}
               />
-
-              <button onClick={handleSendEmail} className="send-button">
-                Send
-              </button>
+              <div className="email-button-group">
+                <button
+                  className="email-cancel-button"
+                  onClick={handleCloseEmailModal}
+                >
+                  Cancel
+                </button>
+                <button onClick={handleSendEmail} className="email-send-button">
+                  Send
+                </button>
+              </div>
             </div>
           </div>
         </div>

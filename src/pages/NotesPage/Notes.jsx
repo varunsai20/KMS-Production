@@ -149,7 +149,15 @@ const NotesManager = ({
 
         console.log("Note deleted successfully");
       } else {
-        toast.error("Failed to delete note:");
+        toast.error("Failed to delete note:", {
+          position: "top-center",
+          autoClose: 2000,
+          style: {
+            backgroundColor: "rgba(254, 235, 235, 1)",
+            borderLeft: "5px solid rgba(145, 4, 4, 1)",
+            color: "background: rgba(145, 4, 4, 1)",
+          },
+        });
         console.error("Failed to delete note:", response);
       }
     } catch (error) {

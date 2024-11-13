@@ -107,6 +107,7 @@ const Researchers = () => {
       );
 
       if (response.status === 200) {
+
         setIsOpen(false);
         setUserData((prevData) =>
           prevData.map((user) =>
@@ -259,19 +260,22 @@ const Researchers = () => {
             {showConfirmDelete && (
               <div className="confirm-overlay">
                 <div className="confirm-popup">
-                  <p>Are you sure you want to delete this note?</p>
+                  <p className="Delete-user">Delete User</p>
+                  <p id="confirming">
+                    Are you sure you want to delete this user?
+                  </p>
                   <div className="confirm-buttons">
-                    <button
-                      className="confirm-delete-button"
-                      onClick={confirmDelete}
-                    >
-                      Delete
-                    </button>
                     <button
                       className="confirm-keep-button"
                       onClick={cancelDelete}
                     >
                       Cancel
+                    </button>
+                    <button
+                      className="confirm-delete-button"
+                      onClick={confirmDelete}
+                    >
+                      Delete
                     </button>
                   </div>
                 </div>

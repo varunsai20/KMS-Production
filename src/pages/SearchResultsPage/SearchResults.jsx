@@ -19,7 +19,7 @@ import { login, logout } from "../../redux/reducers/LoginAuth"; // Import login 
 import Button from "../../components/Buttons";
 import Logo from "../../assets/images/Logo_New.svg";
 import ProfileIcon from "../../assets/images/Profile-dummy.svg";
-import { toast } from "react-toastify"
+import { toast } from "react-toastify";
 import Header from "../../components/Header-New";
 const ITEMS_PER_PAGE = 10;
 const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
@@ -37,8 +37,8 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   const contentRightRef = useRef(null); // Ref for searchContent-right
   const [result, setResults] = useState();
   const [loading, setLoading] = useState(false);
-  const [searchCollection, setSearchCollection] = useState(""); 
-    const [selectedArticles, setSelectedArticles] = useState([]);
+  const [searchCollection, setSearchCollection] = useState("");
+  const [selectedArticles, setSelectedArticles] = useState([]);
   const [bioRxivArticles, setBioRxivArticles] = useState([]);
   const [plosArticles, setPlosArticles] = useState([]);
   const totalArticles = useMemo(() => {
@@ -112,15 +112,13 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
 
   //   return result;
   // };
-  
-  
 
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const handleEmailClick = () => setIsEmailModalOpen(true);
   //const handleCloseEmailModal = () => setIsEmailModalOpen(false);
   const [email, setEmail] = useState();
   const [emailSubject, setEmailSubject] = useState();
-    
+
   const [newCollectionName, setNewCollectionName] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageInput, setPageInput] = useState(1); // Separate state for the page input
@@ -164,7 +162,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
     );
 
     // Log if only `article_id` matches but `article_source` does not
-
 
     // Return the saved rating or default to 3 if not found
     return savedRating ? savedRating.average_rating : 0;
@@ -264,7 +261,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       const scrollTop = window.scrollY;
       const windowHeight = window.innerHeight;
       const documentHeight = document.documentElement.scrollHeight;
-  
+
       // Check if the user is near the bottom of the page
       if (scrollTop + windowHeight >= documentHeight - 50) {
         document.getElementById("scrollTopBtn").style.display = "block"; // Show button at bottom
@@ -272,14 +269,14 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
         document.getElementById("scrollTopBtn").style.display = "none"; // Hide button
       }
     };
-  
+
     // Add event listener for window scroll
     window.addEventListener("scroll", handleScroll);
-  
+
     // Clean up event listener
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-  
+
   const sortedPublicationData =
     data && data.articles
       ? [...data.articles].sort((a, b) => {
@@ -365,7 +362,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
     setPageInput(1);
     // sessionStorage.setItem("currentPage", 1);
   }, [location.state.data]); // Reset pagination only when sortedData changes
-  
+
   useEffect(() => {
     // Retrieve the stored page number from sessionStorage when the component first loads
     const storedPage = sessionStorage.getItem("currentPage");
@@ -374,26 +371,29 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       setPageInput(Number(storedPage));
     }
   }, []); // This effect runs only once on component mount
-  
+
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
   const paginatedArticles = sortedData.slice(startIndex, endIndex);
-  
+
   const handlePageChange = (newPage) => {
-    if (newPage > 0 && newPage <= Math.ceil(sortedData.length / ITEMS_PER_PAGE)) {
+    if (
+      newPage > 0 &&
+      newPage <= Math.ceil(sortedData.length / ITEMS_PER_PAGE)
+    ) {
       setCurrentPage(newPage);
       setPageInput(newPage);
       sessionStorage.setItem("currentPage", newPage);
       scrollToTop();
     }
   };
-  
+
   // useEffect(() => {
   //   // Store the current page number in sessionStorage whenever it changes
-  //   
+  //
   // }, [handlePageChange]);
   const handleAnnotate = () => {
-    console.log("clicked")
+    console.log("clicked");
     if (openAnnotate) {
       setOpenAnnotate(false);
     } else {
@@ -444,27 +444,27 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       document.removeEventListener("mousedown", handleClickOutside); // Clean up the event listener
     };
   }, [isModalOpen]);
-  
+
   const isArticleBookmarked = (idType) => {
     const numericIdType = Number(idType);
-    
+
     // Loop through each collection to check if the article is bookmarked
     for (const [collectionName, articleArray] of Object.entries(collections)) {
       const found = articleArray.some(
         (article) => Number(article.article_id) === numericIdType
       );
-  
+
       if (found) {
         return { isBookmarked: true, collectionName }; // Return true with collection name
       }
     }
-  
+
     return { isBookmarked: false, collectionName: null }; // Not found in any collection
   };
-  
+
   const handleBookmarkClick = async (idType, title, source) => {
     const { isBookmarked, collectionName } = isArticleBookmarked(idType);
-  
+
     if (isBookmarked) {
       try {
         const response = await axios.delete(
@@ -473,7 +473,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
-  
+
         if (response.status === 200) {
           // Remove the bookmark from local collections state
           const updatedCollections = {
@@ -482,11 +482,14 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
               (article) => article.article_id !== String(idType)
             ),
           };
-  
+
           setCollections(updatedCollections);
-          localStorage.setItem("collections", JSON.stringify(updatedCollections));
+          localStorage.setItem(
+            "collections",
+            JSON.stringify(updatedCollections)
+          );
           toast.success("Bookmark deleted successfully", {
-            position: "top-right",
+            position: "top-center",
             autoClose: 1000,
             hideProgressBar: false,
             closeOnClick: true,
@@ -495,7 +498,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
             progress: undefined,
             theme: "colored",
           });
-  
+
           await fetchCollections(); // Refetch collections after successful deletion
         }
       } catch (error) {
@@ -509,7 +512,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       setIsModalOpen(true);
     }
   };
-  
+
   const handleSaveToExisting = async (collectionName) => {
     const bookmarkData = {
       user_id,
@@ -578,7 +581,15 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
         setIsModalOpen(false);
       }
     } catch (error) {
-      toast.error("Failed to Add to the collection");
+      toast.error("Failed to Add to the collection", {
+        position: "top-center",
+        autoClose: 2000,
+        style: {
+          backgroundColor: "rgba(254, 235, 235, 1)",
+          borderLeft: "5px solid rgba(145, 4, 4, 1)",
+          color: "background: rgba(145, 4, 4, 1)",
+        },
+      });
       console.error("Error adding bookmark to existing collection:", error);
     }
   };
@@ -621,26 +632,37 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
         setIsModalOpen(false);
       }
     } catch (error) {
-      toast.error("Failed to CreateCollection");
+      toast.error("Failed to CreateCollection", {
+        position: "top-center",
+        autoClose: 2000,
+        style: {
+          backgroundColor: "rgba(254, 235, 235, 1)",
+          borderLeft: "5px solid rgba(145, 4, 4, 1)",
+          color: "background: rgba(145, 4, 4, 1)",
+        },
+      });
       console.error("Error creating new collection:", error);
     }
   };
   const handleArticleTypeFilter = (event) => {
     const { value, checked } = event.target;
     const updatedArticleTypes = checked
-        ? [...filters?.articleType, value]
-        : filters?.articleType.filter((type) => type !== value);
+      ? [...filters?.articleType, value]
+      : filters?.articleType.filter((type) => type !== value);
 
-    setFilters((prevFilters) => ({ ...prevFilters, articleType: updatedArticleTypes }));
+    setFilters((prevFilters) => ({
+      ...prevFilters,
+      articleType: updatedArticleTypes,
+    }));
     fetchFilteredResults({
-        sourceTypes: filters.sourceType,
-        dateRange: selectedDateRange,
-        startDate: customStartDate,
-        endDate: customEndDate,
-        articleTypes: updatedArticleTypes,
-        textAvailability: filters.textAvailability,
+      sourceTypes: filters.sourceType,
+      dateRange: selectedDateRange,
+      startDate: customStartDate,
+      endDate: customEndDate,
+      articleTypes: updatedArticleTypes,
+      textAvailability: filters.textAvailability,
     });
-};
+  };
 
   const handleDateFilter = (selectedRange, start = "", end = "") => {
     setSelectedDateRange(selectedRange);
@@ -651,86 +673,99 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       endDate: selectedRange === "custom" ? end : "",
     });
   };
-  
-  const fetchFilteredResults = ({ sourceTypes = [], dateRange, startDate, endDate, articleTypes = [] }) => {  
+
+  const fetchFilteredResults = ({
+    sourceTypes = [],
+    dateRange,
+    startDate,
+    endDate,
+    articleTypes = [],
+  }) => {
     // Check if all filters are empty
     if (sourceTypes.length === 0 && articleTypes.length === 0 && !dateRange) {
-        navigate("/search", { state: { data: searchResults, searchTerm } });
-        return;
+      navigate("/search", { state: { data: searchResults, searchTerm } });
+      return;
     }
 
     // Base URL for the API
-    let apiUrl = `http://13.127.207.184:80/core_search/?term=${encodeURIComponent(searchTerm)}`;
+    let apiUrl = `http://13.127.207.184:80/core_search/?term=${encodeURIComponent(
+      searchTerm
+    )}`;
 
     // Add sources if provided
     if (sourceTypes.length > 0) {
-        const sourceParams = sourceTypes.map((source) => `source=${encodeURIComponent(source)}`).join("&");
-        apiUrl += `&${sourceParams}`;
+      const sourceParams = sourceTypes
+        .map((source) => `source=${encodeURIComponent(source)}`)
+        .join("&");
+      apiUrl += `&${sourceParams}`;
     }
 
     // Add article types if provided
     if (articleTypes.length > 0) {
-        const articleTypeParams = articleTypes.map((type) => `article_type=${encodeURIComponent(type)}`).join("&");
-        apiUrl += `&${articleTypeParams}`;
+      const articleTypeParams = articleTypes
+        .map((type) => `article_type=${encodeURIComponent(type)}`)
+        .join("&");
+      apiUrl += `&${articleTypeParams}`;
     }
 
     // Add date filters if provided
     if (dateRange) {
-        if (dateRange === "custom" && startDate && endDate) {
-            apiUrl += `&date_filter=custom&from_date=${formatDate(startDate)}&to_date=${formatDate(endDate)}`;
-        } else if (dateRange === "1" || dateRange === "5") {
-            const filterType = dateRange === "5" ? "5 years" : "1 year";
-            apiUrl += `&date_filter=${filterType}`;
-        }
+      if (dateRange === "custom" && startDate && endDate) {
+        apiUrl += `&date_filter=custom&from_date=${formatDate(
+          startDate
+        )}&to_date=${formatDate(endDate)}`;
+      } else if (dateRange === "1" || dateRange === "5") {
+        const filterType = dateRange === "5" ? "5 years" : "1 year";
+        apiUrl += `&date_filter=${filterType}`;
+      }
     }
 
     setLoading(true);
 
     axios
-        .get(apiUrl, {
-            headers: { Authorization: `Bearer ${token}` },
-        })
-        .then((response) => {
-            setResults(response.data);
-            setLoading(false);
+      .get(apiUrl, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((response) => {
+        setResults(response.data);
+        setLoading(false);
 
-            // Save the filter state to localStorage for persistence
-            localStorage.setItem(
-                "filters",
-                JSON.stringify({
-                    sourceTypes,
-                    dateRange,
-                    customStartDate: dateRange === "custom" ? startDate : "",
-                    customEndDate: dateRange === "custom" ? endDate : "",
-                    articleTypes,
-                })
-            );
+        // Save the filter state to localStorage for persistence
+        localStorage.setItem(
+          "filters",
+          JSON.stringify({
+            sourceTypes,
+            dateRange,
+            customStartDate: dateRange === "custom" ? startDate : "",
+            customEndDate: dateRange === "custom" ? endDate : "",
+            articleTypes,
+          })
+        );
 
-            navigate("/search", { state: { data: response.data, searchTerm } });
-        })
-        .catch((error) => {
-            console.error("Error fetching data from the API", error);
-            setLoading(false);
-            navigate("/search", { state: { data: [], searchTerm } });
-        });
-};
+        navigate("/search", { state: { data: response.data, searchTerm } });
+      })
+      .catch((error) => {
+        console.error("Error fetching data from the API", error);
+        setLoading(false);
+        navigate("/search", { state: { data: [], searchTerm } });
+      });
+  };
 
-
-  
   const formatDate = (dateString) => {
     const [year, month, day] = dateString.split("-");
     return `${day}-${month}-${year}`; // Format for the API
   };
-
-  
 
   const handleSourceTypeChange = (event) => {
     const { value, checked } = event.target;
     const updatedSourceTypes = checked
       ? [...filters.sourceType, value]
       : filters.sourceType.filter((type) => type !== value);
-  
-    setFilters((prevFilters) => ({ ...prevFilters, sourceType: updatedSourceTypes }));
+
+    setFilters((prevFilters) => ({
+      ...prevFilters,
+      sourceType: updatedSourceTypes,
+    }));
     fetchFilteredResults({
       sourceTypes: updatedSourceTypes,
       dateRange: selectedDateRange,
@@ -738,7 +773,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       endDate: customEndDate,
     });
   };
-  
+
   const handleDateRangeChange = (newRange) => {
     setSelectedDateRange(newRange);
     if (newRange !== "custom") {
@@ -748,7 +783,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       });
     }
   };
-  
+
   const handleCustomDateFilter = () => {
     fetchFilteredResults({
       sourceTypes: filters.sourceType,
@@ -757,9 +792,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       endDate: customEndDate,
     });
   };
-    
-
-
 
   // const handleArticleTypeFilter = (selectedArticleTypes) => {
   //   const filterTypes = selectedArticleTypes.articleType; // Assuming this is an array
@@ -1048,7 +1080,15 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   };
   const handleSendEmail = async () => {
     if (!email) {
-      toast.error("Please enter an email address.");
+      toast.error("Please enter an email address.", {
+        position: "top-center",
+        autoClose: 2000,
+        style: {
+          backgroundColor: "rgba(254, 235, 235, 1)",
+          borderLeft: "5px solid rgba(145, 4, 4, 1)",
+          color: "background: rgba(145, 4, 4, 1)",
+        },
+      });
       return;
     }
 
@@ -1089,7 +1129,15 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       }
     } catch (error) {
       console.error("Error sending email:", error);
-      toast.error("Failed to send email. Please try again.");
+      toast.error("Failed to send email. Please try again.", {
+        position: "top-center",
+        autoClose: 2000,
+        style: {
+          backgroundColor: "rgba(254, 235, 235, 1)",
+          borderLeft: "5px solid rgba(145, 4, 4, 1)",
+          color: "background: rgba(145, 4, 4, 1)",
+        },
+      });
     }
   };
   const handleCloseEmailModal = () => {
@@ -1190,7 +1238,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       [key]: !prevState[key], // Toggle between full text and sliced text for a specific row
     }));
   };
-  
+
   return (
     <div className="Container" ref={contentRightRef}>
       <div className="search-container-content">
@@ -1277,109 +1325,122 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
               </h5>
 
               {showSourceType && (
-  <div className="searchfilter-options-dropdown">
-    <label>
-      <input
-        type="checkbox"
-        value="BioRxiv"
-        checked={filters.sourceType?.includes("BioRxiv")}
-        onChange={handleSourceTypeChange}
-      />{" "}
-      BioRxiv
-    </label>
-    <label>
-      <input
-        type="checkbox"
-        value="Public Library of Science (PLOS)"
-        checked={filters.sourceType?.includes("Public Library of Science (PLOS)")}
-        onChange={handleSourceTypeChange}
-      />{" "}
-      PLOS
-    </label>
-    <label>
-      <input
-        type="checkbox"
-        value="pubmed"
-        checked={filters.sourceType?.includes("pubmed")}
-        onChange={handleSourceTypeChange}
-      />{" "}
-      PubMed
-    </label>
-  </div>
-)}
+                <div className="searchfilter-options-dropdown">
+                  <label>
+                    <input
+                      type="checkbox"
+                      value="BioRxiv"
+                      checked={filters.sourceType?.includes("BioRxiv")}
+                      onChange={handleSourceTypeChange}
+                    />{" "}
+                    BioRxiv
+                  </label>
+                  <label>
+                    <input
+                      type="checkbox"
+                      value="Public Library of Science (PLOS)"
+                      checked={filters.sourceType?.includes(
+                        "Public Library of Science (PLOS)"
+                      )}
+                      onChange={handleSourceTypeChange}
+                    />{" "}
+                    PLOS
+                  </label>
+                  <label>
+                    <input
+                      type="checkbox"
+                      value="pubmed"
+                      checked={filters.sourceType?.includes("pubmed")}
+                      onChange={handleSourceTypeChange}
+                    />{" "}
+                    PubMed
+                  </label>
+                </div>
+              )}
 
-<div className="searchfilter-section">
-  <h5 onClick={() => setShowPublicationDate(!showPublicationDate)}>
-    Publication date{" "}
-    <span>
-      {showPublicationDate ? <img src={downarrow} /> : <img src={uparrow} />}
-    </span>
-  </h5>
-  {showPublicationDate && (
-    <div className="searchfilter-options-dropdown">
-      <label>
-        <input
-          type="radio"
-          name="date"
-          value="1"
-          checked={selectedDateRange === "1"}
-          onChange={() => handleDateFilter("1")}
-        />{" "}
-        1 year
-      </label>
-      <label>
-        <input
-          type="radio"
-          name="date"
-          value="5"
-          checked={selectedDateRange === "5"}
-          onChange={() => handleDateFilter("5")}
-        />{" "}
-        5 years
-      </label>
-      <label>
-        <input
-          type="radio"
-          name="date"
-          value="custom"
-          checked={selectedDateRange === "custom"}
-          onChange={() => setSelectedDateRange("custom")}
-        />{" "}
-        Custom range
-      </label>
+              <div className="searchfilter-section">
+                <h5
+                  onClick={() => setShowPublicationDate(!showPublicationDate)}
+                >
+                  Publication date{" "}
+                  <span>
+                    {showPublicationDate ? (
+                      <img src={downarrow} />
+                    ) : (
+                      <img src={uparrow} />
+                    )}
+                  </span>
+                </h5>
+                {showPublicationDate && (
+                  <div className="searchfilter-options-dropdown">
+                    <label>
+                      <input
+                        type="radio"
+                        name="date"
+                        value="1"
+                        checked={selectedDateRange === "1"}
+                        onChange={() => handleDateFilter("1")}
+                      />{" "}
+                      1 year
+                    </label>
+                    <label>
+                      <input
+                        type="radio"
+                        name="date"
+                        value="5"
+                        checked={selectedDateRange === "5"}
+                        onChange={() => handleDateFilter("5")}
+                      />{" "}
+                      5 years
+                    </label>
+                    <label>
+                      <input
+                        type="radio"
+                        name="date"
+                        value="custom"
+                        checked={selectedDateRange === "custom"}
+                        onChange={() => setSelectedDateRange("custom")}
+                      />{" "}
+                      Custom range
+                    </label>
 
-      {selectedDateRange === "custom" && (
-        <div className="custom-date-range custom-date-input">
-          <label>
-            Start Date:
-            <input
-              type="date"
-              name="startDate"
-              value={customStartDate}
-              onChange={(e) => setCustomStartDate(e.target.value)}
-            />
-          </label>
-          <label>
-            End Date:
-            <input
-              type="date"
-              name="endDate"
-              value={customEndDate}
-              onChange={(e) => setCustomEndDate(e.target.value)}
-            />
-          </label>
-          <button
-            className="ApplyFilters"
-            onClick={() => handleDateFilter("custom", customStartDate, customEndDate)}
-          >
-            Apply
-          </button>
-        </div>
-      )}
-    </div>
-  )}
-</div>
-
+                    {selectedDateRange === "custom" && (
+                      <div className="custom-date-range custom-date-input">
+                        <label>
+                          Start Date:
+                          <input
+                            type="date"
+                            name="startDate"
+                            value={customStartDate}
+                            onChange={(e) => setCustomStartDate(e.target.value)}
+                          />
+                        </label>
+                        <label>
+                          End Date:
+                          <input
+                            type="date"
+                            name="endDate"
+                            value={customEndDate}
+                            onChange={(e) => setCustomEndDate(e.target.value)}
+                          />
+                        </label>
+                        <button
+                          className="ApplyFilters"
+                          onClick={() =>
+                            handleDateFilter(
+                              "custom",
+                              customStartDate,
+                              customEndDate
+                            )
+                          }
+                        >
+                          Apply
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
             {/* Text availability section */}
             <div className="searchfilter-section">
@@ -1453,7 +1514,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                         }
                         disabled={annotateLoading} // Disable the button while loading
                       >
-                      Annotate
+                        Annotate
                       </button>
                       {/* Show loading spinner */}
                       {annotateLoading && (
@@ -1480,28 +1541,28 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                         ? "Select an article to share"
                         : "Share selected articles"
                     }
-                  >  
-                  <button
-                    style={{ display: displayIfLoggedIn }}
-                    onClick={
-                      Object.keys(shareableLinks).length > 0
-                        ? handleShare
-                        : null
-                    }
-                    className={`SearchResult-Share ${
-                      Object.keys(shareableLinks).length > 0
-                        ? "active"
-                        : "disabled"
-                    }`}
-                    title={
-                      Object.keys(shareableLinks).length === 0
-                        ? "Select an article to share"
-                        : "Share selected articles"
-                    }
                   >
-                    Share
-                  </button>
-                  </div>  
+                    <button
+                      style={{ display: displayIfLoggedIn }}
+                      onClick={
+                        Object.keys(shareableLinks).length > 0
+                          ? handleShare
+                          : null
+                      }
+                      className={`SearchResult-Share ${
+                        Object.keys(shareableLinks).length > 0
+                          ? "active"
+                          : "disabled"
+                      }`}
+                      title={
+                        Object.keys(shareableLinks).length === 0
+                          ? "Select an article to share"
+                          : "Share selected articles"
+                      }
+                    >
+                      Share
+                    </button>
+                  </div>
                   {/* <button
                     style={{ display: displayIfLoggedIn }}
                     className="SearchResult-Save"
@@ -1684,7 +1745,12 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                                 <input
                                   type="checkbox"
                                   className="result-checkbox"
-                                  style={{ display: displayIfLoggedIn,height:"14px",width:"14px",marginTop:"5px" }}
+                                  style={{
+                                    display: displayIfLoggedIn,
+                                    height: "14px",
+                                    width: "14px",
+                                    marginTop: "5px",
+                                  }}
                                   onChange={() =>
                                     handleSourceCheckboxChange(
                                       result.source,
@@ -1717,119 +1783,157 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                                 </h3>
                               </div>
                               <FontAwesomeIcon
-  icon={isArticleBookmarked(idType).isBookmarked ? solidBookmark : regularBookmark}
-  size="l"
-  style={{
-    color: isArticleBookmarked(idType).isBookmarked ? "#0071bc" : "black",
-    cursor: "pointer",
-    display: displayIfLoggedIn,
-  }}
-  onClick={() =>
-    handleBookmarkClick(
-      idType,
-      result.article_title,
-      result.source || "PubMed"
-    )
-  }
-  title={
-    isArticleBookmarked(idType).isBookmarked
-      ? "Bookmarked"
-      : "Bookmark this article"
-  }
-/>
+                                icon={
+                                  isArticleBookmarked(idType).isBookmarked
+                                    ? solidBookmark
+                                    : regularBookmark
+                                }
+                                size="l"
+                                style={{
+                                  color: isArticleBookmarked(idType)
+                                    .isBookmarked
+                                    ? "#0071bc"
+                                    : "black",
+                                  cursor: "pointer",
+                                  display: displayIfLoggedIn,
+                                }}
+                                onClick={() =>
+                                  handleBookmarkClick(
+                                    idType,
+                                    result.article_title,
+                                    result.source || "PubMed"
+                                  )
+                                }
+                                title={
+                                  isArticleBookmarked(idType).isBookmarked
+                                    ? "Bookmarked"
+                                    : "Bookmark this article"
+                                }
+                              />
 
-{isModalOpen && (
-  <div className="bookmark-modal-overlay">
-    <div className="modal-content" ref={modalRef}>
-      {/* Existing Collections */}
+                              {isModalOpen && (
+                                <div className="search-bookmark-modal-overlay">
+                                  <div
+                                    className="search-modal-content"
+                                    ref={modalRef}
+                                  >
+                                    <div className="bookmark-p">
+                                      <p className="bookmark-para">Bookmarks</p>
+                                    </div>
 
-      {/* Create New Collection */}
-      <h4>Create a new collection:</h4>
-      <input
-        type="text"
-        value={newCollectionName}
-        onChange={(e) => setNewCollectionName(e.target.value)}
-        placeholder="New collection name"
-      />
-      <div
-        style={{ display: "flex", gap: "20px", marginBottom: "15px" }}
-      >
-        <button
-          onClick={handleCreateNewCollection}
-          disabled={!newCollectionName}
-        >
-          Create
-        </button>
-      </div>
+                                    {/* Create New Collection */}
+                                    <h4>Create a new collection:</h4>
+                                    <input
+                                      type="text"
+                                      value={newCollectionName}
+                                      onChange={(e) =>
+                                        setNewCollectionName(e.target.value)
+                                      }
+                                      placeholder="New collection name"
+                                    />
+                                    <div
+                                      style={{
+                                        display: "flex",
+                                        gap: "20px",
+                                        marginBottom: "15px",
+                                      }}
+                                    >
+                                      <button
+                                        onClick={handleCreateNewCollection}
+                                        disabled={!newCollectionName}
+                                      >
+                                        Create
+                                      </button>
+                                    </div>
 
-      {Object.keys(collections).length > 0 && (
-        <>
-          <h4>Save to existing collection:</h4>
+                                    {Object.keys(collections).length > 0 && (
+                                      <>
+                                        <h4>Save to existing collection:</h4>
 
-          {/* Search bar for collections */}
-          <input
+                                        {/* Search bar for collections */}
+                                        <input
+                                          type="text"
+                                          value={searchCollection}
+                                          onChange={(e) =>
+                                            setSearchCollection(e.target.value)
+                                          }
+                                          placeholder="Search collections"
+                                          style={{
+                                            marginBottom: "10px",
+                                            padding: "8px 0 8px 8px",
+                                          }}
+                                        />
 
-            type="text"
-            value={searchCollection}
-            onChange={(e) => setSearchCollection(e.target.value)}
-            placeholder="Search collections"
-            style={{ marginBottom: "10px", padding: "8px 0 8px 8px" }}
-          />
-
-          {/* Filter collections based on search term */}
-          <ul className="bookmark-existing-collections">
-            {Object.keys(collections)
-              .filter((collectionName) =>
-                collectionName
-                  .toLowerCase()
-                  .includes(searchCollection.toLowerCase())
-              )
-              .map((collectionName, index) => (
-                <ul key={index}>
-                  <li
-                    onClick={() => handleSaveToExisting(collectionName)}
-                  >
-                    <span className="collection-name">{collectionName}</span>
-                    <span className="collection-article-count">
-                      {collections[collectionName].length} articles
-                    </span>
-                  </li>
-                </ul>
-              ))}
-          </ul>
-        </>
-      )}
-    </div>
-  </div>
-)}
+                                        {/* Filter collections based on search term */}
+                                        <ul className="bookmark-existing-collections">
+                                          {Object.keys(collections)
+                                            .filter((collectionName) =>
+                                              collectionName
+                                                .toLowerCase()
+                                                .includes(
+                                                  searchCollection.toLowerCase()
+                                                )
+                                            )
+                                            .map((collectionName, index) => (
+                                              <ul key={index}>
+                                                <li
+                                                  onClick={() =>
+                                                    handleSaveToExisting(
+                                                      collectionName
+                                                    )
+                                                  }
+                                                >
+                                                  <span className="collection-name">
+                                                    {collectionName}
+                                                  </span>
+                                                  <span className="collection-article-count">
+                                                    {
+                                                      collections[
+                                                        collectionName
+                                                      ].length
+                                                    }{" "}
+                                                    articles
+                                                  </span>
+                                                </li>
+                                              </ul>
+                                            ))}
+                                        </ul>
+                                      </>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
 
                               {isEmailModalOpen && (
                                 <div
                                   className="email-modal-overlay"
                                   style={{
-                                    backdropFilter: "blur(1px)",
-                                    background: "none",
+                                    background: "rgba(0, 0, 0, 0.1)",
+                                    // background: "none",
                                   }}
                                   onClick={handleCloseEmailModal}
                                 >
                                   <div
                                     className="email-modal-content"
                                     onClick={(e) => e.stopPropagation()}
+                                    style={{
+                                      background: "rgba(255, 255, 255, 1)",
+                                    }}
                                   >
                                     <div className="email-modal-header">
-                                      <h3>Send to</h3>
-                                      <button
+                                      <h3>Share with</h3>
+                                      {/* <button
                                         className="email-modal-close-button"
                                         onClick={handleCloseEmailModal}
                                       >
                                         <IoCloseOutline size={20} />
-                                      </button>
+                                      </button> */}
                                     </div>
                                     <div
                                       className="email-modal-body"
                                       style={{
                                         display: "flex",
-                                        gap: "10px",
+                                        gap: "20px",
                                         flexDirection: "column",
                                       }}
                                     >
@@ -1839,7 +1943,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                                         onChange={(e) =>
                                           setEmail(e.target.value)
                                         }
-                                        placeholder="Email"
+                                        placeholder="Enter Email ID"
                                         className="email-input"
                                       />
                                       <input
@@ -1851,13 +1955,31 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                                         placeholder="Enter Subject"
                                         className="email-input"
                                       />
-                                      <button
-                                        onClick={handleSendEmail}
-                                        style={{ width: "50%", margin: "auto" }}
-                                        className="send-button"
-                                      >
-                                        Send
-                                      </button>
+                                      <div className="confirm-buttons">
+                                        <button
+                                          onClick={handleCloseEmailModal}
+                                          style={{
+                                            borderRadius: "30px",
+                                            backgroundColor:
+                                              "rgba(234, 234, 236, 1)",
+                                            color: "rgba(78, 78, 86, 1)",
+                                          }}
+                                          className="cancel-button"
+                                        >
+                                          cancel
+                                        </button>
+                                        <button
+                                          onClick={handleSendEmail}
+                                          style={{
+                                            borderRadius: "30px",
+                                            // width: "50%",
+                                            // margin: "auto",
+                                          }}
+                                          className="send-button"
+                                        >
+                                          Send
+                                        </button>
+                                      </div>
                                     </div>
                                   </div>
                                 </div>
@@ -2149,11 +2271,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                   } ${
                     annotateData && annotateData.length > 0 ? "" : "disabled"
                   }`}
-                  onClick={
-                    annotateData 
-                      ? handleAnnotate
-                      : null
-                  }
+                  onClick={annotateData ? handleAnnotate : null}
                   style={{
                     cursor:
                       annotateData && annotateData.length > 0 ? "pointer" : "",

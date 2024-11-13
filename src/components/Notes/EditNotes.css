@@ -1,6 +1,7 @@
 .edit-note {
   border-radius: 15px;
   border: 1px solid #ebebf3;
+  background: rgba(251, 251, 253, 1);
 }
 
 .edit-note__header {
@@ -9,6 +10,13 @@
   align-items: center;
   border-bottom: 1px solid rgba(235, 235, 243, 1);
   padding: 5px;
+  background: linear-gradient(
+    90deg,
+    rgba(254, 118, 117, 0.7) -21.07%,
+    rgba(204, 129, 185, 0.7) 37.85%,
+    rgba(26, 168, 210, 0.7) 97.5%,
+    rgba(76, 210, 217, 0.7) 151.24%
+  );
 }
 
 .edit-back-button {
@@ -38,6 +46,7 @@
 
 .edit-note__title {
   width: 100%;
+  background: rgba(251, 251, 253, 1);
   box-sizing: border-box;
   color: black;
   border: none;
@@ -77,6 +86,7 @@
 .toolbar {
   display: flex;
   justify-content: space-between;
+  background: rgba(251, 251, 253, 1);
   padding: 5px 10px;
   border-top: 1px solid rgba(235, 235, 243, 0.5);
 }
@@ -98,6 +108,145 @@
 
 .toolbar-button:hover {
   background-color: #e0e0e0;
+}
+.editNotes-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  background: rgba(58, 58, 64, 0.6);
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+.editNotes-modal-content {
+  background-color: #fff;
+  padding: 20px 30px;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  position: relative;
+}
+
+.editNotes-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+.createNotes-modal-close-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+}
+
+.editNotes-modal-body {
+  display: flex;
+  justify-content: space-evenly;
+  padding: 20px;
+}
+.share-note {
+  font-weight: 600;
+}
+.share-email {
+  text-align: start;
+}
+
+.editNotes-modal-copy-button {
+  padding: 10px;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.editNotes-modal-copy-button:hover {
+  background-color: #1669c1;
+}
+.share-message {
+  margin-top: 10px;
+  padding: 10px;
+  background-color: #d4edda;
+  color: #155724;
+  border-radius: 4px;
+}
+.editNotes-email {
+  gap: 10px;
+}
+.editNotes-Email {
+  display: grid;
+}
+.editNotes-copy {
+  display: grid;
+}
+.email-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.email-modal-content {
+  background: rgba(255, 255, 255, 1);
+  padding: 20px;
+  width: 30vw;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  /* box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); */
+}
+
+.email-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.email-modal-close-button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.email-input,
+.subject-input {
+  width: 100%;
+  padding: 10px 0 10px 6px;
+  font-size: 16px;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+}
+
+.subject-input {
+  resize: none; /* Prevent resizing */
+}
+
+.send-button {
+  background-color: #1a82ff;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.send-button:hover {
+  background-color: #155bb5;
 }
 
 .share-button {

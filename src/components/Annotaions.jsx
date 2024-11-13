@@ -8,7 +8,7 @@ const Annotation = ({
   source: passedSource,
   annotateHeight,
 }) => {
-  console.log(annotateData)
+  console.log(annotateData);
   const location = useLocation();
   const navigate = useNavigate();
   const { pmid: pmidFromUrl } = useParams(); // Extract pmid from the URL
@@ -92,34 +92,37 @@ const Annotation = ({
   };
 
   const renderAnnotations = () => {
-    const annotationEntries = annotateData && typeof annotateData === "object" ? Object.entries(annotateData) : [];
-  
+    const annotationEntries =
+      annotateData && typeof annotateData === "object"
+        ? Object.entries(annotateData)
+        : [];
+
     return annotationEntries.flatMap(([pmid, categories]) => {
       const rows = [];
       const isExpanded = expandedPmids[pmid] || false; // Initially set expanded state to false if not set
-  
+
       const sortedCategories = Object.entries(categories).sort(
         ([, a], [, b]) => (b.annotation_score || 0) - (a.annotation_score || 0)
       );
-  
+
       sortedCategories.forEach(([category, values], index) => {
         if (category === "annotation_score") return;
         const categoryKey = `${pmid}-${category}`;
         const isTextExpanded = expandedTexts[categoryKey];
-  
+
         const annotationScore = values.annotation_score
-          ? `${(values.annotation_score).toFixed(2)}%`
+          ? `${values.annotation_score.toFixed(2)}%`
           : "N/A";
-  
+
         const categoryTexts = Object.entries(values)
           .filter(([key]) => key !== "annotation_score")
           .map(([key]) => key)
           .join(", ");
-  
+
         const displayText = isTextExpanded
           ? categoryTexts
           : categoryTexts.slice(0, 30);
-  
+
         // Only display the first row initially if `isExpanded` is false
         if (index === 0 || isExpanded) {
           rows.push(
@@ -132,7 +135,11 @@ const Annotation = ({
                 )}
                 {index === 0 && (
                   <a
-                    style={{ color: "#1a82ff", fontWeight: 600, cursor: "pointer" }}
+                    style={{
+                      color: "#1a82ff",
+                      fontWeight: 600,
+                      cursor: "pointer",
+                    }}
                     onClick={() => handleNavigate(pmid)}
                   >
                     {pmid}
@@ -160,13 +167,10 @@ const Annotation = ({
           );
         }
       });
-  
+
       return rows;
     });
   };
-  
-  
-  
 
   return (
     <div
@@ -175,7 +179,7 @@ const Annotation = ({
     >
       <div
         style={{
-          background: "#fff",
+          background: "rgba(251, 251, 253, 1)",
           borderRadius: "16px 16px 0 0",
           padding: "5px",
         }}

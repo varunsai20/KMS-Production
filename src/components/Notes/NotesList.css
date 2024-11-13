@@ -1,10 +1,11 @@
 .Notes-List {
-  border-radius: 16px;
+  /* border-radius: 16px; */
   margin: 0 1% 0 0;
   overflow-y: auto;
   opacity: 0px;
   border: 1px solid rgba(235, 235, 243, 1);
   /* background-color: rgba(235, 235, 243, 0.5); */
+  background: rgba(251, 251, 253, 1);
 }
 .plus-dots {
   display: flex;
@@ -12,10 +13,20 @@
   border-bottom: 1px solid rgba(235, 235, 243, 1);
   margin: 0%;
   padding: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(254, 118, 117, 0.7) -21.07%,
+    rgba(204, 129, 185, 0.7) 37.85%,
+    rgba(26, 168, 210, 0.7) 97.5%,
+    rgba(76, 210, 217, 0.7) 151.24%
+  );
 }
 .button-plus {
-  color: #1a82ff;
-  font-size: 20px;
+  color: white;
+  /* font-size: 20px; */
+  border: 2px solid white;
+  border-radius: 7px;
+  margin: 2% 0% 2% 2%;
 }
 .Notes-List-header {
   display: grid;
@@ -26,10 +37,10 @@
 }
 .note-p {
   font-family: Manrope;
-  font-size: 15px;
+  /* font-size: 15px; */
   font-weight: 600;
-  color: #1a82ff;
-  margin: 2%;
+  color: white;
+  margin: 3% 2% 0% 0%;
   padding: 0%;
 }
 #p {
@@ -52,6 +63,7 @@
   outline: none;
   box-sizing: border-box;
   margin: 1%;
+  background: rgba(251, 251, 253, 1);
 }
 
 .Search-icon {

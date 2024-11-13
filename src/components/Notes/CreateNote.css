@@ -2,6 +2,19 @@
   border-radius: 16px;
   opacity: 0px;
   border: 1px solid rgba(235, 235, 243, 1);
+  background: rgba(251, 251, 253, 1);
+}
+.note-header {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  background: linear-gradient(
+    90deg,
+    rgba(254, 118, 117, 0.7) -21.07%,
+    rgba(204, 129, 185, 0.7) 37.85%,
+    rgba(26, 168, 210, 0.7) 97.5%,
+    rgba(76, 210, 217, 0.7) 151.24%
+  );
 }
 .note-taking {
   width: 100%;
@@ -26,11 +39,10 @@
 .note-input {
   width: 100%;
   box-sizing: border-box;
-  background-color: rgba(235, 235, 243, 1);
+  background: rgba(251, 251, 253, 1);
   border: 1px solid #ebebf3;
   padding: 3%;
   outline: none;
-  background: transparent;
   resize: none;
   font-size: 14px;
   font-family: Manrope;
@@ -40,10 +52,13 @@
 }
 .dropdown {
   width: 93%;
-  background-color: white; /* or your preferred background color */
+  background-color: white;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  border-radius: 4px; /* optional */
-  padding: 10px; /* optional */
+  border-radius: 4px;
+  padding: 10px;
+  background: rgba(251, 251, 253, 1);
+  position: absolute;
+  z-index: 1000;
 }
 
 .open-header-dropdown {
@@ -54,12 +69,10 @@
 }
 .dropdown-button-group {
   width: 100%;
-  /* display: grid; */
   text-align: start;
   margin: 0 auto;
-
-  /* justify-content: start; */
   gap: 5px;
+  background: rgba(251, 251, 253, 1);
 }
 .dropdown-button-noteslist {
   width: 100%;
@@ -115,7 +128,7 @@
 .toolbar {
   display: flex;
   justify-content: space-between;
-  background-color: #f1f1f1;
+  background: rgba(251, 251, 253, 1);
   padding: 5px;
   border-radius: 4px;
 }
@@ -206,151 +219,6 @@
   }
 }
 
-.createNotes-modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  backdrop-filter: blur(1px);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 2000;
-}
-
-/* Modal Content */
-.createNotes-modal-content {
-  background-color: #fff;
-  padding: 20px 30px;
-  border-radius: 8px;
-  width: 90%;
-  max-width: 400px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-  position: relative;
-}
-
-/* Modal Header */
-.createNotes-modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  /* margin-bottom: 15px; */
-}
-
-/* Close Button */
-.createNotes-modal-close-button {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 5px;
-}
-
-/* Modal Body */
-.createNotes-modal-body {
-  display: flex;
-  justify-content: space-evenly;
-  /* flex-direction: column; */
-}
-.share-email {
-  text-align: start;
-}
-
-/* Copy Button */
-.createNotes-modal-copy-button {
-  padding: 10px;
-  /* background-color: #1a82ff; */
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 16px;
-}
-
-.createNotes-modal-copy-button:hover {
-  background-color: #1669c1;
-}
-
-/* Share Message */
-.share-message {
-  margin-top: 10px;
-  padding: 10px;
-  background-color: #d4edda;
-  color: #155724;
-  border-radius: 4px;
-}
-.createNotes-email {
-  gap: 10px;
-}
-.createNotes-Email {
-  display: grid;
-}
-.createNotes-copy {
-  display: grid;
-}
-.email-modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.6);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 2000;
-}
-
-.email-modal-content {
-  background: white;
-  padding: 20px;
-  width: 25vw;
-  border-radius: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
-.email-modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.email-modal-close-button {
-  background: transparent;
-  border: none;
-  cursor: pointer;
-}
-
-.email-input,
-.subject-input {
-  width: 100%;
-  padding: 10px 0 10px 6px;
-  font-size: 16px;
-  border-radius: 5px;
-  border: 1px solid #ddd;
-}
-
-.subject-input {
-  resize: none; /* Prevent resizing */
-}
-
-.send-button {
-  background-color: #1a82ff;
-  color: white;
-  border: none;
-  padding: 10px;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 16px;
-}
-
-.send-button:hover {
-  background-color: #155bb5;
-}
 @keyframes spin {
   from {
     transform: rotate(0deg);

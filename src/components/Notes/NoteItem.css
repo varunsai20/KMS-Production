@@ -1,7 +1,7 @@
 .NoteItem {
   height: 15vh;
   margin: 1%;
-  /* background: rgba(235, 244, 255, 1); */
+  background: rgba(251, 251, 253, 1);
   padding: 1rem;
   display: flex;
   flex-direction: column;
@@ -96,9 +96,9 @@
 .confirm-popup {
   background-color: #fff;
   padding: 20px 30px;
-  border-radius: 8px;
+  border-radius: 20px;
   width: 80%;
-  max-width: 300px;
+  max-width: 350px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
   text-align: center;
 }
@@ -111,24 +111,30 @@
 
 .confirm-buttons {
   display: flex;
-  justify-content: space-around;
+  justify-content: flex-end;
+  gap: 15px;
 }
 
 .confirm-delete-button,
 .confirm-keep-button {
   padding: 10px 20px;
   border: none;
-  border-radius: 5px;
+  border-radius: 30px;
   cursor: pointer;
   font-size: 14px;
   transition: background-color 0.3s ease;
 }
-
-.confirm-delete-button {
-  background-color: #e57373; /* Bootstrap's danger color */
-  color: #fff;
+.confirm-keep-button {
+  color: rgba(78, 78, 86, 1);
+  background: rgba(234, 234, 236, 1);
 }
-
+.confirm-delete-button {
+  background: rgba(248, 29, 82, 1);
+  color: white;
+}
+.confirm-keep-button:hover {
+  background: rgba(234, 234, 236, 1);
+}
 .confirm-delete-button:hover {
   background-color: #c82333;
 }
@@ -138,7 +144,7 @@
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(58, 58, 64, 0.6);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -149,16 +155,16 @@
   background: white;
   padding: 20px;
   width: 25vw;
-  border-radius: 8px;
-  display: flex;
+  border-radius: 20px;
+  /* display: flex; */
   flex-direction: column;
   gap: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .noteItem-modal-header {
-  display: flex;
-  justify-content: space-between;
+  /* display: flex;
+  justify-content: space-between; */
   align-items: center;
   margin-bottom: 10px;
 }
@@ -176,4 +182,31 @@
   font-size: 16px;
   border-radius: 5px;
   border: 1px solid #ddd;
+}
+.email-label {
+  text-align: start;
+  padding-bottom: 5px;
+}
+.email-button-group {
+  display: flex;
+  justify-content: end;
+  padding: 15px 0px 0px 0px;
+  gap: 20px;
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+}
+.email-send-button {
+  padding: 10px;
+  width: 20%;
+  border-radius: 30px;
+  background: rgba(26, 130, 255, 1);
+  color: white;
+}
+.email-cancel-button {
+  padding: 10px;
+  width: 20%;
+  border-radius: 30px;
+  background: rgba(234, 234, 236, 1);
+  color: rgba(78, 78, 86, 1);
 }

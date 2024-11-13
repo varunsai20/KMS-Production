@@ -77,21 +77,20 @@ button {
   position: -webkit-sticky; /* For Safari */
   position: sticky;
   top: 0;
-  z-index: 1000; /* Stay above the content */
+  z-index: 1000;
 }
 .searchResults-Bar {
   width: 60%;
   height: 50px;
-  /* border: 1px solid black; */
   box-shadow: none;
-  /* border: 1px solid #e0e0e0; */
-  position: -webkit-sticky; /* For Safari */
+  position: -webkit-sticky;
   position: sticky;
   top: 1.5%;
-  z-index: 1000; /* Stay above the content */
+  margin-top: 1%;
+  z-index: 1000;
 }
 .searchResults-Bar .input-container {
-  width: 100%;
+  width: 90%;
   align-items: normal;
 }
 .searchResults-Bar .search-icon {
@@ -540,37 +539,47 @@ button {
   overflow: hidden; /* Prevent background scrolling when modal is open */
 }
 
-.bookmark-modal-overlay {
+.search-bookmark-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  backdrop-filter: blur(1px); /* Blur effect for the background */
+  background: rgba(0, 0, 0, 0.1);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
 }
 
-.modal-content {
+.search-modal-content {
   background-color: white;
   padding: 20px;
   border-radius: 8px;
-  max-width: 300px;
+  max-width: 500px;
   width: 100%;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   z-index: 1001;
 }
-.modal-content h4{
-  margin: 0;
+.bookmark-p {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 }
-.modal-content h3,
-.modal-content p {
-  margin-bottom: 15px;
+.bookmark-para {
+  font-weight: 600;
+  color: #000;
+  margin: 1%;
+  padding: 0;
+  text-align: start;
+}
+.search-modal-content h4 {
+  margin: 3% 0% 0% 1%;
+}
+.search-modal-content h3,
+.search-modal-content p {
+  margin-bottom: 10px;
 }
 
-.modal-content button {
+.search-modal-content button {
   padding: 10px 20px;
   border: none;
   background-color: #007bff;
@@ -579,12 +588,12 @@ button {
   cursor: pointer;
 }
 
-.modal-content button:disabled {
+.search-modal-content button:disabled {
   background-color: #ccc;
   cursor: not-allowed;
 }
 
-.modal-content input {
+.search-modal-content input {
   width: 97%;
   padding: 8px 0 8px 8px;
   margin-top: 10px;
@@ -593,20 +602,20 @@ button {
   border: 1px solid #ddd;
 }
 
-.modal-content ul {
+.search-modal-content ul {
   list-style-type: none;
   padding-left: 0;
   margin-top: 0;
 }
 
-.modal-content ul li {
+.search-modal-content ul li {
   margin: 10px 0;
   display: flex;
   justify-content: space-between;
   cursor: pointer;
   padding: 10px 10px 10px 0;
 }
-.modal-content ul li:hover{
+.search-modal-content ul li:hover {
   background-color: #dddddd70;
 }
 .searchresult-authors {
@@ -1010,9 +1019,9 @@ td {
   z-index: 10;
 }
 
-.bookmark-existing-collections{
+.bookmark-existing-collections {
   height: 250px;
-    overflow-y: overlay;
+  overflow-y: overlay;
 }
 
 .search-note-taking {

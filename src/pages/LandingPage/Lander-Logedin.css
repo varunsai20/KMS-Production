@@ -1,24 +1,34 @@
 .Landing-Container {
+  /* display: flex;
+  flex-direction: column;
+  overflow-y: hidden;
+  overflow-x: hidden;
+  position: relative; */
   display: flex;
   flex-direction: column;
-  overflow-y: hidden; /* Prevents overflow and layout changes */
-  overflow-x: hidden;
-  /* height: 100vh; */
-  position: relative;
+  align-items: center;
+  text-align: center;
+  max-width: 100vw;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+.Landing-Header {
+  width: 100%;
 }
 .Landing-Content {
-  display: flex;
+  /* display: flex;
   justify-content: space-between;
   margin: 0% 7%;
   min-height: 50%;
-  overflow-y: hidden; /* Prevents overflow and layout changes */
-  overflow-x: hidden;
+  overflow-y: hidden;
+  overflow-x: hidden; */
+  display: flex;
 }
 .Landing-Content-Left {
   position: relative;
-  width: 70%;
-  min-width: 40%;
-  max-width: 70%;
+  height: 40vh;
+  display: grid;
+  align-content: space-evenly;
 }
 .Left1,
 .Left2,
@@ -28,11 +38,11 @@
   width: 10%;
 }
 .Left1 {
-  top: 12.5%;
+  /* top: 12.5%; */
   left: 12.5%;
 }
 .Left2 {
-  top: 75%;
+  top: 80%;
   left: 12.5%;
 }
 .Right1 {
@@ -40,8 +50,8 @@
   left: 75%;
 }
 .Right2 {
-  top: 75%;
-  left: 75%;
+  top: 82%;
+  left: 60%;
 }
 .Landing-Content-Left-Content {
   position: absolute;
@@ -76,7 +86,7 @@
 }
 
 .Landing-Welcome-desc {
-  width: 80%;
+  width: 70%;
   margin: 0;
   text-align: justify;
   margin: 0;
@@ -87,17 +97,16 @@
   letter-spacing: 0.02em;
   text-align: left;
   color: #a5a5a5;
+  padding: 10px 0px 0px 0px;
 }
 
 .Landing-Searchbar {
+  width: 85%;
   margin: 0;
   background: none;
   border-radius: 0;
   box-shadow: none;
-  /* backdrop-filter: none;
-    -webkit-backdrop-filter: blur(5px); */
   border: none;
-  width: 100%;
   height: 94px;
   padding: 0;
   gap: 32px;
@@ -109,7 +118,7 @@
   backdrop-filter: none;
 }
 .Landing-Searchbar .input-container {
-  position: static;
+  /* position: static; */
   width: 100%;
 }
 
@@ -125,13 +134,13 @@
 
 .Landing-Features {
   display: flex;
-  width: 60%;
   margin: 1% auto;
+  width: 90%;
   height: Hug(257px) px;
   top: 593px;
   left: 168px;
   padding: 0px 32px 0px 32px;
-  gap: 72px;
+  /* gap: 72px; */
   border-radius: 24px;
   opacity: 0px;
   justify-content: space-around;
@@ -167,75 +176,56 @@
 }
 
 .WhyInfer-points {
-  display: grid;
+  display: flex;
+  width: 90%;
   grid-template-columns: repeat(2, 1fr);
   gap: 20px;
 }
 
 .Landing-Features-card {
-  background-color: rgb(255, 255, 255);
-  border-radius: 10px;
-  padding: 20px;
-  text-align: center;
-  transition: box-shadow 0.3s ease;
-  box-shadow: 0 -6px 8px rgba(0, 0, 0, 0.2),
-    /* Top shadow */ 0 6px 8px rgba(0, 0, 0, 0.2),
-    /* Bottom shadow */ -2px 0 6px rgba(0, 0, 0, 0.1),
-    /* Left shadow */ 2px 0 6px rgba(0, 0, 0, 0.1);
+  display: inline-block;
+  width: 100%;
+  max-width: 250px;
+  margin: 10px;
+  padding: 12px;
+  border: 1px solid #fe7675;
+  border-radius: 16px;
+  background-color: #ffffff;
+
+  /* border-image-source: linear-gradient(180deg, #fe7675 0%, #19a8d2 100%); */
+  border-image-slice: 1;
+  transition: transform 0.3s;
 }
 
 .Landing-Features-card:hover {
-  transform: scale(1.05);
+  transform: translateY(-5px);
 }
 
-.card:hover {
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+.Landing-Features-card-Inner {
+  text-align: center;
 }
 
-.number {
+.Landing-Features-card img {
   width: 50px;
   height: 50px;
-  border-radius: 10px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin: 0 auto;
+  /* margin-bottom: 15px; */
 }
 
-.number span {
-  font-size: 20px;
+.card-title {
+  font-size: 18px;
   font-weight: bold;
   color: #333;
-}
-.card-title {
-  background: linear-gradient(
-    90.5deg,
-    #fe7675 30.57%,
-    #cc81b9 45.01%,
-    #19a8d2 73.04%
-  );
+  margin-bottom: 10px;
+  background: -webkit-linear-gradient(180deg, #fe7675 0%, #19a8d2 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  background-clip: text;
-  text-fill-color: transparent;
-  font-family: Manrope;
-  font-size: 20px;
-  font-weight: 600;
-  line-height: 31.2px;
-  text-align: center;
 }
 
 .card-content {
   font-size: 14px;
-  color: #1a1a1a;
-  line-height: 1.6;
-  font-family: Manrope;
-  font-size: 16px;
-  font-weight: 400;
-  line-height: 23.36px;
-  letter-spacing: 0.02em;
-  text-align: center;
+  color: #666;
 }
+
 .Notes-modal-container {
   position: fixed;
   top: 0;
@@ -249,7 +239,7 @@
 }
 .notes-modal {
   position: absolute;
-  background-color: #f2f2f2;
+  background: rgba(251, 251, 253, 1);
   box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
   border-radius: 8px;
   height: 70vh;
@@ -420,7 +410,7 @@
   overflow: auto;
 }
 .Lander-manager {
-  background-color: #f2f2f2;
+  background: rgba(251, 251, 253, 1);
 }
 
 /* Notes list as Lander-list */
@@ -450,7 +440,13 @@
   margin: 0%;
   padding: 0;
   height: 5vh;
-  background-color: #8d32a7;
+  background: linear-gradient(
+    90deg,
+    rgba(254, 118, 117, 0.7) -21.07%,
+    rgba(204, 129, 185, 0.7) 37.85%,
+    rgba(26, 168, 210, 0.7) 97.5%,
+    rgba(76, 210, 217, 0.7) 151.24%
+  );
 }
 .lander-button-plus {
   color: white;
@@ -517,7 +513,7 @@
   position: relative;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   margin-bottom: 10px;
-  background-color: #f2f2f2;
+  background: rgba(251, 251, 253, 1);
   transition: background-color 0.3s ease;
 }
 
@@ -593,7 +589,6 @@
   justify-content: center;
   align-items: center;
   z-index: 1500; /* Higher than popup-menu */
-  border-radius: 10px; /* Match the NoteItem's border radius */
 }
 
 /* Confirmation Popup */
@@ -663,8 +658,6 @@
   height: 30px;
   color: white;
   border-radius: 34px;
-  /* background-color: #1a82ff;
-  box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px; */
   cursor: pointer;
   z-index: 1;
 }
@@ -678,11 +671,11 @@
   font-size: 14px;
   font-family: "Manrope", sans-serif;
   border: 1px solid #999999;
-  background-color: #f2f2f2;
+  background: rgba(251, 251, 253, 1);
 }
 .lander-edit-note__details {
+  background: rgba(251, 251, 253, 1);
   width: 100%;
-  /* height: 100%; */
   box-sizing: border-box;
   border: none;
   padding: 3%;
@@ -700,7 +693,7 @@
   justify-content: space-between;
   padding: 5px 10px;
   border-top: 1px solid rgba(235, 235, 243, 0.5);
-  background-color: #f2f2f2;
+  background: rgba(251, 251, 253, 1);
 }
 /* create-notes */
 .lander-create-close-button {
@@ -732,12 +725,12 @@
   font-size: 14px;
   font-family: Manrope;
   color: black;
-  background-color: #f2f2f2;
+  background: rgba(251, 251, 253, 1);
 }
 .lander-note-taking {
   width: 100%;
   box-sizing: border-box;
-  background-color: #f2f2f2;
+  background: rgba(251, 251, 253, 1);
   border: 1px soild rgba(235, 235, 243, 1);
   flex: 1;
   border: none;
@@ -759,7 +752,7 @@
 .lander-toolbar {
   display: flex;
   justify-content: space-between;
-  background-color: #f2f2f2;
+  background: rgba(251, 251, 253, 1);
   padding: 5px;
   border-radius: 4px;
   border: 1px solid #999999;
