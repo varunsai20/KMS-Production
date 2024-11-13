@@ -23,6 +23,7 @@ import axios from "axios";
 //import Draggable from "react-draggable";
 import Collection from "../../components/Collection";
 import Citations from "../../components/Citations";
+import GenerateAnnotate from "../../components/GenerateAnnotate";
 
 import Notes from "../NotesPage/Notes";
 
@@ -35,6 +36,7 @@ const Lander = () => {
   console.log(sessions);
   const [isCollectionOpen, setIsCollectionOpen] = useState(false);
   const [isCitationsOpen, setIsCitationsOpen] = useState(false);
+  const [isAnnotateOpen, setIsAnnotateOpen] = useState(false);
 
   const [openInsights, setOpenInsights] = useState(false);
   const [dimensions, setDimensions] = useState({ width: 400, height: 400 });
@@ -61,6 +63,12 @@ const Lander = () => {
   };
   const handleCloseCitations = () => {
     setIsCitationsOpen(false);
+  };
+  const handleOpenAnnotate = () => {
+    setIsAnnotateOpen(true);
+  };
+  const handleCloseAnnotate = () => {
+    setIsAnnotateOpen(false);
   };
   // const handleOpenInsights = () => {
   //   setOpenInsights(true);
@@ -252,7 +260,9 @@ const Lander = () => {
               />
               <h4>Utilities</h4>
 
-              <a href="#">Annotations</a>
+              <a href="#annotate" onClick={handleOpenAnnotate}>
+                Annotations
+              </a>
               <a href="#citations" onClick={handleOpenCitations}>
                 Citation
               </a>
@@ -400,11 +410,17 @@ const Lander = () => {
       {isCitationsOpen && (
         <>
           <div className="citation-overlay">
-            {/* <button className="citation-close" onClick={handleCloseCitations}>
-              close
-            </button> */}
             <div className="citation-modal">
               <Citations handleCloseCitations={handleCloseCitations} />
+            </div>
+          </div>
+        </>
+      )}
+      {isAnnotateOpen && (
+        <>
+          <div className="annotate-overlay">
+            <div className="annotate-modal">
+              <GenerateAnnotate handleCloseAnnotate={handleCloseAnnotate} />
             </div>
           </div>
         </>
