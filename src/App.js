@@ -1,8 +1,6 @@
-import React, { useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import axios from "axios";
+import React from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import dayjs from "dayjs";
+import { useSelector } from "react-redux";
 import Lander from "./pages/LandingPage/Lander-Logedin";
 import Login from "./pages/Authentication/Login/Login";
 import SignUpForm from "./pages/Authentication/SignUp/Signup";
@@ -15,99 +13,36 @@ import Researchers from "./pages/Admin/Researchers";
 import Profile from "./components/Profile";
 import EditResearcher from "./pages/Admin/EditResearcher";
 import ProtectedRoute from "./protectedRoute";
-import { login, updateTokens } from "./redux/reducers/LoginAuth";
 import DeriveInsights from "./pages/ArticlePage/DeriveInsights";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import LogoutHandler from "./LogoutHandler"; // Import the new HOC
 
 function App() {
-  const dispatch = useDispatch();
-  const { access_token, refresh_token, exp } = useSelector(
-    (state) => state.auth
-  );
-  const deriveInsights = useSelector((state) => state.deriveInsights?.active); // assuming deriveInsights is in Redux state
-  console.log(deriveInsights)
-  // Conditionally set the article route path based on deriveInsights state
+  const deriveInsights = useSelector((state) => state.deriveInsights?.active);
   const articlePath = deriveInsights ? "/article" : "/article/:pmid";
-
-  const checkAndRefreshToken = async () => {
-    const now = dayjs().unix();
-    const expirationTime = exp - 60; // Check for refresh 1 minute before expiration
-
-    if (now >= expirationTime) {
-      try {
-        const response = await axios.post(
-          "http://13.127.207.184:80/auth/refresh",
-          {
-            refresh_token,
-          }
-        );
-
-        dispatch(
-          updateTokens({
-            access_token: response.data.access_token,
-            refresh_token: response.data.refresh_token,
-            iat: response.data.iat,
-            exp: response.data.exp,
-          })
-        );
-      } catch (error) {
-        console.error("Token refresh failed:", error);
-      }
-    }
-  };
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (access_token && refresh_token && exp) {
-        checkAndRefreshToken();
-      }
-    }, 1800 * 1000);
-
-    return () => clearInterval(interval);
-  });
 
   return (
     <Router>
-      <div className="App">
-        <ToastContainer />
-        <Routes>
-          <Route path="/" element={<Lander />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<SignUpForm />} />
-          <Route path="/deriveinsights" element={<DeriveInsights />} />
+      <LogoutHandler>
+        <div className="App">
+          <Routes>
+            <Route path="/" element={<Lander />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<SignUpForm />} />
+            <Route path="/deriveinsights" element={<DeriveInsights />} />
+            <Route path="/search" element={<SearchResults />} />
+            <Route path={articlePath} element={<ArticlePage />} />
 
-          {/* Protected Routes */}
-          <Route path="/search" element={<SearchResults />} />
+            <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>}>
+              <Route path="users" element={<Researchers />} />
+              <Route path="users/create" element={<CreateResearcher />} />
+              <Route path="users/edit/:user_id" element={<EditResearcher />} />
+              <Route path="users/profile/:user_id" element={<Profile />} />
+            </Route>
 
-          {/* Conditional Article Route */}
-          <Route path={articlePath} element={<ArticlePage />} />
-
-          <Route
-            path="/admin"
-            element={
-              <ProtectedRoute>
-                <Admin />
-              </ProtectedRoute>
-            }
-          >
-            <Route path="users" element={<Researchers />} />
-            <Route path="users/create" element={<CreateResearcher />} />
-            <Route path="users/edit/:user_id" element={<EditResearcher />} />
-            <Route path="users/profile/:user_id" element={<Profile />} />
-          </Route>
-
-          {/* User Profile Route */}
-          <Route
-            path="/users/profile/:user_id"
-            element={
-              <ProtectedRoute>
-                <Profile />
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
-      </div>
+            <Route path="/users/profile/:user_id" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+          </Routes>
+        </div>
+      </LogoutHandler>
     </Router>
   );
 }
