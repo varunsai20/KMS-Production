@@ -9,7 +9,7 @@
   gap: 20px;
 }
 .logo-in-login {
-  margin-bottom: 3%;
+  width: 8vw;
 }
 
 .form {
@@ -144,7 +144,7 @@
 }
 .apple svg {
   width: 20px;
-}
+  height: -webkit-fill-available;}
 
 .error {
   color: red;

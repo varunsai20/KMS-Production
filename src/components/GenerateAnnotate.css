@@ -1,13 +1,15 @@
-.annotate-container {
+.generate-annotate-container {
   width: 100%;
   height: 100%;
   border-radius: 20px;
   display: flex;
   position: relative;
+  gap: 10px;
 }
 
-.annotate-file-upload {
+.generate-annotate-file-upload {
   width: 50%;
+  height: 100%;
   background-color: aliceblue;
   display: grid;
   justify-content: center;
@@ -51,9 +53,19 @@
   color: rgba(78, 78, 86, 1);
   border: none;
 }
-
+.generate-close-collection{
+  position: absolute;
+    top: calc(46% - 35vh);
+    right: calc(1% - 13px);
+    border: none;
+    cursor: pointer;
+    z-index: 1001;
+}
 .generate-button {
   background-color: #1a82ff;
   color: white;
   border: none;
+}
+.annotate-annotations{
+  width: 50%;
 }
