@@ -128,11 +128,18 @@ const Lander = () => {
         }
       );
   
+      // setActiveSessionId(session_id); // Set active session ID
+  
       const formattedChatHistory = [];
       let currentEntry = {};
   
       conversationResponse.data.conversation.forEach((entry) => {
         if (entry.role === "user") {
+          // Add file_url if it exists in the entry
+          if (entry.file_url) {
+            currentEntry.file_url = entry.file_url;
+          }
+  
           if (currentEntry.query) {
             formattedChatHistory.push(currentEntry);
             currentEntry = {};
@@ -174,12 +181,13 @@ const Lander = () => {
           user: { access_token: token, user_id: user_id },
         },
       });
-      
+  
       console.log(conversationResponse);
     } catch (error) {
       console.error("Error fetching article or conversation data:", error);
     }
   };
+  
   
   
 

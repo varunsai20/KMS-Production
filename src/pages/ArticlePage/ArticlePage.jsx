@@ -110,6 +110,7 @@ const ArticlePage = () => {
     return JSON.parse(sessionStorage.getItem("ratingsGiven")) || [];
   });
   const [triggerAskClick, setTriggerAskClick] = useState(false);
+  const [triggerDeriveClick,setTriggerDeriveClick]=useState(false)
   const [editingPmid, setEditingPmid] = useState(null);
   const [editedTitle, setEditedTitle] = useState("");
   const [articleTitle, setArticleTitle] = useState("");
@@ -1020,10 +1021,18 @@ const ArticlePage = () => {
 
   const handlePromptWithFile = (prompt) => {
     if (!uploadedFile) return; // Ensure a file is selected
-    handleDeriveClick(prompt, uploadedFile);
+    setQuery(prompt);
+    setTriggerDeriveClick(true);
+    // handleDeriveClick(prompt, uploadedFile);
     // setQuery(prompt); // Set the prompt as the query
     // handleDeriveClick(); // Immediately trigger derive click with file and prompt
   };
+  useEffect(() => {
+    if (triggerDeriveClick) {
+      handleDeriveClick();
+      setTriggerDeriveClick(false); // Reset the flag after handling the click
+    }
+  }, [query, triggerDeriveClick]);
   const handleDeriveKeyDown = (e) => {
     if (e.key === "Enter") {
       handleDeriveClick();
@@ -1400,7 +1409,9 @@ const ArticlePage = () => {
       const navigatePath = session_type
         ? "/article"
         : `/article/${sourceType}:${article_id}`;
-
+        if (session_type) {
+          dispatch(setDeriveInsights(true));
+        }
       navigate(navigatePath, {
         state: {
           id: article_id,
@@ -1456,15 +1467,15 @@ const ArticlePage = () => {
 
   const handleOpenChat = () => {
     sessionStorage.setItem("chatHistory", []);
+    setArticleData("")
     setChatHistory([]);
     dispatch(setDeriveInsights(true)); // Set deriveInsights state in Redux
     console.log("clicked");
     navigate("/article", {
-      state: {
-        deriveInsights: true,
-      },
+      state: null, // Set state to null
     });
   };
+  
 
   const [isDragging, setIsDragging] = useState(false);
 
@@ -1532,7 +1543,15 @@ const ArticlePage = () => {
                       className={
                         session.session_id === activeSessionId ? "active" : ""
                       }
-                    >
+                      onClick={() => {
+                        handleSessionClick(
+                          session.article_id,
+                          session.source,
+                          session.session_id,
+                          user_id,
+                          session.session_type
+                        );
+                      }}>
                       {editingSessionId === session.session_id ? (
                         <input
                           type="text"
@@ -1555,19 +1574,7 @@ const ArticlePage = () => {
                           autoFocus
                         />
                       ) : (
-                        <a
-                          onClick={() => {
-                            console.log("Session ID:", session.session_id);
-                            console.log("Source:", session.source);
-                            handleSessionClick(
-                              session.article_id,
-                              session.source,
-                              session.session_id,
-                              user_id,
-                              session.session_type
-                            );
-                          }}
-                        >
+                        <a>
                           {mappedTitle.slice(0, 25)}
                           {mappedTitle.length > 25 ? "..." : ""}
                         </a>
@@ -2157,7 +2164,8 @@ const ArticlePage = () => {
         <div
           className="derive-chat-query"
           style={{ width: "69%", display: displayIfLoggedIn }}
-        >
+
+          >
           <div className="derive-predefined-prompts">
             <button
               onClick={() => handlePromptWithFile("Summarize this article")}
