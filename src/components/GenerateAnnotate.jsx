@@ -74,9 +74,11 @@ const GenerateAnnotate = ({ handleCloseAnnotate }) => {
 
   return (
     <>
+
       <div className="generate-annotate-container">
         {annotateLoading ? <Loading /> : ""}
         <div className="generate-annotate-file-upload">
+
           <h3>Generate Annotations</h3>
           <div className="upload-file" onClick={triggerFileUpload}>
             {uploadedFile ? (

@@ -123,7 +123,7 @@
 .response {
   text-align: left;
   float: left;
-  width: 80%;
+  width: 90%;
   /* max-width: 500px; */
   margin-bottom: 10px;
   padding: 10px;
@@ -201,8 +201,8 @@
 .history-pagination ul li.active a::before {
   content: "";
   position: absolute;
-  left: 3px;
-  top: 0;
+  left: -15px;
+  top: 5px;
   bottom: 0;
   width: 2px;
   border-radius: 10px;
@@ -264,8 +264,9 @@
 }
 .uploaded-file-indicator {
   display: flex;
-  /* justify-content: space-evenly; */
+  padding: 10px;
   align-items: center;
+  color: rgba(26, 130, 255, 1);
   /* width: -webkit-fill-available; */
 }
 .derive-stream-input input {

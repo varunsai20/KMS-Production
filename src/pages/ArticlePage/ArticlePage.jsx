@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { useSelector, useDispatch } from "react-redux";
+import { setDeriveInsights } from "../../redux/reducers/deriveInsights";
 import { useParams, useLocation } from "react-router-dom";
 import "./ArticlePage.css";
 import Loading from "../../components/Loading";
@@ -12,7 +13,7 @@ import { useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import { CircularProgress } from "@mui/material";
 import uploadimage from "../../assets/images/Upload.svg";
-import FileIconForDocument from "../../assets/images/FileIconforDocument.svg"
+import FileIconForDocument from "../../assets/images/FileIconforDocument.svg";
 import { TextField } from "@mui/material";
 import Annotation from "../../components/Annotaions";
 import { faBookmark as regularBookmark } from "@fortawesome/free-regular-svg-icons";
@@ -22,7 +23,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import notesicon from "../../assets/images/note-2.svg";
 import rehypeRaw from "rehype-raw";
-import Logo from "../../assets/images/Logo_New.svg";
+import newChat from "../../assets/images/20px@2x.svg";
 import pen from "../../assets/images/16px.svg";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTelegram } from "@fortawesome/free-brands-svg-icons";
@@ -35,10 +36,11 @@ import { login, logout } from "../../redux/reducers/LoginAuth"; // Import login 
 import ProfileIcon from "../../assets/images/Profile-dummy.svg";
 import { toast } from "react-toastify";
 import { faTimes, faAnglesUp } from "@fortawesome/free-solid-svg-icons";
-import { TbFileUpload } from "react-icons/tb";
+//import { TbFileUpload } from "react-icons/tb";
+import upload from "../../assets/images/upload-file.svg";
 import Header from "../../components/Header-New";
 
-import uploadDocx from "../../assets/images/uploadDocx.svg"
+import uploadDocx from "../../assets/images/uploadDocx.svg";
 const ArticlePage = () => {
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
   const deriveInsights = useSelector((state) => state.deriveInsights?.active); // assuming deriveInsights is in Redux state
@@ -100,6 +102,8 @@ const ArticlePage = () => {
   const [openAnnotate, setOpenAnnotate] = useState(false);
   const [openNotes, setOpenNotes] = useState(false);
   const [activeSection, setActiveSection] = useState("Title");
+  const [activeSessionId, setActiveSessionId] = useState(null);
+
   const contentRef = useRef(null); // Ref to target the content div
   const [contentWidth, setContentWidth] = useState(); // State for content width
   const [ratingsList, setRatingsList] = useState(() => {
@@ -112,6 +116,7 @@ const ArticlePage = () => {
   const [collections, setCollections] = useState([]);
   const [showConfirmPopup, setShowConfirmPopup] = useState(false);
   const [showConfirmIcon, setShowConfirmIcon] = useState(false);
+  const [isPromptEnabled, setIsPromptEnabled] = useState(false);
 
   const fetchCollections = async () => {
     try {
@@ -664,8 +669,8 @@ const ArticlePage = () => {
   };
   useEffect(() => {
     document.addEventListener("mouseup", handleMouseUp);
-    sessionStorage.setItem("session_id","")
-    sessionStorage.setItem("chatHistory",[])
+    sessionStorage.setItem("session_id", "");
+    sessionStorage.setItem("chatHistory", []);
     return () => {
       document.removeEventListener("mouseup", handleMouseUp);
     };
@@ -870,8 +875,8 @@ const ArticlePage = () => {
       setLoading(false);
     }
   };
-  console.log(chatHistory)
-  console.log(chatHistory.file_url)
+  console.log(chatHistory);
+  console.log(chatHistory.file_url);
   const handlePromptClick = (queryText) => {
     setQuery(queryText);
     setTriggerAskClick(true);
@@ -894,8 +899,7 @@ const ArticlePage = () => {
     }
     removeUploadedFile();
     setQuery("");
-    const storedSessionId =
-      sessionStorage.getItem("session_id");
+    const storedSessionId = sessionStorage.getItem("session_id");
     setLoading(true);
     const newChatEntry = {
       query,
@@ -904,62 +908,60 @@ const ArticlePage = () => {
       showDot: true,
     };
     setChatHistory((prevChatHistory) => [...prevChatHistory, newChatEntry]);
-  
+
     try {
       let url = "http://13.127.207.184:80/insights/upload";
       const headers = {
         Authorization: `Bearer ${token}`,
         "ngrok-skip-browser-warning": true,
       };
-  
+
       // Initialize FormData
-const formData = new FormData();
-formData.append("question", query);
+      const formData = new FormData();
+      formData.append("question", query);
 
-// Conditionally set user_id or userid based on session_id existence
-if (storedSessionId) {
-  formData.append("user_id", user.user_id);
-  formData.append("session_id", storedSessionId);
-} else {
-  formData.append("userid", user.user_id);
-}
-
-
+      // Conditionally set user_id or userid based on session_id existence
+      if (storedSessionId) {
+        formData.append("user_id", user.user_id);
+        formData.append("session_id", storedSessionId);
+      } else {
+        formData.append("userid", user.user_id);
+      }
 
       if (uploadedFile) {
         formData.append("file", uploadedFile);
       }
-  
+
       if (storedSessionId) {
         url = "http://13.127.207.184:80/insights/ask";
       }
-  
+
       // Use fetch instead of axios to handle streaming response
       const response = await fetch(url, {
         method: "POST",
         headers: headers,
         body: formData,
       });
-  
+
       if (!response.ok) throw new Error("Network response was not ok");
-  
+
       // Stream response and update chat history
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let buffer = "";
       let apiResponse = ""; // To accumulate the full response
-  
+
       const readStream = async () => {
         let done = false;
         const delay = 100;
-  
+
         while (!done) {
           const { value, done: streamDone } = await reader.read();
           done = streamDone;
-  
+
           if (value) {
             buffer += decoder.decode(value, { stream: true });
-  
+
             // Process chunks of JSON-like data
             while (buffer.indexOf("{") !== -1 && buffer.indexOf("}") !== -1) {
               let start = buffer.indexOf("{");
@@ -967,18 +969,18 @@ if (storedSessionId) {
               if (start !== -1 && end !== -1) {
                 const jsonChunk = buffer.slice(start, end + 1);
                 buffer = buffer.slice(end + 1);
-  
+
                 try {
                   const parsedData = JSON.parse(jsonChunk);
                   const answer = parsedData.answer;
                   apiResponse += answer + " "; // Accumulate the full response
-  
+
                   // Store session_id if not already stored
                   if (!storedSessionId && parsedData.session_id) {
                     // setSessionId(parsedData.session_id);
                     sessionStorage.setItem("session_id", parsedData.session_id);
                   }
-  
+
                   setChatHistory((chatHistory) => {
                     const updatedChatHistory = [...chatHistory];
                     const lastEntryIndex = updatedChatHistory.length - 1;
@@ -991,7 +993,7 @@ if (storedSessionId) {
                     }
                     return updatedChatHistory;
                   });
-  
+
                   if (endOfMessagesRef.current) {
                     endOfMessagesRef.current.scrollIntoView({
                       behavior: "smooth",
@@ -1008,12 +1010,19 @@ if (storedSessionId) {
         setLoading(false);
         sessionStorage.setItem("chatHistory", JSON.stringify(chatHistory));
       };
-  
+
       readStream();
     } catch (error) {
       console.error("Error fetching or reading stream:", error);
       setLoading(false);
     }
+  };
+
+  const handlePromptWithFile = (prompt) => {
+    if (!uploadedFile) return; // Ensure a file is selected
+    handleDeriveClick(prompt, uploadedFile);
+    // setQuery(prompt); // Set the prompt as the query
+    // handleDeriveClick(); // Immediately trigger derive click with file and prompt
   };
   const handleDeriveKeyDown = (e) => {
     if (e.key === "Enter") {
@@ -1330,7 +1339,12 @@ if (storedSessionId) {
     }
   }, [location.state]); // Add location.state as a dependency to re-run on navigation
 
-  const handleSessionClick = async (article_id, source, session_id, session_type) => {
+  const handleSessionClick = async (
+    article_id,
+    source,
+    session_id,
+    session_type
+  ) => {
     try {
       const conversationResponse = await axios.get(
         `http://13.127.207.184:80/history/conversations/history/${user_id}/${session_id}`,
@@ -1340,17 +1354,17 @@ if (storedSessionId) {
           },
         }
       );
-  
+      setActiveSessionId(session_id);
       const formattedChatHistory = [];
       let currentEntry = {};
-  
+
       conversationResponse.data.conversation.forEach((entry) => {
         if (entry.role === "user") {
           // Add file_url if it exists in the entry
           if (entry.file_url) {
             currentEntry.file_url = entry.file_url;
           }
-  
+
           if (currentEntry.query) {
             formattedChatHistory.push(currentEntry);
             currentEntry = {};
@@ -1362,15 +1376,18 @@ if (storedSessionId) {
           currentEntry = {};
         }
       });
-  
+
       if (currentEntry.query) {
         formattedChatHistory.push(currentEntry);
       }
-  
+
       console.log(formattedChatHistory);
-  
-      sessionStorage.setItem("chatHistory", JSON.stringify(formattedChatHistory));
-  
+
+      sessionStorage.setItem(
+        "chatHistory",
+        JSON.stringify(formattedChatHistory)
+      );
+
       // Update `source` based on its value
       const sourceType =
         source === "biorxiv"
@@ -1378,10 +1395,12 @@ if (storedSessionId) {
           : source === "plos"
           ? "plos_id"
           : "pmid";
-  
+
       // Determine navigation path based on `session_type`
-      const navigatePath = session_type ? "/article" : `/article/${sourceType}:${article_id}`;
-  
+      const navigatePath = session_type
+        ? "/article"
+        : `/article/${sourceType}:${article_id}`;
+
       navigate(navigatePath, {
         state: {
           id: article_id,
@@ -1397,20 +1416,54 @@ if (storedSessionId) {
       console.error("Error fetching article or conversation data:", error);
     }
   };
-  
+
   const [uploadedFile, setUploadedFile] = useState(null);
 
+  // const handleFileUpload = (e) => {
+  //   const file = e.target.files[0];
+  //   if (file) {
+  //     setUploadedFile(file);
+  //   }
+  // };
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      setUploadedFile(file);
+    if (!file) return; // Exit if no file was selected
+
+    const allowedExtensions = ["pdf", "docx"];
+    const fileExtension = file.name.split(".").pop().toLowerCase();
+
+    if (!allowedExtensions.includes(fileExtension)) {
+      //alert("Please upload a PDF or DOCX file.");
+      toast.error("try uploading .pdf,.docx", {
+        position: "top-center",
+        autoClose: 2000,
+      });
+      return;
     }
+
+    setUploadedFile(file); // Proceed if the file type is valid
+    setIsPromptEnabled(true);
   };
+
   const removeUploadedFile = () => {
     setUploadedFile(null);
+    setIsPromptEnabled(false);
   };
   const handleUploadClick = () => {
     document.getElementById("file-upload").click();
+  };
+
+
+  const handleOpenChat = () => {
+    sessionStorage.setItem("chatHistory", []);
+    setChatHistory([]);
+    dispatch(setDeriveInsights(true)); // Set deriveInsights state in Redux
+    console.log("clicked");
+    navigate("/article", {
+      state: {
+        deriveInsights: true,
+      },
+    });
   };
 
   const [isDragging, setIsDragging] = useState(false);
@@ -1433,6 +1486,7 @@ if (storedSessionId) {
     }
   };
 
+
   return (
     <>
       <div className="container">
@@ -1443,7 +1497,19 @@ if (storedSessionId) {
             className="history-pagination"
             style={{ display: displayIfLoggedIn }}
           >
-            <p>Recent Interactions</p>
+            <div
+              className="history-pagination-header"
+              style={{ display: "flex", justifyContent: "space-between" }}
+            >
+              <p>Recent Interactions</p>
+              <button className="new-chat-button" onClick={handleOpenChat}>
+                <img
+                  src={newChat}
+                  alt="mew-chat-icon"
+                  style={{ paddingRight: "10px" }}
+                />
+              </button>
+            </div>
             <ul>
               {sessions.length > 0 ? (
                 sessions.map((session) => {
@@ -1461,7 +1527,12 @@ if (storedSessionId) {
                     : session.session_title; // Default title if no keyword match
 
                   return (
-                    <li key={session.session_id}>
+                    <li
+                      key={session.session_id}
+                      className={
+                        session.session_id === activeSessionId ? "active" : ""
+                      }
+                    >
                       {editingSessionId === session.session_id ? (
                         <input
                           type="text"
@@ -1493,12 +1564,12 @@ if (storedSessionId) {
                               session.source,
                               session.session_id,
                               user_id,
-                              session.session_type,
+                              session.session_type
                             );
                           }}
                         >
-                          {mappedTitle.slice(0, 30)}
-                          {mappedTitle.length > 30 ? "..." : ""}
+                          {mappedTitle.slice(0, 25)}
+                          {mappedTitle.length > 25 ? "..." : ""}
                         </a>
                       )}
                       <img
@@ -1852,6 +1923,7 @@ if (storedSessionId) {
             </div>
           ) : (
             <div className="derive-article-content">
+
       {/* Conditionally render file upload if chatHistory is empty */}
       {chatHistory.length === 0 && (
         <div
@@ -1945,6 +2017,7 @@ if (storedSessionId) {
         ""
       )}
     </div>
+
           )}
 
           <div className="right-aside" style={{ display: displayIfLoggedIn }}>
@@ -2023,94 +2096,164 @@ if (storedSessionId) {
         </div>
       </div>
 
-      {articleData?<div
-        className="article-chat-query"
-        style={{
-          width: openAnnotate || openNotes ? contentWidth : "69%",
-          display: displayIfLoggedIn,
-        }}
-      >
-        <div className="predefined-prompts">
-          <button onClick={() => handlePromptClick("Summarize this article")}>
-            Summarize
-          </button>
-          <button
-            onClick={() =>
-              handlePromptClick("what can we conclude form this article")
-            }
-          >
-            Conclusion
-          </button>
-          <button
-            onClick={() =>
-              handlePromptClick("what are the key highlights from this article")
-            }
-          >
-            Key Highlights
-          </button>
-        </div>
-        <div className="stream-input">
-          <img src={flag} alt="flag-logo" className="stream-flag-logo" />
-          <input
-            type="text"
-            placeholder="Ask anything..."
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={handleKeyDown}
-          />
-          {/* <button onClick={handleAskClick} > */}
-          {loading ? (
-            <CircularProgress
-              className="button"
-              size={24}
-              style={{ marginLeft: "1.5%" }}
-              color="white"
+      {articleData ? (
+        <div
+          className="article-chat-query"
+          style={{
+            width: openAnnotate || openNotes ? contentWidth : "69%",
+            display: displayIfLoggedIn,
+          }}
+        >
+          <div className="predefined-prompts">
+            <button onClick={() => handlePromptClick("Summarize this article")}>
+              Summarize
+            </button>
+            <button
+              onClick={() =>
+                handlePromptClick("what can we conclude form this article")
+              }
+            >
+              Conclusion
+            </button>
+            <button
+              onClick={() =>
+                handlePromptClick(
+                  "what are the key highlights from this article"
+                )
+              }
+            >
+              Key Highlights
+            </button>
+          </div>
+          <div className="stream-input">
+            <img src={flag} alt="flag-logo" className="stream-flag-logo" />
+            <input
+              type="text"
+              placeholder="Ask anything..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={handleKeyDown}
             />
-          ) : (
-            <FontAwesomeIcon
-              className="button"
-              onClick={handleAskClick}
-              icon={faTelegram}
-              size={"xl"}
-            />
-          )}
-          {/* </button> */}
+            {/* <button onClick={handleAskClick} > */}
+            {loading ? (
+              <CircularProgress
+                className="button"
+                size={24}
+                style={{ marginLeft: "1.5%" }}
+                color="white"
+              />
+            ) : (
+              <FontAwesomeIcon
+                className="button"
+                onClick={handleAskClick}
+                icon={faTelegram}
+                size={"xl"}
+              />
+            )}
+            {/* </button> */}
+          </div>
         </div>
-      </div>
-    :<div className="derive-chat-query" style={{ width: "69%", display: displayIfLoggedIn }}>
-    <div className="derive-stream-input">
-      <label htmlFor="file-upload" className="custom-file-upload">
-        <TbFileUpload size={25} />
-      </label>
-      <input
-        id="file-upload"
-        type="file"
-        accept=".pdf,.docx,.txt"
-        onChange={handleFileUpload}
-        style={{ display: "none" }}
-      />
-      <div className="query-file-input">
-        {uploadedFile && (
-          <span className="uploaded-file-indicator">
-            {uploadedFile.name}
-            <FontAwesomeIcon icon={faTimes} onClick={removeUploadedFile} className="cancel-file" />
-          </span>
-        )}
-        <input
-          type="text"
-          placeholder="Ask anything..."
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onKeyDown={handleDeriveKeyDown}
-        />
-      </div>
-      {loading ? (
-        <CircularProgress className="button" size={24} style={{ marginLeft: "1.5%" }} color="white" />
       ) : (
-        <FontAwesomeIcon className="button" onClick={handleDeriveClick} icon={faTelegram} size={"xl"} />
+        <div
+          className="derive-chat-query"
+          style={{ width: "69%", display: displayIfLoggedIn }}
+        >
+          <div className="derive-predefined-prompts">
+            <button
+              onClick={() => handlePromptWithFile("Summarize this article")}
+              disabled={!isPromptEnabled}
+              style={{
+                backgroundColor: isPromptEnabled ? "#007bff" : "#cccccc",
+                color: isPromptEnabled ? "#ffffff" : "#666666",
+              }}
+            >
+              Summarize
+            </button>
+            <button
+              onClick={() =>
+                handlePromptWithFile("What can we conclude from this article")
+              }
+              disabled={!isPromptEnabled}
+              style={{
+                backgroundColor: isPromptEnabled ? "#007bff" : "#cccccc",
+                color: isPromptEnabled ? "#ffffff" : "#666666",
+              }}
+            >
+              Conclusion
+            </button>
+            <button
+              onClick={() =>
+                handlePromptWithFile(
+                  "What are the key highlights from this article"
+                )
+              }
+              disabled={!isPromptEnabled}
+              style={{
+                backgroundColor: isPromptEnabled ? "#007bff" : "#cccccc",
+                color: isPromptEnabled ? "#ffffff" : "#666666",
+              }}
+            >
+              Key Highlights
+            </button>
+          </div>
+          {uploadedFile && (
+            <div className="file-showing">
+              <span className="uploaded-file-indicator">
+                {uploadedFile.name}
+                <FontAwesomeIcon
+                  icon={faTimes}
+                  onClick={removeUploadedFile}
+                  className="cancel-file"
+                  color="black"
+                />
+              </span>
+            </div>
+          )}
+          <div className="derive-stream-input">
+            {/* <label htmlFor="file-upload" className="custom-file-upload">
+              <TbFileUpload size={25} />
+            </label> */}
+            <label htmlFor="file-upload" className="custom-file-upload">
+              <img
+                src={upload}
+                alt="upload-icon"
+                style={{ paddingLeft: "10px", cursor: "pointer" }}
+              />
+            </label>
+            <input
+              id="file-upload"
+              type="file"
+              accept=".pdf,.docx,.txt"
+              onChange={handleFileUpload}
+              style={{ display: "none" }}
+            />
+            <div className="query-file-input">
+              <input
+                type="text"
+                placeholder="Ask anything..."
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={handleDeriveKeyDown}
+              />
+            </div>
+            {loading ? (
+              <CircularProgress
+                className="button"
+                size={24}
+                style={{ marginLeft: "1.5%" }}
+                color="white"
+              />
+            ) : (
+              <FontAwesomeIcon
+                className="button"
+                onClick={handleDeriveClick}
+                icon={faTelegram}
+                size={"xl"}
+              />
+            )}
+          </div>
+        </div>
       )}
-    </div>
-  </div>}
       <div className="ScrollTop">
         <button onClick={scrollToTop} id="scrollTopBtn" title="Go to top">
           <FontAwesomeIcon icon={faAnglesUp} />
