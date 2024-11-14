@@ -109,10 +109,8 @@ const Lander = () => {
       fetchSessions();
       dispatch(setDeriveInsights(false));
 
-      sessionStorage.setItem("chatHistory",[])
-
+      sessionStorage.setItem("chatHistory", []);
     }
-    
   }, [user_id, token]);
 
   console.log(sessions[0]);
@@ -228,7 +226,7 @@ const Lander = () => {
               height: "-webkit-fill-available",
               maxWidth: "234px",
               // maxHeight: "254px",
-              mixBlendMode:"color-burn",
+              mixBlendMode: "color-burn",
             }}
           />
         </div>
@@ -246,15 +244,12 @@ const Lander = () => {
               />
               <h4>History</h4>
 
-              <a href="#" onClick={handleOpenCollection}>
-                Bookmarks
-              </a>
-              <a href="#" onClick={handleSessionClick}>
-                Conversations
-              </a>
-              <a href="#" onClick={handleOpenNotes}>
+              <span onClick={handleOpenCollection}>Bookmarks</span>
+              <span onClick={handleSessionClick}>Conversations</span>
+              <span onClick={handleOpenNotes}>
+                {/* <a href="#" onClick={handleOpenNotes}> */}
                 Notes
-              </a>
+              </span>
             </div>
             <div className="Feature-Item">
               <img
@@ -264,11 +259,11 @@ const Lander = () => {
               />
               <h4>Analytics</h4>
 
-              <a href="#">Dashboard</a>
-              <a href="#">Reports</a>
+              <span>Dashboard</span>
+              <span>Reports</span>
 
-              <a onClick={handleOpenInsights}>Derive Insights</a>    
-              </div>
+              <span onClick={handleOpenInsights}>Derive Insights</span>
+            </div>
 
             <div className="Feature-Item">
               <img
@@ -278,13 +273,9 @@ const Lander = () => {
               />
               <h4>Utilities</h4>
 
-              <a href="#" onClick={handleOpenAnnotate}>
-                Annotations
-              </a>
-              <a href="#" onClick={handleOpenCitations}>
-                Citation
-              </a>
-              <a href="#">Protocol</a>
+              <span onClick={handleOpenAnnotate}>Annotations</span>
+              <span onClick={handleOpenCitations}>Citation</span>
+              <span>Protocol</span>
             </div>
             <div className="Feature-Item">
               <img
@@ -294,8 +285,8 @@ const Lander = () => {
               />
               <h4>Help</h4>
 
-              <a href="#">About Infer</a>
-              <a href="#">FAQs</a>
+              <span>About Infer</span>
+              <span>FAQs</span>
             </div>
           </>
         ) : (

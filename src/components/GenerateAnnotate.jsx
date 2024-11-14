@@ -19,7 +19,7 @@ const GenerateAnnotate = ({ handleCloseAnnotate }) => {
 
   return (
     <>
-      <div className="annotate-container">
+      <div className="Generate-annotate-container">
         <div className="annotate-file-upload">
           <h3>Generate Annotations</h3>
           <div className="upload-file" onClick={triggerFileUpload}>
