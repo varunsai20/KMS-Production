@@ -20,7 +20,7 @@
   gap: 20px;
   justify-content: space-between;
   align-items: center;
-  padding: 23px 58px;
+  padding: 0 58px;
 }
 
 .Navbar-Header-Link {
@@ -41,8 +41,7 @@
 
 .Search-nav-logo {
   display: flex;
-  width: 90px;
-  height: 34.66px;
+  width: 8vw;
   /* border-right: 1px solid rgba(0, 0, 0, 0.1); */
 }
 .line-between {
