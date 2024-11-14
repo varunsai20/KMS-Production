@@ -35,7 +35,6 @@ const Lander = () => {
   const [isLanderNotesOpen, setIsLanderNotesOpen] = useState(false);
   //const [openInsights, setOpenInsights] = useState(false);
   const [refreshSessions, setRefreshSessions] = useState(false);
-  console.log(sessions);
   const [isCollectionOpen, setIsCollectionOpen] = useState(false);
   const [isCitationsOpen, setIsCitationsOpen] = useState(false);
   const [isAnnotateOpen, setIsAnnotateOpen] = useState(false);
@@ -113,13 +112,12 @@ const Lander = () => {
     }
   }, [user_id, token]);
 
-  console.log(sessions[0]);
-
+  console.log(sessions)
   const handleSessionClick = async () => {
     if (sessions.length === 0) return; // Ensure there is a session to work with
-
-    const { article_id, source, session_id } = sessions[0]; // Destructure values from the first session
-
+  
+    const { article_id, source, session_id, session_type } = sessions[0]; // Destructure values from the first session
+  
     try {
       const conversationResponse = await axios.get(
         `http://13.127.207.184:80/history/conversations/history/${user_id}/${session_id}`,
@@ -129,10 +127,10 @@ const Lander = () => {
           },
         }
       );
-
+  
       const formattedChatHistory = [];
       let currentEntry = {};
-
+  
       conversationResponse.data.conversation.forEach((entry) => {
         if (entry.role === "user") {
           if (currentEntry.query) {
@@ -146,26 +144,29 @@ const Lander = () => {
           currentEntry = {};
         }
       });
-
+  
       if (currentEntry.query) {
         formattedChatHistory.push(currentEntry);
       }
-
+  
       console.log(formattedChatHistory);
-
-      sessionStorage.setItem(
-        "chatHistory",
-        JSON.stringify(formattedChatHistory)
-      );
-
+  
+      sessionStorage.setItem("chatHistory", JSON.stringify(formattedChatHistory));
+  
       const sourceType =
         source === "biorxiv"
           ? "bioRxiv_id"
           : source === "plos"
           ? "plos_id"
           : "pmid";
-
-      navigate(`/article/${sourceType}:${article_id}`, {
+  
+      const navigatePath = session_type ? "/article" : `/article/${sourceType}:${article_id}`;
+  
+      if (session_type) {
+        dispatch(setDeriveInsights(true));
+      }
+  
+      navigate(navigatePath, {
         state: {
           id: article_id,
           source: sourceType,
@@ -173,11 +174,15 @@ const Lander = () => {
           user: { access_token: token, user_id: user_id },
         },
       });
+      
       console.log(conversationResponse);
     } catch (error) {
       console.error("Error fetching article or conversation data:", error);
     }
   };
+  
+  
+
 
   useEffect(() => {
     if (isLanderNotesOpen) {
@@ -205,7 +210,7 @@ const Lander = () => {
           <img className="Right1" src={Molecules} alt="Right Graphic 1" />
           <div className="welcome-search">
             <h3 className="Landing-Welcome">
-              Welcome to <span className="Landing-Infer">Infer!</span>
+              Welcome to <span className="Landing-Infer">Inferai!</span>
             </h3>
             <p className="Landing-Welcome-desc">
               Lorem Ipsum is simply dummy text of the printing and typesetting
