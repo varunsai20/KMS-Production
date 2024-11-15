@@ -7,6 +7,7 @@ import { login } from "../../../redux/reducers/LoginAuth"; // Import login actio
 import { toast } from "react-toastify";
 import Logo from "../../../assets/images/InfersolD17aR04aP01ZL-Polk4a 1.svg";
 //import { SiFacebook } from "react-icons/si";
+//import ErrorBoundry from "../../../utils/ErrorBoundry";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -99,7 +100,7 @@ const Login = () => {
           toast.success("Loged in Successfully", {
             position: "top-center",
             autoClose: 2000,
-            
+
             style: {
               backgroundColor: "rgba(237, 254, 235, 1)",
               borderLeft: "5px solid rgba(15, 145, 4, 1)",

@@ -14,9 +14,9 @@ import Profile from "./components/Profile";
 import EditResearcher from "./pages/Admin/EditResearcher";
 import ProtectedRoute from "./protectedRoute";
 import DeriveInsights from "./pages/ArticlePage/DeriveInsights";
-import LogoutHandler from "./LogoutHandler"; // Import the new HOC
+import LogoutHandler from "./LogoutHandler";
 import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css"; // Ensure the CSS is imported
+import "react-toastify/dist/ReactToastify.css";
 function App() {
   const deriveInsights = useSelector((state) => state.deriveInsights?.active);
   const articlePath = deriveInsights ? "/article" : "/article/:pmid";
@@ -33,7 +33,6 @@ function App() {
             <Route path="/deriveinsights" element={<DeriveInsights />} />
             <Route path="/search" element={<SearchResults />} />
             <Route path={articlePath} element={<ArticlePage />} />
-
             <Route
               path="/admin"
               element={

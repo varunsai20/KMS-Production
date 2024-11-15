@@ -27,6 +27,7 @@ import Citations from "../../components/Citations";
 import GenerateAnnotate from "../../components/GenerateAnnotate";
 
 import Notes from "../NotesPage/Notes";
+import { toast } from "react-toastify";
 
 const Lander = () => {
   const dispatch = useDispatch();
@@ -112,12 +113,18 @@ const Lander = () => {
     }
   }, [user_id, token]);
 
-  console.log(sessions)
+  console.log(sessions);
   const handleSessionClick = async () => {
-    if (sessions.length === 0) return; // Ensure there is a session to work with
-  
+    if (sessions.length === 0) {
+      toast.error("No conversations currently", {
+        position: "top-center",
+        autoClose: 2000,
+      });
+      return; // Ensure there is a session to work with
+    }
+
     const { article_id, source, session_id, session_type } = sessions[0]; // Destructure values from the first session
-  
+
     try {
       const conversationResponse = await axios.get(
         `http://13.127.207.184:80/history/conversations/history/${user_id}/${session_id}`,
@@ -127,19 +134,19 @@ const Lander = () => {
           },
         }
       );
-  
+
       // setActiveSessionId(session_id); // Set active session ID
-  
+
       const formattedChatHistory = [];
       let currentEntry = {};
-  
+
       conversationResponse.data.conversation.forEach((entry) => {
         if (entry.role === "user") {
           // Add file_url if it exists in the entry
           if (entry.file_url) {
             currentEntry.file_url = entry.file_url;
           }
-  
+
           if (currentEntry.query) {
             formattedChatHistory.push(currentEntry);
             currentEntry = {};
@@ -151,28 +158,33 @@ const Lander = () => {
           currentEntry = {};
         }
       });
-  
+
       if (currentEntry.query) {
         formattedChatHistory.push(currentEntry);
       }
-  
+
       console.log(formattedChatHistory);
-  
-      sessionStorage.setItem("chatHistory", JSON.stringify(formattedChatHistory));
-  
+
+      sessionStorage.setItem(
+        "chatHistory",
+        JSON.stringify(formattedChatHistory)
+      );
+
       const sourceType =
         source === "biorxiv"
           ? "bioRxiv_id"
           : source === "plos"
           ? "plos_id"
           : "pmid";
-  
-      const navigatePath = session_type ? "/article" : `/article/${sourceType}:${article_id}`;
-  
+
+      const navigatePath = session_type
+        ? "/article"
+        : `/article/${sourceType}:${article_id}`;
+
       if (session_type) {
         dispatch(setDeriveInsights(true));
       }
-  
+
       navigate(navigatePath, {
         state: {
           id: article_id,
@@ -181,16 +193,12 @@ const Lander = () => {
           user: { access_token: token, user_id: user_id },
         },
       });
-  
+
       console.log(conversationResponse);
     } catch (error) {
       console.error("Error fetching article or conversation data:", error);
     }
   };
-  
-  
-  
-
 
   useEffect(() => {
     if (isLanderNotesOpen) {

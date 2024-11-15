@@ -102,8 +102,10 @@ const ArticlePage = () => {
   const [openAnnotate, setOpenAnnotate] = useState(false);
   const [openNotes, setOpenNotes] = useState(false);
   const [activeSection, setActiveSection] = useState("Title");
-  const [activeSessionId, setActiveSessionId] = useState(null);
-
+  const [activeSessionId, setActiveSessionId] = useState(
+    sessionStorage.getItem("session_id") || null
+  );
+  const isOnArticlePage = location.pathname === "/article";
   const contentRef = useRef(null); // Ref to target the content div
   const [contentWidth, setContentWidth] = useState(); // State for content width
   const [ratingsList, setRatingsList] = useState(() => {
@@ -741,7 +743,7 @@ const ArticlePage = () => {
 
   const handleAskClick = async () => {
     if (!query) {
-      alert("Please enter a query");
+      toast.error("Please enter a query");
       return;
     }
 
@@ -877,6 +879,7 @@ const ArticlePage = () => {
     }
   };
   console.log(chatHistory);
+
   console.log(chatHistory.file_url);
   const handlePromptClick = (queryText) => {
     setQuery(queryText);
@@ -895,7 +898,11 @@ const ArticlePage = () => {
   };
   const handleDeriveClick = async () => {
     if (!query && !uploadedFile) {
-      alert("Please enter a query or upload a file");
+      toast.error("Please enter a query or upload a file", {
+        position: "top-center",
+        autoClose: 2000,
+      });
+
       return;
     }
     removeUploadedFile();
@@ -1428,6 +1435,12 @@ const ArticlePage = () => {
       console.error("Error fetching article or conversation data:", error);
     }
   };
+  useEffect(() => {
+    const storedSessionId = sessionStorage.getItem("session_id");
+    if (storedSessionId) {
+      setActiveSessionId(storedSessionId);
+    }
+  }, [sessions]);
 
   const [uploadedFile, setUploadedFile] = useState(null);
 
@@ -1440,6 +1453,11 @@ const ArticlePage = () => {
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return; // Exit if no file was selected
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("try uploading files 5MB or less", {
+        position: "top-center",
+      });
+    }
 
     const allowedExtensions = ["pdf", "docx"];
     const fileExtension = file.name.split(".").pop().toLowerCase();
@@ -1546,7 +1564,10 @@ const ArticlePage = () => {
                     <li
                       key={session.session_id}
                       className={
-                        session.session_id === activeSessionId ? "active" : ""
+                        isOnArticlePage &&
+                        session.session_id === activeSessionId
+                          ? "active"
+                          : ""
                       }
                       onClick={() => {
                         handleSessionClick(
@@ -2030,7 +2051,7 @@ const ArticlePage = () => {
                         )}
 
                         {/* Display the query */}
-                        <div className="query-asked">
+                        <div className="derive-query-asked">
                           <span>
                             {chat.query === "Summarize this article"
                               ? "Summarize"
