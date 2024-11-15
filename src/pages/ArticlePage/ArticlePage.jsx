@@ -167,7 +167,9 @@ const ArticlePage = () => {
   const [notesHeight, setNotesHeight] = useState(35);
   const minHeight = 15;
   const maxHeight = 60;
-
+  const [reloadArticle, setReloadArticle] = useState(
+    sessionStorage.getItem("reloadArticle") === "true"
+  );
   // Add this useEffect to reset savedText when openNotes becomes false
   useEffect(() => {
     if (!openNotes) {
@@ -227,9 +229,6 @@ const ArticlePage = () => {
   }, [user_id, token]);
 
   useEffect(() => {
-    // Determine the source based on `type`
-
-    // Perform GET request to fetch article data
     if (source && id && !deriveInsights) {
       setAnnotateLoading(true);
       const fetchArticleData = async () => {
@@ -237,25 +236,29 @@ const ArticlePage = () => {
           const response = await axios.get(
             `http://13.127.207.184/view_article/get_article/${id}?source=${source}`,
             {
-              headers: {
-                Authorization: `Bearer ${token}`, // Include Bearer token
+              headers: {  
+                Authorization: `Bearer ${token}`,
               },
             }
           );
-          const article = response.data; // Assuming response contains article data directly
+  
+          const article = response.data;
           setArticleData(article);
           setAnnotateLoading(false);
-          // Retrieve saved search term from session storage
+  
+          // Retrieve and set saved search term from sessionStorage
           const savedTerm = sessionStorage.getItem("SearchTerm");
           setSearchTerm(savedTerm);
         } catch (error) {
+          setAnnotateLoading(false);
           console.error("Error fetching article data:", error);
         }
       };
-
+  
       fetchArticleData();
     }
-  }, [id, source, token]);
+  }, [id, source, token, deriveInsights]);
+  
 
   const handleAnnotateResize = (e) => {
     if (openAnnotate && openNotes) {
@@ -778,7 +781,7 @@ const ArticlePage = () => {
           body: bodyData,
         }
       );
-      console.log("API Response:", response);
+      // console.log("API Response:", response);
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
@@ -805,7 +808,7 @@ const ArticlePage = () => {
 
                 try {
                   const parsedData = JSON.parse(jsonChunk);
-                  console.log("Received Data Chunk:", parsedData); // Log each parsed data chunk
+                  // console.log("Received Data Chunk:", parsedData); // Log each parsed data chunk
 
                   // Store session_id for the specific article and source in sessionStorage if it exists
                   if (parsedData.session_id) {
@@ -878,9 +881,7 @@ const ArticlePage = () => {
       setLoading(false);
     }
   };
-  console.log(chatHistory);
 
-  console.log(chatHistory.file_url);
   const handlePromptClick = (queryText) => {
     setQuery(queryText);
     setTriggerAskClick(true);
@@ -1287,7 +1288,9 @@ const ArticlePage = () => {
         );
 
         if (response.data?.sessions) {
+
           const sessionsData = response.data.sessions.reverse(); // Reverse the array order
+          // console.log(sessionsData)
           setSessions(sessionsData); // Set the reversed sessions array to state
         }
       } catch (error) {
@@ -1325,8 +1328,8 @@ const ArticlePage = () => {
           },
         }
       );
-      console.log(sessionId);
-      console.log(editedTitle);
+      // console.log(sessionId);
+      // console.log(editedTitle);
       // Update the local sessions state after a successful edit
       setSessions((prevSessions) =>
         prevSessions.map((session) =>
@@ -1356,12 +1359,7 @@ const ArticlePage = () => {
     }
   }, [location.state]); // Add location.state as a dependency to re-run on navigation
 
-  const handleSessionClick = async (
-    article_id,
-    source,
-    session_id,
-    session_type
-  ) => {
+  const handleSessionClick = async (session_id) => {
     try {
       const conversationResponse = await axios.get(
         `http://13.127.207.184:80/history/conversations/history/${user_id}/${session_id}`,
@@ -1371,17 +1369,18 @@ const ArticlePage = () => {
           },
         }
       );
+  
       setActiveSessionId(session_id);
       const formattedChatHistory = [];
       let currentEntry = {};
-
+  
+      // Process conversation data into chat history
       conversationResponse.data.conversation.forEach((entry) => {
         if (entry.role === "user") {
-          // Add file_url if it exists in the entry
           if (entry.file_url) {
             currentEntry.file_url = entry.file_url;
           }
-
+  
           if (currentEntry.query) {
             formattedChatHistory.push(currentEntry);
             currentEntry = {};
@@ -1393,46 +1392,94 @@ const ArticlePage = () => {
           currentEntry = {};
         }
       });
-
+  
       if (currentEntry.query) {
         formattedChatHistory.push(currentEntry);
       }
-
-      console.log(formattedChatHistory);
-
-      sessionStorage.setItem(
-        "chatHistory",
-        JSON.stringify(formattedChatHistory)
-      );
-
-      // Update `source` based on its value
+  
+      sessionStorage.setItem("chatHistory", JSON.stringify(formattedChatHistory));
+  
       const sourceType =
-        source === "biorxiv"
+        conversationResponse.data.source === "biorxiv"
           ? "bioRxiv_id"
-          : source === "plos"
+          : conversationResponse.data.source === "plos"
           ? "plos_id"
           : "pmid";
-
-      // Determine navigation path based on `session_type`
-      const navigatePath = session_type
+  
+      const navigatePath = conversationResponse.data.session_type
         ? "/article"
-        : `/article/${sourceType}:${article_id}`;
-      if (session_type) {
+        : `/article/${sourceType}:${conversationResponse.data.article_id}`;
+  
+      if (conversationResponse.data.session_type) {
+        // Navigate immediately if deriveInsights mode
         dispatch(setDeriveInsights(true));
+        navigate(navigatePath, {
+          state: {
+            id: conversationResponse.data.article_id,
+            source: sourceType,
+            token: token,
+            user: { access_token: token, user_id: user_id },
+            annotateData: location.state?.annotateData,
+            data: location.state?.data,
+          },
+        });
+      } else {
+        // Fetch article data before navigating
+        dispatch(setDeriveInsights(false));
+        await fetchArticleBeforeNavigate(
+          conversationResponse.data.article_id,
+          sourceType
+        );
       }
-      navigate(navigatePath, {
+    } catch (error) {
+      console.error("Error fetching article or conversation data:", error);
+    }
+  };
+  const getSourceFromType = (type) => {
+    switch (type) {
+      case "bioRxiv_id":
+        return "biorxiv";
+      case "pmid":
+        return "pubmed";
+      case "plos_id":
+        return "plos";
+      default:
+        return null;
+    }
+  };
+  
+  const fetchArticleBeforeNavigate = async (articleId, sourceType) => {
+    try {
+      // Map sourceType to source using the utility function
+      const source = getSourceFromType(sourceType);
+      if (!source) {
+        console.error("Invalid sourceType provided");
+        return;
+      }
+  
+      const response = await axios.get(
+        `http://13.127.207.184/view_article/get_article/${articleId}?source=${source}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      const article = response.data;
+      setArticleData(article);
+  
+      // Navigate after article is fetched
+      navigate(`/article/${sourceType}:${articleId}`, {
         state: {
-          id: article_id,
+          id: articleId,
           source: sourceType,
           token: token,
           user: { access_token: token, user_id: user_id },
-          annotateData: location.state?.annotateData,
-          data: location.state?.data,
         },
       });
-      console.log(conversationResponse);
     } catch (error) {
-      console.error("Error fetching article or conversation data:", error);
+      console.error("Error fetching article data:", error);
     }
   };
   useEffect(() => {
@@ -1441,6 +1488,9 @@ const ArticlePage = () => {
       setActiveSessionId(storedSessionId);
     }
   }, [sessions]);
+
+  
+  
 
   const [uploadedFile, setUploadedFile] = useState(null);
 
@@ -1489,7 +1539,7 @@ const ArticlePage = () => {
     setArticleData("");
     setChatHistory([]);
     dispatch(setDeriveInsights(true)); // Set deriveInsights state in Redux
-    console.log("clicked");
+    // console.log("clicked");
     navigate("/article", {
       state: true, // Set state to null
     });
@@ -1571,11 +1621,11 @@ const ArticlePage = () => {
                       }
                       onClick={() => {
                         handleSessionClick(
-                          session.article_id,
-                          session.source,
+                          // session.article_id,
+                          // session.source,
                           session.session_id,
-                          user_id,
-                          session.session_type
+                          // user_id,
+                          // session.session_type
                         );
                       }}
                     >
@@ -2234,8 +2284,8 @@ const ArticlePage = () => {
               onClick={() => handlePromptWithFile("Summarize this article")}
               disabled={!isPromptEnabled}
               style={{
-                backgroundColor: isPromptEnabled ? "#007bff" : "#cccccc",
-                color: isPromptEnabled ? "#ffffff" : "#666666",
+                backgroundColor: isPromptEnabled ? "#c4dad2" : "#cccccc",
+                color: isPromptEnabled ? "#000000" : "#666666",
               }}
             >
               Summarize
@@ -2246,8 +2296,8 @@ const ArticlePage = () => {
               }
               disabled={!isPromptEnabled}
               style={{
-                backgroundColor: isPromptEnabled ? "#007bff" : "#cccccc",
-                color: isPromptEnabled ? "#ffffff" : "#666666",
+                backgroundColor: isPromptEnabled ? "#c4dad2" : "#cccccc",
+                color: isPromptEnabled ? "#000000" : "#666666",
               }}
             >
               Conclusion
@@ -2260,8 +2310,8 @@ const ArticlePage = () => {
               }
               disabled={!isPromptEnabled}
               style={{
-                backgroundColor: isPromptEnabled ? "#007bff" : "#cccccc",
-                color: isPromptEnabled ? "#ffffff" : "#666666",
+                backgroundColor: isPromptEnabled ? "#c4dad2" : "#cccccc",
+                color: isPromptEnabled ? "#000000" : "#666666",
               }}
             >
               Key Highlights
