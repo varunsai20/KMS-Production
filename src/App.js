@@ -7,20 +7,18 @@ import SignUpForm from "./pages/Authentication/SignUp/Signup";
 import SearchResults from "./pages/SearchResultsPage/SearchResults";
 import ArticlePage from "./pages/ArticlePage/ArticlePage";
 import CreateResearcher from "./pages/Admin/CreateResearcher";
-import CreateAdmin from "./pages/Admin/CreateAdmins";
 import Admin from "./pages/Admin/Admin";
 import Researchers from "./pages/Admin/Researchers";
 import Profile from "./components/Profile";
 import EditResearcher from "./pages/Admin/EditResearcher";
 import ProtectedRoute from "./protectedRoute";
 import DeriveInsights from "./pages/ArticlePage/DeriveInsights";
-import LogoutHandler from "./LogoutHandler"; // Import the new HOC
+import LogoutHandler from "./LogoutHandler";
 import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css"; // Ensure the CSS is imported
+import "react-toastify/dist/ReactToastify.css";
+
 function App() {
   const deriveInsights = useSelector((state) => state.deriveInsights?.active);
-  const articlePath = deriveInsights ? "/article" : "/article/:pmid";
-
   return (
     <Router>
       <LogoutHandler>
@@ -32,8 +30,15 @@ function App() {
             <Route path="/signup" element={<SignUpForm />} />
             <Route path="/deriveinsights" element={<DeriveInsights />} />
             <Route path="/search" element={<SearchResults />} />
-            <Route path={articlePath} element={<ArticlePage />} />
 
+            {/* Conditional Route for Articles */}
+            {deriveInsights ? (
+              <Route path="/article" element={<ArticlePage />} />
+            ) : (
+              <Route path="/article/:pmid" element={<ArticlePage />} />
+            )}
+
+            {/* Protected Admin Routes */}
             <Route
               path="/admin"
               element={
@@ -48,6 +53,7 @@ function App() {
               <Route path="users/profile/:user_id" element={<Profile />} />
             </Route>
 
+            {/* Profile Route */}
             <Route
               path="/users/profile/:user_id"
               element={
