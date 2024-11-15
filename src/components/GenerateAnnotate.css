@@ -1,6 +1,4 @@
-
 .generate-annotate-container {
-
   width: 100%;
   height: 100%;
   border-radius: 20px;
@@ -18,7 +16,7 @@
   align-content: center;
   position: relative;
 }
-.annotate-file-upload h3 {
+.generate-annotate-file-upload h3 {
   position: absolute;
   top: -20px;
   left: 3px;
@@ -55,19 +53,19 @@
   color: rgba(78, 78, 86, 1);
   border: none;
 }
-.generate-close-collection{
+.generate-close-collection {
   position: absolute;
-    top: calc(46% - 35vh);
-    right: calc(1% - 13px);
-    border: none;
-    cursor: pointer;
-    z-index: 1001;
+  top: calc(46% - 35vh);
+  right: calc(1% - 13px);
+  border: none;
+  cursor: pointer;
+  z-index: 1001;
 }
 .generate-button {
   background-color: #1a82ff;
   color: white;
   border: none;
 }
-.annotate-annotations{
+.annotate-annotations {
   width: 50%;
 }

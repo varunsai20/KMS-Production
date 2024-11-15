@@ -94,6 +94,10 @@
   border: 1px solid #ebebf3;
   /* background-color: rgba(249, 249, 249); */
 }
+.new-chat-button {
+  padding: 10px;
+  margin-right: 12px;
+}
 
 .article-content {
   width: 43.61%;
@@ -295,9 +299,7 @@
 .article-chat-query {
   position: absolute;
   left: 24%;
-  /* position: relative; */
   width: 100%;
-  /* margin: 0% 0% 1% 17%; */
   width: 68%;
   display: flex;
 
@@ -314,9 +316,9 @@
 }
 .derive-predefined-prompts {
   display: flex;
-  justify-content: flex-end;
+  /* justify-content: flex-end; */
   gap: 20px;
-  padding: 0 10px 10px 10px;
+  padding: 5px 10px 10px 10px;
 }
 .predefined-prompts button {
   /* background-color: transparent; */
@@ -328,6 +330,10 @@
   padding: 7px;
   background-color: #c4dad2;
 }
+.file-palcement {
+  position: absolute;
+  right: 25px;
+}
 .file-showing {
   display: flex;
   align-items: center;
@@ -337,7 +343,6 @@
   border-radius: 5px;
   margin: 0% 0% 1% 2%;
   background: rgba(245, 249, 255, 1);
-  position: absolute;
 }
 .cancel-file {
   padding: 2px 0px 0px 9px;

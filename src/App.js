@@ -15,7 +15,8 @@ import EditResearcher from "./pages/Admin/EditResearcher";
 import ProtectedRoute from "./protectedRoute";
 import DeriveInsights from "./pages/ArticlePage/DeriveInsights";
 import LogoutHandler from "./LogoutHandler"; // Import the new HOC
-
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css"; // Ensure the CSS is imported
 function App() {
   const deriveInsights = useSelector((state) => state.deriveInsights?.active);
   const articlePath = deriveInsights ? "/article" : "/article/:pmid";
@@ -24,6 +25,7 @@ function App() {
     <Router>
       <LogoutHandler>
         <div className="App">
+          <ToastContainer />
           <Routes>
             <Route path="/" element={<Lander />} />
             <Route path="/login" element={<Login />} />
@@ -32,14 +34,28 @@ function App() {
             <Route path="/search" element={<SearchResults />} />
             <Route path={articlePath} element={<ArticlePage />} />
 
-            <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>}>
+            <Route
+              path="/admin"
+              element={
+                <ProtectedRoute>
+                  <Admin />
+                </ProtectedRoute>
+              }
+            >
               <Route path="users" element={<Researchers />} />
               <Route path="users/create" element={<CreateResearcher />} />
               <Route path="users/edit/:user_id" element={<EditResearcher />} />
               <Route path="users/profile/:user_id" element={<Profile />} />
             </Route>
 
-            <Route path="/users/profile/:user_id" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+            <Route
+              path="/users/profile/:user_id"
+              element={
+                <ProtectedRoute>
+                  <Profile />
+                </ProtectedRoute>
+              }
+            />
           </Routes>
         </div>
       </LogoutHandler>

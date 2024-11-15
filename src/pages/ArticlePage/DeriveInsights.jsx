@@ -259,7 +259,7 @@ const DeriveInsights = () => {
                         </div>
                       )}
 
-                      <div className="query-asked">
+                      <div className="derive-query-asked">
                         <span>
                           {chat.query === "Summarize this article"
                             ? "Summarize"

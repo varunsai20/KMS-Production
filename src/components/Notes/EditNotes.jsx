@@ -629,16 +629,15 @@ const Editnotes = ({
                   htmlFor="email"
                   style={{
                     color: "black",
-                    fontWeight: "600",
                     paddingBottom: "5px",
                   }}
                 >
-                  Email
+                  To *
                 </label>
               </div>
-              <label htmlFor="email" aria-required="true">
+              {/* <label htmlFor="email" aria-required="true">
                 To*
-              </label>
+              </label> */}
               <input
                 type="email"
                 value={email}

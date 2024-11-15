@@ -288,12 +288,6 @@ const Researchers = () => {
                   <p>Are you sure you want to delete this note?</p>
                   <div className="confirm-buttons">
                     <button
-                      className="confirm-delete-button"
-                      onClick={confirmDelete}
-                    >
-                      Delete
-                    </button>
-                    <button
                       className="confirm-keep-button"
                       onClick={cancelDelete}
                     >

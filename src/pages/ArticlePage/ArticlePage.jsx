@@ -110,7 +110,7 @@ const ArticlePage = () => {
     return JSON.parse(sessionStorage.getItem("ratingsGiven")) || [];
   });
   const [triggerAskClick, setTriggerAskClick] = useState(false);
-  const [triggerDeriveClick,setTriggerDeriveClick]=useState(false)
+  const [triggerDeriveClick, setTriggerDeriveClick] = useState(false);
   const [editingPmid, setEditingPmid] = useState(null);
   const [editedTitle, setEditedTitle] = useState("");
   const [articleTitle, setArticleTitle] = useState("");
@@ -314,15 +314,15 @@ const ArticlePage = () => {
   useEffect(() => {
     // Access the computed width of the content div
     if (contentRef.current) {
-      const width = contentRef.current.offsetWidth; // Get the width of the content div in pixels
-      setContentWidth(`${width}px`); // Update the contentWidth state with the computed width
+      const width = contentRef.current.offsetWidth;
+      setContentWidth(`${width}px`);
     }
   }, [openAnnotate]);
   useEffect(() => {
     // Access the computed width of the content div
     if (contentRef.current) {
-      const width = contentRef.current.offsetWidth; // Get the width of the content div in pixels
-      setContentWidth(`${width}px`); // Update the contentWidth state with the computed width
+      const width = contentRef.current.offsetWidth;
+      setContentWidth(`${width}px`);
     }
   }, [openNotes]);
 
@@ -998,6 +998,7 @@ const ArticlePage = () => {
                   if (endOfMessagesRef.current) {
                     endOfMessagesRef.current.scrollIntoView({
                       behavior: "smooth",
+                      block: "end",
                     });
                   }
                 } catch (error) {
@@ -1409,9 +1410,9 @@ const ArticlePage = () => {
       const navigatePath = session_type
         ? "/article"
         : `/article/${sourceType}:${article_id}`;
-        if (session_type) {
-          dispatch(setDeriveInsights(true));
-        }
+      if (session_type) {
+        dispatch(setDeriveInsights(true));
+      }
       navigate(navigatePath, {
         state: {
           id: article_id,
@@ -1464,18 +1465,17 @@ const ArticlePage = () => {
     document.getElementById("file-upload").click();
   };
 
-
   const handleOpenChat = () => {
+    sessionStorage.removeItem("session_id");
     sessionStorage.setItem("chatHistory", []);
-    setArticleData("")
+    setArticleData("");
     setChatHistory([]);
     dispatch(setDeriveInsights(true)); // Set deriveInsights state in Redux
     console.log("clicked");
     navigate("/article", {
-      state: null, // Set state to null
+      state: true, // Set state to null
     });
   };
-  
 
   const [isDragging, setIsDragging] = useState(false);
 
@@ -1492,11 +1492,16 @@ const ArticlePage = () => {
     event.preventDefault();
     setIsDragging(false);
     const file = event.dataTransfer.files[0];
-    if (file && (file.type === "application/pdf" || file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" || file.type === "text/plain")) {
+    if (
+      file &&
+      (file.type === "application/pdf" ||
+        file.type ===
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
+        file.type === "text/plain")
+    ) {
       handleFileUpload({ target: { files: [file] } });
     }
   };
-
 
   return (
     <>
@@ -1516,8 +1521,8 @@ const ArticlePage = () => {
               <button className="new-chat-button" onClick={handleOpenChat}>
                 <img
                   src={newChat}
-                  alt="mew-chat-icon"
-                  style={{ paddingRight: "10px" }}
+                  alt="new-chat-icon"
+                  // style={{ paddingRight: "10px" }}
                 />
               </button>
             </div>
@@ -1551,7 +1556,8 @@ const ArticlePage = () => {
                           user_id,
                           session.session_type
                         );
-                      }}>
+                      }}
+                    >
                       {editingSessionId === session.session_id ? (
                         <input
                           type="text"
@@ -1930,101 +1936,135 @@ const ArticlePage = () => {
             </div>
           ) : (
             <div className="derive-article-content">
-
-      {/* Conditionally render file upload if chatHistory is empty */}
-      {chatHistory.length === 0 && (
-        <div
-          className={`derive-insights-file-upload ${isDragging ? 'dragging' : ''}`}
-          onClick={handleUploadClick}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-          style={{ cursor: "pointer" }}
-        >
-          <img src={uploadDocx} style={{ width: "40%" }} alt="upload-img" />
-          <div className="choosing-file">
-            <input
-              id="file-upload"
-              type="file"
-              accept=".pdf,.docx,.txt"
-              onChange={handleFileUpload}
-              style={{ display: "none" }}
-            />
-            <span>
-              Drag & drop files here or <a href="#">Upload</a>
-            </span>
-          </div>
-        </div>
-      )}
-
-      {/* Display File, Query, and Response */}
-      {chatHistory.length > 0 ? (
-        <div className="streaming-section">
-          <div className="streaming-content">
-            {chatHistory.map((chat, index) => (
-              <div key={index}>
-                {/* Display file_url if it exists */}
-                {chat.file_url ? (
-                  <div className="chat-file">
-                    <div>
-                      <img src={FileIconForDocument} alt="File Icon" />
-                    </div>
-                    <div style={{ display: "flex", flexDirection: "column" }}>
-                      {/* Display the file name and extension from file_url */}
-                      <span><strong>{decodeURIComponent(chat.file_url.split('/').pop())}</strong></span>
-                      <span>{chat.file_url.split('.').pop().toUpperCase()}</span>
-                    </div>
-                  </div>
-                ) : (
-                  chat.file && (
-                    <div className="chat-file">
-                      <div>
-                        <img src={FileIconForDocument} alt="File Icon" />
-                      </div>
-                      <div style={{ display: "flex", flexDirection: "column" }}>
-                        {/* Display the file name and extension from chat.file.name */}
-                        <span><strong>{chat.file.name}</strong></span>
-                        <span>{chat.file.name.split('.').pop().toUpperCase()}</span>
-                      </div>
-                    </div>
-                  )
-                )}
-
-                {/* Display the query */}
-                <div className="query-asked">
-                  <span>
-                    {chat.query === "Summarize this article"
-                      ? "Summarize"
-                      : chat.query === "what can we conclude from this article"
-                      ? "Conclusion"
-                      : chat.query === "what are the key highlights from this article"
-                      ? "Key Highlights"
-                      : chat.query}
-                  </span>
-                </div>
-
-                {/* Display the response */}
-                <div className="response" style={{ textAlign: "left" }}>
-                  {chat.response ? (
+              {/* Conditionally render file upload if chatHistory is empty */}
+              {chatHistory.length === 0 && (
+                <div
+                  className={`derive-insights-file-upload ${
+                    isDragging ? "dragging" : ""
+                  }`}
+                  onClick={handleUploadClick}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  style={{ cursor: "pointer" }}
+                >
+                  <img
+                    src={uploadDocx}
+                    style={{ width: "40%" }}
+                    alt="upload-img"
+                  />
+                  <div className="choosing-file">
+                    <input
+                      id="file-upload"
+                      type="file"
+                      accept=".pdf,.docx,.txt"
+                      onChange={handleFileUpload}
+                      style={{ display: "none" }}
+                    />
                     <span>
-                      <ReactMarkdown>{chat.response}</ReactMarkdown>
+                      Drag & drop files here or <a href="#">Upload</a>
                     </span>
-                  ) : (
-                    <div className="loading-dots">
-                      <span>•••</span>
-                    </div>
-                  )}
+                  </div>
                 </div>
-              </div>
-            ))}
-            <div ref={endOfMessagesRef} />
-          </div>
-        </div>
-      ) : (
-        ""
-      )}
-    </div>
+              )}
 
+              {/* Display File, Query, and Response */}
+              {chatHistory.length > 0 ? (
+                <div className="streaming-section">
+                  <div className="streaming-content">
+                    {chatHistory.map((chat, index) => (
+                      <div key={index}>
+                        {/* Display file_url if it exists */}
+                        {chat.file_url ? (
+                          <div className="chat-file">
+                            <div>
+                              <img src={FileIconForDocument} alt="File Icon" />
+                            </div>
+                            <div
+                              style={{
+                                display: "flex",
+                                flexDirection: "column",
+                              }}
+                            >
+                              {/* Display the file name and extension from file_url */}
+                              <span>
+                                <strong>
+                                  {decodeURIComponent(
+                                    chat.file_url.split("/").pop()
+                                  )}
+                                </strong>
+                              </span>
+                              <span>
+                                {chat.file_url.split(".").pop().toUpperCase()}
+                              </span>
+                            </div>
+                          </div>
+                        ) : (
+                          chat.file && (
+                            <div className="chat-file">
+                              <div>
+                                <img
+                                  src={FileIconForDocument}
+                                  alt="File Icon"
+                                />
+                              </div>
+                              <div
+                                style={{
+                                  display: "flex",
+                                  flexDirection: "column",
+                                }}
+                              >
+                                {/* Display the file name and extension from chat.file.name */}
+                                <span>
+                                  <strong>{chat.file.name}</strong>
+                                </span>
+                                <span>
+                                  {chat.file.name
+                                    .split(".")
+                                    .pop()
+                                    .toUpperCase()}
+                                </span>
+                              </div>
+                            </div>
+                          )
+                        )}
+
+                        {/* Display the query */}
+                        <div className="query-asked">
+                          <span>
+                            {chat.query === "Summarize this article"
+                              ? "Summarize"
+                              : chat.query ===
+                                "what can we conclude from this article"
+                              ? "Conclusion"
+                              : chat.query ===
+                                "what are the key highlights from this article"
+                              ? "Key Highlights"
+                              : chat.query}
+                          </span>
+                        </div>
+
+                        {/* Display the response */}
+                        <div className="response" style={{ textAlign: "left" }}>
+                          {chat.response ? (
+                            <span>
+                              <ReactMarkdown>{chat.response}</ReactMarkdown>
+                            </span>
+                          ) : (
+                            <div className="loading-dots">
+                              <span>•••</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                    <div ref={endOfMessagesRef} />
+                  </div>
+                </div>
+              ) : (
+                ""
+              )}
+            </div>
           )}
 
           <div className="right-aside" style={{ display: displayIfLoggedIn }}>
@@ -2163,9 +2203,11 @@ const ArticlePage = () => {
       ) : (
         <div
           className="derive-chat-query"
-          style={{ width: "69%", display: displayIfLoggedIn }}
-
-          >
+          style={{
+            width: openAnnotate || openNotes ? contentWidth : "69%",
+            display: displayIfLoggedIn,
+          }}
+        >
           <div className="derive-predefined-prompts">
             <button
               onClick={() => handlePromptWithFile("Summarize this article")}
@@ -2204,19 +2246,21 @@ const ArticlePage = () => {
               Key Highlights
             </button>
           </div>
-          {uploadedFile && (
-            <div className="file-showing">
-              <span className="uploaded-file-indicator">
-                {uploadedFile.name}
-                <FontAwesomeIcon
-                  icon={faTimes}
-                  onClick={removeUploadedFile}
-                  className="cancel-file"
-                  color="black"
-                />
-              </span>
-            </div>
-          )}
+          <div className="file-palcement">
+            {uploadedFile && (
+              <div className="file-showing">
+                <span className="uploaded-file-indicator">
+                  {uploadedFile.name}
+                  <FontAwesomeIcon
+                    icon={faTimes}
+                    onClick={removeUploadedFile}
+                    className="cancel-file"
+                    color="black"
+                  />
+                </span>
+              </div>
+            )}
+          </div>
           <div className="derive-stream-input">
             {/* <label htmlFor="file-upload" className="custom-file-upload">
               <TbFileUpload size={25} />
