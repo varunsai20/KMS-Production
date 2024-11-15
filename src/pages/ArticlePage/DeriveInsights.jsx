@@ -14,6 +14,7 @@ import uploadimage from "../../assets/images/Upload.svg";
 import RecentIntercaions from "../../components/RecentIntercaions";
 import ReactMarkdown from "react-markdown";
 import upload from "../../assets/images/upload-file.svg";
+import { toast } from "react-toastify";
 
 const DeriveInsights = () => {
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
@@ -69,7 +70,7 @@ const DeriveInsights = () => {
   }, [location.state]);
   const handleAskClick = async () => {
     if (!query && !uploadedFile) {
-      alert("Please enter a query or upload a file");
+      toast.error("Please enter a query or upload a file");
       return;
     }
 

@@ -31,6 +31,7 @@ function App() {
             <Route path="/deriveinsights" element={<DeriveInsights />} />
             <Route path="/search" element={<SearchResults />} />
 
+
             {/* Conditional Route for Articles */}
             {deriveInsights ? (
               <Route path="/article" element={<ArticlePage />} />
@@ -39,6 +40,7 @@ function App() {
             )}
 
             {/* Protected Admin Routes */}
+
             <Route
               path="/admin"
               element={
