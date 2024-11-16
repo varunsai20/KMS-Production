@@ -1049,15 +1049,21 @@ const ArticlePage = () => {
   };
   const handleBackClick = () => {
     const unsavedChanges = localStorage.getItem("unsavedChanges");
+    const clickedDerive = sessionStorage.getItem("clickedDerive") === "true";
+  
     if (unsavedChanges === "true") {
       setShowConfirmPopup(true);
-      //navigate(-1);
     } else {
-      navigate(-1);
+      if (deriveInsights || clickedDerive) {
+        sessionStorage.setItem("clickedDerive",false)
+        navigate("/");
+      } else {
+        navigate(-1);
+      }
     }
-    //localStorage.removeItem("unsavedChanges");
-    //navigate(-1);
   };
+  
+  
 
   const handleCancelConfirm = () => {
     setShowConfirmPopup(false);
@@ -1409,10 +1415,12 @@ const ArticlePage = () => {
       const navigatePath = conversationResponse.data.session_type
         ? "/article"
         : `/article/${sourceType}:${conversationResponse.data.article_id}`;
-  
+      console.log("entered")
       if (conversationResponse.data.session_type) {
         // Navigate immediately if deriveInsights mode
+        console.log(location.state?.data)
         dispatch(setDeriveInsights(true));
+        console.log(navigatePath)
         navigate(navigatePath, {
           state: {
             id: conversationResponse.data.article_id,
@@ -1423,13 +1431,30 @@ const ArticlePage = () => {
             data: location.state?.data,
           },
         });
-      } else {
-        // Fetch article data before navigating
+      } 
+      
+      else {
+        console.log("nav")
         dispatch(setDeriveInsights(false));
-        await fetchArticleBeforeNavigate(
-          conversationResponse.data.article_id,
-          sourceType
-        );
+
+        console.log(navigatePath)
+        navigate(navigatePath, {
+          state: {
+            id: conversationResponse.data.article_id,
+            source: sourceType,
+            token: token,
+            user: { access_token: token, user_id: user_id },
+            annotateData: location.state?.annotateData,
+            data: location.state?.data,
+          },
+        });
+        // Fetch article data before navigating
+        // dispatch(setDeriveInsights(false));
+        // await fetchArticleBeforeNavigate(
+        //   conversationResponse.data.article_id,
+        //   sourceType,
+        //   location.state?.data
+        // );
       }
     } catch (error) {
       console.error("Error fetching article or conversation data:", error);
@@ -1448,7 +1473,7 @@ const ArticlePage = () => {
     }
   };
   
-  const fetchArticleBeforeNavigate = async (articleId, sourceType) => {
+  const fetchArticleBeforeNavigate = async (articleId, sourceType,data) => {
     try {
       // Map sourceType to source using the utility function
       const source = getSourceFromType(sourceType);
@@ -1468,7 +1493,7 @@ const ArticlePage = () => {
   
       const article = response.data;
       setArticleData(article);
-  
+      console.log(data)
       // Navigate after article is fetched
       navigate(`/article/${sourceType}:${articleId}`, {
         state: {
@@ -1476,6 +1501,7 @@ const ArticlePage = () => {
           source: sourceType,
           token: token,
           user: { access_token: token, user_id: user_id },
+          data:data
         },
       });
     } catch (error) {
@@ -2043,6 +2069,14 @@ const ArticlePage = () => {
               {chatHistory.length > 0 ? (
                 <div className="streaming-section">
                   <div className="streaming-content">
+                  <div style={{ display: "flex" }} onClick={handleBackClick}>
+                    <img
+                      src={Arrow}
+                      style={{ width: "14px" }}
+                      alt="arrow-icon"
+                    ></img>
+                    <button className="back-button">Back</button>
+                  </div>
                     {chatHistory.map((chat, index) => (
                       <div key={index}>
                         {/* Display file_url if it exists */}

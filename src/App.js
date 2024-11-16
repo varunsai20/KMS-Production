@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import Lander from "./pages/LandingPage/Lander-Logedin";
 import Login from "./pages/Authentication/Login/Login";
@@ -19,6 +19,7 @@ import "react-toastify/dist/ReactToastify.css";
 
 function App() {
   const deriveInsights = useSelector((state) => state.deriveInsights?.active);
+
   return (
     <Router>
       <LogoutHandler>
@@ -31,16 +32,20 @@ function App() {
             <Route path="/deriveinsights" element={<DeriveInsights />} />
             <Route path="/search" element={<SearchResults />} />
 
-
             {/* Conditional Route for Articles */}
             {deriveInsights ? (
-              <Route path="/article" element={<ArticlePage />} />
+              <Route
+                path="/article"
+                element={<ArticlePage key="static-article" />} // Use key for static
+              />
             ) : (
-              <Route path="/article/:pmid" element={<ArticlePage />} />
+              <Route
+                path="/article/:pmid"
+                element={<ArticlePage key="dynamic-article" />} // Use key for dynamic
+              />
             )}
 
             {/* Protected Admin Routes */}
-
             <Route
               path="/admin"
               element={
@@ -64,6 +69,9 @@ function App() {
                 </ProtectedRoute>
               }
             />
+
+            {/* Redirect unmatched routes */}
+                {/* <Route path="*" element={<Navigate to="/" replace />} /> */}
           </Routes>
         </div>
       </LogoutHandler>
