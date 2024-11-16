@@ -94,14 +94,15 @@
   overflow-y: auto;
   text-align: start;
   margin: 0% 1%;
+  max-height: 70vh;
   gap: 28px;
   border-radius: 20px;
   flex: 1;
-  padding: 0 20px 20px 20px;
+  padding: 0 20px 0 20px;
   border: 1px solid rgba(235, 235, 243, 1);
   display: flex;
 }
-.query-asked {
+.derive-query-asked {
   background-color: rgba(237, 237, 237, 1);
   /* text-align: right; */
   float: right;
@@ -112,7 +113,7 @@
   margin-left: auto; /* Pushes it to the right */
   clear: both;
   word-wrap: break-word;
-  margin: 2%;
+  margin: 1% 0% 0% 0%;
   max-height: 300px;
   overflow-y: auto;
   color: black;
@@ -122,7 +123,7 @@
 .response {
   text-align: left;
   float: left;
-  width: 80%;
+  width: 90%;
   /* max-width: 500px; */
   margin-bottom: 10px;
   padding: 10px;
@@ -200,8 +201,8 @@
 .history-pagination ul li.active a::before {
   content: "";
   position: absolute;
-  left: 3px;
-  top: 0;
+  left: -15px;
+  top: 5px;
   bottom: 0;
   width: 2px;
   border-radius: 10px;
@@ -223,8 +224,8 @@
 .derive-chat-query {
   position: absolute;
   left: 24%;
-  width: 100%;
-  width: 68%;
+  /* width: 100%; */
+  /* width: 68%; */
   display: flex;
 
   flex-direction: column;
@@ -235,7 +236,7 @@
 .derive-predefined-prompts {
   display: flex;
   gap: 20px;
-  padding: 0 10px 10px 10px;
+  padding: 5px 10px 10px 10px;
 }
 
 .derive-predefined-prompts button {
@@ -263,8 +264,9 @@
 }
 .uploaded-file-indicator {
   display: flex;
-  /* justify-content: space-evenly; */
+  padding: 10px;
   align-items: center;
+  color: rgb(0, 0, 0);
   /* width: -webkit-fill-available; */
 }
 .derive-stream-input input {

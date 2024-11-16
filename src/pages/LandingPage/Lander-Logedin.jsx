@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Rnd } from "react-rnd";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { setDeriveInsights } from "../../redux/reducers/deriveInsights";
 import Header from "../../components/Header-New";
 import Footer from "../../components/Footer-New";
 import LandingImage from "../../assets/images/image 1.svg";
@@ -18,23 +20,25 @@ import Help from "../../assets/images/Lander-Help.svg";
 import Utilities from "../../assets/images/Lander-Utilities.svg";
 import Analytics from "../../assets/images/Lander-Analytics.svg";
 import "./Lander-Logedin.css";
-import { useNavigate } from "react-router-dom";
 import axios from "axios";
 //import Draggable from "react-draggable";
 import Collection from "../../components/Collection";
 import Citations from "../../components/Citations";
+import GenerateAnnotate from "../../components/GenerateAnnotate";
 
 import Notes from "../NotesPage/Notes";
+import { toast } from "react-toastify";
 
 const Lander = () => {
+  const dispatch = useDispatch();
   const isLoggedIn = useSelector((state) => state.auth?.isLoggedIn);
   const [sessions, setSessions] = useState([]);
   const [isLanderNotesOpen, setIsLanderNotesOpen] = useState(false);
   //const [openInsights, setOpenInsights] = useState(false);
   const [refreshSessions, setRefreshSessions] = useState(false);
-  console.log(sessions);
   const [isCollectionOpen, setIsCollectionOpen] = useState(false);
   const [isCitationsOpen, setIsCitationsOpen] = useState(false);
+  const [isAnnotateOpen, setIsAnnotateOpen] = useState(false);
 
   const [openInsights, setOpenInsights] = useState(false);
   const [dimensions, setDimensions] = useState({ width: 400, height: 400 });
@@ -42,6 +46,7 @@ const Lander = () => {
   const { user } = useSelector((state) => state.auth);
   const token = useSelector((state) => state.auth.access_token);
   const user_id = user?.user_id;
+  const [isDeriveInsights, setIsDeriveInsights] = useState(false);
   const navigate = useNavigate();
   const handleOpenNotes = () => {
     setIsLanderNotesOpen(true);
@@ -62,10 +67,24 @@ const Lander = () => {
   const handleCloseCitations = () => {
     setIsCitationsOpen(false);
   };
-  // const handleOpenInsights = () => {
-  //   setOpenInsights(true);
-  //   navigate("/deriveinsights")
-  // };
+
+  const handleOpenAnnotate = () => {
+    setIsAnnotateOpen(true);
+  };
+  const handleCloseAnnotate = () => {
+    setIsAnnotateOpen(false);
+  };
+  
+  const handleOpenInsights = () => {
+    sessionStorage.setItem("clickedDerive",true)
+    dispatch(setDeriveInsights(true)); // Set deriveInsights in Redux state
+    navigate("/article", {
+      state: {
+        deriveInsights: true,
+      },
+    });
+  };
+
   // const handleCloseInsights = () => {};
   useEffect(() => {
     const fetchSessions = async () => {
@@ -89,16 +108,24 @@ const Lander = () => {
 
     if (user_id && token) {
       fetchSessions();
+      dispatch(setDeriveInsights(false));
+
+      sessionStorage.setItem("chatHistory", []);
     }
   }, [user_id, token]);
 
-  console.log(sessions[0]);
-
+  console.log(sessions);
   const handleSessionClick = async () => {
-    if (sessions.length === 0) return; // Ensure there is a session to work with
-
-    const { article_id, source, session_id } = sessions[0]; // Destructure values from the first session
-
+    if (sessions.length === 0) {
+      toast.error("No conversations currently", {
+        position: "top-center",
+        autoClose: 2000,
+      });
+      return;
+    }
+  
+    const { session_id, session_type } = sessions[0]; // Destructure session_id and session_type only
+  
     try {
       const conversationResponse = await axios.get(
         `http://13.127.207.184:80/history/conversations/history/${user_id}/${session_id}`,
@@ -108,12 +135,15 @@ const Lander = () => {
           },
         }
       );
-
+  
       const formattedChatHistory = [];
       let currentEntry = {};
-
+  
       conversationResponse.data.conversation.forEach((entry) => {
         if (entry.role === "user") {
+          if (entry.file_url) {
+            currentEntry.file_url = entry.file_url;
+          }
           if (currentEntry.query) {
             formattedChatHistory.push(currentEntry);
             currentEntry = {};
@@ -125,26 +155,36 @@ const Lander = () => {
           currentEntry = {};
         }
       });
-
+  
       if (currentEntry.query) {
         formattedChatHistory.push(currentEntry);
       }
-
-      console.log(formattedChatHistory);
-
+  
       sessionStorage.setItem(
         "chatHistory",
         JSON.stringify(formattedChatHistory)
       );
-
+  
       const sourceType =
-        source === "biorxiv"
+        conversationResponse.data.source === "biorxiv"
           ? "bioRxiv_id"
-          : source === "plos"
+          : conversationResponse.data.source === "plos"
           ? "plos_id"
           : "pmid";
-
-      navigate(`/article/${sourceType}:${article_id}`, {
+  
+      const article_id = conversationResponse.data.article_id;
+  
+      const navigatePath = session_type
+        ? "/article"
+        : `/article/${sourceType}:${article_id}`;
+  
+      if (session_type) {
+        dispatch(setDeriveInsights(true));
+      } else {
+        dispatch(setDeriveInsights(false));
+      }
+  
+      navigate(navigatePath, {
         state: {
           id: article_id,
           source: sourceType,
@@ -152,12 +192,11 @@ const Lander = () => {
           user: { access_token: token, user_id: user_id },
         },
       });
-      console.log(conversationResponse);
     } catch (error) {
       console.error("Error fetching article or conversation data:", error);
     }
   };
-
+  
   useEffect(() => {
     if (isLanderNotesOpen) {
       const centerX =
@@ -184,7 +223,7 @@ const Lander = () => {
           <img className="Right1" src={Molecules} alt="Right Graphic 1" />
           <div className="welcome-search">
             <h3 className="Landing-Welcome">
-              Welcome to <span className="Landing-Infer">Infer!</span>
+              Welcome to <span className="Landing-Infer">Inferai!</span>
             </h3>
             <p className="Landing-Welcome-desc">
               Lorem Ipsum is simply dummy text of the printing and typesetting
@@ -202,9 +241,10 @@ const Lander = () => {
             alt="Landing Graphic"
             style={{
               width: "85%",
-              height: "auto",
+              height: "-webkit-fill-available",
               maxWidth: "234px",
-              maxHeight: "254px",
+              // maxHeight: "254px",
+              mixBlendMode: "color-burn",
             }}
           />
         </div>
@@ -222,15 +262,12 @@ const Lander = () => {
               />
               <h4>History</h4>
 
-              <a href="#" onClick={handleOpenCollection}>
-                Bookmarks
-              </a>
-              <a href="#" onClick={handleSessionClick}>
-                Conversations
-              </a>
-              <a href="#" onClick={handleOpenNotes}>
+              <span onClick={handleOpenCollection}>Bookmarks</span>
+              <span onClick={handleSessionClick}>Conversations</span>
+              <span onClick={handleOpenNotes}>
+                {/* <a href="#" onClick={handleOpenNotes}> */}
                 Notes
-              </a>
+              </span>
             </div>
             <div className="Feature-Item">
               <img
@@ -240,10 +277,12 @@ const Lander = () => {
               />
               <h4>Analytics</h4>
 
-              <a href="#">Dashboard</a>
-              <a href="#">Reports</a>
-              <a href="/deriveinsights">Derive Insights</a>
+              <span>Dashboard</span>
+              <span>Reports</span>
+
+              <span onClick={handleOpenInsights}>Derive Insights</span>
             </div>
+
             <div className="Feature-Item">
               <img
                 className="Landing-Utilities-Icon"
@@ -252,11 +291,9 @@ const Lander = () => {
               />
               <h4>Utilities</h4>
 
-              <a href="#">Annotations</a>
-              <a href="#citations" onClick={handleOpenCitations}>
-                Citation
-              </a>
-              <a href="#">Protocol</a>
+              <span onClick={handleOpenAnnotate}>Annotations</span>
+              <span onClick={handleOpenCitations}>Citation</span>
+              <span>Protocol</span>
             </div>
             <div className="Feature-Item">
               <img
@@ -266,8 +303,8 @@ const Lander = () => {
               />
               <h4>Help</h4>
 
-              <a href="#">About Infer</a>
-              <a href="#">FAQs</a>
+              <span>About Infer</span>
+              <span>FAQs</span>
             </div>
           </>
         ) : (
@@ -400,11 +437,17 @@ const Lander = () => {
       {isCitationsOpen && (
         <>
           <div className="citation-overlay">
-            {/* <button className="citation-close" onClick={handleCloseCitations}>
-              close
-            </button> */}
             <div className="citation-modal">
               <Citations handleCloseCitations={handleCloseCitations} />
+            </div>
+          </div>
+        </>
+      )}
+      {isAnnotateOpen && (
+        <>
+          <div className="annotate-overlay">
+            <div className="annotate-modal">
+              <GenerateAnnotate handleCloseAnnotate={handleCloseAnnotate} />
             </div>
           </div>
         </>

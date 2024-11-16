@@ -3,11 +3,12 @@ import { persistStore, persistReducer } from 'redux-persist';
 import storage from 'redux-persist/lib/storage'; // Default storage is localStorage for web
 import searchReducer from './reducers/searchReducer';
 import authReducer from './reducers/LoginAuth';
-
+import  deriveInsightsSlice  from './reducers/deriveInsights';
 // Combine the reducers
 const rootReducer = combineReducers({
   search: searchReducer,
   auth: authReducer,
+  deriveInsights:deriveInsightsSlice,
 });
 
 // Config for redux-persist

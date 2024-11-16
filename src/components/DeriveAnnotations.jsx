@@ -13,7 +13,7 @@ const Annotation = ({
   const navigate = useNavigate();
   const { pmid: pmidFromUrl } = useParams(); // Extract pmid from the URL
   const [expandedPmids, setExpandedPmids] = useState({}); // Track which PMIDs are expanded
-  const [expandedTexts, setExpandedTexts] = useState({});
+  const [expandedTexts, setExpandedTexts] = useState(true);
   const { data } = location.state || { data: [] };
   const [source, setSource] = useState(passedSource || []);
   useEffect(() => {
@@ -30,12 +30,12 @@ const Annotation = ({
       sessionStorage.setItem("source", JSON.stringify(passedSource));
     }
   }, [passedSource]);
-  useEffect(() => {
-    // Reset expandedTexts when openAnnotate changes
-    if (openAnnotate) {
-      setExpandedTexts({}); // Resets all expanded texts to the collapsed (sliced) state
-    }
-  }, [openAnnotate]);
+  // useEffect(() => {
+  //   // Reset expandedTexts when openAnnotate changes
+  //   if (openAnnotate) {
+  //     setExpandedTexts({}); // Resets all expanded texts to the collapsed (sliced) state
+  //   }
+  // }, [openAnnotate]);
   //   const handleNavigate = (article) => {
   //   // const idType = getIdType(article); // Determine whether it's pmid or bioRxiv_id
   //   const type = article.source === "BioRxiv" ? "bioRxiv_id" : article.source === "Public Library of Science (PLOS)" ? "plos_id" : "pmid";// Pass the type explicitly
@@ -96,85 +96,58 @@ const Annotation = ({
       annotateData && typeof annotateData === "object"
         ? Object.entries(annotateData)
         : [];
-
-    return annotationEntries.flatMap(([pmid, categories]) => {
+  
+    // Sort entries by annotation_score in descending order
+    const sortedAnnotationEntries = annotationEntries.sort(([, aValues], [, bValues]) => 
+      (bValues.annotation_score || 0) - (aValues.annotation_score || 0)
+    );
+  
+    return sortedAnnotationEntries.flatMap(([type, values]) => {
       const rows = [];
-      const isExpanded = expandedPmids[pmid] || false; // Initially set expanded state to false if not set
-
-      const sortedCategories = Object.entries(categories).sort(
-        ([, a], [, b]) => (b.annotation_score || 0) - (a.annotation_score || 0)
-      );
-
-      sortedCategories.forEach(([category, values], index) => {
-        if (category === "annotation_score") return;
-        const categoryKey = `${pmid}-${category}`;
-        const isTextExpanded = expandedTexts[categoryKey];
-
-        const annotationScore = values.annotation_score
-          ? `${values.annotation_score.toFixed(2)}%`
-          : "N/A";
-
-        const categoryTexts = Object.entries(values)
-          .filter(([key]) => key !== "annotation_score")
-          .map(([key]) => key)
-          .join(", ");
-
-        const displayText = isTextExpanded
-          ? categoryTexts
-          : categoryTexts.slice(0, 30);
-
-        // Only display the first row initially if `isExpanded` is false
-        if (index === 0 || isExpanded) {
-          rows.push(
-            <tr className="search-table-body" key={categoryKey}>
-              <td
-                style={{
-                  paddingLeft: index === 0 ? 0 : 30,
-                }}
+      const isExpanded = expandedPmids[type] || false; // Track expansion state for each type
+  
+      const annotationScore = values.annotation_score
+        ? `${values.annotation_score.toFixed(2)}%`
+        : "N/A";
+  
+      // Remove `annotation_score` from the entries and get other value keys
+      const valueTexts = Object.keys(values)
+        .filter((key) => key !== "annotation_score")
+        .join(", ");
+  
+      // Control expansion for the text content
+      const typeKey = `${type}`;
+      const isTextExpanded = expandedTexts[typeKey];
+      const displayText = valueTexts
+  
+      rows.push(
+        <tr className="search-table-body" key={type}>
+          <td style={{fontSize:"14px",width:"25%"}} >
+            {/* <button onClick={() => toggleExpandPmid(type)}>
+              {isExpanded ? "▼" : "▶"}
+            </button> */}
+            {capitalizeFirstLetter(type)}
+          </td>
+          <td style={{fontSize:"14px",width:"20%"}}>{annotationScore}</td>
+          <td style={{fontSize:"14px",width:"65%"}}>
+            {displayText}
+            {/* {valueTexts.length > 30 && (
+              <span
+                style={{ color: "blue", cursor: "pointer", marginLeft: "5px" }}
+                onClick={() => toggleExpandText(typeKey)}
               >
-                {index === 0 && (
-                  <button onClick={() => toggleExpandPmid(pmid)}>
-                    {isExpanded ? "▼" : "▶"}
-                  </button>
-                )}
-                {index === 0 && (
-                  <a
-                    style={{
-                      color: "#1a82ff",
-                      fontWeight: 600,
-                      cursor: "pointer",
-                    }}
-                    onClick={() => handleNavigate(pmid)}
-                  >
-                    {pmid}
-                  </a>
-                )}
-              </td>
-              <td>{annotationScore}</td>
-              <td>{capitalizeFirstLetter(category)}</td>
-              <td>
-                {displayText}
-                {categoryTexts.length > 30 && (
-                  <span
-                    style={{
-                      color: "blue",
-                      cursor: "pointer",
-                      marginLeft: "5px",
-                    }}
-                    onClick={() => toggleExpandText(categoryKey)}
-                  >
-                    {isTextExpanded ? "" : "..."}
-                  </span>
-                )}
-              </td>
-            </tr>
-          );
-        }
-      });
-
+                {isTextExpanded ? "" : "..."}
+              </span>
+            )} */}
+          </td>
+        </tr>
+      );
+  
       return rows;
     });
   };
+  
+  
 
   return (
     <div
@@ -183,23 +156,21 @@ const Annotation = ({
     >
       <div
         style={{
-          // background: "rgba(251, 251, 253, 1)",
           background:
             "linear-gradient(90deg,rgba(254, 118, 117, 0.7) -21.07%,rgba(204, 129, 185, 0.7) 37.85%,rgba(26, 168, 210, 0.7) 97.5%,rgba(76, 210, 217, 0.7) 151.24%)",
           borderRadius: "16px 16px 0 0",
           padding: "5px",
         }}
       >
-        <p style={{ textAlign: "start" }}>Annotations</p>
+        <p style={{ textAlign: "start",fontSize:"18px" }}>Annotations</p>
       </div>
       <div className="search-Annotate-tables">
         <table>
           <thead>
             <tr className="search-table-head">
-              <th style={{ width: "23%", textAlign: "center" }}>ID</th>
-              <th style={{ width: "12%", textAlign: "center" }}>Score</th>
-              <th style={{ width: "20%", textAlign: "center" }}>Type</th>
-              <th style={{ width: "40%", textAlign: "center" }}>Text</th>
+              <th style={{ width: "25%", textAlign: "center",fontSize:"15px" }}>Score</th>
+              <th style={{ width: "20%", textAlign: "center",fontSize:"15px" }}>Values</th>
+              <th style={{ width: "65%", textAlign: "center",fontSize:"15px" }}>Type</th>
             </tr>
           </thead>
           <tbody>{renderAnnotations()}</tbody>
@@ -207,6 +178,7 @@ const Annotation = ({
       </div>
     </div>
   );
+  
 };
 
 export default Annotation;

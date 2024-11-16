@@ -168,7 +168,7 @@ const Collection = ({ setIsCollectionOpen }) => {
                       <td className="bookmark-Source">
                         {article.article_source}
                       </td>
-                      <td style={{ width: "1%" }}>⋮</td>
+                      <td style={{ width: "1%" }}></td>
                     </tr>
                   ))}
                 </tbody>

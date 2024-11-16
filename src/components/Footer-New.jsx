@@ -11,9 +11,10 @@ const Footer = () => {
     <div
       className="footer"
       style={{
-        position:
-          isLoggedIn && location.pathname === "/" ? "absolute" : "static",
-        bottom: isLoggedIn && location.pathname === "/" ? 0 : "auto",
+
+        position: location.pathname === "/" ? "absolute" : "static",
+
+        bottom: isLoggedIn && location.pathname === "/" ? 0 : 0,
         width: "100%", // Ensure the footer takes up the full width
         textAlign: "center", // Center the content
       }}

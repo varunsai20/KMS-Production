@@ -106,6 +106,8 @@ td {
   font-size: 12px;
   /* border-left: 1px solid #ddd; */
   border-top: 1px solid #ddd;
+  /* text-align: center; */
+
 }
 .search-table-row td {
   border-left: 1px solid #ddd;

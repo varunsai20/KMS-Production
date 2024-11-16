@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { useSelector, useDispatch } from "react-redux";
+import { setDeriveInsights } from "../../redux/reducers/deriveInsights";
 import { useParams, useLocation } from "react-router-dom";
 import "./ArticlePage.css";
 import Loading from "../../components/Loading";
@@ -11,6 +12,8 @@ import annotate from "../../assets/images/task-square.svg";
 import { useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import { CircularProgress } from "@mui/material";
+import uploadimage from "../../assets/images/Upload.svg";
+import FileIconForDocument from "../../assets/images/FileIconforDocument.svg";
 import { TextField } from "@mui/material";
 import Annotation from "../../components/Annotaions";
 import { faBookmark as regularBookmark } from "@fortawesome/free-regular-svg-icons";
@@ -20,12 +23,11 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import notesicon from "../../assets/images/note-2.svg";
 import rehypeRaw from "rehype-raw";
-import Logo from "../../assets/images/Logo_New.svg";
+import newChat from "../../assets/images/20px@2x.svg";
 import pen from "../../assets/images/16px.svg";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTelegram } from "@fortawesome/free-brands-svg-icons";
 import { faPen } from "@fortawesome/free-solid-svg-icons";
-import { faAnglesUp } from "@fortawesome/free-solid-svg-icons";
 import { LiaTelegramPlane } from "react-icons/lia";
 //import { BiSolidPaperPlane } from "react-icons/bi";
 import { IoMdPaperPlane } from "react-icons/io";
@@ -33,10 +35,16 @@ import Notes from "../NotesPage/Notes";
 import { login, logout } from "../../redux/reducers/LoginAuth"; // Import login and logout actions
 import ProfileIcon from "../../assets/images/Profile-dummy.svg";
 import { toast } from "react-toastify";
+import { faTimes, faAnglesUp } from "@fortawesome/free-solid-svg-icons";
+//import { TbFileUpload } from "react-icons/tb";
+import upload from "../../assets/images/upload-file.svg";
 import Header from "../../components/Header-New";
 
+import uploadDocx from "../../assets/images/uploadDocx.svg";
 const ArticlePage = () => {
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
+  const deriveInsights = useSelector((state) => state.deriveInsights?.active); // assuming deriveInsights is in Redux state
+
   const displayIfLoggedIn = isLoggedIn ? null : "none";
   const widthIfLoggedIn = isLoggedIn ? null : "80%";
   const heightIfLoggedIn = isLoggedIn ? null : "80vh";
@@ -46,7 +54,7 @@ const ArticlePage = () => {
   const token = useSelector((state) => state.auth.access_token);
   const dispatch = useDispatch();
   const user_id = user?.user_id;
-  const [type, id1] = pmid.split(":");
+  const [type, id1] = pmid ? pmid.split(":") : "";
   const id = Number(id1);
   const [source, setSource] = useState();
   const [annotateLoading, setAnnotateLoading] = useState(false);
@@ -94,18 +102,24 @@ const ArticlePage = () => {
   const [openAnnotate, setOpenAnnotate] = useState(false);
   const [openNotes, setOpenNotes] = useState(false);
   const [activeSection, setActiveSection] = useState("Title");
+  const [activeSessionId, setActiveSessionId] = useState(
+    sessionStorage.getItem("session_id") || null
+  );
+  const isOnArticlePage = location.pathname === "/article";
   const contentRef = useRef(null); // Ref to target the content div
   const [contentWidth, setContentWidth] = useState(); // State for content width
   const [ratingsList, setRatingsList] = useState(() => {
     return JSON.parse(sessionStorage.getItem("ratingsGiven")) || [];
   });
   const [triggerAskClick, setTriggerAskClick] = useState(false);
+  const [triggerDeriveClick, setTriggerDeriveClick] = useState(false);
   const [editingPmid, setEditingPmid] = useState(null);
   const [editedTitle, setEditedTitle] = useState("");
   const [articleTitle, setArticleTitle] = useState("");
   const [collections, setCollections] = useState([]);
   const [showConfirmPopup, setShowConfirmPopup] = useState(false);
   const [showConfirmIcon, setShowConfirmIcon] = useState(false);
+  const [isPromptEnabled, setIsPromptEnabled] = useState(false);
 
   const fetchCollections = async () => {
     try {
@@ -153,7 +167,9 @@ const ArticlePage = () => {
   const [notesHeight, setNotesHeight] = useState(35);
   const minHeight = 15;
   const maxHeight = 60;
-
+  const [reloadArticle, setReloadArticle] = useState(
+    sessionStorage.getItem("reloadArticle") === "true"
+  );
   // Add this useEffect to reset savedText when openNotes becomes false
   useEffect(() => {
     if (!openNotes) {
@@ -213,34 +229,36 @@ const ArticlePage = () => {
   }, [user_id, token]);
 
   useEffect(() => {
-    // Determine the source based on `type`
-    setAnnotateLoading(true);
-    // Perform GET request to fetch article data
-    if (source && id) {
+    if (source && id && !deriveInsights) {
+      setAnnotateLoading(true);
       const fetchArticleData = async () => {
         try {
           const response = await axios.get(
             `http://13.127.207.184/view_article/get_article/${id}?source=${source}`,
             {
-              headers: {
-                Authorization: `Bearer ${token}`, // Include Bearer token
+              headers: {  
+                Authorization: `Bearer ${token}`,
               },
             }
           );
-          const article = response.data; // Assuming response contains article data directly
+  
+          const article = response.data;
           setArticleData(article);
           setAnnotateLoading(false);
-          // Retrieve saved search term from session storage
+  
+          // Retrieve and set saved search term from sessionStorage
           const savedTerm = sessionStorage.getItem("SearchTerm");
           setSearchTerm(savedTerm);
         } catch (error) {
+          setAnnotateLoading(false);
           console.error("Error fetching article data:", error);
         }
       };
-
+  
       fetchArticleData();
     }
-  }, [id, source, token]);
+  }, [id, source, token, deriveInsights]);
+  
 
   const handleAnnotateResize = (e) => {
     if (openAnnotate && openNotes) {
@@ -301,15 +319,15 @@ const ArticlePage = () => {
   useEffect(() => {
     // Access the computed width of the content div
     if (contentRef.current) {
-      const width = contentRef.current.offsetWidth; // Get the width of the content div in pixels
-      setContentWidth(`${width}px`); // Update the contentWidth state with the computed width
+      const width = contentRef.current.offsetWidth;
+      setContentWidth(`${width}px`);
     }
   }, [openAnnotate]);
   useEffect(() => {
     // Access the computed width of the content div
     if (contentRef.current) {
-      const width = contentRef.current.offsetWidth; // Get the width of the content div in pixels
-      setContentWidth(`${width}px`); // Update the contentWidth state with the computed width
+      const width = contentRef.current.offsetWidth;
+      setContentWidth(`${width}px`);
     }
   }, [openNotes]);
 
@@ -389,7 +407,7 @@ const ArticlePage = () => {
     }
   };
   const handleMouseUp = (event) => {
-    if (!contentRef.current.contains(event.target)) {
+    if (!contentRef.current || !contentRef.current.contains(event.target)) {
       return;
     }
 
@@ -488,7 +506,7 @@ const ArticlePage = () => {
           toast.success("Bookmark unsaved successfully", {
             position: "top-center",
             autoClose: 2000,
-            
+
             style: {
               backgroundColor: "rgba(237, 254, 235, 1)",
               borderLeft: "5px solid rgba(15, 145, 4, 1)",
@@ -609,7 +627,7 @@ const ArticlePage = () => {
         toast.success("Collection Created", {
           position: "top-center",
           autoClose: 1000,
-          
+
           style: {
             backgroundColor: "rgba(237, 254, 235, 1)",
             borderLeft: "5px solid rgba(15, 145, 4, 1)",
@@ -657,7 +675,8 @@ const ArticlePage = () => {
   };
   useEffect(() => {
     document.addEventListener("mouseup", handleMouseUp);
-
+    sessionStorage.setItem("session_id", "");
+    sessionStorage.setItem("chatHistory", []);
     return () => {
       document.removeEventListener("mouseup", handleMouseUp);
     };
@@ -687,7 +706,6 @@ const ArticlePage = () => {
 
   useEffect(() => {
     const articleContent = document.querySelector(".meta");
-    console.log(articleContent);
     const handleScroll = () => {
       if (articleContent.scrollTop > 20) {
         document.getElementById("scrollTopBtn").style.display = "block"; // Show the button
@@ -728,7 +746,7 @@ const ArticlePage = () => {
 
   const handleAskClick = async () => {
     if (!query) {
-      alert("Please enter a query");
+      toast.error("Please enter a query");
       return;
     }
 
@@ -763,7 +781,7 @@ const ArticlePage = () => {
           body: bodyData,
         }
       );
-      console.log("API Response:", response);
+      // console.log("API Response:", response);
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
@@ -790,7 +808,7 @@ const ArticlePage = () => {
 
                 try {
                   const parsedData = JSON.parse(jsonChunk);
-                  console.log("Received Data Chunk:", parsedData); // Log each parsed data chunk
+                  // console.log("Received Data Chunk:", parsedData); // Log each parsed data chunk
 
                   // Store session_id for the specific article and source in sessionStorage if it exists
                   if (parsedData.session_id) {
@@ -879,18 +897,173 @@ const ArticlePage = () => {
       handleAskClick();
     }
   };
+  const handleDeriveClick = async () => {
+    if (!query && !uploadedFile) {
+      toast.error("Please enter a query or upload a file", {
+        position: "top-center",
+        autoClose: 2000,
+      });
 
+      return;
+    }
+    removeUploadedFile();
+    setQuery("");
+    const storedSessionId = sessionStorage.getItem("session_id");
+    setLoading(true);
+    const newChatEntry = {
+      query,
+      file: uploadedFile,
+      response: "",
+      showDot: true,
+    };
+    setChatHistory((prevChatHistory) => [...prevChatHistory, newChatEntry]);
+
+    try {
+      let url = "http://13.127.207.184:80/insights/upload";
+      const headers = {
+        Authorization: `Bearer ${token}`,
+        "ngrok-skip-browser-warning": true,
+      };
+
+      // Initialize FormData
+      const formData = new FormData();
+      formData.append("question", query);
+
+      // Conditionally set user_id or userid based on session_id existence
+      if (storedSessionId) {
+        formData.append("user_id", user.user_id);
+        formData.append("session_id", storedSessionId);
+      } else {
+        formData.append("userid", user.user_id);
+      }
+
+      if (uploadedFile) {
+        formData.append("file", uploadedFile);
+      }
+
+      if (storedSessionId) {
+        url = "http://13.127.207.184:80/insights/ask";
+      }
+
+      // Use fetch instead of axios to handle streaming response
+      const response = await fetch(url, {
+        method: "POST",
+        headers: headers,
+        body: formData,
+      });
+
+      if (!response.ok) throw new Error("Network response was not ok");
+
+      // Stream response and update chat history
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let apiResponse = ""; // To accumulate the full response
+
+      const readStream = async () => {
+        let done = false;
+        const delay = 100;
+
+        while (!done) {
+          const { value, done: streamDone } = await reader.read();
+          done = streamDone;
+
+          if (value) {
+            buffer += decoder.decode(value, { stream: true });
+
+            // Process chunks of JSON-like data
+            while (buffer.indexOf("{") !== -1 && buffer.indexOf("}") !== -1) {
+              let start = buffer.indexOf("{");
+              let end = buffer.indexOf("}", start);
+              if (start !== -1 && end !== -1) {
+                const jsonChunk = buffer.slice(start, end + 1);
+                buffer = buffer.slice(end + 1);
+
+                try {
+                  const parsedData = JSON.parse(jsonChunk);
+                  const answer = parsedData.answer;
+                  apiResponse += answer + " "; // Accumulate the full response
+
+                  // Store session_id if not already stored
+                  if (!storedSessionId && parsedData.session_id) {
+                    // setSessionId(parsedData.session_id);
+                    sessionStorage.setItem("session_id", parsedData.session_id);
+                  }
+
+                  setChatHistory((chatHistory) => {
+                    const updatedChatHistory = [...chatHistory];
+                    const lastEntryIndex = updatedChatHistory.length - 1;
+                    if (lastEntryIndex >= 0) {
+                      updatedChatHistory[lastEntryIndex] = {
+                        ...updatedChatHistory[lastEntryIndex],
+                        response: apiResponse.trim(),
+                        showDot: false,
+                      };
+                    }
+                    return updatedChatHistory;
+                  });
+
+                  if (endOfMessagesRef.current) {
+                    endOfMessagesRef.current.scrollIntoView({
+                      behavior: "smooth",
+                      block: "end",
+                    });
+                  }
+                } catch (error) {
+                  console.error("Error parsing JSON chunk:", error);
+                }
+              }
+            }
+          }
+        }
+        setRefreshSessions((prev) => !prev);
+        setLoading(false);
+        sessionStorage.setItem("chatHistory", JSON.stringify(chatHistory));
+      };
+
+      readStream();
+    } catch (error) {
+      console.error("Error fetching or reading stream:", error);
+      setLoading(false);
+    }
+  };
+
+  const handlePromptWithFile = (prompt) => {
+    if (!uploadedFile) return; // Ensure a file is selected
+    setQuery(prompt);
+    setTriggerDeriveClick(true);
+    // handleDeriveClick(prompt, uploadedFile);
+    // setQuery(prompt); // Set the prompt as the query
+    // handleDeriveClick(); // Immediately trigger derive click with file and prompt
+  };
+  useEffect(() => {
+    if (triggerDeriveClick) {
+      handleDeriveClick();
+      setTriggerDeriveClick(false); // Reset the flag after handling the click
+    }
+  }, [query, triggerDeriveClick]);
+  const handleDeriveKeyDown = (e) => {
+    if (e.key === "Enter") {
+      handleDeriveClick();
+    }
+  };
   const handleBackClick = () => {
     const unsavedChanges = localStorage.getItem("unsavedChanges");
+    const clickedDerive = sessionStorage.getItem("clickedDerive") === "true";
+  
     if (unsavedChanges === "true") {
       setShowConfirmPopup(true);
-      //navigate(-1);
     } else {
-      navigate(-1);
+      if (deriveInsights || clickedDerive) {
+        sessionStorage.setItem("clickedDerive",false)
+        navigate("/");
+      } else {
+        navigate(-1);
+      }
     }
-    //localStorage.removeItem("unsavedChanges");
-    //navigate(-1);
   };
+  
+  
 
   const handleCancelConfirm = () => {
     setShowConfirmPopup(false);
@@ -918,7 +1091,6 @@ const ArticlePage = () => {
     // Replace the search term in the text with markdown bold syntax
     return text.replace(regex, "**$1**");
   };
-  console.log(annotateData);
   const handleAnnotate = () => {
     // Replace `desiredId` with the actual ID you want to match against
     const matchingIdExists =
@@ -971,7 +1143,6 @@ const ArticlePage = () => {
     }
   }, [annotateData, source, id]);
 
-  console.log(annotateData);
   const handleNotes = () => {
     const unsavedforIcon = localStorage.getItem("unsavedChanges");
     if (unsavedforIcon === "true") {
@@ -989,7 +1160,6 @@ const ArticlePage = () => {
     setOpenNotes(false);
     localStorage.removeItem("unsavedChanges");
   };
-
   // Dynamically render the nested content in order, removing numbers, and using keys as side headings
   // Helper function to capitalize the first letter of each word
   const capitalizeFirstLetter = (text) => {
@@ -1122,8 +1292,11 @@ const ArticlePage = () => {
             },
           }
         );
+
         if (response.data?.sessions) {
+
           const sessionsData = response.data.sessions.reverse(); // Reverse the array order
+          // console.log(sessionsData)
           setSessions(sessionsData); // Set the reversed sessions array to state
         }
       } catch (error) {
@@ -1161,8 +1334,8 @@ const ArticlePage = () => {
           },
         }
       );
-      console.log(sessionId);
-      console.log(editedTitle);
+      // console.log(sessionId);
+      // console.log(editedTitle);
       // Update the local sessions state after a successful edit
       setSessions((prevSessions) =>
         prevSessions.map((session) =>
@@ -1192,7 +1365,7 @@ const ArticlePage = () => {
     }
   }, [location.state]); // Add location.state as a dependency to re-run on navigation
 
-  const handleSessionClick = async (article_id, source, session_id) => {
+  const handleSessionClick = async (session_id) => {
     try {
       const conversationResponse = await axios.get(
         `http://13.127.207.184:80/history/conversations/history/${user_id}/${session_id}`,
@@ -1202,12 +1375,18 @@ const ArticlePage = () => {
           },
         }
       );
-
+  
+      setActiveSessionId(session_id);
       const formattedChatHistory = [];
       let currentEntry = {};
-
+  
+      // Process conversation data into chat history
       conversationResponse.data.conversation.forEach((entry) => {
         if (entry.role === "user") {
+          if (entry.file_url) {
+            currentEntry.file_url = entry.file_url;
+          }
+  
           if (currentEntry.query) {
             formattedChatHistory.push(currentEntry);
             currentEntry = {};
@@ -1219,39 +1398,202 @@ const ArticlePage = () => {
           currentEntry = {};
         }
       });
-
+  
       if (currentEntry.query) {
         formattedChatHistory.push(currentEntry);
       }
-
-      console.log(formattedChatHistory);
-
-      sessionStorage.setItem(
-        "chatHistory",
-        JSON.stringify(formattedChatHistory)
-      );
-
-      // Update `source` based on its value
+  
+      sessionStorage.setItem("chatHistory", JSON.stringify(formattedChatHistory));
+  
       const sourceType =
-        source === "biorxiv"
+        conversationResponse.data.source === "biorxiv"
           ? "bioRxiv_id"
-          : source === "plos"
+          : conversationResponse.data.source === "plos"
           ? "plos_id"
           : "pmid";
+  
+      const navigatePath = conversationResponse.data.session_type
+        ? "/article"
+        : `/article/${sourceType}:${conversationResponse.data.article_id}`;
+      console.log("entered")
+      if (conversationResponse.data.session_type) {
+        // Navigate immediately if deriveInsights mode
+        console.log(location.state?.data)
+        dispatch(setDeriveInsights(true));
+        console.log(navigatePath)
+        navigate(navigatePath, {
+          state: {
+            id: conversationResponse.data.article_id,
+            source: sourceType,
+            token: token,
+            user: { access_token: token, user_id: user_id },
+            annotateData: location.state?.annotateData,
+            data: location.state?.data,
+          },
+        });
+      } 
+      
+      else {
+        console.log("nav")
+        dispatch(setDeriveInsights(false));
 
-      navigate(`/article/${sourceType}:${article_id}`, {
+        console.log(navigatePath)
+        navigate(navigatePath, {
+          state: {
+            id: conversationResponse.data.article_id,
+            source: sourceType,
+            token: token,
+            user: { access_token: token, user_id: user_id },
+            annotateData: location.state?.annotateData,
+            data: location.state?.data,
+          },
+        });
+        // Fetch article data before navigating
+        // dispatch(setDeriveInsights(false));
+        // await fetchArticleBeforeNavigate(
+        //   conversationResponse.data.article_id,
+        //   sourceType,
+        //   location.state?.data
+        // );
+      }
+    } catch (error) {
+      console.error("Error fetching article or conversation data:", error);
+    }
+  };
+  const getSourceFromType = (type) => {
+    switch (type) {
+      case "bioRxiv_id":
+        return "biorxiv";
+      case "pmid":
+        return "pubmed";
+      case "plos_id":
+        return "plos";
+      default:
+        return null;
+    }
+  };
+  
+  const fetchArticleBeforeNavigate = async (articleId, sourceType,data) => {
+    try {
+      // Map sourceType to source using the utility function
+      const source = getSourceFromType(sourceType);
+      if (!source) {
+        console.error("Invalid sourceType provided");
+        return;
+      }
+  
+      const response = await axios.get(
+        `http://13.127.207.184/view_article/get_article/${articleId}?source=${source}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      const article = response.data;
+      setArticleData(article);
+      console.log(data)
+      // Navigate after article is fetched
+      navigate(`/article/${sourceType}:${articleId}`, {
         state: {
-          id: article_id,
+          id: articleId,
           source: sourceType,
           token: token,
           user: { access_token: token, user_id: user_id },
-          annotateData: location.state.annotateData,
-          data: location.state.data,
+          data:data
         },
       });
-      console.log(conversationResponse);
     } catch (error) {
-      console.error("Error fetching article or conversation data:", error);
+      console.error("Error fetching article data:", error);
+    }
+  };
+  useEffect(() => {
+    const storedSessionId = sessionStorage.getItem("session_id");
+    if (storedSessionId) {
+      setActiveSessionId(storedSessionId);
+    }
+  }, [sessions]);
+
+  
+  
+
+  const [uploadedFile, setUploadedFile] = useState(null);
+
+  // const handleFileUpload = (e) => {
+  //   const file = e.target.files[0];
+  //   if (file) {
+  //     setUploadedFile(file);
+  //   }
+  // };
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return; // Exit if no file was selected
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("try uploading files 5MB or less", {
+        position: "top-center",
+      });
+    }
+
+    const allowedExtensions = ["pdf", "docx"];
+    const fileExtension = file.name.split(".").pop().toLowerCase();
+
+    if (!allowedExtensions.includes(fileExtension)) {
+      //alert("Please upload a PDF or DOCX file.");
+      toast.error("try uploading .pdf,.docx", {
+        position: "top-center",
+        autoClose: 2000,
+      });
+      return;
+    }
+
+    setUploadedFile(file); // Proceed if the file type is valid
+    setIsPromptEnabled(true);
+  };
+
+  const removeUploadedFile = () => {
+    setUploadedFile(null);
+    setIsPromptEnabled(false);
+  };
+  const handleUploadClick = () => {
+    document.getElementById("file-upload").click();
+  };
+
+  const handleOpenChat = () => {
+    sessionStorage.removeItem("session_id");
+    sessionStorage.setItem("chatHistory", []);
+    setArticleData("");
+    setChatHistory([]);
+    dispatch(setDeriveInsights(true)); // Set deriveInsights state in Redux
+    // console.log("clicked");
+    navigate("/article", {
+      state: true, // Set state to null
+    });
+  };
+
+  const [isDragging, setIsDragging] = useState(false);
+
+  const handleDragOver = (event) => {
+    event.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = () => {
+    setIsDragging(false);
+  };
+
+  const handleDrop = (event) => {
+    event.preventDefault();
+    setIsDragging(false);
+    const file = event.dataTransfer.files[0];
+    if (
+      file &&
+      (file.type === "application/pdf" ||
+        file.type ===
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
+        file.type === "text/plain")
+    ) {
+      handleFileUpload({ target: { files: [file] } });
     }
   };
 
@@ -1265,7 +1607,19 @@ const ArticlePage = () => {
             className="history-pagination"
             style={{ display: displayIfLoggedIn }}
           >
-            <p>Recent Interactions</p>
+            <div
+              className="history-pagination-header"
+              style={{ display: "flex", justifyContent: "space-between" }}
+            >
+              <p>Recent Interactions</p>
+              <button className="new-chat-button" onClick={handleOpenChat}>
+                <img
+                  src={newChat}
+                  alt="new-chat-icon"
+                  // style={{ paddingRight: "10px" }}
+                />
+              </button>
+            </div>
             <ul>
               {sessions.length > 0 ? (
                 sessions.map((session) => {
@@ -1283,7 +1637,24 @@ const ArticlePage = () => {
                     : session.session_title; // Default title if no keyword match
 
                   return (
-                    <li key={session.session_id}>
+                    <li
+                      key={session.session_id}
+                      className={
+                        isOnArticlePage &&
+                        session.session_id === activeSessionId
+                          ? "active"
+                          : ""
+                      }
+                      onClick={() => {
+                        handleSessionClick(
+                          // session.article_id,
+                          // session.source,
+                          session.session_id,
+                          // user_id,
+                          // session.session_type
+                        );
+                      }}
+                    >
                       {editingSessionId === session.session_id ? (
                         <input
                           type="text"
@@ -1306,20 +1677,9 @@ const ArticlePage = () => {
                           autoFocus
                         />
                       ) : (
-                        <a
-                          onClick={() => {
-                            console.log("Session ID:", session.session_id);
-                            console.log("Source:", session.source);
-                            handleSessionClick(
-                              session.article_id,
-                              session.source,
-                              session.session_id,
-                              user_id
-                            );
-                          }}
-                        >
-                          {mappedTitle.slice(0, 20)}
-                          {mappedTitle.length > 20 ? "..." : ""}
+                        <a>
+                          {mappedTitle.slice(0, 25)}
+                          {mappedTitle.length > 25 ? "..." : ""}
                         </a>
                       )}
                       <img
@@ -1414,7 +1774,7 @@ const ArticlePage = () => {
                               onChange={() =>
                                 handleRatingChange(uniqueId, value)
                               }
-                              disabled={!!existingRating} // Disable if a rating already exists
+                              // disabled={!!existingRating} // Disable if a rating already exists
                             />
                             <label
                               htmlFor={`star${value}-${uniqueId}`}
@@ -1665,23 +2025,150 @@ const ArticlePage = () => {
                     className="Popup-buttons"
                     title="Send to Notes"
                   >
-                    <LiaTelegramPlane size={25} color="black" />
+                    <span className="send-to-notes">send to notes</span>
+                    <LiaTelegramPlane size={20} color="black" />
                   </button>
                 </div>
               </div>
             </div>
           ) : (
-            <div
-              className="Article-data-not-found"
-              style={{
-                width: widthIfLoggedIn,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                height: "70vh",
-              }}
-            >
-              <p style={{}}>Data not found for the given PMID</p>
+            <div className="derive-article-content">
+              {/* Conditionally render file upload if chatHistory is empty */}
+              {chatHistory.length === 0 && (
+                <div
+                  className={`derive-insights-file-upload ${
+                    isDragging ? "dragging" : ""
+                  }`}
+                  onClick={handleUploadClick}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  style={{ cursor: "pointer" }}
+                >
+                  <img
+                    src={uploadDocx}
+                    style={{ width: "40%" }}
+                    alt="upload-img"
+                  />
+                  <div className="choosing-file">
+                    <input
+                      id="file-upload"
+                      type="file"
+                      accept=".pdf,.docx,.txt"
+                      onChange={handleFileUpload}
+                      style={{ display: "none" }}
+                    />
+                    <span>
+                      Drag & drop files here or <a href="#">Upload</a>
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* Display File, Query, and Response */}
+              {chatHistory.length > 0 ? (
+                <div className="streaming-section">
+                  <div className="streaming-content">
+                  <div style={{ display: "flex" }} onClick={handleBackClick}>
+                    <img
+                      src={Arrow}
+                      style={{ width: "14px" }}
+                      alt="arrow-icon"
+                    ></img>
+                    <button className="back-button">Back</button>
+                  </div>
+                    {chatHistory.map((chat, index) => (
+                      <div key={index}>
+                        {/* Display file_url if it exists */}
+                        {chat.file_url ? (
+                          <div className="chat-file">
+                            <div>
+                              <img src={FileIconForDocument} alt="File Icon" />
+                            </div>
+                            <div
+                              style={{
+                                display: "flex",
+                                flexDirection: "column",
+                              }}
+                            >
+                              {/* Display the file name and extension from file_url */}
+                              <span>
+                                <strong>
+                                  {decodeURIComponent(
+                                    chat.file_url.split("/").pop()
+                                  )}
+                                </strong>
+                              </span>
+                              <span>
+                                {chat.file_url.split(".").pop().toUpperCase()}
+                              </span>
+                            </div>
+                          </div>
+                        ) : (
+                          chat.file && (
+                            <div className="chat-file">
+                              <div>
+                                <img
+                                  src={FileIconForDocument}
+                                  alt="File Icon"
+                                />
+                              </div>
+                              <div
+                                style={{
+                                  display: "flex",
+                                  flexDirection: "column",
+                                }}
+                              >
+                                {/* Display the file name and extension from chat.file.name */}
+                                <span>
+                                  <strong>{chat.file.name}</strong>
+                                </span>
+                                <span>
+                                  {chat.file.name
+                                    .split(".")
+                                    .pop()
+                                    .toUpperCase()}
+                                </span>
+                              </div>
+                            </div>
+                          )
+                        )}
+
+                        {/* Display the query */}
+                        <div className="derive-query-asked">
+                          <span>
+                            {chat.query === "Summarize this article"
+                              ? "Summarize"
+                              : chat.query ===
+                                "what can we conclude from this article"
+                              ? "Conclusion"
+                              : chat.query ===
+                                "what are the key highlights from this article"
+                              ? "Key Highlights"
+                              : chat.query}
+                          </span>
+                        </div>
+
+                        {/* Display the response */}
+                        <div className="response" style={{ textAlign: "left" }}>
+                          {chat.response ? (
+                            <span>
+                              <ReactMarkdown>{chat.response}</ReactMarkdown>
+                            </span>
+                          ) : (
+                            <div className="loading-dots">
+                              <span>•••</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                    <div ref={endOfMessagesRef} />
+                  </div>
+                </div>
+              ) : (
+                ""
+              )}
             </div>
           )}
 
@@ -1761,61 +2248,169 @@ const ArticlePage = () => {
         </div>
       </div>
 
-      <div
-        className="article-chat-query"
-        style={{
-          width: openAnnotate || openNotes ? contentWidth : "69%",
-          display: displayIfLoggedIn,
-        }}
-      >
-        <div className="predefined-prompts">
-          <button onClick={() => handlePromptClick("Summarize this article")}>
-            Summarize
-          </button>
-          <button
-            onClick={() =>
-              handlePromptClick("what can we conclude form this article")
-            }
-          >
-            Conclusion
-          </button>
-          <button
-            onClick={() =>
-              handlePromptClick("what are the key highlights from this article")
-            }
-          >
-            Key Highlights
-          </button>
-        </div>
-        <div className="stream-input">
-          <img src={flag} alt="flag-logo" className="stream-flag-logo" />
-          <input
-            type="text"
-            placeholder="Ask anything..."
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={handleKeyDown}
-          />
-          {/* <button onClick={handleAskClick} > */}
-          {loading ? (
-            <CircularProgress
-              className="button"
-              size={24}
-              style={{ marginLeft: "1.5%" }}
-              color="white"
+      {articleData ? (
+        <div
+          className="article-chat-query"
+          style={{
+            width: openAnnotate || openNotes ? contentWidth : "69%",
+            display: displayIfLoggedIn,
+          }}
+        >
+          <div className="predefined-prompts">
+            <button onClick={() => handlePromptClick("Summarize this article")}>
+              Summarize
+            </button>
+            <button
+              onClick={() =>
+                handlePromptClick("what can we conclude form this article")
+              }
+            >
+              Conclusion
+            </button>
+            <button
+              onClick={() =>
+                handlePromptClick(
+                  "what are the key highlights from this article"
+                )
+              }
+            >
+              Key Highlights
+            </button>
+          </div>
+          <div className="stream-input">
+            <img src={flag} alt="flag-logo" className="stream-flag-logo" />
+            <input
+              type="text"
+              placeholder="Ask anything..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={handleKeyDown}
             />
-          ) : (
-            <FontAwesomeIcon
-              className="button"
-              onClick={handleAskClick}
-              icon={faTelegram}
-              size={"xl"}
-            />
-          )}
-          {/* </button> */}
+            {/* <button onClick={handleAskClick} > */}
+            {loading ? (
+              <CircularProgress
+                className="button"
+                size={24}
+                style={{ marginLeft: "1.5%" }}
+                color="white"
+              />
+            ) : (
+              <FontAwesomeIcon
+                className="button"
+                onClick={handleAskClick}
+                icon={faTelegram}
+                size={"xl"}
+              />
+            )}
+            {/* </button> */}
+          </div>
         </div>
-      </div>
-
+      ) : (
+        <div
+          className="derive-chat-query"
+          style={{
+            width: openAnnotate || openNotes ? contentWidth : "69%",
+            display: displayIfLoggedIn,
+          }}
+        >
+          <div className="derive-predefined-prompts">
+            <button
+              onClick={() => handlePromptWithFile("Summarize this article")}
+              disabled={!isPromptEnabled}
+              style={{
+                backgroundColor: isPromptEnabled ? "#c4dad2" : "#cccccc",
+                color: isPromptEnabled ? "#000000" : "#666666",
+              }}
+            >
+              Summarize
+            </button>
+            <button
+              onClick={() =>
+                handlePromptWithFile("What can we conclude from this article")
+              }
+              disabled={!isPromptEnabled}
+              style={{
+                backgroundColor: isPromptEnabled ? "#c4dad2" : "#cccccc",
+                color: isPromptEnabled ? "#000000" : "#666666",
+              }}
+            >
+              Conclusion
+            </button>
+            <button
+              onClick={() =>
+                handlePromptWithFile(
+                  "What are the key highlights from this article"
+                )
+              }
+              disabled={!isPromptEnabled}
+              style={{
+                backgroundColor: isPromptEnabled ? "#c4dad2" : "#cccccc",
+                color: isPromptEnabled ? "#000000" : "#666666",
+              }}
+            >
+              Key Highlights
+            </button>
+          </div>
+          <div className="file-palcement">
+            {uploadedFile && (
+              <div className="file-showing">
+                <span className="uploaded-file-indicator">
+                  {uploadedFile.name}
+                  <FontAwesomeIcon
+                    icon={faTimes}
+                    onClick={removeUploadedFile}
+                    className="cancel-file"
+                    color="black"
+                  />
+                </span>
+              </div>
+            )}
+          </div>
+          <div className="derive-stream-input">
+            {/* <label htmlFor="file-upload" className="custom-file-upload">
+              <TbFileUpload size={25} />
+            </label> */}
+            <label htmlFor="file-upload" className="custom-file-upload">
+              <img
+                src={upload}
+                alt="upload-icon"
+                style={{ paddingLeft: "10px", cursor: "pointer" }}
+              />
+            </label>
+            <input
+              id="file-upload"
+              type="file"
+              accept=".pdf,.docx,.txt"
+              onChange={handleFileUpload}
+              style={{ display: "none" }}
+            />
+            <div className="query-file-input">
+              <input
+                type="text"
+                placeholder="Ask anything..."
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={handleDeriveKeyDown}
+              />
+            </div>
+            {loading ? (
+              <CircularProgress
+                className="button"
+                size={24}
+                style={{ marginLeft: "1.5%" }}
+                color="white"
+              />
+            ) : (
+              <FontAwesomeIcon
+                className="button"
+                onClick={handleDeriveClick}
+                icon={faTelegram}
+                size={"xl"}
+              />
+            )}
+          </div>
+        </div>
+      )}
       <div className="ScrollTop">
         <button onClick={scrollToTop} id="scrollTopBtn" title="Go to top">
           <FontAwesomeIcon icon={faAnglesUp} />

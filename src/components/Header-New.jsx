@@ -6,8 +6,9 @@ import Button from "./Buttons";
 import "../styles/variables.css";
 import "./Header-New.css";
 //import Logo from "../assets/images/Logo_New.svg";
-import Logo from "../assets/images/InfersolD17aR04aP01ZL-Polk4a 1.svg";
+import Logo from "../assets/images/InferFinalLogo.png";
 import ProfileIcon from "../assets/images/Profile-start.svg";
+import { toast } from "react-toastify";
 
 import axios from "axios";
 
@@ -46,6 +47,7 @@ const Header = () => {
       navigate("/");
     } catch (error) {
       console.error("Error logging out:", error);
+      toast.error("Error logging out:", error);
     }
   };
 

@@ -86,13 +86,17 @@
   margin-left: 1%;
   width: 20%;
   padding: 27px, 0px, 27px, 0px;
-  /* height: 70vh; */
-  max-height: 700px;
-  overflow-y: auto;
+  height: 70vh;
+  /* max-height: 700px; */
+  overflow-y: hidden;
   color: #333;
   border-radius: 20px;
   border: 1px solid #ebebf3;
   /* background-color: rgba(249, 249, 249); */
+}
+.new-chat-button {
+  padding: 10px;
+  margin-right: 12px;
 }
 
 .article-content {
@@ -144,6 +148,11 @@
   font-size: 14px;
   margin-bottom: 16px;
   margin-top: 0;
+}
+.send-to-notes {
+  font-size: 17px;
+  color: black;
+  padding-left: 5px;
 }
 .streaming-section {
   width: 100%;
@@ -222,7 +231,9 @@
   list-style: none;
   padding: 0px 15px 0px 15px;
   justify-content: start;
-  margin-top: 15%;
+  margin-top: 5%;
+  height: 63vh;
+  overflow: auto;
 }
 
 .history-pagination ul li {
@@ -265,8 +276,8 @@
 .history-pagination ul li.active a::before {
   content: "";
   position: absolute;
-  left: 3px; /* Adjusts the left position for the blue line */
-  top: 0;
+  left: -15px; /* Adjusts the left position for the blue line */
+  top: 5px;
   bottom: 0;
   width: 2px; /* Width of the blue line */
   border-radius: 10px;
@@ -288,9 +299,7 @@
 .article-chat-query {
   position: absolute;
   left: 24%;
-  /* position: relative; */
   width: 100%;
-  /* margin: 0% 0% 1% 17%; */
   width: 68%;
   display: flex;
 
@@ -305,7 +314,12 @@
   gap: 20px;
   padding: 0 10px 10px 10px;
 }
-
+.derive-predefined-prompts {
+  display: flex;
+  /* justify-content: flex-end; */
+  gap: 20px;
+  padding: 5px 10px 10px 10px;
+}
 .predefined-prompts button {
   /* background-color: transparent; */
   border: 1px solid rgb(206 206 206);
@@ -315,6 +329,24 @@
   border-radius: 24px;
   padding: 7px;
   background-color: #c4dad2;
+}
+.file-palcement {
+  position: absolute;
+  right: 25px;
+}
+.file-showing {
+  display: flex;
+  align-items: center;
+  padding: 0px 0px 0px 0px;
+  width: fit-content;
+  height: 5vh;
+  border-radius: 5px;
+  margin: 0% 0% 1% 2%;
+  background: #c4dad2;
+}
+.cancel-file {
+  padding: 2px 0px 0px 9px;
+  cursor: pointer;
 }
 .stream-input {
   width: 98%;
@@ -769,7 +801,7 @@ td {
 }
 
 .Article-confirm-buttons button:last-of-type {
-  background: rgba(248, 29, 82, 1);
+  background: #e57373;
   color: white;
 }
 .bookmark-modal-overlay {
@@ -858,4 +890,71 @@ td {
 .collection-article-count {
   font-size: 16px;
   font-weight: 500;
+}
+
+/* Single Media Query for All iPads */
+@media (min-width: 600px) and (max-width: 1366px) {
+  .container {
+    /* width: 50%; */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    padding: 15px;
+  }
+  .content {
+    width: 100%;
+    font-size: 1rem;
+  }
+  .article-content {
+    width: 50%;
+  }
+  @media (min-width: 1024px) {
+    .container {
+      width: 95%;
+      flex-direction: column;
+      padding: 25px;
+    }
+    .article-content {
+      width: 50%;
+    }
+    .content {
+      width: 100%;
+      font-size: 1.1rem;
+    }
+  }
+  .content h1 {
+    font-size: 1.6rem;
+  }
+
+  .content h2 {
+    font-size: 1.3rem;
+  }
+
+  .content p {
+    font-size: 1rem;
+  }
+}
+
+.derive-insights-file-upload {
+  margin: auto;
+  display: flex;
+  gap: 20px;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 60px;
+  border: 1px dashed rgba(0, 0, 0, 0.2);
+  border-radius: 16px;
+}
+.chat-file {
+  display: flex;
+  width: fit-content;
+  flex-direction: row;
+  /* justify-content: flex-start; */
+  float: right;
+  background: aquamarine;
+  padding: 10px;
+  border-radius: 12px;
+  align-items: flex-end;
+  gap: 10px;
 }
