@@ -908,7 +908,7 @@ const ArticlePage = () => {
     }
     removeUploadedFile();
     setQuery("");
-    const storedSessionId = sessionStorage.getItem("session_id");
+    const storedSessionId = sessionStorage.getItem("sessionId");
     setLoading(true);
     const newChatEntry = {
       query,
@@ -924,7 +924,7 @@ const ArticlePage = () => {
         Authorization: `Bearer ${token}`,
         "ngrok-skip-browser-warning": true,
       };
-
+      console.log(storedSessionId)
       // Initialize FormData
       const formData = new FormData();
       formData.append("question", query);
@@ -1006,7 +1006,7 @@ const ArticlePage = () => {
                   if (endOfMessagesRef.current) {
                     endOfMessagesRef.current.scrollIntoView({
                       behavior: "smooth",
-                      block: "end",
+                      // block: "end",
                     });
                   }
                 } catch (error) {
@@ -1375,7 +1375,7 @@ const ArticlePage = () => {
           },
         }
       );
-  
+      sessionStorage.setItem("sessionId",session_id)
       setActiveSessionId(session_id);
       const formattedChatHistory = [];
       let currentEntry = {};
@@ -1415,10 +1415,8 @@ const ArticlePage = () => {
       const navigatePath = conversationResponse.data.session_type
         ? "/article"
         : `/article/${sourceType}:${conversationResponse.data.article_id}`;
-      console.log("entered")
       if (conversationResponse.data.session_type) {
         // Navigate immediately if deriveInsights mode
-        console.log(location.state?.data)
         dispatch(setDeriveInsights(true));
         console.log(navigatePath)
         navigate(navigatePath, {
@@ -2152,7 +2150,7 @@ const ArticlePage = () => {
                         {/* Display the response */}
                         <div className="response" style={{ textAlign: "left" }}>
                           {chat.response ? (
-                            <span>
+                            <span ref={endOfMessagesRef}>
                               <ReactMarkdown>{chat.response}</ReactMarkdown>
                             </span>
                           ) : (
@@ -2163,7 +2161,7 @@ const ArticlePage = () => {
                         </div>
                       </div>
                     ))}
-                    <div ref={endOfMessagesRef} />
+                    {/* <div ref={endOfMessagesRef} /> */}
                   </div>
                 </div>
               ) : (

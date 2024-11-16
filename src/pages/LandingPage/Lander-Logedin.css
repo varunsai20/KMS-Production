@@ -795,7 +795,7 @@
   border-radius: 8px;
   height: 70vh;
   width: 80%;
-  overflow-y: auto;
+  overflow-y: hidden;
 }
 .annotate-close {
   width: 10%;
