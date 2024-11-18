@@ -46,7 +46,6 @@ const SearchBar = ({ renderInputContainer, className }) => {
     } else {
       setFilteredResults([]); // Clear suggestions if less than 3 characters
     }
-    console.log(value);
     // Keep updating the searchTerm as the user types
     setSearchTerm(value);
     sessionStorage.setItem("SearchTerm", value);
@@ -66,7 +65,6 @@ const SearchBar = ({ renderInputContainer, className }) => {
     sessionStorage.removeItem("ResultData");
     if (searchTerm) {
       let searchQuery = sessionStorage.getItem("SearchTerm");
-      console.log("searchTerm:", searchQuery);
       setLoading(true);
 
       const timeoutId = setTimeout(() => {
@@ -86,13 +84,13 @@ const SearchBar = ({ renderInputContainer, className }) => {
           dispatch(setSearchResults(data));
           clearTimeout(timeoutId);
           setLoading(false);
-          navigate("/search", { state: { data, searchTerm } });
+          navigate("/search", { state: { data, searchQuery } });
         })
         .catch((error) => {
           console.log(error);
           clearTimeout(timeoutId);
           setLoading(false);
-          navigate("/search", { state: { data: [], searchTerm } });
+          navigate("/search", { state: { data: [], searchQuery } });
           console.error("Error fetching data from the API", error);
         });
     }
@@ -100,7 +98,6 @@ const SearchBar = ({ renderInputContainer, className }) => {
 
   const handleOptionSelect = (event, value) => {
     if (value) {
-      console.log(value);
       setSearchTerm(value); // Set selected option as the search term
       sessionStorage.setItem("SearchTerm", value);
       handleButtonClick(); // Trigger the search after selection

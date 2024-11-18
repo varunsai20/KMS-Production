@@ -121,6 +121,8 @@ const ArticlePage = () => {
   const [showConfirmIcon, setShowConfirmIcon] = useState(false);
   const [isPromptEnabled, setIsPromptEnabled] = useState(false);
 
+
+
   const fetchCollections = async () => {
     try {
       const response = await axios.get(
@@ -1027,9 +1029,11 @@ const ArticlePage = () => {
       setLoading(false);
     }
   };
-
+  
+  
   const handlePromptWithFile = (prompt) => {
-    if (!uploadedFile) return; // Ensure a file is selected
+    if (!uploadedFile && !storedSessionId) return; // Ensure either a file is selected or a session exists
+
     setQuery(prompt);
     setTriggerDeriveClick(true);
     // handleDeriveClick(prompt, uploadedFile);
@@ -1051,17 +1055,23 @@ const ArticlePage = () => {
     const unsavedChanges = localStorage.getItem("unsavedChanges");
     const clickedDerive = sessionStorage.getItem("clickedDerive") === "true";
   
+    if (!isLoggedIn) {
+      navigate(-1); // Navigate back if the user is not logged in
+      return;
+    }
+  
     if (unsavedChanges === "true") {
       setShowConfirmPopup(true);
     } else {
       if (deriveInsights || clickedDerive) {
-        sessionStorage.setItem("clickedDerive",false)
+        sessionStorage.setItem("clickedDerive", false);
         navigate("/");
       } else {
         navigate(-1);
       }
     }
   };
+  
   
   
 
@@ -1364,7 +1374,7 @@ const ArticlePage = () => {
       setShowStreamingSection(false); // Default to false if no stored chat history
     }
   }, [location.state]); // Add location.state as a dependency to re-run on navigation
-
+  console.log(source)
   const handleSessionClick = async (session_id) => {
     try {
       const conversationResponse = await axios.get(
@@ -1375,7 +1385,8 @@ const ArticlePage = () => {
           },
         }
       );
-      sessionStorage.setItem("sessionId",session_id)
+      sessionStorage.setItem("session_id",session_id)
+      setIsPromptEnabled(true)
       setActiveSessionId(session_id);
       const formattedChatHistory = [];
       let currentEntry = {};
@@ -1415,14 +1426,16 @@ const ArticlePage = () => {
       const navigatePath = conversationResponse.data.session_type
         ? "/article"
         : `/article/${sourceType}:${conversationResponse.data.article_id}`;
+         
+
       if (conversationResponse.data.session_type) {
         // Navigate immediately if deriveInsights mode
         dispatch(setDeriveInsights(true));
         console.log(navigatePath)
         navigate(navigatePath, {
           state: {
-            id: conversationResponse.data.article_id,
-            source: sourceType,
+            id: conversationResponse.data.article_id||id,
+            source: source,
             token: token,
             user: { access_token: token, user_id: user_id },
             annotateData: location.state?.annotateData,
@@ -1430,16 +1443,15 @@ const ArticlePage = () => {
           },
         });
       } 
-      
       else {
         console.log("nav")
         dispatch(setDeriveInsights(false));
-
+        
         console.log(navigatePath)
         navigate(navigatePath, {
           state: {
-            id: conversationResponse.data.article_id,
-            source: sourceType,
+            id: conversationResponse.data.article_id||id,
+            source: source,
             token: token,
             user: { access_token: token, user_id: user_id },
             annotateData: location.state?.annotateData,
@@ -1517,6 +1529,16 @@ const ArticlePage = () => {
   
 
   const [uploadedFile, setUploadedFile] = useState(null);
+  useEffect(() => {
+    const storedSessionId =
+      sessionStorage.getItem("sessionId") || sessionStorage.getItem("session_id");
+    console.log("exec");
+    if (storedSessionId || uploadedFile) {
+      setIsPromptEnabled(true); // Enable prompts if session_id exists or a file is uploaded
+    } else {
+      setIsPromptEnabled(false); // Disable prompts if neither session_id nor file is present
+    }
+  }, [handleDeriveClick, uploadedFile]);
 
   // const handleFileUpload = (e) => {
   //   const file = e.target.files[0];
@@ -1594,7 +1616,7 @@ const ArticlePage = () => {
       handleFileUpload({ target: { files: [file] } });
     }
   };
-
+  console.log(location.state)
   return (
     <>
       <div className="container">
@@ -1907,7 +1929,7 @@ const ArticlePage = () => {
                 </div>
               </div>
 
-              <div className="meta">
+              <div className="meta" style={{height:!isLoggedIn?"68vh":undefined}}>
                 <div
                   style={{
                     display: "flex",
@@ -2138,10 +2160,10 @@ const ArticlePage = () => {
                             {chat.query === "Summarize this article"
                               ? "Summarize"
                               : chat.query ===
-                                "what can we conclude from this article"
+                                "What can we conclude from this article"
                               ? "Conclusion"
                               : chat.query ===
-                                "what are the key highlights from this article"
+                                "What are the key highlights from this article"
                               ? "Key Highlights"
                               : chat.query}
                           </span>

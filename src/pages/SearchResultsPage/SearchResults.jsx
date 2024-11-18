@@ -783,7 +783,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       endDate: customEndDate,
     });
   };
-
+  console.log(location.state)
   const handleDateRangeChange = (newRange) => {
     setSelectedDateRange(newRange);
     if (newRange !== "custom") {
