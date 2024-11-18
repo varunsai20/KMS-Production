@@ -897,6 +897,7 @@ const ArticlePage = () => {
       handleAskClick();
     }
   };
+  const storedSessionId = sessionStorage.getItem("sessionId") || sessionStorage.getItem("session_id");
   const handleDeriveClick = async () => {
     if (!query && !uploadedFile) {
       toast.error("Please enter a query or upload a file", {
@@ -908,7 +909,6 @@ const ArticlePage = () => {
     }
     removeUploadedFile();
     setQuery("");
-    const storedSessionId = sessionStorage.getItem("sessionId");
     setLoading(true);
     const newChatEntry = {
       query,
@@ -944,7 +944,7 @@ const ArticlePage = () => {
       if (storedSessionId) {
         url = "http://13.127.207.184:80/insights/ask";
       }
-
+      console.log(storedSessionId)
       // Use fetch instead of axios to handle streaming response
       const response = await fetch(url, {
         method: "POST",
