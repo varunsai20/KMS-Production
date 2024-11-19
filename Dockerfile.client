@@ -1,14 +1,27 @@
-FROM node:alpine
+FROM node:16-alpine
 
 WORKDIR /app
 
-RUN apk update && apk add git
+# Update package list and install Git
+RUN apk update && apk add --no-cache git
 
-RUN git clone https://github.com/varunsai20/KMS.git .
-
+# Copy package.json and package-lock.json for better layer caching
 COPY package*.json ./
-RUN npm install
-RUN npm run build
+
+# Install specific dependencies
+RUN npm install dayjs@1.11.13
+
+# Clear npm cache and install remaining dependencies
+RUN npm cache clean --force && npm install
+
+# Copy the rest of the application files
+COPY . .
+
+# Build the application
+RUN npm run build || cat npm-debug.log
+
+# Expose the application port
 EXPOSE 3000
 
+# Start the application
 CMD ["npm", "start"]
