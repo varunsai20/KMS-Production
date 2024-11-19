@@ -144,7 +144,8 @@
 }
 .apple svg {
   width: 20px;
-  height: -webkit-fill-available;}
+  height: -webkit-fill-available;
+}
 
 .error {
   color: red;
@@ -155,4 +156,8 @@
 .button-submit:disabled {
   background-color: #ddd;
   cursor: not-allowed;
+}
+@media screen and (min-width: 768px) and (max-width: 1280px) {
+  .Login-Form {
+  }
 }

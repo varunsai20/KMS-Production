@@ -6,6 +6,8 @@ import { Autocomplete, InputAdornment, TextField } from "@mui/material";
 import terms from "../assets/Data/final_cleaned_terms_only.json";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
+//import ErrorBoundry from "../utils/ErrorBoundry";
+//import Error500 from "../utils/Error500";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { setSearchResults, clearSearchResults } from "../redux/actions/actions";
