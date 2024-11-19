@@ -893,9 +893,8 @@ td {
 }
 
 /* Single Media Query for All iPads */
-@media (min-width: 600px) and (max-width: 1366px) {
+@media (min-width: 600px) and (max-width: 1024px) {
   .container {
-    /* width: 50%; */
     display: flex;
     flex-direction: column;
     align-items: center;

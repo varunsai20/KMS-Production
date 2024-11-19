@@ -304,7 +304,7 @@ const NoteItem = ({ note, onEdit, onDelete, isOpenNotes }) => {
         <div className="confirm-overlay">
           <div className="confirm-popup">
             <p className="Saving-note">Delete Notes</p>
-            <p id="confirming">Are you sure you want to delete this note?</p>
+            <p id="confirming">Are you sure to delete this note?</p>
             <div className="confirm-buttons">
               <button className="confirm-keep-button" onClick={cancelDelete}>
                 Cancel

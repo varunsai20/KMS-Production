@@ -1,5 +1,10 @@
 import React from "react";
-import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Route,
+  Routes,
+  Navigate,
+} from "react-router-dom";
 import { useSelector } from "react-redux";
 import Lander from "./pages/LandingPage/Lander-Logedin";
 import Login from "./pages/Authentication/Login/Login";
@@ -16,6 +21,7 @@ import DeriveInsights from "./pages/ArticlePage/DeriveInsights";
 import LogoutHandler from "./LogoutHandler";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Error500 from "./utils/Error500";
 
 function App() {
   const deriveInsights = useSelector((state) => state.deriveInsights?.active);
@@ -31,6 +37,7 @@ function App() {
             <Route path="/signup" element={<SignUpForm />} />
             <Route path="/deriveinsights" element={<DeriveInsights />} />
             <Route path="/search" element={<SearchResults />} />
+            <Route path="/server-error" element={<Error500 />} />
 
             {/* Conditional Route for Articles */}
             {deriveInsights ? (
@@ -71,7 +78,7 @@ function App() {
             />
 
             {/* Redirect unmatched routes */}
-                {/* <Route path="*" element={<Navigate to="/" replace />} /> */}
+            {/* <Route path="*" element={<Navigate to="/" replace />} /> */}
           </Routes>
         </div>
       </LogoutHandler>
