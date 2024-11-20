@@ -1100,7 +1100,8 @@ const ArticlePage = () => {
       setOpenAnnotate((prevOpenAnnotate) => !prevOpenAnnotate); // Open immediately if matching ID is present
     }
   };
-
+  console.log("source",source)
+  console.log("id",id)
   const handleAnnotateClick = async () => {
     // Define the request body according to source and id
     let requestBody = {};

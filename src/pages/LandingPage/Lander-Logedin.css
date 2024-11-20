@@ -88,8 +88,10 @@
   line-height: 23.36px;
   letter-spacing: 0.02em;
   text-align: left;
-  color: #a5a5a5;
-  /* padding: 10px 0px 0px 0px; */
+
+  color: #454545;
+  padding: 10px 0px 0px 0px;
+
 }
 
 .Landing-Searchbar {

@@ -84,7 +84,7 @@ const Collection = ({ setIsCollectionOpen }) => {
         : source === "Public Library of Science (PLOS)"
         ? "plos_id"
         : "pmid";
-    navigate(`/article/${sourceType}:${article_id}`, {
+    navigate(`/article/content/${sourceType}:${article_id}`, {
       state: {
         annotateData: [],
       },

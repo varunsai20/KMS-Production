@@ -41,7 +41,7 @@ import upload from "../../assets/images/upload-file.svg";
 import Header from "../../components/Header-New";
 
 import uploadDocx from "../../assets/images/uploadDocx.svg";
-const ArticleDerive = ({ setRefreshSessions }) => {
+const ArticleDerive = ({ setRefreshSessions,openAnnotate,openNotes,setOpenNotes,setOpenAnnotate,setSavedText,annotateLoading,setAnnotateLoading }) => {
     const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
   const deriveInsights = useSelector((state) => state.deriveInsights?.active); // assuming deriveInsights is in Redux state
 
@@ -57,7 +57,7 @@ const ArticleDerive = ({ setRefreshSessions }) => {
   const [type, id1] = pmid ? pmid.split(":") : "";
   const id = Number(id1);
   const [source, setSource] = useState();
-  const [annotateLoading, setAnnotateLoading] = useState(false);
+  // const [annotateLoading, setAnnotateLoading] = useState(false);
   const location = useLocation();
   const { data } = location.state || { data: [] };
   const [searchTerm, setSearchTerm] = useState("");
@@ -112,8 +112,8 @@ const ArticleDerive = ({ setRefreshSessions }) => {
   }, [annotateLoading]);
   const [showStreamingSection, setShowStreamingSection] = useState(false);
   // const [chatInput, setChatInput] = useState(true);
-  const [openAnnotate, setOpenAnnotate] = useState(false);
-  const [openNotes, setOpenNotes] = useState(false);
+  // const [openAnnotate, setOpenAnnotate] = useState(false);
+  // const [openNotes, setOpenNotes] = useState(false);
   const [activeSection, setActiveSection] = useState("Title");
   const [activeSessionId, setActiveSessionId] = useState(
     localStorage.getItem("session_id") || null
@@ -174,7 +174,7 @@ const ArticleDerive = ({ setRefreshSessions }) => {
   const [editingSessionId, setEditingSessionId] = useState(null);
 
   const [bookmarkedPmids, setBookmarkedPmids] = useState({});
-  const [savedText, setSavedText] = useState("");
+  // const [savedText, setSavedText] = useState("");
   const selectedTextRef = useRef("");
   const popupRef = useRef(null);
   const popupPositionRef = useRef({ x: 0, y: 0 });
@@ -1077,7 +1077,10 @@ const ArticleDerive = ({ setRefreshSessions }) => {
   };
   
   
-  
+  useEffect(()=>{
+    localStorage.removeItem("session_id")
+    setActiveSessionId(null)
+  },[])
 
   const handleCancelConfirm = () => {
     setShowConfirmPopup(false);
@@ -1509,7 +1512,7 @@ const ArticleDerive = ({ setRefreshSessions }) => {
       setArticleData(article);
       console.log(data)
       // Navigate after article is fetched
-      navigate(`/article/${sourceType}:${articleId}`, {
+      navigate(`/article/content/${sourceType}:${articleId}`, {
         state: {
           id: articleId,
           source: sourceType,
@@ -1621,7 +1624,7 @@ const ArticleDerive = ({ setRefreshSessions }) => {
   };
   return (
       <>
-        <div className="derive-article-content" style={{ width: widthIfLoggedIn }}>
+        <div className="derive-article-content" style={{ width: widthIfLoggedIn,height: heightIfLoggedIn }} ref={contentRef} onMouseUp={handleMouseUp}>
               {/* Conditionally render file upload if chatHistory is empty */}
                {chatHistory.length===0 && <div
                   className={`derive-insights-file-upload ${

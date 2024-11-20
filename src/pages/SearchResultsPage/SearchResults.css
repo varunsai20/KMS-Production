@@ -437,11 +437,12 @@ button {
   border: none;
 }
 .SearchResult-dropdown {
-  padding: 10px;
-  gap: 12px;
-  border-radius: 50px;
-  border: 1px solid black;
-  opacity: 0.7px;
+  padding: 10px 0;
+    gap: 12px;
+    border-radius: 50px;
+    /* border: 1px solid black; */
+    opacity: 0.7px;
+    outline: none;  
 }
 
 .SearchResult-Options {
