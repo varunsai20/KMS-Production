@@ -224,6 +224,7 @@
 .derive-chat-query {
   position: absolute;
   left: 24%;
+  bottom: 1vh;
   /* width: 100%; */
   /* width: 68%; */
   display: flex;

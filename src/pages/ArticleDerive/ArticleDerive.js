@@ -3,7 +3,7 @@ import axios from "axios";
 import { useSelector, useDispatch } from "react-redux";
 import { setDeriveInsights } from "../../redux/reducers/deriveInsights";
 import { useParams, useLocation } from "react-router-dom";
-import "./ArticlePage.css";
+import "../ArticlePage/ArticlePage.css";
 import Loading from "../../components/Loading";
 import { Typography } from "@mui/material";
 import flag from "../../assets/images/flash.svg";
@@ -41,8 +41,8 @@ import upload from "../../assets/images/upload-file.svg";
 import Header from "../../components/Header-New";
 
 import uploadDocx from "../../assets/images/uploadDocx.svg";
-const ArticlePage = () => {
-  const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
+const ArticleDerive = ({ setRefreshSessions }) => {
+    const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
   const deriveInsights = useSelector((state) => state.deriveInsights?.active); // assuming deriveInsights is in Redux state
 
   const displayIfLoggedIn = isLoggedIn ? null : "none";
@@ -75,7 +75,20 @@ const ArticlePage = () => {
     const storedHistory = localStorage.getItem("chatHistory");
     return storedHistory ? JSON.parse(storedHistory) : [];
   });
-  const [refreshSessions, setRefreshSessions] = useState(false);
+//   const [refreshSessions, setRefreshSessions] = useState(false);
+  const { resetArticleData, resetChatHistory } = location.state || {};
+
+  useEffect(() => {
+    if (resetArticleData) {
+      // Logic to reset article data
+      setArticleData(""); // Ensure you have this setter available
+    }
+
+    if (resetChatHistory) {
+      // Logic to reset chat history
+      setChatHistory([]); // Ensure you have this setter available
+    }
+  }, [resetArticleData, resetChatHistory]);
   useEffect(() => {
     // Retrieve chat history from sessionStorage
     const storedChatHistory = localStorage.getItem("chatHistory");
@@ -103,7 +116,7 @@ const ArticlePage = () => {
   const [openNotes, setOpenNotes] = useState(false);
   const [activeSection, setActiveSection] = useState("Title");
   const [activeSessionId, setActiveSessionId] = useState(
-    sessionStorage.getItem("session_id") || null
+    localStorage.getItem("session_id") || null
   );
   const isOnArticlePage = location.pathname === "/article";
   const contentRef = useRef(null); // Ref to target the content div
@@ -238,16 +251,16 @@ const ArticlePage = () => {
           const response = await axios.get(
             `http://13.127.207.184/view_article/get_article/${id}?source=${source}`,
             {
-              headers: {
+              headers: {  
                 Authorization: `Bearer ${token}`,
               },
             }
           );
-
+  
           const article = response.data;
           setArticleData(article);
           setAnnotateLoading(false);
-
+  
           // Retrieve and set saved search term from sessionStorage
           const savedTerm = sessionStorage.getItem("SearchTerm");
           setSearchTerm(savedTerm);
@@ -256,10 +269,11 @@ const ArticlePage = () => {
           console.error("Error fetching article data:", error);
         }
       };
-
+  
       fetchArticleData();
     }
   }, [id, source, token, deriveInsights]);
+  
 
   const handleAnnotateResize = (e) => {
     if (openAnnotate && openNotes) {
@@ -676,7 +690,7 @@ const ArticlePage = () => {
   };
   useEffect(() => {
     document.addEventListener("mouseup", handleMouseUp);
-    sessionStorage.setItem("session_id", "");
+    // localStorage.setItem("session_id", "");
     // localStorage.setItem("chatHistory", []);
     return () => {
       document.removeEventListener("mouseup", handleMouseUp);
@@ -898,7 +912,7 @@ const ArticlePage = () => {
       handleAskClick();
     }
   };
-  const storedSessionId = sessionStorage.getItem("sessionId") || sessionStorage.getItem("session_id");
+  const storedSessionId = localStorage.getItem("sessionId") || localStorage.getItem("session_id");
   const handleDeriveClick = async () => {
     if (!query && !uploadedFile) {
       toast.error("Please enter a query or upload a file", {
@@ -925,7 +939,7 @@ const ArticlePage = () => {
         Authorization: `Bearer ${token}`,
         "ngrok-skip-browser-warning": true,
       };
-      console.log(storedSessionId);
+      console.log(storedSessionId)
       // Initialize FormData
       const formData = new FormData();
       formData.append("question", query);
@@ -988,7 +1002,7 @@ const ArticlePage = () => {
                   // Store session_id if not already stored
                   if (!storedSessionId && parsedData.session_id) {
                     // setSessionId(parsedData.session_id);
-                    sessionStorage.setItem("session_id", parsedData.session_id);
+                    localStorage.setItem("session_id", parsedData.session_id);
                   }
 
                   setChatHistory((chatHistory) => {
@@ -1056,13 +1070,14 @@ const ArticlePage = () => {
       setShowConfirmPopup(true);
       //navigate(-1);
     } else {
-
       navigate(-1);
     }
     //localStorage.removeItem("unsavedChanges");
     //navigate(-1);
   };
-
+  
+  
+  
 
   const handleCancelConfirm = () => {
     setShowConfirmPopup(false);
@@ -1293,6 +1308,7 @@ const ArticlePage = () => {
         );
 
         if (response.data?.sessions) {
+
           const sessionsData = response.data.sessions.reverse(); // Reverse the array order
           // console.log(sessionsData)
           setSessions(sessionsData); // Set the reversed sessions array to state
@@ -1305,7 +1321,7 @@ const ArticlePage = () => {
     if (user_id && token) {
       fetchSessions();
     }
-  }, [user_id, token, refreshSessions]);
+  }, [user_id, token]);
 
   // Edit functions
   const handleEditClick = (sessionId, title) => {
@@ -1373,21 +1389,19 @@ const ArticlePage = () => {
           },
         }
       );
-
       sessionStorage.setItem("session_id",session_id)
       setIsPromptEnabled(true)
-
       setActiveSessionId(session_id);
       const formattedChatHistory = [];
       let currentEntry = {};
-
+  
       // Process conversation data into chat history
       conversationResponse.data.conversation.forEach((entry) => {
         if (entry.role === "user") {
           if (entry.file_url) {
             currentEntry.file_url = entry.file_url;
           }
-
+  
           if (currentEntry.query) {
             formattedChatHistory.push(currentEntry);
             currentEntry = {};
@@ -1399,22 +1413,20 @@ const ArticlePage = () => {
           currentEntry = {};
         }
       });
-
+  
       if (currentEntry.query) {
         formattedChatHistory.push(currentEntry);
       }
-
   
       localStorage.setItem("chatHistory", JSON.stringify(formattedChatHistory));
   
-
       const sourceType =
         conversationResponse.data.source === "biorxiv"
           ? "bioRxiv_id"
           : conversationResponse.data.source === "plos"
           ? "plos_id"
           : "pmid";
-
+  
       const navigatePath = conversationResponse.data.session_type
         ? "/article"
         : `/article/${sourceType}:${conversationResponse.data.article_id}`;
@@ -1423,7 +1435,7 @@ const ArticlePage = () => {
       if (conversationResponse.data.session_type) {
         // Navigate immediately if deriveInsights mode
         dispatch(setDeriveInsights(true));
-        console.log(navigatePath);
+        console.log(navigatePath)
         navigate(navigatePath, {
           state: {
             id: conversationResponse.data.article_id||id,
@@ -1434,14 +1446,12 @@ const ArticlePage = () => {
             data: location.state?.data,
           },
         });
-
       } 
       else {
         console.log("nav")
         dispatch(setDeriveInsights(false));
         
         console.log(navigatePath)
-
         navigate(navigatePath, {
           state: {
             id: conversationResponse.data.article_id||id,
@@ -1476,8 +1486,8 @@ const ArticlePage = () => {
         return null;
     }
   };
-
-  const fetchArticleBeforeNavigate = async (articleId, sourceType, data) => {
+  
+  const fetchArticleBeforeNavigate = async (articleId, sourceType,data) => {
     try {
       // Map sourceType to source using the utility function
       const source = getSourceFromType(sourceType);
@@ -1485,7 +1495,7 @@ const ArticlePage = () => {
         console.error("Invalid sourceType provided");
         return;
       }
-
+  
       const response = await axios.get(
         `http://13.127.207.184/view_article/get_article/${articleId}?source=${source}`,
         {
@@ -1494,10 +1504,10 @@ const ArticlePage = () => {
           },
         }
       );
-
+  
       const article = response.data;
       setArticleData(article);
-      console.log(data);
+      console.log(data)
       // Navigate after article is fetched
       navigate(`/article/${sourceType}:${articleId}`, {
         state: {
@@ -1505,7 +1515,7 @@ const ArticlePage = () => {
           source: sourceType,
           token: token,
           user: { access_token: token, user_id: user_id },
-          data: data,
+          data:data
         },
       });
     } catch (error) {
@@ -1513,17 +1523,19 @@ const ArticlePage = () => {
     }
   };
   useEffect(() => {
-    const storedSessionId = sessionStorage.getItem("session_id");
+    const storedSessionId = localStorage.getItem("session_id");
     if (storedSessionId) {
       setActiveSessionId(storedSessionId);
     }
   }, [sessions]);
 
+  
+  
+
   const [uploadedFile, setUploadedFile] = useState(null);
   useEffect(() => {
     const storedSessionId =
-      sessionStorage.getItem("sessionId") || sessionStorage.getItem("session_id");
-    console.log("exec");
+      localStorage.getItem("sessionId") || localStorage.getItem("session_id");
     if (storedSessionId || uploadedFile) {
       setIsPromptEnabled(true); // Enable prompts if session_id exists or a file is uploaded
     } else {
@@ -1607,446 +1619,11 @@ const ArticlePage = () => {
       handleFileUpload({ target: { files: [file] } });
     }
   };
-  console.log(location.state)
   return (
-    <>
-      <div className="container">
-        <Header style={{ width: "100%" }} />
-        {annotateLoading ? <Loading /> : ""}
-        <div className="content" style={{ width: widthIfLoggedIn }}>
-          <div
-            className="history-pagination"
-            style={{ display: displayIfLoggedIn }}
-          >
-            <div
-              className="history-pagination-header"
-              style={{ display: "flex", justifyContent: "space-between" }}
-            >
-              <p>Recent Interactions</p>
-              <button className="new-chat-button" onClick={handleOpenChat}>
-                <img
-                  src={newChat}
-                  alt="new-chat-icon"
-                  // style={{ paddingRight: "10px" }}
-                />
-              </button>
-            </div>
-            <ul>
-              {sessions.length > 0 ? (
-                sessions.map((session) => {
-                  // Mapping keywords to custom titles
-                  const mappedTitle = session.session_title.includes(
-                    "what are the key highlights from this article"
-                  )
-                    ? "Key Highlights"
-                    : session.session_title.includes(
-                        "what can we conclude form this article"
-                      )
-                    ? "Conclusion"
-                    : session.session_title.includes("Summarize this article")
-                    ? "Summarize"
-                    : session.session_title; // Default title if no keyword match
-
-                  return (
-                    <li
-                      key={session.session_id}
-                      className={
-                        isOnArticlePage &&
-                        session.session_id === activeSessionId
-                          ? "active"
-                          : ""
-                      }
-                      onClick={() => {
-                        handleSessionClick(
-                          // session.article_id,
-                          // session.source,
-                          session.session_id
-                          // user_id,
-                          // session.session_type
-                        );
-                      }}
-                    >
-                      {editingSessionId === session.session_id ? (
-                        <input
-                          type="text"
-                          style={{
-                            padding: "0",
-                            height: "20px",
-                            width: "100%",
-                            fontSize: "16px",
-                            outline: "none",
-                            borderColor: editedTitle ? "#1a82ff" : "#1a82ff",
-                          }}
-                          value={editedTitle}
-                          onChange={handleTitleChange}
-                          onBlur={() => handleSaveEdit(session.session_id)} // Save on blur
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                              handleSaveEdit(session.session_id);
-                            }
-                          }}
-                          autoFocus
-                        />
-                      ) : (
-                        <a>
-                          {mappedTitle.slice(0, 25)}
-                          {mappedTitle.length > 25 ? "..." : ""}
-                        </a>
-                      )}
-                      <img
-                        src={pen}
-                        alt="pen-icon"
-                        title="Rename the title"
-                        //icon={faPen}
-                        onClick={() =>
-                          handleEditClick(session.session_id, mappedTitle)
-                        }
-                        style={{ cursor: "pointer", marginLeft: "10px" }}
-                      />
-                    </li>
-                  );
-                })
-              ) : (
-                <li>No sessions available</li>
-              )}
-            </ul>
-          </div>
-
-          {articleData ? (
-            <div
-              className="article-content"
-              onMouseUp={handleMouseUp}
-              ref={contentRef}
-              style={{ height: heightIfLoggedIn }}
-            >
-              <div className="article-title">
-                <div
-                  style={{
-                    display: "flex",
-                    cursor: "pointer",
-                    marginTop: "1%",
-                    justifyContent: "space-between",
-                  }}
-                >
-                  <div style={{ display: "flex" }} onClick={handleBackClick}>
-                    <img
-                      src={Arrow}
-                      style={{ width: "14px" }}
-                      alt="arrow-icon"
-                    ></img>
-                    <button className="back-button">Back</button>
-                  </div>
-                  {showConfirmPopup && (
-                    <div className="Article-popup-overlay">
-                      <div className="Article-popup-content">
-                        <p className="Saving-note">Saving Note</p>
-                        <p id="confirming">
-                          Are you sure to leave without saving?
-                        </p>
-                        <div className="Article-confirm-buttons">
-                          <button
-                            className="overlay-cancel-button"
-                            onClick={handleCancelConfirm}
-                          >
-                            Cancel
-                          </button>
-                          <button
-                            className="overlay-ok-button"
-                            onClick={handleOk}
-                          >
-                            Leave
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  <div
-                    className="Rate-Article"
-                    style={{ display: displayIfLoggedIn }}
-                  >
-                    <div>
-                      <span>Rate the article </span>
-                    </div>
-                    <div className="rate">
-                      {[5, 4, 3, 2, 1].map((value) => {
-                        const existingRating =
-                          Array.isArray(ratingsList) &&
-                          ratingsList.find((item) => item.uniqueId === uniqueId)
-                            ?.rating;
-
-                        return (
-                          <React.Fragment key={value}>
-                            <input
-                              type="radio"
-                              id={`star${value}-${uniqueId}`}
-                              name={`rate_${uniqueId}`}
-                              value={value}
-                              checked={existingRating === value}
-                              onChange={() =>
-                                handleRatingChange(uniqueId, value)
-                              }
-                              // disabled={!!existingRating} // Disable if a rating already exists
-                            />
-                            <label
-                              htmlFor={`star${value}-${uniqueId}`}
-                              title={`${value} star`}
-                            />
-                          </React.Fragment>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="ArticleTitle-Bookmark">
-                  <p
-                    style={{
-                      marginTop: "0",
-                      marginBottom: "0",
-                      color: "#0071bc",
-                      fontSize: "20px",
-                    }}
-                  >
-                    {articleData.article.article_title}
-                  </p>
-                  <FontAwesomeIcon
-                    icon={
-                      isArticleBookmarked(id).isBookmarked
-                        ? solidBookmark
-                        : regularBookmark
-                    }
-                    size="l"
-                    style={{
-                      color: isArticleBookmarked(id).isBookmarked
-                        ? "#0071bc"
-                        : "black",
-                      cursor: "pointer",
-                      display: displayIfLoggedIn,
-                    }}
-                    onClick={() =>
-                      handleBookmarkClick(
-                        id,
-                        articleData.article.article_title,
-                        source || "PubMed"
-                      )
-                    }
-                    title={
-                      isArticleBookmarked(id).isBookmarked
-                        ? "Bookmarked"
-                        : "Bookmark this article"
-                    }
-                  />
-
-                  {isModalOpen && (
-                    <div className="bookmark-modal-overlay">
-                      <div className="modal-content" ref={modalRef}>
-                        {/* Existing Collections */}
-                        <div className="bookmark-p">
-                          <p className="bookmark-para">Bookmarks</p>
-                        </div>
-
-                        {/* Create New Collection */}
-                        <h4>Create a new collection:</h4>
-                        <input
-                          type="text"
-                          value={newCollectionName}
-                          onChange={(e) => setNewCollectionName(e.target.value)}
-                          placeholder="New collection name"
-                        />
-                        <div
-                          style={{
-                            display: "flex",
-                            gap: "20px",
-                            marginBottom: "15px",
-                          }}
-                        >
-                          <button
-                            onClick={handleCreateNewCollection}
-                            disabled={!newCollectionName}
-                          >
-                            Create
-                          </button>
-                        </div>
-
-                        {Object.keys(collections).length > 0 && (
-                          <>
-                            <h4>Save to existing collection:</h4>
-
-                            {/* Search bar for collections */}
-                            <input
-                              type="text"
-                              value={searchCollection}
-                              onChange={(e) =>
-                                setSearchCollection(e.target.value)
-                              }
-                              placeholder="Search collections"
-                              style={{
-                                marginBottom: "10px",
-                                padding: "8px 0 8px 8px",
-                              }}
-                            />
-
-                            {/* Filter collections based on search term */}
-                            <ul className="bookmark-existing-collections">
-                              {Object.keys(collections)
-                                .filter((collectionName) =>
-                                  collectionName
-                                    .toLowerCase()
-                                    .includes(searchCollection.toLowerCase())
-                                )
-                                .map((collectionName, index) => (
-                                  <ul key={index}>
-                                    <li
-                                      onClick={() =>
-                                        handleSaveToExisting(collectionName)
-                                      }
-                                    >
-                                      <span className="collection-name">
-                                        {collectionName}
-                                      </span>
-                                      <span className="collection-article-count">
-                                        {collections[collectionName].length}{" "}
-                                        articles
-                                      </span>
-                                    </li>
-                                  </ul>
-                                ))}
-                            </ul>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="meta" style={{height:!isLoggedIn?"68vh":undefined}}>
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    fontSize: "14px",
-                    color: "grey",
-                    marginBottom: "5px",
-                  }}
-                >
-                  {articleData.article.publication_type ? (
-                    <span>
-                      Publication Type :
-                      <strong style={{ color: "black" }}>
-                        {articleData.article.publication_type.join(", ")}
-                      </strong>
-                    </span>
-                  ) : (
-                    ""
-                  )}
-                  <span style={{ color: "#2b9247" }}>
-                    {type === "bioRxiv_id" && "BioRxiv ID"}
-                    {type === "pmid" && "PMID"}
-                    {type === "plos_id" && "PLOS ID"} : {id}
-                  </span>{" "}
-                </div>
-
-                {articleData.article.abstract_content && (
-                  <>
-                    <Typography
-                      variant="h4"
-                      gutterBottom
-                      style={{
-                        fontSize: "18px",
-                        marginBottom: "0 ",
-                        marginTop: "1%",
-                      }}
-                    >
-                      Abstract
-                    </Typography>
-                    <p>
-                      {renderContentInOrder(
-                        articleData.article.abstract_content,
-                        true
-                      )}
-                    </p>
-                  </>
-                )}
-                {/* <div className="content-brake"></div>  */}
-                {articleData.article.body_content &&
-                  renderContentInOrder(articleData.article.body_content, true)}
-
-                {showStreamingSection && (
-                  <div className="streaming-section">
-                    <div className="streaming-content">
-                      {chatHistory.map((chat, index) => (
-                        <div key={index}>
-                          <div className="query-asked">
-                            <span>
-                              {chat.query === "Summarize this article"
-                                ? "Summarize"
-                                : chat.query ===
-                                  "what can we conclude form this article"
-                                ? "Conclusion"
-                                : chat.query ===
-                                  "what are the key highlights from this article"
-                                ? "Key Highlights"
-                                : chat.query}
-                            </span>
-                          </div>
-
-                          <div
-                            className="response"
-                            style={{ textAlign: "left" }}
-                          >
-                            {/* Check if there's a response, otherwise show loading dots */}
-                            {chat.response ? (
-                              <>
-                                <span>
-                                  <ReactMarkdown>{chat.response}</ReactMarkdown>
-                                </span>
-                              </>
-                            ) : (
-                              <div className="loading-dots">
-                                <span>•••</span>
-                              </div>
-                            )}
-
-                            <div ref={endOfMessagesRef} />
-                          </div>
-                        </div>
-                      ))}
-                      {/* This div will act as the reference for scrolling */}
-                    </div>
-                  </div>
-                )}
-                <div
-                  ref={popupRef}
-                  className="popup-button"
-                  // className="Popup"
-                  style={{
-                    position: "absolute",
-                    display: "none", // Initially hidden
-                    backgroundColor: "#afa7a7",
-                    // padding: "5px",
-                    color: "white",
-                    borderRadius: "5px",
-                    cursor: "pointer",
-                  }}
-                  //onClick={handleSaveToNote}
-                >
-                  <button
-                    onClick={handleSaveToNote}
-                    className="Popup-buttons"
-                    title="Send to Notes"
-                  >
-                    <span className="send-to-notes">send to notes</span>
-                    <LiaTelegramPlane size={20} color="black" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="derive-article-content">
+      <>
+        <div className="derive-article-content" style={{ width: widthIfLoggedIn }}>
               {/* Conditionally render file upload if chatHistory is empty */}
-              {chatHistory.length === 0 && (
-                <div
+               {chatHistory.length===0 && <div
                   className={`derive-insights-file-upload ${
                     isDragging ? "dragging" : ""
                   }`}
@@ -2073,21 +1650,21 @@ const ArticlePage = () => {
                       Drag & drop files here or <a href="#">Upload</a>
                     </span>
                   </div>
-                </div>
-              )}
+                </div>}
+              
 
               {/* Display File, Query, and Response */}
               {chatHistory.length > 0 ? (
                 <div className="streaming-section">
                   <div className="streaming-content">
-                    <div style={{ display: "flex" }} onClick={handleBackClick}>
-                      <img
-                        src={Arrow}
-                        style={{ width: "14px" }}
-                        alt="arrow-icon"
-                      ></img>
-                      <button className="back-button">Back</button>
-                    </div>
+                  <div style={{ display: "flex" }} onClick={handleBackClick}>
+                    <img
+                      src={Arrow}
+                      style={{ width: "14px" }}
+                      alt="arrow-icon"
+                    ></img>
+                    <button className="back-button">Back</button>
+                  </div>
                     {chatHistory.map((chat, index) => (
                       <div key={index}>
                         {/* Display file_url if it exists */}
@@ -2181,145 +1758,7 @@ const ArticlePage = () => {
                 ""
               )}
             </div>
-          )}
-
-          <div className="right-aside" style={{ display: displayIfLoggedIn }}>
-            <div className="annotate-note">
-              {openAnnotate && (
-                <div
-                  className="annotate-height"
-                  style={{
-                    height: `${annotateHeight}vh`,
-                  }}
-                >
-                  <Annotation
-                    openAnnotate={openAnnotate}
-                    annotateData={annotateData}
-                    annotateHeight={annotateHeight}
-                  />
-                  <div
-                    className="annotate-line2"
-                    onMouseDown={handleAnnotateResize}
-                  />
-                </div>
-              )}
-              {openNotes && (
-                <div
-                  className="notes-height"
-                  style={{ height: `${notesHeight}vh` }}
-                >
-                  <Notes selectedText={savedText} notesHeight={notesHeight} />
-                  <div
-                    className="notes-line1"
-                    onMouseDown={handleNotesResize}
-                  />
-                  <div
-                    className="notes-line2"
-                    onMouseDown={handleNotesResize}
-                  />
-                </div>
-              )}
-            </div>
-            <div className="icons-group">
-              <div
-                className={`search-annotate-icon ${
-                  openAnnotate ? "open" : "closed"
-                }`}
-                onClick={handleAnnotate}
-                style={{
-                  opacity: annotateData && annotateData.length > 0 ? 1 : 1, // Adjust visibility when disabled
-                }}
-              >
-                <img src={annotate} alt="annotate-icon" />
-              </div>
-              <div
-                className={`notes-icon ${openNotes ? "open" : "closed"}`}
-                onClick={() => {
-                  handleNotes();
-                }}
-              >
-                <img src={notesicon} alt="notes-icon" />
-              </div>
-              {showConfirmIcon && (
-                <div className="Article-popup-overlay">
-                  <div className="Article-popup-content">
-                    <p className="Saving-note">Saving Note</p>
-
-                    <p id="confirming">
-                      Are you sure to leave without saving?
-                    </p>
-
-                    <div className="Article-confirm-buttons">
-                      <button onClick={handleCancelIcon}>Cancel</button>
-                      <button onClick={handleCloseIcon}>Leave</button>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {articleData ? (
-        <div
-          className="article-chat-query"
-          style={{
-            width: openAnnotate || openNotes ? contentWidth : "69%",
-            display: displayIfLoggedIn,
-          }}
-        >
-          <div className="predefined-prompts">
-            <button onClick={() => handlePromptClick("Summarize this article")}>
-              Summarize
-            </button>
-            <button
-              onClick={() =>
-                handlePromptClick("what can we conclude form this article")
-              }
-            >
-              Conclusion
-            </button>
-            <button
-              onClick={() =>
-                handlePromptClick(
-                  "what are the key highlights from this article"
-                )
-              }
-            >
-              Key Highlights
-            </button>
-          </div>
-          <div className="stream-input">
-            <img src={flag} alt="flag-logo" className="stream-flag-logo" />
-            <input
-              type="text"
-              placeholder="Ask anything..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              onKeyDown={handleKeyDown}
-            />
-            {/* <button onClick={handleAskClick} > */}
-            {loading ? (
-              <CircularProgress
-                className="button"
-                size={24}
-                style={{ marginLeft: "1.5%" }}
-                color="white"
-              />
-            ) : (
-              <FontAwesomeIcon
-                className="button"
-                onClick={handleAskClick}
-                icon={faTelegram}
-                size={"xl"}
-              />
-            )}
-            {/* </button> */}
-          </div>
-        </div>
-      ) : (
-        <div
+            <div
           className="derive-chat-query"
           style={{
             width: openAnnotate || openNotes ? contentWidth : "69%",
@@ -2423,14 +1862,8 @@ const ArticlePage = () => {
             )}
           </div>
         </div>
-      )}
-      <div className="ScrollTop">
-        <button onClick={scrollToTop} id="scrollTopBtn" title="Go to top">
-          <FontAwesomeIcon icon={faAnglesUp} />
-        </button>
-      </div>
-    </>
-  );
-};
+        </>
+      )
+}
 
-export default ArticlePage;
+export default ArticleDerive

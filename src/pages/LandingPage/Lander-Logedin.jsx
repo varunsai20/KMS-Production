@@ -78,7 +78,7 @@ const Lander = () => {
   const handleOpenInsights = () => {
     sessionStorage.setItem("clickedDerive", true);
     dispatch(setDeriveInsights(true)); // Set deriveInsights in Redux state
-    navigate("/article", {
+    navigate("/article/derive", {
       state: {
         deriveInsights: true,
       },
@@ -110,7 +110,7 @@ const Lander = () => {
       fetchSessions();
       dispatch(setDeriveInsights(false));
 
-      sessionStorage.setItem("chatHistory", []);
+      localStorage.setItem("chatHistory", []);
     }
   }, [user_id, token]);
 
@@ -175,8 +175,10 @@ const Lander = () => {
       const article_id = conversationResponse.data.article_id;
 
       const navigatePath = session_type
-        ? "/article"
-        : `/article/${sourceType}:${article_id}`;
+
+        ? "/article/derive"
+        : `/article/content/${sourceType}:${article_id}`;
+  
 
       if (session_type) {
         dispatch(setDeriveInsights(true));
