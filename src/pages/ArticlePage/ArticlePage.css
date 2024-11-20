@@ -194,7 +194,7 @@
 .response {
   text-align: left;
   float: left;
-  width: 80%;
+  width: 90%;
   /* max-width: 500px; */
   margin-bottom: 10px;
   padding: 10px;
@@ -205,6 +205,7 @@
   color: black;
   background: #f9fcfe;
   font-size: 14px;
+  margin-top: 10px;
 }
 
 .clearfix::after {
@@ -957,4 +958,22 @@ td {
   border-radius: 12px;
   align-items: flex-end;
   gap: 10px;
+}
+
+@media (min-width: 900px) and (max-width: 1366px) {
+  .content {
+    width: 98%;
+  }
+  .article-chat-query {
+    padding: 5px;
+  }
+  .predefined-prompts {
+    padding: 5px 10px 5px 10px;
+  }
+  .stream-input input {
+    padding: 10px 0px;
+  }
+  .rate {
+    width: 20vh;
+  }
 }

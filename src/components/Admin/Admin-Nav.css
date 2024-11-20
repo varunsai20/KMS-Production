@@ -84,4 +84,8 @@
   .nav-item span {
     font-size: 16px;
   }
-  
+  @media screen and (min-width: 764px) and (max-width: 1080px) {
+    .sidebar {
+      width: 120px;
+    }
+  }

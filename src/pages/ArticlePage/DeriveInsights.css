@@ -134,6 +134,7 @@
   color: black;
   background: #f9fcfe;
   font-size: 14px;
+  margin-top: 10px;
 }
 
 .clearfix::after {
@@ -326,4 +327,15 @@
 
 #derive-scrollTopBtn:hover {
   background-color: #555;
+}
+@media (min-width: 900px) and (max-width: 1366px) {
+  .derive-chat-query {
+    padding: 5px;
+  }
+  .derive-predefined-prompts {
+    padding: 5px 10px 5px 10px;
+  }
+  .derive-stream-input input {
+    padding: 10px 0px;
+  }
 }

@@ -99,6 +99,7 @@ const Lander = () => {
         );
         if (response.data?.sessions) {
           const sessionsData = response.data.sessions.reverse(); // Reverse the array order
+          console.log(sessionsData)
           setSessions(sessionsData); // Set the reversed sessions array to state
         }
       } catch (error) {
@@ -123,9 +124,10 @@ const Lander = () => {
       });
       return;
     }
-
-    const { session_id, session_type } = sessions[0]; // Destructure session_id and session_type only
-
+    
+    const { session_id } = sessions[0];
+    localStorage.setItem("session_id", session_id);
+    console.log(sessions[0])
     try {
       const conversationResponse = await axios.get(
         `http://13.127.207.184:80/history/conversations/history/${user_id}/${session_id}`,
@@ -135,10 +137,11 @@ const Lander = () => {
           },
         }
       );
-
+      console.log(conversationResponse)
+      
       const formattedChatHistory = [];
       let currentEntry = {};
-
+  
       conversationResponse.data.conversation.forEach((entry) => {
         if (entry.role === "user") {
           if (entry.file_url) {
@@ -148,44 +151,46 @@ const Lander = () => {
             formattedChatHistory.push(currentEntry);
             currentEntry = {};
           }
-          currentEntry.query = entry.parts.join(" ");
+          if (Array.isArray(entry.parts)) {
+            currentEntry.query = entry.parts.join(" ");
+          }
         } else if (entry.role === "model") {
-          currentEntry.response = entry.parts.join(" ");
+          if (Array.isArray(entry.parts)) {
+            currentEntry.response = entry.parts.join(" ");
+          }
           formattedChatHistory.push(currentEntry);
           currentEntry = {};
         }
       });
-
+  
       if (currentEntry.query) {
         formattedChatHistory.push(currentEntry);
       }
-
-      sessionStorage.setItem(
+  
+      localStorage.setItem(
         "chatHistory",
         JSON.stringify(formattedChatHistory)
       );
-
       const sourceType =
         conversationResponse.data.source === "biorxiv"
           ? "bioRxiv_id"
           : conversationResponse.data.source === "plos"
           ? "plos_id"
           : "pmid";
-
+  
       const article_id = conversationResponse.data.article_id;
-
-      const navigatePath = session_type
-
+  
+      const navigatePath = conversationResponse.data.session_type
         ? "/article/derive"
         : `/article/content/${sourceType}:${article_id}`;
-  
-
-      if (session_type) {
+      console.log(navigatePath)
+      // console.log(session_type)
+      if (conversationResponse.data.session_type) {
         dispatch(setDeriveInsights(true));
       } else {
         dispatch(setDeriveInsights(false));
       }
-
+  
       navigate(navigatePath, {
         state: {
           id: article_id,
@@ -198,7 +203,7 @@ const Lander = () => {
       console.error("Error fetching article or conversation data:", error);
     }
   };
-
+  
   // useEffect(() => {
   //   if (isLanderNotesOpen) {
   //     const centerX =
