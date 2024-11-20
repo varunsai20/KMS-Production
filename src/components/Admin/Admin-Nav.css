@@ -17,71 +17,75 @@
   margin-top: 10%; /* Adjust margin as per your design */
   box-sizing: border-box;
 }
-  /* Sidebar header containing the logo */
-  .sidebar-header {
-    margin-bottom: 40px;
-  }
-  
-  .logo {
+/* Sidebar header containing the logo */
+.sidebar-header {
+  margin-bottom: 40px;
+}
+
+.logo {
+  width: 120px;
+}
+
+/* Navigation items */
+.sidebar-nav {
+  list-style-type: none;
+  padding: 0;
+  display: flex;
+  width: 85%;
+  gap: 10px;
+  flex-direction: column;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  padding: 15px 20px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  font-size: 16px;
+  color: #4a4a4a;
+  position: relative;
+}
+
+.nav-item:hover {
+  background-color: #e8efff;
+  border-radius: 7px;
+}
+
+.nav-item.active {
+  background-color: #fff;
+  color: #007bff;
+  font-weight: bold;
+  border-radius: 7px;
+}
+.nav-item.active::before {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 0;
+  margin-top: 1%;
+  bottom: 0;
+  width: 3px;
+  height: 25px;
+  padding: 10px 0;
+  background-color: #007bff;
+  border-radius: 0 5px 5px 0;
+}
+/* Icon in the navigation items */
+.nav-icon {
+  width: 20px;
+  height: 20px;
+  margin-right: 10px;
+}
+.sidebar-nav a {
+  text-decoration: none;
+}
+/* Text next to the icon */
+.nav-item span {
+  font-size: 16px;
+}
+@media screen and (min-width: 764px) and (max-width: 1080px) {
+  .sidebar {
     width: 120px;
   }
-  
-  /* Navigation items */
-  .sidebar-nav {
-    list-style-type: none;
-    padding: 0;
-    display: flex;
-    width: 85%;
-    gap: 10px;
-    flex-direction: column;
-  }
-  
-  .nav-item {
-    display: flex;
-    align-items: center;
-    padding: 15px 20px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-    font-size: 16px;
-    color: #4a4a4a;
-    position: relative;
-  }
-  
-  .nav-item:hover {
-    background-color: #e8efff;
-    border-radius: 7px;
-  }
-  
-  .nav-item.active {
-    background-color: #fff;
-    color: #007bff;
-    font-weight: bold;
-    border-radius: 7px;
-  }
-  .nav-item.active::before {
-    content: "";
-    position: absolute;
-    right: 0;
-    top: 0;
-    margin-top: 1%;
-    bottom: 0;
-    width: 3px;
-    height: 25px;
-    padding: 10px 0;
-    background-color: #007bff;
-    border-radius: 0 5px 5px 0;
-  }
-  /* Icon in the navigation items */
-  .nav-icon {
-    width: 20px;
-    height: 20px;
-    margin-right: 10px;
-  }
-  .sidebar-nav a{
-    text-decoration: none;
-  }
-  /* Text next to the icon */
-  .nav-item span {
-    font-size: 16px;
-  }
-  
+}

@@ -14,6 +14,7 @@ const Footer = () => {
         // position: location.pathname === "/" ? "absolute" : "static",
 
         // bottom: isLoggedIn && location.pathname === "/" ? 0 : 0,
+        marginTop: "auto",
         width: "100%", // Ensure the footer takes up the full width
         textAlign: "center", // Center the content
       }}
