@@ -285,7 +285,7 @@ const Researchers = () => {
             {showConfirmDelete && (
               <div className="confirm-overlay">
                 <div className="confirm-popup">
-                  <p>Are you sure you want to delete this note?</p>
+                  <p>Are you sure to delete this note?</p>
                   <div className="confirm-buttons">
                     <button
                       className="confirm-keep-button"

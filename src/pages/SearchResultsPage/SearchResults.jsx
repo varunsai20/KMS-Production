@@ -898,7 +898,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
 
   useEffect(() => {
     // Clear session storage for chatHistory when the location changes
-    sessionStorage.removeItem("chatHistory");
+    localStorage.removeItem("chatHistory");
   }, [location]);
   const capitalizeFirstLetter = (text) => {
     return text.replace(/\b\w/g, (char) => char.toUpperCase());
@@ -963,7 +963,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
         : article.source === "Public Library of Science (PLOS)"
         ? "plos_id"
         : "pmid"; // Pass the type explicitly
-    navigate(`/article/${type}:${idType}`, {
+    navigate(`/article/content/${type}:${idType}`, {
       state: { data: data, searchTerm, annotateData: annotateData },
     });
   };

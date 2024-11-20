@@ -4,7 +4,9 @@ import uploadLogo from "../assets/images/uploadDocx.svg";
 import { IoCloseOutline } from "react-icons/io5";
 import { useSelector } from "react-redux";
 import Loading from "./Loading";
-
+import ReactMarkdown from "react-markdown";
+import Copy from "../assets/images/Copy.svg";
+import Download from "../assets/images/Download.svg";
 const Citations = ({ handleCloseCitations }) => {
   const [uploadedFile, setUploadedFile] = useState(null);
   const [citationData, setCitationData] = useState([]);
@@ -38,24 +40,21 @@ const Citations = ({ handleCloseCitations }) => {
       const response = await fetch("http://13.127.207.184:80/core_search/citations", {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${token}`, // Replace YOUR_TOKEN_HERE with actual token
         },
         body: formData,
       });
 
       if (response.ok) {
         const result = await response.json();
-        console.log(result);
-        setCitationData(result);
-        setCitationLoading(false);
-        console.log("Citation result:", result);
+        setCitationData(result.citations); // Assuming the API returns { "citations": {...} }
       } else {
-        setCitationLoading(false);
         console.error("Failed to generate citations:", response.statusText);
       }
     } catch (error) {
-      setCitationLoading(false);
       console.error("Error generating citations:", error);
+    } finally {
+      setCitationLoading(false);
     }
   };
 
@@ -104,9 +103,44 @@ const Citations = ({ handleCloseCitations }) => {
           </div>
         </div>
         <div className="citation-annotations">
-          {citationData ? <span>{citationData.citations}</span> : ""}
+      {Object.entries(citationData).map(([type, value]) => (
+        <div key={type} className="citation-section">
+          <div className="citations-head-buttons">
+          <h3>{type}:</h3>
+          <div className="action-icons">
+            <img
+            src={Copy}
+            alt="Copy-icon"
+            style={{width:"20px"}}
+              className="copy-button"
+              onClick={() => navigator.clipboard.writeText(value)}
+            >
+              
+            </img>
+            <img
+            src={Download}
+            alt="DownloadIcon"
+              className="download-button"
+              style={{width:"20px"}}
+              onClick={() => {
+                const blob = new Blob([value], { type: "text/plain" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `${type}-citation.txt`;
+                a.click();
+                URL.revokeObjectURL(url);
+              }}
+            >
+              
+            </img>
+          </div>
+          </div>
+<ReactMarkdown>{value}</ReactMarkdown>          
         </div>
-      </div>
+      ))}
+    </div>        </div>
+     
       <button className="close-collection" onClick={handleCloseCitations}>
         <IoCloseOutline size={30} color="black" />
       </button>
