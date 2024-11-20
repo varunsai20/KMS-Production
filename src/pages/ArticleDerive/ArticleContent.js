@@ -42,7 +42,7 @@ import Header from "../../components/Header-New";
 
 import uploadDocx from "../../assets/images/uploadDocx.svg";
 
-const ArticleContent = ({ setRefreshSessions }) => {
+const ArticleContent = ({ setRefreshSessions,openAnnotate,openNotes,setOpenNotes,setOpenAnnotate,setSavedText,annotateLoading,setAnnotateLoading }) => {
     const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
     const deriveInsights = useSelector((state) => state.deriveInsights?.active); // assuming deriveInsights is in Redux state
   
@@ -58,7 +58,7 @@ const ArticleContent = ({ setRefreshSessions }) => {
     const [type, id1] = pmid ? pmid.split(":") : "";
     const id = Number(id1);
     const [source, setSource] = useState();
-    const [annotateLoading, setAnnotateLoading] = useState(false);
+    // const [annotateLoading, setAnnotateLoading] = useState(false);
     const location = useLocation();
     const { data } = location.state || { data: [] };
     const [searchTerm, setSearchTerm] = useState("");
@@ -100,8 +100,8 @@ const ArticleContent = ({ setRefreshSessions }) => {
     }, [annotateLoading]);
     const [showStreamingSection, setShowStreamingSection] = useState(false);
     // const [chatInput, setChatInput] = useState(true);
-    const [openAnnotate, setOpenAnnotate] = useState(false);
-    const [openNotes, setOpenNotes] = useState(false);
+    // const [openAnnotate, setOpenAnnotate] = useState(false);
+    // const [openNotes, setOpenNotes] = useState(false);
     const [activeSection, setActiveSection] = useState("Title");
     const [activeSessionId, setActiveSessionId] = useState(
       sessionStorage.getItem("session_id") || null
@@ -162,7 +162,7 @@ const ArticleContent = ({ setRefreshSessions }) => {
     const [editingSessionId, setEditingSessionId] = useState(null);
   
     const [bookmarkedPmids, setBookmarkedPmids] = useState({});
-    const [savedText, setSavedText] = useState("");
+    // const [savedText, setSavedText] = useState("");
     const selectedTextRef = useRef("");
     const popupRef = useRef(null);
     const popupPositionRef = useRef({ x: 0, y: 0 });
@@ -181,6 +181,7 @@ const ArticleContent = ({ setRefreshSessions }) => {
     }, [openNotes]);
   
     useEffect(() => {
+      console.log("clicled")
       if (openAnnotate && !openNotes) {
         setAnnotateHeight(70);
         setNotesHeight(0);

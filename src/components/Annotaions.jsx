@@ -53,7 +53,7 @@ const Annotation = ({
           ? "plos_id"
           : "pmid"; // Determine type based on source
 
-      navigate(`/article/${type}:${articleId}`, {
+      navigate(`/article/content/${type}:${articleId}`, {
         state: { data, searchTerm, annotateData },
       });
     } else {
