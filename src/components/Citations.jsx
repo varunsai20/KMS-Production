@@ -110,18 +110,20 @@ const Citations = ({ handleCloseCitations }) => {
           <div className="action-icons">
             <img
             src={Copy}
+            title="Copy"
             alt="Copy-icon"
-            style={{width:"20px"}}
+            style={{width:"20px",cursor:"pointer"}}
               className="copy-button"
               onClick={() => navigator.clipboard.writeText(value)}
             >
-              
+
             </img>
             <img
             src={Download}
             alt="DownloadIcon"
+            title="Download Citation"
               className="download-button"
-              style={{width:"20px"}}
+              style={{width:"20px",cursor:"pointer"}}
               onClick={() => {
                 const blob = new Blob([value], { type: "text/plain" });
                 const url = URL.createObjectURL(blob);
@@ -132,7 +134,7 @@ const Citations = ({ handleCloseCitations }) => {
                 URL.revokeObjectURL(url);
               }}
             >
-              
+
             </img>
           </div>
           </div>
@@ -140,8 +142,8 @@ const Citations = ({ handleCloseCitations }) => {
         </div>
       ))}
     </div>        </div>
-     
-      <button className="close-collection" onClick={handleCloseCitations}>
+
+      <button className="close-collection" title="Close" onClick={handleCloseCitations}>
         <IoCloseOutline size={30} color="black" />
       </button>
     </>

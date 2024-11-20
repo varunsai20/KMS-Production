@@ -14,6 +14,8 @@ import notesicon from "../../assets/images/note-2.svg";
 import annotate from "../../assets/images/task-square.svg";
 import ArticleContent from './ArticleContent';
 import ArticleDerive from './ArticleDerive';
+import Loading from "../../components/Loading";
+
 const ArticleLayout = () => {
     const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
     const { user } = useSelector((state) => state.auth);
@@ -54,6 +56,10 @@ const ArticleLayout = () => {
     const [annotateData, setAnnotateData] = useState(
         location.state?.annotateData || ""
       );
+      useEffect(()=>{
+        localStorage.removeItem("session_id")
+        setActiveSessionId(null)
+      },[])
       useEffect(() => {
         const storedSessionId = localStorage.getItem("session_id");
         if (storedSessionId) {
@@ -90,6 +96,7 @@ const ArticleLayout = () => {
       }, [user_id, token, refreshSessions]);
       const handleOpenChat = () => {
         localStorage.removeItem("session_id");
+        setActiveSessionId(null)
         localStorage.setItem("chatHistory", JSON.stringify([]));
         dispatch(setDeriveInsights(true)); // Set deriveInsights state in Redux
         navigate("/article/derive", {
@@ -153,7 +160,7 @@ const ArticleLayout = () => {
           : source === "plos"
           ? "plos_id"
           : "pmid";
-  
+      
       // Define the navigation path based on session type
       const navigatePath =
         session_type === "file_type"
@@ -190,53 +197,52 @@ const ArticleLayout = () => {
     }
   };
   const fetchSessionData = async (session_id) => {
-    try {
-      const conversationResponse = await axios.get(
-        `http://13.127.207.184:80/history/conversations/history/${user_id}/${session_id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+  try {
+    const conversationResponse = await axios.get(
+      `http://13.127.207.184:80/history/conversations/history/${user_id}/${session_id}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    localStorage.setItem("session_id", session_id);
+    sessionStorage.setItem("session_id", session_id);
+
+    const formattedChatHistory = [];
+    let currentEntry = {};
+
+    conversationResponse.data.conversation.forEach((entry) => {
+      if (entry.role === "user") {
+        if (entry.file_url) {
+          currentEntry.file_url = entry.file_url;
         }
-      );
 
-      localStorage.setItem("session_id", session_id);
-      sessionStorage.setItem("session_id", session_id);
-
-      const formattedChatHistory = [];
-      let currentEntry = {};
-
-      // Process the conversation data into a usable format for the chat history
-      conversationResponse.data.conversation.forEach((entry) => {
-        if (entry.role === "user") {
-          if (entry.file_url) {
-            currentEntry.file_url = entry.file_url;
-          }
-
-          if (currentEntry.query) {
-            formattedChatHistory.push(currentEntry);
-            currentEntry = {};
-          }
-          currentEntry.query = entry.parts ? entry.parts.join(" ") : "";
-        } else if (entry.role === "model") {
-          currentEntry.response = entry.parts ? entry.parts.join(" ") : "";
+        if (currentEntry.query) {
           formattedChatHistory.push(currentEntry);
           currentEntry = {};
         }
-      });
-
-      // Push any remaining entries
-      if (currentEntry.query) {
+        currentEntry.query = entry.parts ? entry.parts.join(" ") : "";
+      } else if (entry.role === "model") {
+        currentEntry.response = entry.parts ? entry.parts.join(" ") : "";
         formattedChatHistory.push(currentEntry);
+        currentEntry = {};
       }
+    });
 
-      localStorage.setItem("chatHistory", JSON.stringify(formattedChatHistory));
-      return conversationResponse.data;
-    } catch (error) {
-      console.error("Error fetching session data:", error);
-      throw error;
+    if (currentEntry.query) {
+      formattedChatHistory.push(currentEntry);
     }
-  };
+
+    localStorage.setItem("chatHistory", JSON.stringify(formattedChatHistory));
+    return conversationResponse.data;
+  } catch (error) {
+    console.error("Error fetching session data:", error);
+    throw error;
+  }
+};
+
   useEffect(() => {
     console.log(prevPathRef)
     console.log(location.pathname   )
@@ -326,24 +332,30 @@ const ArticleLayout = () => {
     }
   };
   const handleAnnotate = () => {
-    // Replace `desiredId` with the actual ID you want to match against
     const matchingIdExists =
       annotateData && Object.prototype.hasOwnProperty.call(annotateData, id);
-    if ((!annotateData || !matchingIdExists) && !hasFetchedAnnotateData) {
+  
+    if (annotateData && annotateData.length > 0) {
+      setOpenAnnotate(true); // Set openAnnotate to true if annotateData has items
+    } else if ((!annotateData || !matchingIdExists) && !hasFetchedAnnotateData) {
       handleAnnotateClick();
     } else {
-      setOpenAnnotate((prevOpenAnnotate) => !prevOpenAnnotate); // Open immediately if matching ID is present
+      setOpenAnnotate((prevOpenAnnotate) => !prevOpenAnnotate); // Toggle if matching ID is present
     }
   };
-
+  
+  
+  console.log("source",type)
+  
+  console.log("id",id)
   const handleAnnotateClick = async () => {
     // Define the request body according to source and id
     let requestBody = {};
-    if (source === "pubmed" && id) {
+    if (type === "pmid" && id) {
       requestBody = { pubmed: [id] };
-    } else if (source === "biorxiv" && id) {
+    } else if (type === "bioRxiv_id" && id) {
       requestBody = { biorxiv: [id] };
-    } else if (source === "plos" && id) {
+    } else if (type === "plos_id" && id) {
       requestBody = { plos: [id] };
     }
 
@@ -528,7 +540,8 @@ const ArticleLayout = () => {
             </ul>
         </div>
         {/* <ArticleContent/> */}
-        {deriveInsights?<ArticleDerive setRefreshSessions={setRefreshSessions}/>:<ArticleContent setRefreshSessions={setRefreshSessions}/>}
+        {annotateLoading ? <Loading /> : ""}
+        {deriveInsights?<ArticleDerive setRefreshSessions={setRefreshSessions} openAnnotate={openAnnotate} setOpenAnnotate={setOpenAnnotate} setOpenNotes={setOpenNotes} openNotes={openNotes} setSavedText={setSavedText} annotateLoading={annotateLoading} setAnnotateLoading={setAnnotateLoading}/>:<ArticleContent setSavedText={setSavedText} setRefreshSessions={setRefreshSessions} openAnnotate={openAnnotate} setOpenAnnotate={setOpenAnnotate} setOpenNotes={setOpenNotes} openNotes={openNotes} annotateLoading={annotateLoading} setAnnotateLoading={setAnnotateLoading}/>}
         <div className="right-aside" style={{ display: displayIfLoggedIn }}>
             <div className="annotate-note">
               {openAnnotate && (

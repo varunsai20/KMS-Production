@@ -437,11 +437,12 @@ button {
   border: none;
 }
 .SearchResult-dropdown {
-  padding: 10px;
+  padding: 10px 0;
   gap: 12px;
   border-radius: 50px;
-  border: 1px solid black;
+  /* border: 1px solid black; */
   opacity: 0.7px;
+  outline: none;
 }
 
 .SearchResult-Options {
@@ -1206,24 +1207,8 @@ button input {
     flex-wrap: wrap;
   }
 }
-/* iPad (9th Gen, 10th Gen) */
-@media screen and (min-width: 768px) and (max-width: 834px) {
-  /* Styles for iPad */
-}
-
-/* iPad Mini */
-@media screen and (min-width: 768px) and (max-width: 834px) {
-  /* Styles for iPad Mini */
-}
-
-/* iPad Air */
-@media screen and (min-width: 820px) and (max-width: 1180px) {
-  /* Styles for iPad Air */
-}
-
 /* Surface Devices */
 @media screen and (min-width: 912px) and (max-width: 1080px) {
-  /* Styles for Surface Devices */
   .searchresult-item {
     height: 13vh;
   }
@@ -1243,5 +1228,28 @@ button input {
     width: 100%;
     gap: 20px;
     align-items: center;
+  }
+}
+@media (min-width: 900px) and (max-width: 1366px) {
+  /* .SearchResult-Option-Left {
+    gap: 8px;
+    height: 3vh;
+
+    border-radius: 25px;
+  } */
+  .searchresult-item {
+    height: 20vh;
+  }
+  .searchResult-rate {
+    width: 20vh;
+  }
+  #Search-Content-Container {
+    width: 95%;
+  }
+  .search-annotate {
+    width: 400px;
+  }
+  .searchContent-left {
+    width: 13%;
   }
 }
