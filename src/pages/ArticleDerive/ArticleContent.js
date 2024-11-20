@@ -1187,13 +1187,18 @@ const ArticleContent = ({ setRefreshSessions }) => {
       const sortedKeys = Object.keys(content).sort(
         (a, b) => parseInt(a) - parseInt(b)
       );
-  
+    
       return sortedKeys.map((sectionKey) => {
         const sectionData = content[sectionKey];
-  
+    
         // Remove numbers from the section key
         const cleanedSectionKey = sectionKey.replace(/^\d+[:.]?\s*/, "");
-  
+    
+        // Skip Images Section
+        if (cleanedSectionKey.toLowerCase() === "images") {
+          return null;
+        }
+    
         // Handle paragraphs
         if (cleanedSectionKey.toLowerCase() === "paragraph") {
           const textContent =
@@ -1201,18 +1206,17 @@ const ArticleContent = ({ setRefreshSessions }) => {
               ? sectionData
               : JSON.stringify(sectionData);
           const boldtextContent = boldTerm(textContent);
-  
+    
           return (
             <div
               key={sectionKey}
               style={{ marginBottom: "10px" }}
-              //onMouseUp={handleMouseUp}
             >
               <MyMarkdownComponent markdownContent={boldtextContent} />
             </div>
           );
         }
-  
+    
         // Handle keywords
         if (cleanedSectionKey.toLowerCase() === "keywords") {
           let keywords = Array.isArray(sectionData)
@@ -1220,7 +1224,7 @@ const ArticleContent = ({ setRefreshSessions }) => {
             : sectionData;
           keywords = capitalizeFirstLetter(keywords);
           const boldKeywords = boldTerm(keywords);
-  
+    
           return (
             <div key={sectionKey} style={{ marginBottom: "10px" }}>
               <Typography variant="h6" style={{ fontSize: "18px" }}>
@@ -1230,30 +1234,7 @@ const ArticleContent = ({ setRefreshSessions }) => {
             </div>
           );
         }
-  
-        // Handle Images Section
-        // if (cleanedSectionKey.toLowerCase() === "images") {
-        //   const imageEntries = Object.values(sectionData); // Extract image objects
-  
-        //   return imageEntries.map((image, index) => (
-        //     <div
-        //       key={index}
-        //       style={{ marginBottom: "20px", textAlign: "center" }}
-        //     >
-        //       <img
-        //         src={image.image_url}
-        //         alt={image.label || "Image"}
-        //         style={{ maxWidth: "100%", height: "auto", borderRadius: "8px" }}
-        //       />
-        //       {image.caption && (
-        //         <Typography variant="body2" style={{ marginTop: "8px" }}>
-        //           <strong>{image.label}</strong>: {image.caption}
-        //         </Typography>
-        //       )}
-        //     </div>
-        //   ));
-        // }
-  
+    
         // Handle nested objects or other content
         if (typeof sectionData === "object") {
           return (
@@ -1270,7 +1251,7 @@ const ArticleContent = ({ setRefreshSessions }) => {
               ? sectionData
               : JSON.stringify(sectionData);
           const boldtextContent = boldTerm(textContent);
-  
+    
           return (
             <div key={sectionKey} style={{ marginBottom: "10px" }}>
               <Typography variant="h6" style={{ fontSize: "18px" }}>
@@ -1282,6 +1263,7 @@ const ArticleContent = ({ setRefreshSessions }) => {
         }
       });
     };
+    
   
     useEffect(() => {
       const fetchSessions = async () => {
