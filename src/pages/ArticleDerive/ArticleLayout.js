@@ -68,6 +68,7 @@ const ArticleLayout = () => {
       setActiveSessionId(storedSessionId);
     }
   }, [sessions]);
+  
 
   useEffect(() => {
     const fetchSessions = async () => {
@@ -177,7 +178,8 @@ const ArticleLayout = () => {
         session_type === "file_type"
           ? "/article/derive"
           : `/article/content/${sourceType}:${article_id}`;
-
+          setOpenAnnotate(false)
+          setAnnotateData("")
       // Dispatch state and navigate accordingly
       if (session_type === "file_type") {
         dispatch(setDeriveInsights(true));
@@ -203,6 +205,7 @@ const ArticleLayout = () => {
           },
         });
       }
+      
     } catch (error) {
       console.error("Error fetching article or conversation data:", error);
     }
