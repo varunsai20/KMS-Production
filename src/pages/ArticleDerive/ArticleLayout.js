@@ -85,9 +85,14 @@ const ArticleLayout = () => {
           const sessionsData = response.data.sessions.reverse(); // Reverse the array order
           // console.log(sessionsData)
           setSessions(sessionsData); // Set the reversed sessions array to state
+        }} catch (error) {
+          console.error("Error fetching chat history:", error);
         }
-
-      }, [user_id, token, refreshSessions]);
+      };
+      if (user_id && token) {
+        fetchSessions();
+      }
+    }, [user_id, token, refreshSessions]);
       const handleOpenChat = () => {
         localStorage.removeItem("session_id");
         setActiveSessionId(null)
