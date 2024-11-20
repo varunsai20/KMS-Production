@@ -121,8 +121,6 @@ const ArticlePage = () => {
   const [showConfirmIcon, setShowConfirmIcon] = useState(false);
   const [isPromptEnabled, setIsPromptEnabled] = useState(false);
 
-
-
   const fetchCollections = async () => {
     try {
       const response = await axios.get(
@@ -898,7 +896,8 @@ const ArticlePage = () => {
       handleAskClick();
     }
   };
-  const storedSessionId = sessionStorage.getItem("sessionId") || sessionStorage.getItem("session_id");
+  const storedSessionId =
+    sessionStorage.getItem("sessionId") || sessionStorage.getItem("session_id");
   const handleDeriveClick = async () => {
     if (!query && !uploadedFile) {
       toast.error("Please enter a query or upload a file", {
@@ -945,7 +944,7 @@ const ArticlePage = () => {
       if (storedSessionId) {
         url = "http://13.127.207.184:80/insights/ask";
       }
-      console.log(storedSessionId)
+      console.log(storedSessionId);
       // Use fetch instead of axios to handle streaming response
       const response = await fetch(url, {
         method: "POST",
@@ -1028,8 +1027,7 @@ const ArticlePage = () => {
       setLoading(false);
     }
   };
-  
-  
+
   const handlePromptWithFile = (prompt) => {
     if (!uploadedFile && !storedSessionId) return; // Ensure either a file is selected or a session exists
 
@@ -1056,13 +1054,11 @@ const ArticlePage = () => {
       setShowConfirmPopup(true);
       //navigate(-1);
     } else {
-
       navigate(-1);
     }
     //localStorage.removeItem("unsavedChanges");
     //navigate(-1);
   };
-
 
   const handleCancelConfirm = () => {
     setShowConfirmPopup(false);
@@ -1362,7 +1358,7 @@ const ArticlePage = () => {
       setShowStreamingSection(false); // Default to false if no stored chat history
     }
   }, [location.state]); // Add location.state as a dependency to re-run on navigation
-  console.log(source)
+  console.log(source);
   const handleSessionClick = async (session_id) => {
     try {
       const conversationResponse = await axios.get(
@@ -1374,8 +1370,8 @@ const ArticlePage = () => {
         }
       );
 
-      sessionStorage.setItem("session_id",session_id)
-      setIsPromptEnabled(true)
+      sessionStorage.setItem("session_id", session_id);
+      setIsPromptEnabled(true);
 
       setActiveSessionId(session_id);
       const formattedChatHistory = [];
@@ -1404,9 +1400,7 @@ const ArticlePage = () => {
         formattedChatHistory.push(currentEntry);
       }
 
-  
       localStorage.setItem("chatHistory", JSON.stringify(formattedChatHistory));
-  
 
       const sourceType =
         conversationResponse.data.source === "biorxiv"
@@ -1418,7 +1412,6 @@ const ArticlePage = () => {
       const navigatePath = conversationResponse.data.session_type
         ? "/article"
         : `/article/${sourceType}:${conversationResponse.data.article_id}`;
-         
 
       if (conversationResponse.data.session_type) {
         // Navigate immediately if deriveInsights mode
@@ -1426,7 +1419,7 @@ const ArticlePage = () => {
         console.log(navigatePath);
         navigate(navigatePath, {
           state: {
-            id: conversationResponse.data.article_id||id,
+            id: conversationResponse.data.article_id || id,
             source: source,
             token: token,
             user: { access_token: token, user_id: user_id },
@@ -1434,17 +1427,15 @@ const ArticlePage = () => {
             data: location.state?.data,
           },
         });
-
-      } 
-      else {
-        console.log("nav")
+      } else {
+        console.log("nav");
         dispatch(setDeriveInsights(false));
-        
-        console.log(navigatePath)
+
+        console.log(navigatePath);
 
         navigate(navigatePath, {
           state: {
-            id: conversationResponse.data.article_id||id,
+            id: conversationResponse.data.article_id || id,
             source: source,
             token: token,
             user: { access_token: token, user_id: user_id },
@@ -1522,7 +1513,8 @@ const ArticlePage = () => {
   const [uploadedFile, setUploadedFile] = useState(null);
   useEffect(() => {
     const storedSessionId =
-      sessionStorage.getItem("sessionId") || sessionStorage.getItem("session_id");
+      sessionStorage.getItem("sessionId") ||
+      sessionStorage.getItem("session_id");
     console.log("exec");
     if (storedSessionId || uploadedFile) {
       setIsPromptEnabled(true); // Enable prompts if session_id exists or a file is uploaded
@@ -1607,7 +1599,7 @@ const ArticlePage = () => {
       handleFileUpload({ target: { files: [file] } });
     }
   };
-  console.log(location.state)
+  console.log(location.state);
   return (
     <>
       <div className="container">
@@ -1920,7 +1912,10 @@ const ArticlePage = () => {
                 </div>
               </div>
 
-              <div className="meta" style={{height:!isLoggedIn?"68vh":undefined}}>
+              <div
+                className="meta"
+                style={{ height: !isLoggedIn ? "68vh" : undefined }}
+              >
                 <div
                   style={{
                     display: "flex",
@@ -2019,10 +2014,10 @@ const ArticlePage = () => {
                 <div
                   ref={popupRef}
                   className="popup-button"
-                  // className="Popup"
+
                   style={{
                     position: "absolute",
-                    display: "none", // Initially hidden
+                    display: "none", 
                     backgroundColor: "#afa7a7",
                     // padding: "5px",
                     color: "white",
@@ -2245,9 +2240,7 @@ const ArticlePage = () => {
                   <div className="Article-popup-content">
                     <p className="Saving-note">Saving Note</p>
 
-                    <p id="confirming">
-                      Are you sure to leave without saving?
-                    </p>
+                    <p id="confirming">Are you sure to leave without saving?</p>
 
                     <div className="Article-confirm-buttons">
                       <button onClick={handleCancelIcon}>Cancel</button>
