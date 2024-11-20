@@ -29,7 +29,7 @@ const ArticlePage = () => {
   const annotateData=location.state.annotateData || { annotateData:[]}
   const endOfMessagesRef = useRef(null); // Ref to scroll to the last message
   const [chatHistory, setChatHistory] = useState(() => {
-    const storedHistory = sessionStorage.getItem("chatHistory");
+    const storedHistory = localStorage.getItem("chatHistory");
     return storedHistory ? JSON.parse(storedHistory) : [];
   });
   const [showStreamingSection, setShowStreamingSection] = useState(false);
@@ -197,7 +197,7 @@ const ArticlePage = () => {
         }
   
         setLoading(false);
-        sessionStorage.setItem("chatHistory", JSON.stringify(chatHistory));
+        localStorage.setItem("chatHistory", JSON.stringify(chatHistory));
       };
   
       readStream();

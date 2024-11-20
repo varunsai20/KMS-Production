@@ -1171,14 +1171,77 @@ button input {
   border: none;
   outline: none;
 }
-@media (min-width: 768px) and (max-width: 1366px) {
+@media (min-width: 768px) and (max-width: 1042px) {
+  .searchContent-left {
+    width: 16%;
+    font-size: 14px;
+  }
+  .searchResults-Bar .input-container {
+    width: 80%;
+    align-items: normal;
+  }
+  #Search-Content-Container {
+    display: flex;
+    top: 45%;
+    width: 98%;
+    border-radius: 20px;
+    background-size: cover;
+    background-position: center;
+    color: white;
+    padding: 0px;
+  }
+  .search-annotate {
+    width: 35vw;
+    gap: 0px;
+    margin: 0 2% 0 0;
+    opacity: 0px;
+    border: 1px solid rgba(235, 235, 243, 1);
+    background: #fbfbfd;
+  }
+  .SearchResult-Count-Filters {
+    padding: 20px 0 10px 0;
+    display: flex;
+    gap: 10px;
+    background-color: #ffffff;
+    flex-wrap: wrap;
+  }
+}
+/* iPad (9th Gen, 10th Gen) */
+@media screen and (min-width: 768px) and (max-width: 834px) {
+  /* Styles for iPad */
+}
+
+/* iPad Mini */
+@media screen and (min-width: 768px) and (max-width: 834px) {
+  /* Styles for iPad Mini */
+}
+
+/* iPad Air */
+@media screen and (min-width: 820px) and (max-width: 1180px) {
+  /* Styles for iPad Air */
+}
+
+/* Surface Devices */
+@media screen and (min-width: 912px) and (max-width: 1080px) {
+  /* Styles for Surface Devices */
+  .searchresult-item {
+    height: 13vh;
+  }
   .SearchResult-Option-Left {
     height: 3vh;
+    border-radius: 25px;
   }
-  .searchContent-left {
-    width: 24%;
+  .searchResult-rate {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    /* align-items: flex-end; */
+    padding: 0px;
   }
-  .searchresult-item {
-    height: 10vh;
+  .Article-Options {
+    min-height: 10%;
+    width: 100%;
+    gap: 20px;
+    align-items: center;
   }
 }

@@ -81,7 +81,7 @@ const NotesList = ({
       <div
         className={isOpenNotes ? "lander-notes__container" : "notes__container"}
         style={
-          isOpenNotes ? { height: `${height - 85}px`, overflowY: "auto" } : {}
+          isOpenNotes ? { height: `${height - 110}px`, overflowY: "auto" } : {}
         }
       >
         {filteredNotes.length === 0 && (

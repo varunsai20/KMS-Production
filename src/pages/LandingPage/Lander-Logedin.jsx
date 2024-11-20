@@ -41,7 +41,7 @@ const Lander = () => {
   const [isAnnotateOpen, setIsAnnotateOpen] = useState(false);
 
   const [openInsights, setOpenInsights] = useState(false);
-  const [dimensions, setDimensions] = useState({ width: 400, height: 400 });
+  const [dimensions, setDimensions] = useState({ width: 400, height: 380 });
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const { user } = useSelector((state) => state.auth);
   const token = useSelector((state) => state.auth.access_token);
@@ -74,11 +74,11 @@ const Lander = () => {
   const handleCloseAnnotate = () => {
     setIsAnnotateOpen(false);
   };
-  
+
   const handleOpenInsights = () => {
-    sessionStorage.setItem("clickedDerive",true)
+    sessionStorage.setItem("clickedDerive", true);
     dispatch(setDeriveInsights(true)); // Set deriveInsights in Redux state
-    navigate("/article", {
+    navigate("/article/derive", {
       state: {
         deriveInsights: true,
       },
@@ -110,7 +110,7 @@ const Lander = () => {
       fetchSessions();
       dispatch(setDeriveInsights(false));
 
-      sessionStorage.setItem("chatHistory", []);
+      localStorage.setItem("chatHistory", []);
     }
   }, [user_id, token]);
 
@@ -123,9 +123,9 @@ const Lander = () => {
       });
       return;
     }
-  
+
     const { session_id, session_type } = sessions[0]; // Destructure session_id and session_type only
-  
+
     try {
       const conversationResponse = await axios.get(
         `http://13.127.207.184:80/history/conversations/history/${user_id}/${session_id}`,
@@ -135,10 +135,10 @@ const Lander = () => {
           },
         }
       );
-  
+
       const formattedChatHistory = [];
       let currentEntry = {};
-  
+
       conversationResponse.data.conversation.forEach((entry) => {
         if (entry.role === "user") {
           if (entry.file_url) {
@@ -155,35 +155,37 @@ const Lander = () => {
           currentEntry = {};
         }
       });
-  
+
       if (currentEntry.query) {
         formattedChatHistory.push(currentEntry);
       }
-  
+
       sessionStorage.setItem(
         "chatHistory",
         JSON.stringify(formattedChatHistory)
       );
-  
+
       const sourceType =
         conversationResponse.data.source === "biorxiv"
           ? "bioRxiv_id"
           : conversationResponse.data.source === "plos"
           ? "plos_id"
           : "pmid";
-  
+
       const article_id = conversationResponse.data.article_id;
-  
+
       const navigatePath = session_type
-        ? "/article"
-        : `/article/${sourceType}:${article_id}`;
+
+        ? "/article/derive"
+        : `/article/content/${sourceType}:${article_id}`;
   
+
       if (session_type) {
         dispatch(setDeriveInsights(true));
       } else {
         dispatch(setDeriveInsights(false));
       }
-  
+
       navigate(navigatePath, {
         state: {
           id: article_id,
@@ -196,15 +198,27 @@ const Lander = () => {
       console.error("Error fetching article or conversation data:", error);
     }
   };
-  
+
+  // useEffect(() => {
+  //   if (isLanderNotesOpen) {
+  //     const centerX =
+  //       (window.innerWidth - dimensions.width) / 2 + window.innerWidth * 0.365;
+  //     const centerY = (window.innerHeight - dimensions.height) / 1.2;
+  //     setPosition({ x: centerX, y: centerY });
+  //   }
+  // }, [isLanderNotesOpen]);
   useEffect(() => {
     if (isLanderNotesOpen) {
-      const centerX =
-        (window.innerWidth - dimensions.width) / 2 + window.innerWidth * 0.365;
-      const centerY = (window.innerHeight - dimensions.height) / 1.2;
-      setPosition({ x: centerX, y: centerY });
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+
+      const bottomRightX = viewportWidth - dimensions.width - 20;
+      const bottomRightY = viewportHeight - dimensions.height - 20;
+
+      setPosition({ x: bottomRightX, y: bottomRightY });
     }
-  }, [isLanderNotesOpen]);
+  }, [isLanderNotesOpen, dimensions.width, dimensions.height]);
+
   return (
     <div
       className="Landing-Container"
@@ -216,7 +230,6 @@ const Lander = () => {
 
       <div className="Landing-Content">
         <div className="Landing-Content-Left">
-          {/* <div className="Landing-Content-Left-Content"> */}
           <img className="Right2" src={ReactLogo} alt="Right Graphic 2" />
           <img className="Left1" src={Bulb} alt="Left Graphic 1" />
           <img className="Left2" src={circle} alt="Left Graphic 2" />
@@ -226,8 +239,11 @@ const Lander = () => {
               Welcome to <span className="Landing-Infer">Inferai!</span>
             </h3>
             <p className="Landing-Welcome-desc">
-              Lorem Ipsum is simply dummy text of the printing and typesetting
-              industry. Lorem Ipsum has been the industry's standard dummy.
+              Inferai by Infer Solutions, Inc, a cutting-edge product leveraging
+              generative AI to revolutionize research in pharmaceuticals,
+              biotechnology, and healthcare. This innovative platform
+              streamlines research processes, enhances data analysis, and
+              uncovers new insights.
             </p>
             <SearchBar className={`Landing-Searchbar`} />
           </div>
@@ -240,7 +256,6 @@ const Lander = () => {
             src={LandingImage}
             alt="Landing Graphic"
             style={{
-              width: "85%",
               height: "-webkit-fill-available",
               maxWidth: "234px",
               // maxHeight: "254px",
@@ -378,8 +393,10 @@ const Lander = () => {
           }}
           minWidth={400}
           minHeight={350}
-          maxWidth={800}
-          maxHeight={600}
+          // maxWidth={800}
+          // maxHeight={600}
+          maxWidth={Math.min(800, window.innerWidth)}
+          maxHeight={Math.min(600, window.innerHeight)}
           bounds="window"
           enableResizing={{
             top: true,
@@ -391,7 +408,7 @@ const Lander = () => {
             bottomLeft: true,
             topLeft: true,
           }}
-          dragHandleClassName="draggable-header" // Make only the header draggable
+          dragHandleClassName="draggable-header"
         >
           <div
             className="notes-modal"

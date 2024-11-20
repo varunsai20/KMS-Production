@@ -7,15 +7,16 @@ import { login } from "../../../redux/reducers/LoginAuth"; // Import login actio
 import { toast } from "react-toastify";
 import Logo from "../../../assets/images/InfersolD17aR04aP01ZL-Polk4a 1.svg";
 //import { SiFacebook } from "react-icons/si";
-//import ErrorBoundry from "../../../utils/ErrorBoundry";
+import ErrorBoundry from "../../../utils/ErrorBoundry";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [emailError, setEmailError] = useState("");
-  const [loginError, setloginError] = useState("");
+  //const [loginError, setloginError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [isButtonDisabled, setIsButtonDisabled] = useState(true);
+  const [errorCode, setErrorCode] = useState(null);
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [showPassword, setShowPassword] = useState(false);
@@ -119,23 +120,38 @@ const Login = () => {
           }
         }
       } catch (error) {
-        toast.error("Login failed. Please check your credentials.", {
-          position: "top-center",
-          autoClose: 2000,
-          style: {
-            backgroundColor: "rgba(254, 235, 235, 1)",
-            borderLeft: "5px solid rgba(145, 4, 4, 1)",
-            color: "background: rgba(145, 4, 4, 1)",
-          },
-          progressStyle: {
-            backgroundColor: "rgba(145, 4, 4, 1)",
-          },
-        });
-        console.error("Login or profile fetch failed:", error);
-        setloginError("Login failed. Please check your credentials.");
+        if (error.response) {
+          const statusCode = error.response.status;
+
+          if (statusCode === 401) {
+            toast.error("Login failed. Please check your credentials.", {
+              position: "top-center",
+              autoClose: 2000,
+              style: {
+                backgroundColor: "rgba(254, 235, 235, 1)",
+                borderLeft: "5px solid rgba(145, 4, 4, 1)",
+                color: "rgba(145, 4, 4, 1)",
+              },
+              progressStyle: {
+                backgroundColor: "rgba(145, 4, 4, 1)",
+              },
+            });
+            //setloginError("Login failed. Please check your credentials.");
+          } else {
+            setErrorCode(statusCode);
+          }
+        } else {
+          console.error("Unknown error occurred:", error);
+          setErrorCode(500); // Default to internal server error if no response
+        }
       }
     }
   };
+  if (errorCode) {
+    return (
+      <ErrorBoundry errorCode={errorCode} onRetry={() => setErrorCode(null)} />
+    );
+  }
 
   return (
     <>
@@ -243,11 +259,11 @@ const Login = () => {
               Continue with Facebook
             </button>
           </div>
-          {loginError && (
+          {/* {loginError && (
             <p className="error-message" style={{ color: "red" }}>
               {loginError}
             </p>
-          )}
+          )} */}
         </form>
       </div>
     </>

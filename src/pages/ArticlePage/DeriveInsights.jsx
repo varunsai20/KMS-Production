@@ -29,7 +29,7 @@ const DeriveInsights = () => {
   const location = useLocation();
   const [chatHistory, setChatHistory] = useState(() => {
     const storedHistory =
-      JSON.parse(sessionStorage.getItem("chatHistory")) || [];
+      JSON.parse(localStorage.getItem("chatHistory")) || [];
     return storedHistory;
   });
   const [uploadedFile, setUploadedFile] = useState(null);
@@ -41,12 +41,12 @@ const DeriveInsights = () => {
 
   const fetchAllInteractions = async () => {
     const previousInteractions =
-      JSON.parse(sessionStorage.getItem("chatHistory")) || [];
+      JSON.parse(localStorage.getItem("chatHistory")) || [];
     setChatHistory(previousInteractions);
   };
   useEffect(() => {
     // Retrieve chat history from sessionStorage
-    const storedChatHistory = sessionStorage.getItem("chatHistory");
+    const storedChatHistory = localStorage.getItem("chatHistory");
 
     if (storedChatHistory) {
       // Parse the chat history string back into an array
@@ -59,7 +59,7 @@ const DeriveInsights = () => {
   }, []);
   useEffect(() => {
     // Retrieve chat history from sessionStorage on component mount or on location state change
-    const storedChatHistory = sessionStorage.getItem("chatHistory");
+    const storedChatHistory = localStorage.getItem("chatHistory");
 
     if (storedChatHistory) {
       setChatHistory(JSON.parse(storedChatHistory));
@@ -181,7 +181,7 @@ const DeriveInsights = () => {
           }
         }
         setLoading(false);
-        sessionStorage.setItem("chatHistory", JSON.stringify(chatHistory));
+        localStorage.setItem("chatHistory", JSON.stringify(chatHistory));
       };
 
       readStream();
