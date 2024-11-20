@@ -124,6 +124,7 @@ const Lander = () => {
       });
       return;
     }
+    
     const { session_id } = sessions[0];
     localStorage.setItem("session_id", session_id);
     console.log(sessions[0])

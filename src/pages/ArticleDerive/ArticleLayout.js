@@ -15,7 +15,7 @@ import annotate from "../../assets/images/task-square.svg";
 import ArticleContent from "./ArticleContent";
 import ArticleDerive from "./ArticleDerive";
 import Loading from "../../components/Loading";
-
+import GenerateAnnotate from '../../components/DeriveAnnotations';
 const ArticleLayout = () => {
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
   const { user } = useSelector((state) => state.auth);
@@ -86,27 +86,32 @@ const ArticleLayout = () => {
           // console.log(sessionsData)
           setSessions(sessionsData); // Set the reversed sessions array to state
         }
-      } catch (error) {
-        console.error("Error fetching chat history:", error);
-      }
-    };
 
-    if (user_id && token) {
-      fetchSessions();
-    }
-  }, [user_id, token, refreshSessions]);
-  const handleOpenChat = () => {
-    localStorage.removeItem("session_id");
-    setActiveSessionId(null);
-    localStorage.setItem("chatHistory", JSON.stringify([]));
-    dispatch(setDeriveInsights(true)); // Set deriveInsights state in Redux
-    navigate("/article/derive", {
-      state: {
-        resetArticleData: true,
-        resetChatHistory: true,
-      },
-    });
-  };
+      }, [user_id, token, refreshSessions]);
+      const handleOpenChat = () => {
+        localStorage.removeItem("session_id");
+        setActiveSessionId(null)
+        localStorage.setItem("chatHistory", JSON.stringify([]));
+        dispatch(setDeriveInsights(true)); // Set deriveInsights state in Redux
+        navigate("/article/derive", {
+          state: {
+            resetArticleData: true,
+            resetChatHistory: true,
+          },
+        });
+      };
+      useEffect(() => {
+        if (openAnnotate && !openNotes) {
+          setAnnotateHeight(70);
+          setNotesHeight(0);
+        } else if (openNotes && !openAnnotate) {
+          setNotesHeight(70);
+          setAnnotateHeight(0);
+        } else {
+          setAnnotateHeight(35); // Reset to default when both are open
+          setNotesHeight(35);
+        }
+      }, [openAnnotate, openNotes]);
 
   const handleSessionClick = async (session_id) => {
     console.log("called in session");
@@ -245,8 +250,14 @@ const ArticleLayout = () => {
   };
 
   useEffect(() => {
-    console.log(prevPathRef);
-    console.log(location.pathname);
+
+    sessionStorage.removeItem("AnnotateData")
+    setAnnotateData("")
+    setOpenAnnotate(false)
+    setAnnotateFile(false)
+    console.log(prevPathRef)
+    console.log(location.pathname   )
+
     if (prevPathRef.current !== location.pathname) {
       console.log("workHappened");
       const storedSessionId = localStorage.getItem("session_id");
@@ -332,9 +343,26 @@ const ArticleLayout = () => {
       window.addEventListener("mouseup", onMouseUp);
     }
   };
+  const [fileUrl,setFileUrl]=useState("")
+  const [annotateFile,setAnnotateFile]=useState(false)
   const handleAnnotate = () => {
     const matchingIdExists =
       annotateData && Object.prototype.hasOwnProperty.call(annotateData, id);
+
+    // Check for chatHistory in localStorage
+    const chatHistory = JSON.parse(localStorage.getItem("chatHistory")) || [];
+  
+    // Find the latest entry with a file_url
+    const latestFileEntry = chatHistory
+      .filter((entry) => entry.file_url) // Filter entries with file_url
+      .pop(); // Get the last entry with file_url (highest index)
+  
+    if (latestFileEntry && !annotateData) {
+      setFileUrl(latestFileEntry.file_url);
+      handleAnnotateFile(latestFileEntry.file_url); // Pass the latest file_url to handleAnnotateFile
+      return;
+    }
+  
 
     if (annotateData && annotateData.length > 0) {
       setOpenAnnotate(true); // Set openAnnotate to true if annotateData has items
@@ -348,9 +376,37 @@ const ArticleLayout = () => {
     }
   };
 
-  console.log("source", type);
+  console.log(fileUrl)
+  
+  const handleAnnotateFile=async()=>{
+    setAnnotateLoading(true);
+    try {
+      const response = await axios.post(
+        "http://13.127.207.184:80/core_search/annotate_from_url",
+        {"url":fileUrl},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-  console.log("id", id);
+      const data = response.data;
+      setAnnotateData(data);
+      setHasFetchedAnnotateData(true); // Set flag after successful fetch
+      setOpenAnnotate(true); // Open annotation panel after data is received
+      setAnnotateFile(true)
+    } catch (error) {
+      console.error("Error fetching data from the API", error);
+    } finally {
+      setAnnotateLoading(false);
+    }
+  }
+  
+  console.log("source",type)
+  
+  console.log("id",id)
+
   const handleAnnotateClick = async () => {
     // Define the request body according to source and id
     let requestBody = {};
@@ -573,37 +629,49 @@ const ArticleLayout = () => {
           />
         )}
         <div className="right-aside" style={{ display: displayIfLoggedIn }}>
-          <div className="annotate-note">
-            {openAnnotate && (
-              <div
-                className="annotate-height"
-                style={{
-                  height: `${annotateHeight}vh`,
-                }}
-              >
-                <Annotation
-                  openAnnotate={openAnnotate}
-                  annotateData={annotateData}
-                  annotateHeight={annotateHeight}
-                />
+            <div className="annotate-note">
+              {openAnnotate && (
                 <div
-                  className="annotate-line2"
-                  onMouseDown={handleAnnotateResize}
-                />
-              </div>
-            )}
-            {openNotes && (
-              <div
-                className="notes-height"
-                style={{ height: `${notesHeight}vh` }}
-              >
-                <Notes selectedText={savedText} notesHeight={notesHeight} />
-                <div className="notes-line1" onMouseDown={handleNotesResize} />
-                <div className="notes-line2" onMouseDown={handleNotesResize} />
-              </div>
-            )}
-          </div>
-          <div className="icons-group">
+                  className="annotate-height"
+                  style={{
+                    height: `${annotateHeight}vh`,
+                  }}
+                >
+                  {annotateFile?<GenerateAnnotate
+                    openAnnotate={openAnnotate}
+                    annotateData={annotateData}
+                    annotateHeight={annotateHeight}
+                  />
+                  :<Annotation
+                    openAnnotate={openAnnotate}
+                    annotateData={annotateData}
+                    annotateHeight={annotateHeight}
+                  />}
+                  <div
+                    className="annotate-line2"
+                    onMouseDown={handleAnnotateResize}
+                  />
+                </div>
+              )}
+              {openNotes && (
+                <div
+                  className="notes-height"
+                  style={{ height: `${notesHeight}vh` }}
+                >
+                  <Notes selectedText={savedText} notesHeight={notesHeight} />
+                  <div
+                    className="notes-line1"
+                    onMouseDown={handleNotesResize}
+                  />
+                  <div
+                    className="notes-line2"
+                    onMouseDown={handleNotesResize}
+                  />
+                </div>
+              )}
+            </div>
+            <div className="icons-group">
+
             <div
               className={`search-annotate-icon ${
                 openAnnotate ? "open" : "closed"
