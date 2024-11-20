@@ -15,7 +15,7 @@ import annotate from "../../assets/images/task-square.svg";
 import ArticleContent from './ArticleContent';
 import ArticleDerive from './ArticleDerive';
 import Loading from "../../components/Loading";
-
+import GenerateAnnotate from '../../components/DeriveAnnotations';
 const ArticleLayout = () => {
     const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
     const { user } = useSelector((state) => state.auth);
@@ -106,7 +106,18 @@ const ArticleLayout = () => {
           },
         });
       };
-      
+      useEffect(() => {
+        if (openAnnotate && !openNotes) {
+          setAnnotateHeight(70);
+          setNotesHeight(0);
+        } else if (openNotes && !openAnnotate) {
+          setNotesHeight(70);
+          setAnnotateHeight(0);
+        } else {
+          setAnnotateHeight(35); // Reset to default when both are open
+          setNotesHeight(35);
+        }
+      }, [openAnnotate, openNotes]);
   const handleSessionClick = async (session_id) => {
     console.log("called in session")
     localStorage.removeItem("session_id")
@@ -244,6 +255,10 @@ const ArticleLayout = () => {
 };
 
   useEffect(() => {
+    sessionStorage.removeItem("AnnotateData")
+    setAnnotateData("")
+    setOpenAnnotate(false)
+    setAnnotateFile(false)
     console.log(prevPathRef)
     console.log(location.pathname   )
     if (prevPathRef.current !== location.pathname) {
@@ -331,9 +346,25 @@ const ArticleLayout = () => {
       window.addEventListener("mouseup", onMouseUp);
     }
   };
+  const [fileUrl,setFileUrl]=useState("")
+  const [annotateFile,setAnnotateFile]=useState(false)
   const handleAnnotate = () => {
     const matchingIdExists =
       annotateData && Object.prototype.hasOwnProperty.call(annotateData, id);
+  
+    // Check for chatHistory in localStorage
+    const chatHistory = JSON.parse(localStorage.getItem("chatHistory")) || [];
+  
+    // Find the latest entry with a file_url
+    const latestFileEntry = chatHistory
+      .filter((entry) => entry.file_url) // Filter entries with file_url
+      .pop(); // Get the last entry with file_url (highest index)
+  
+    if (latestFileEntry && !annotateData) {
+      setFileUrl(latestFileEntry.file_url);
+      handleAnnotateFile(latestFileEntry.file_url); // Pass the latest file_url to handleAnnotateFile
+      return;
+    }
   
     if (annotateData && annotateData.length > 0) {
       setOpenAnnotate(true); // Set openAnnotate to true if annotateData has items
@@ -343,7 +374,32 @@ const ArticleLayout = () => {
       setOpenAnnotate((prevOpenAnnotate) => !prevOpenAnnotate); // Toggle if matching ID is present
     }
   };
+  console.log(fileUrl)
   
+  const handleAnnotateFile=async()=>{
+    setAnnotateLoading(true);
+    try {
+      const response = await axios.post(
+        "http://13.127.207.184:80/core_search/annotate_from_url",
+        {"url":fileUrl},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data = response.data;
+      setAnnotateData(data);
+      setHasFetchedAnnotateData(true); // Set flag after successful fetch
+      setOpenAnnotate(true); // Open annotation panel after data is received
+      setAnnotateFile(true)
+    } catch (error) {
+      console.error("Error fetching data from the API", error);
+    } finally {
+      setAnnotateLoading(false);
+    }
+  }
   
   console.log("source",type)
   
@@ -551,11 +607,16 @@ const ArticleLayout = () => {
                     height: `${annotateHeight}vh`,
                   }}
                 >
-                  <Annotation
+                  {annotateFile?<GenerateAnnotate
                     openAnnotate={openAnnotate}
                     annotateData={annotateData}
                     annotateHeight={annotateHeight}
                   />
+                  :<Annotation
+                    openAnnotate={openAnnotate}
+                    annotateData={annotateData}
+                    annotateHeight={annotateHeight}
+                  />}
                   <div
                     className="annotate-line2"
                     onMouseDown={handleAnnotateResize}
