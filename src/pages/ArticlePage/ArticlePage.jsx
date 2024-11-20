@@ -238,16 +238,16 @@ const ArticlePage = () => {
           const response = await axios.get(
             `http://13.127.207.184/view_article/get_article/${id}?source=${source}`,
             {
-              headers: {  
+              headers: {
                 Authorization: `Bearer ${token}`,
               },
             }
           );
-  
+
           const article = response.data;
           setArticleData(article);
           setAnnotateLoading(false);
-  
+
           // Retrieve and set saved search term from sessionStorage
           const savedTerm = sessionStorage.getItem("SearchTerm");
           setSearchTerm(savedTerm);
@@ -256,11 +256,10 @@ const ArticlePage = () => {
           console.error("Error fetching article data:", error);
         }
       };
-  
+
       fetchArticleData();
     }
   }, [id, source, token, deriveInsights]);
-  
 
   const handleAnnotateResize = (e) => {
     if (openAnnotate && openNotes) {
@@ -926,7 +925,7 @@ const ArticlePage = () => {
         Authorization: `Bearer ${token}`,
         "ngrok-skip-browser-warning": true,
       };
-      console.log(storedSessionId)
+      console.log(storedSessionId);
       // Initialize FormData
       const formData = new FormData();
       formData.append("question", query);
@@ -1057,14 +1056,13 @@ const ArticlePage = () => {
       setShowConfirmPopup(true);
       //navigate(-1);
     } else {
+
       navigate(-1);
     }
     //localStorage.removeItem("unsavedChanges");
     //navigate(-1);
   };
-  
-  
-  
+
 
   const handleCancelConfirm = () => {
     setShowConfirmPopup(false);
@@ -1295,7 +1293,6 @@ const ArticlePage = () => {
         );
 
         if (response.data?.sessions) {
-
           const sessionsData = response.data.sessions.reverse(); // Reverse the array order
           // console.log(sessionsData)
           setSessions(sessionsData); // Set the reversed sessions array to state
@@ -1376,19 +1373,21 @@ const ArticlePage = () => {
           },
         }
       );
+
       sessionStorage.setItem("session_id",session_id)
       setIsPromptEnabled(true)
+
       setActiveSessionId(session_id);
       const formattedChatHistory = [];
       let currentEntry = {};
-  
+
       // Process conversation data into chat history
       conversationResponse.data.conversation.forEach((entry) => {
         if (entry.role === "user") {
           if (entry.file_url) {
             currentEntry.file_url = entry.file_url;
           }
-  
+
           if (currentEntry.query) {
             formattedChatHistory.push(currentEntry);
             currentEntry = {};
@@ -1400,20 +1399,22 @@ const ArticlePage = () => {
           currentEntry = {};
         }
       });
-  
+
       if (currentEntry.query) {
         formattedChatHistory.push(currentEntry);
       }
+
   
       localStorage.setItem("chatHistory", JSON.stringify(formattedChatHistory));
   
+
       const sourceType =
         conversationResponse.data.source === "biorxiv"
           ? "bioRxiv_id"
           : conversationResponse.data.source === "plos"
           ? "plos_id"
           : "pmid";
-  
+
       const navigatePath = conversationResponse.data.session_type
         ? "/article"
         : `/article/${sourceType}:${conversationResponse.data.article_id}`;
@@ -1422,7 +1423,7 @@ const ArticlePage = () => {
       if (conversationResponse.data.session_type) {
         // Navigate immediately if deriveInsights mode
         dispatch(setDeriveInsights(true));
-        console.log(navigatePath)
+        console.log(navigatePath);
         navigate(navigatePath, {
           state: {
             id: conversationResponse.data.article_id||id,
@@ -1433,12 +1434,14 @@ const ArticlePage = () => {
             data: location.state?.data,
           },
         });
+
       } 
       else {
         console.log("nav")
         dispatch(setDeriveInsights(false));
         
         console.log(navigatePath)
+
         navigate(navigatePath, {
           state: {
             id: conversationResponse.data.article_id||id,
@@ -1473,8 +1476,8 @@ const ArticlePage = () => {
         return null;
     }
   };
-  
-  const fetchArticleBeforeNavigate = async (articleId, sourceType,data) => {
+
+  const fetchArticleBeforeNavigate = async (articleId, sourceType, data) => {
     try {
       // Map sourceType to source using the utility function
       const source = getSourceFromType(sourceType);
@@ -1482,7 +1485,7 @@ const ArticlePage = () => {
         console.error("Invalid sourceType provided");
         return;
       }
-  
+
       const response = await axios.get(
         `http://13.127.207.184/view_article/get_article/${articleId}?source=${source}`,
         {
@@ -1491,10 +1494,10 @@ const ArticlePage = () => {
           },
         }
       );
-  
+
       const article = response.data;
       setArticleData(article);
-      console.log(data)
+      console.log(data);
       // Navigate after article is fetched
       navigate(`/article/${sourceType}:${articleId}`, {
         state: {
@@ -1502,7 +1505,7 @@ const ArticlePage = () => {
           source: sourceType,
           token: token,
           user: { access_token: token, user_id: user_id },
-          data:data
+          data: data,
         },
       });
     } catch (error) {
@@ -1515,9 +1518,6 @@ const ArticlePage = () => {
       setActiveSessionId(storedSessionId);
     }
   }, [sessions]);
-
-  
-  
 
   const [uploadedFile, setUploadedFile] = useState(null);
   useEffect(() => {
@@ -1660,7 +1660,7 @@ const ArticlePage = () => {
                         handleSessionClick(
                           // session.article_id,
                           // session.source,
-                          session.session_id,
+                          session.session_id
                           // user_id,
                           // session.session_type
                         );
@@ -2080,14 +2080,14 @@ const ArticlePage = () => {
               {chatHistory.length > 0 ? (
                 <div className="streaming-section">
                   <div className="streaming-content">
-                  <div style={{ display: "flex" }} onClick={handleBackClick}>
-                    <img
-                      src={Arrow}
-                      style={{ width: "14px" }}
-                      alt="arrow-icon"
-                    ></img>
-                    <button className="back-button">Back</button>
-                  </div>
+                    <div style={{ display: "flex" }} onClick={handleBackClick}>
+                      <img
+                        src={Arrow}
+                        style={{ width: "14px" }}
+                        alt="arrow-icon"
+                      ></img>
+                      <button className="back-button">Back</button>
+                    </div>
                     {chatHistory.map((chat, index) => (
                       <div key={index}>
                         {/* Display file_url if it exists */}
@@ -2244,9 +2244,11 @@ const ArticlePage = () => {
                 <div className="Article-popup-overlay">
                   <div className="Article-popup-content">
                     <p className="Saving-note">Saving Note</p>
+
                     <p id="confirming">
                       Are you sure to leave without saving?
                     </p>
+
                     <div className="Article-confirm-buttons">
                       <button onClick={handleCancelIcon}>Cancel</button>
                       <button onClick={handleCloseIcon}>Leave</button>

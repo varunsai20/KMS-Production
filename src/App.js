@@ -1,7 +1,9 @@
+
 import React, { useEffect } from "react";
 import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { setDeriveInsights } from "./redux/reducers/deriveInsights";
+
 import Lander from "./pages/LandingPage/Lander-Logedin";
 import Login from "./pages/Authentication/Login/Login";
 import SignUpForm from "./pages/Authentication/SignUp/Signup";
@@ -16,9 +18,13 @@ import DeriveInsights from "./pages/ArticlePage/DeriveInsights";
 import LogoutHandler from "./LogoutHandler";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+
+import Error500 from "./utils/Error500";
+
 import ArticleLayout from "./pages/ArticleDerive/ArticleLayout";
 import ArticleContent from "./pages/ArticleDerive/ArticleContent";
 import ArticleDerive from "./pages/ArticleDerive/ArticleDerive";
+
 
 function AppRoutes() {
   const location = useLocation();
@@ -41,6 +47,8 @@ function AppRoutes() {
         <Route path="/signup" element={<SignUpForm />} />
         <Route path="/deriveinsights" element={<DeriveInsights />} />
         <Route path="/search" element={<SearchResults />} />
+          <Route path="/server-error" element={<Error500 />} />
+
 
         {/* Article Routes */}
         <Route path="/article" element={<ArticleLayout />}>

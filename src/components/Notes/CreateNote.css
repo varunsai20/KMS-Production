@@ -51,11 +51,11 @@
   background-color: blueviolet;
 }
 .dropdown {
-  width: 93%;
+  width: 100%; /* Fallback */
+  width: -webkit-fill-available;
   background-color: white;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  border-radius: 4px;
-  padding: 10px;
+  padding: 4px;
   background: rgba(251, 251, 253, 1);
   position: absolute;
   z-index: 1000;

@@ -16,11 +16,6 @@ const ErrorBoundry = ({ errorCode, onRetry }) => {
       title = "500 - Internal Server Error";
       message = "Our servers are facing issues. Please try again later.";
       break;
-    case 401:
-      title = "401 - Unauthorized";
-      message = "You are not authorized to access this resource.";
-      buttonLabel = "Login";
-      break;
     case 403:
       title = "403 - Forbidden";
       message = "You don't have permission to access this resource.";
