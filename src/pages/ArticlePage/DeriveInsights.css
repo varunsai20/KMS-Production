@@ -266,9 +266,11 @@
 }
 .uploaded-file-indicator {
   display: flex;
-  padding: 10px;
-  align-items: center;
-  color: rgb(0, 0, 0);
+      gap: 5px;
+      padding: 10px;
+      align-items: center;
+      color: rgb(0, 0, 0);
+      /* width: -webkit-fill-available;
   /* width: -webkit-fill-available; */
 }
 .derive-stream-input input {
@@ -331,6 +333,8 @@
 @media (min-width: 900px) and (max-width: 1366px) {
   .derive-chat-query {
     padding: 5px;
+    left: 22%;
+    width: 72%;
   }
   .derive-predefined-prompts {
     padding: 5px 10px 5px 10px;

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import "./Annotations.css";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCaretDown, faCaretRight } from '@fortawesome/free-solid-svg-icons';
 const Annotation = ({
   openAnnotate,
   annotateData,
@@ -16,6 +18,7 @@ const Annotation = ({
   const [expandedTexts, setExpandedTexts] = useState(true);
   const { data } = location.state || { data: [] };
   const [source, setSource] = useState(passedSource || []);
+
   useEffect(() => {
     // Check if the source is available in sessionStorage if not passed as props
     if (!passedSource) {
@@ -90,7 +93,7 @@ const Annotation = ({
       [key]: !prevState[key], // Toggle between full text and sliced text for a specific row
     }));
   };
-
+  console.log(annotateData)
   const renderAnnotations = () => {
     const annotationEntries =
       annotateData && typeof annotateData === "object"
@@ -164,6 +167,7 @@ const Annotation = ({
       >
         <p style={{ textAlign: "start",fontSize:"18px" }}>Annotations</p>
       </div>
+      {annotateData && Object.keys(annotateData).length > 0 ?
       <div className="search-Annotate-tables">
         <table>
           <thead>
@@ -176,6 +180,9 @@ const Annotation = ({
           <tbody>{renderAnnotations()}</tbody>
         </table>
       </div>
+      :<div style={{ textAlign: "center", fontSize: "15px", marginTop: "20px" }}>
+      No data to display
+    </div>}
     </div>
   );
   

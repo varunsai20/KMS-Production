@@ -54,9 +54,10 @@
   border: none;
 }
 .generate-close-collection {
+  padding: 0;
   position: absolute;
-  top: calc(48% - 35vh);
-  right: calc(2% - 20px);
+  top: calc(50% - 38vh);
+  right: calc(1% - 13px);
   border: none;
   cursor: pointer;
   z-index: 1001;

@@ -16,6 +16,11 @@ const ErrorBoundry = ({ errorCode, onRetry }) => {
       title = "500 - Internal Server Error";
       message = "Our servers are facing issues. Please try again later.";
       break;
+    case 422:
+      title = "422 - Unprocessable Entity";
+      message = "There is a problem with the api";
+      break;
+
     case 403:
       title = "403 - Forbidden";
       message = "You don't have permission to access this resource.";

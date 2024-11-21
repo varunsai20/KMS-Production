@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCaretDown, faCaretRight } from '@fortawesome/free-solid-svg-icons';
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import "./Annotations.css";
 const Annotation = ({
@@ -60,7 +62,7 @@ const Annotation = ({
       console.error(`Article with ID ${articleId} not found in the source.`);
     }
   };
-
+  
   const capitalizeFirstLetter = (string) => {
     return string.charAt(0).toUpperCase() + string.slice(1);
   };
@@ -129,12 +131,13 @@ const Annotation = ({
             <tr className="search-table-body" key={categoryKey}>
               <td
                 style={{
-                  paddingLeft: index === 0 ? 0 : 30,
-                }}
+                  paddingLeft: index === 0 ? 0 : 30
+                }}  
               >
+                <div style={{display:"flex"}}>
                 {index === 0 && (
                   <button onClick={() => toggleExpandPmid(pmid)}>
-                    {isExpanded ? "▼" : "▶"}
+                    {isExpanded ? <FontAwesomeIcon icon={faCaretDown} style={{ color: 'grey', width: '16px' }}  />: <FontAwesomeIcon icon={faCaretRight} style={{ color: 'grey', fontSize: '16px' }} />}
                   </button>
                 )}
                 {index === 0 && (
@@ -148,7 +151,9 @@ const Annotation = ({
                   >
                     {pmid}
                   </a>
+
                 )}
+                </div>
               </td>
               <td>{annotationScore}</td>
               <td>{capitalizeFirstLetter(category)}</td>
@@ -192,7 +197,12 @@ const Annotation = ({
       >
         <p style={{ textAlign: "start" }}>Annotations</p>
       </div>
-      <div className="search-Annotate-tables">
+      {annotateData &&
+  Object.keys(annotateData).some(
+    (key) =>
+      annotateData[key] && // Ensure value is not null or undefined
+      Object.keys(annotateData[key]).length > 0 // Check if value is a non-empty object
+  )?<div className="search-Annotate-tables">
         <table>
           <thead>
             <tr className="search-table-head">
@@ -204,7 +214,9 @@ const Annotation = ({
           </thead>
           <tbody>{renderAnnotations()}</tbody>
         </table>
-      </div>
+      </div>:<div style={{ textAlign: "center", fontSize: "15px", marginTop: "20px" }}>
+      No data to display
+    </div>}
     </div>
   );
 };

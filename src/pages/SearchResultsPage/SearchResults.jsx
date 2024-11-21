@@ -395,7 +395,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   const handleAnnotate = () => {
     console.log("clicked");
     console.log(annotateData);
-  
+
     if (openAnnotate) {
       setOpenAnnotate(false);
     } else if (annotateData && Object.keys(annotateData).length > 0) {
@@ -424,28 +424,9 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       document.body.style.overflow = "auto";
     };
   }, [annotateLoading]);
-
-  const modalRef = useRef(null); // Ref for modal content
-
-  // Handle clicks outside the modal to close it
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (modalRef.current && !modalRef.current.contains(event.target)) {
-        setIsModalOpen(false); // Close modal if clicked outside
-      }
-    };
-
-    if (isModalOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    } else {
-      document.removeEventListener("mousedown", handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside); // Clean up the event listener
-    };
-  }, [isModalOpen]);
-
+  const handleCloseCollectionModal = () => {
+    setIsModalOpen(false);
+  };
   const isArticleBookmarked = (idType) => {
     const numericIdType = Number(idType);
 
@@ -625,22 +606,9 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       );
 
       if (response.status === 201) {
-        toast.success("Collection Created", {
-          position: "top-center",
-          autoClose: 2000,
-
-          style: {
-            backgroundColor: "rgba(237, 254, 235, 1)",
-            borderLeft: "5px solid rgba(15, 145, 4, 1)",
-            color: "rgba(15, 145, 4, 1)",
-          },
-          progressStyle: {
-            backgroundColor: "rgba(15, 145, 4, 1)",
-          },
-        });
         await fetchCollections(); // Refetch collections after successful creation
         setNewCollectionName("");
-        setIsModalOpen(false);
+        // setIsModalOpen(false);
       }
     } catch (error) {
       toast.error("Failed to CreateCollection", {
@@ -784,7 +752,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       endDate: customEndDate,
     });
   };
-  console.log(location.state)
+  console.log(location.state);
   const handleDateRangeChange = (newRange) => {
     setSelectedDateRange(newRange);
     if (newRange !== "custom") {
@@ -932,7 +900,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
     setBioRxivArticles([]); // Reset bioRxivArticles array
     setPlosArticles([]); // Reset plosArticles array
     setSelectedArticles([]); // Reset selectedArticles array
-
     setShareableLinks({});
     setOpenAnnotate(false);
     setSelectedSort("best_match");
@@ -1020,6 +987,10 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
           : [...prevSelected, pmid] // Add checked article
     );
   };
+  console.log(selectedArticles)
+  console.log(bioRxivArticles)
+  console.log(plosArticles)
+
   const handleBioRxivBoxChange = (pmid) => {
     setBioRxivArticles(
       (prevBioRxiv) =>
@@ -1077,12 +1048,13 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   };
 
   const isArticleSelected = (source, idType) => {
+    console.log("soucr from selected",source,":",idType)
     const uniqueId = `${source}_${idType}`; // Create unique ID for checking selection state
     if (source === "BioRxiv") {
       return bioRxivArticles.includes(uniqueId);
     } else if (source === "Public Library of Science (PLOS)") {
       return plosArticles.includes(uniqueId);
-    } else if (source === "Pub") {
+    } else if (source === "pubmed") {
       return selectedArticles.includes(uniqueId); // For other sources
     }
   };
@@ -1627,15 +1599,17 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                     <span style={{ color: "black", fontSize: "14px" }}>
                       Sort by:
                     </span>
-                    <select
-                      className="SearchResult-dropdown"
-                      onChange={handleSortChange}
-                      value={selectedSort}
-                    >
-                      <option value="best_match">Most Relevant</option>
-                      <option value="publication_date">Publication Date</option>
-                      <option value="Ratings">Rating</option>
-                    </select>
+                    <div className="SearchResult-dropdown-container">
+  <select
+    className="SearchResult-dropdown"
+    onChange={handleSortChange}
+    value={selectedSort}
+  >
+    <option value="best_match">Most Relevant</option>
+    <option value="publication_date">Publication Date</option>
+    <option value="Ratings">Rating</option>
+  </select>
+</div>
                   </div>
                 </div>
               </div>
@@ -1779,6 +1753,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                                     height: "14px",
                                     width: "14px",
                                     marginTop: "5px",
+                                    marginLeft:0,
                                   }}
                                   onChange={() =>
                                     handleSourceCheckboxChange(
@@ -1842,9 +1817,15 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
 
                               {isModalOpen && (
                                 <div className="search-bookmark-modal-overlay">
+                                  <button
+                                    id="close-collection-modal"
+                                    onClick={handleCloseCollectionModal}
+                                  >
+                                    <IoCloseOutline size={20} />
+                                  </button>
                                   <div
                                     className="search-modal-content"
-                                    ref={modalRef}
+                                    // ref={modalRef}
                                   >
                                     <div className="bookmark-p">
                                       <p className="bookmark-para">Bookmarks</p>
@@ -2143,7 +2124,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                           <div className="Article-Options-Right">
                             <div
                               class="searchResult-rate"
-                              style={{ display: displayIfLoggedIn }}
+                              // style={{ display: displayIfLoggedIn }}
                             >
                               {[5, 4, 3, 2, 1].map((value) => (
                                 <React.Fragment key={value}>

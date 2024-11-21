@@ -4,7 +4,6 @@ import { useSelector, useDispatch } from "react-redux";
 import { setDeriveInsights } from "../../redux/reducers/deriveInsights";
 import { useParams, useLocation } from "react-router-dom";
 import "../ArticlePage/ArticlePage.css";
-import Loading from "../../components/Loading";
 import { Typography } from "@mui/material";
 import flag from "../../assets/images/flash.svg";
 import Arrow from "../../assets/images/back-arrow.svg";
@@ -86,6 +85,7 @@ const ArticleDerive = ({
   });
   //   const [refreshSessions, setRefreshSessions] = useState(false);
   const { resetArticleData, resetChatHistory } = location.state || {};
+  const [errorCode, setErrorCode] = useState();
 
   useEffect(() => {
     if (resetArticleData) {
@@ -427,7 +427,9 @@ const ArticleDerive = ({
       console.error("Error saving rating:", error);
     }
   };
+
   const handleMouseUpInsideContent = (e) => {
+    if (!isLoggedIn) return;
     const content = contentRef.current;
     const popup = popupRef.current;
 
@@ -914,12 +916,19 @@ const ArticleDerive = ({
   const storedSessionId =
     localStorage.getItem("sessionId") || localStorage.getItem("session_id");
   const handleDeriveClick = async () => {
+    if (!query.trim()) {
+      // Check if query is empty or contains only whitespace
+      toast.error("Please enter a question to proceed", {
+        position: "top-center",
+        autoClose: 2000,
+      });
+      return; // Exit the function to prevent further execution
+    }
     if (!query && !uploadedFile) {
       toast.error("Please enter a query or upload a file", {
         position: "top-center",
         autoClose: 2000,
       });
-
       return;
     }
     removeUploadedFile();
@@ -1816,7 +1825,8 @@ const ArticleDerive = ({
           {uploadedFile && (
             <div className="file-showing">
               <span className="uploaded-file-indicator">
-                {uploadedFile.name}
+                <img style={{width:"25px",height:"25px"}} src={FileIconForDocument} alt="File Icon" />
+                <span style={{width:"max-content"}}>{uploadedFile.name}</span>
                 <FontAwesomeIcon
                   icon={faTimes}
                   onClick={removeUploadedFile}

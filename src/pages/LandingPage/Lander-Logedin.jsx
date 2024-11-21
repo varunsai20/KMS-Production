@@ -99,7 +99,7 @@ const Lander = () => {
         );
         if (response.data?.sessions) {
           const sessionsData = response.data.sessions.reverse(); // Reverse the array order
-          console.log(sessionsData)
+          console.log(sessionsData);
           setSessions(sessionsData); // Set the reversed sessions array to state
         }
       } catch (error) {
@@ -124,10 +124,10 @@ const Lander = () => {
       });
       return;
     }
-    
+
     const { session_id } = sessions[0];
     localStorage.setItem("session_id", session_id);
-    console.log(sessions[0])
+    console.log(sessions[0]);
     try {
       const conversationResponse = await axios.get(
         `http://13.127.207.184:80/history/conversations/history/${user_id}/${session_id}`,
@@ -137,11 +137,11 @@ const Lander = () => {
           },
         }
       );
-      console.log(conversationResponse)
-      
+      console.log(conversationResponse);
+
       const formattedChatHistory = [];
       let currentEntry = {};
-  
+
       conversationResponse.data.conversation.forEach((entry) => {
         if (entry.role === "user") {
           if (entry.file_url) {
@@ -162,35 +162,32 @@ const Lander = () => {
           currentEntry = {};
         }
       });
-  
+
       if (currentEntry.query) {
         formattedChatHistory.push(currentEntry);
       }
-  
-      localStorage.setItem(
-        "chatHistory",
-        JSON.stringify(formattedChatHistory)
-      );
+
+      localStorage.setItem("chatHistory", JSON.stringify(formattedChatHistory));
       const sourceType =
         conversationResponse.data.source === "biorxiv"
           ? "bioRxiv_id"
           : conversationResponse.data.source === "plos"
           ? "plos_id"
           : "pmid";
-  
+
       const article_id = conversationResponse.data.article_id;
-  
+
       const navigatePath = conversationResponse.data.session_type
         ? "/article/derive"
         : `/article/content/${sourceType}:${article_id}`;
-      console.log(navigatePath)
+      console.log(navigatePath);
       // console.log(session_type)
       if (conversationResponse.data.session_type) {
         dispatch(setDeriveInsights(true));
       } else {
         dispatch(setDeriveInsights(false));
       }
-  
+
       navigate(navigatePath, {
         state: {
           id: article_id,
@@ -203,7 +200,7 @@ const Lander = () => {
       console.error("Error fetching article or conversation data:", error);
     }
   };
-  
+
   // useEffect(() => {
   //   if (isLanderNotesOpen) {
   //     const centerX =
@@ -222,7 +219,7 @@ const Lander = () => {
 
       setPosition({ x: bottomRightX, y: bottomRightY });
     }
-  }, [isLanderNotesOpen, dimensions.width, dimensions.height]);
+  }, [isLanderNotesOpen]);
 
   return (
     <div

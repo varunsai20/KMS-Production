@@ -410,6 +410,7 @@ const ArticleContent = ({ setRefreshSessions,openAnnotate,openNotes,setOpenNotes
       }
     };
     const handleMouseUp = (event) => {
+      if(!isLoggedIn) return;
       if (!contentRef.current || !contentRef.current.contains(event.target)) {
         return;
       }

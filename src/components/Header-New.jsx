@@ -89,6 +89,7 @@ const Header = () => {
         <Link
           to="/"
           className={`Navbar-Header-Link ${isActive("/") ? "active-link" : ""}`}
+          style={{fontWeight:"bold"}}
         >
           Home
         </Link>
