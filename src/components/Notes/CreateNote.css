@@ -35,6 +35,7 @@
 .create-note__form {
   display: flex;
   flex-direction: column;
+  min-height: 15vh;
 }
 .note-input {
   width: 100%;

@@ -440,7 +440,6 @@ button {
   padding: 10px 0;
   gap: 12px;
   border-radius: 50px;
-  /* border: 1px solid black; */
   opacity: 0.7px;
   outline: none;
 }
@@ -563,6 +562,8 @@ button {
   z-index: 1001;
 }
 .bookmark-p {
+  display: flex;
+  justify-content: space-between;
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 }
 .bookmark-para {
@@ -579,7 +580,13 @@ button {
 .search-modal-content p {
   margin-bottom: 10px;
 }
-
+#close-collection-modal {
+  position: absolute;
+  top: 8%;
+  left: 68%;
+  color: #000;
+  z-index: 10001;
+}
 .search-modal-content button {
   padding: 10px 20px;
   border: none;

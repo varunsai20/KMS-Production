@@ -3,6 +3,7 @@ import NoteItem from "./NoteItem";
 import SearchIcon from "../../assets/images/Search.svg";
 import { LuPlus } from "react-icons/lu";
 import { IoCloseOutline } from "react-icons/io5";
+import PlusSqaue from "../../assets/images/PlusSquare.svg";
 
 import "./NotesList.css";
 
@@ -53,7 +54,13 @@ const NotesList = ({
             className={isOpenNotes ? "lander-button-plus" : "button-plus"}
             onClick={onAddNewNote}
           >
-            <LuPlus size={20} />
+            {/* <LuPlus size={20} />
+             */}
+            <img
+              src={PlusSqaue}
+              alt="plus"
+              className={isOpenNotes ? "lander-plusSqaure" : "plusSqaure"}
+            />
           </button>
           {isOpenNotes && (
             <button onClick={oncloseNotes} style={{ zIndex: 1 }}>
