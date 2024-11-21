@@ -113,9 +113,9 @@ const GenerateAnnotate = ({ handleCloseAnnotate }) => {
             >
               Start New
             </button>
-            <button className="generate-button" onClick={handleGenerate}>
-              Generate
-            </button>
+            <button className="generate-button" disabled={!uploadedFile} style={{background:!uploadedFile?"rgba(234, 234, 236, 1)":"undefined",color:!uploadedFile?"rgba(78, 78, 86, 1)":"undefined",cursor:!uploadedFile?"not-allowed":"undefined"}}onClick={handleGenerate}>
+  Generate
+</button>
           </div>
         </div>
         

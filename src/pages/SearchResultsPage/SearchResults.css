@@ -469,7 +469,7 @@ button {
 }
 
 .searchresult-item {
-  gap: 10px;
+  gap: 5px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -477,7 +477,7 @@ button {
   padding: 8px;
   background-color: #fff;
   width: 100%;
-  height: 22vh;
+  /* height: 22vh; */
   text-align: justify;
   border-left: 3px solid;
   /* border-image: linear-gradient(45deg, #fe7675, #cc81b9, #19a8d2, #4bd1d8) 1; */
@@ -722,7 +722,7 @@ button {
   text-align: left;
   text-align: justify;
   color: #000000;
-  margin-top: 5px;
+  margin: 5px 0 0 0;
 }
 .searchresult-content {
   font-family: Manrope;
@@ -947,11 +947,13 @@ td {
   border-top: 1px solid #ddd;
 }
 .search-table-body td {
+  vertical-align: top;
   font-size: 12px;
   /* border-left: 1px solid #ddd; */
   border-top: 1px solid #ddd;
 }
 .search-table-row td {
+  
   border-left: 1px solid #ddd;
 }
 
@@ -1217,10 +1219,11 @@ button input {
 /* Surface Devices */
 @media screen and (min-width: 912px) and (max-width: 1080px) {
   .searchresult-item {
-    height: 13vh;
+    /* height: 13vh; */
   }
   .SearchResult-Option-Left {
-    height: 3vh;
+    /* padding: 10px 0;
+    height: 3vh; */
     border-radius: 25px;
   }
   .searchResult-rate {
@@ -1245,7 +1248,7 @@ button input {
     border-radius: 25px;
   } */
   .searchresult-item {
-    height: 20vh;
+    /* height: 20vh; */
   }
   .searchResult-rate {
     width: 20vh;

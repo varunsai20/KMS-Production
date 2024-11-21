@@ -20,8 +20,15 @@
   left: 10px;
 }
 
-.citation-section{
-  border-bottom: 1px dashed;
+.citation-close-collection{
+  /* border-bottom: 1px dashed; */
+  padding: 0;
+    position: absolute;
+    top: calc(50% - 38vh);
+    right: calc(1% - 13px);
+    border: none;
+    cursor: pointer;
+    z-index: 1001;
 }
 .citation-section .action-icons{
   display: flex;

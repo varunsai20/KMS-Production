@@ -8,6 +8,8 @@ import departments from "../../assets/Data/Departments.json"
 import primaryResearchAreas from "../../assets/Data/PrimaryResearchAreas.json";
 import researchInterests from "../../assets/Data/ResearchInterests.json";
 import Arrow from "../../assets/images/back-arrow.svg";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faAsterisk } from '@fortawesome/free-solid-svg-icons';
 const CreateResearcher = () => {
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
@@ -57,12 +59,12 @@ const CreateResearcher = () => {
       newErrors.password = 'Password must be at least 8 characters long';
     }
     if (!formData.department) newErrors.department = 'Department is required';
-    if (!formData.job_title) newErrors.job_title = 'Job Title is required';
+    // if (!formData.job_title) newErrors.job_title = 'Job Title is required';
     if (!formData.organization_name) newErrors.organization_name = 'Organization is required';
     if (!formData.primary_research_area || formData.primary_research_area === 'Select Expertise') {
       newErrors.primary_research_area = 'Research Area is required';
     }
-    if (!formData.technical_skills) newErrors.technical_skills = 'Technical Skills are required';
+    // if (!formData.technical_skills) newErrors.technical_skills = 'Technical Skills are required';
     if (!formData.research_interests || formData.research_interests === 'Select Research Interests') {
       newErrors.research_interests = 'Research Interests are required';
     }
@@ -135,7 +137,11 @@ const CreateResearcher = () => {
         {/* Row 1 */}
         <div className='User-Form-Row'>
           <div className='User-Form-Row-Items'>
+            <div style={{display:"flex",gap:"5px"}}>
+
             <label>Full Name</label>
+            <FontAwesomeIcon icon={faAsterisk} style={{fontSize:"10px",color:" red"}}/>
+            </div>
             <input 
               type="text" 
               name="fullname" 
@@ -147,7 +153,10 @@ const CreateResearcher = () => {
           </div>
 
           <div className='User-Form-Row-Items'>
-            <label>Email ID</label>
+            <div style={{display:"flex",gap:"5px"}}><label>Email ID</label>
+            <FontAwesomeIcon icon={faAsterisk} style={{fontSize:"10px",color:" red"}}/>
+
+              </div>
             <input 
               type="email" 
               name="email" 
@@ -162,7 +171,10 @@ const CreateResearcher = () => {
         {/* Row 2 (New Role and Password Row) */}
         <div className='User-Form-Row'>
           <div className='User-Form-Row-Items'>
+          <div style={{display:"flex",gap:"5px"}}>
             <label>Role</label>
+            <FontAwesomeIcon icon={faAsterisk} style={{fontSize:"10px",color:" red"}}/>
+            </div>
             <select 
               name="role" 
               value={formData.role} 
@@ -176,7 +188,10 @@ const CreateResearcher = () => {
           </div>
 
           <div className='User-Form-Row-Items'>
+          <div style={{display:"flex",gap:"5px"}}>
             <label>Set Password</label>
+            <FontAwesomeIcon icon={faAsterisk} style={{fontSize:"10px",color:" red"}}/>
+    </div>
             <div className="password-field" style={{ borderColor: errors.password ? 'red' : '' }}>
               <input
                 type={showPassword ? "text" : "password"}
@@ -200,7 +215,10 @@ const CreateResearcher = () => {
         {/* Row 3 */}
         <div className='User-Form-Row'>
         <div className='User-Form-Row-Items'>
+        <div style={{display:"flex",gap:"5px"}}>
             <label>Department</label>
+            <FontAwesomeIcon icon={faAsterisk} style={{fontSize:"10px",color:" red"}}/>
+</div>
             <select 
               name="department" 
               value={formData.department} 
@@ -232,7 +250,10 @@ const CreateResearcher = () => {
         {/* Row 4 */}
         <div className='User-Form-Row'>
         <div className='User-Form-Row-Items'>
+        <div style={{display:"flex",gap:"5px"}}>
   <label>Organization</label>
+  <FontAwesomeIcon icon={faAsterisk} style={{fontSize:"10px",color:" red"}}/>
+</div>
   <select 
     name="organization_name" 
     value={formData.organization_name} 
@@ -249,7 +270,10 @@ const CreateResearcher = () => {
 
 
           <div className='User-Form-Row-Items'>
+          <div style={{display:"flex",gap:"5px"}}>
           <label>Primary Research Area</label>
+          <FontAwesomeIcon icon={faAsterisk} style={{fontSize:"10px",color:" red"}}/>
+</div>
           <select 
             name="primary_research_area" 
             value={formData.primary_research_area} 
@@ -281,7 +305,10 @@ const CreateResearcher = () => {
           </div>
 
           <div className='User-Form-Row-Items'>
+          <div style={{display:"flex",gap:"5px"}}>
           <label>Research Interests</label>
+          <FontAwesomeIcon icon={faAsterisk} style={{fontSize:"10px",color:" red"}}/>
+            </div>
           <select 
             name="research_interests" 
             value={formData.research_interests} 

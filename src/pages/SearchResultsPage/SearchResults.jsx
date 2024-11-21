@@ -900,7 +900,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
     setBioRxivArticles([]); // Reset bioRxivArticles array
     setPlosArticles([]); // Reset plosArticles array
     setSelectedArticles([]); // Reset selectedArticles array
-
     setShareableLinks({});
     setOpenAnnotate(false);
     setSelectedSort("best_match");
@@ -988,6 +987,10 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
           : [...prevSelected, pmid] // Add checked article
     );
   };
+  console.log(selectedArticles)
+  console.log(bioRxivArticles)
+  console.log(plosArticles)
+
   const handleBioRxivBoxChange = (pmid) => {
     setBioRxivArticles(
       (prevBioRxiv) =>
@@ -1045,12 +1048,13 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   };
 
   const isArticleSelected = (source, idType) => {
+    console.log("soucr from selected",source,":",idType)
     const uniqueId = `${source}_${idType}`; // Create unique ID for checking selection state
     if (source === "BioRxiv") {
       return bioRxivArticles.includes(uniqueId);
     } else if (source === "Public Library of Science (PLOS)") {
       return plosArticles.includes(uniqueId);
-    } else if (source === "Pub") {
+    } else if (source === "pubmed") {
       return selectedArticles.includes(uniqueId); // For other sources
     }
   };
@@ -1747,6 +1751,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                                     height: "14px",
                                     width: "14px",
                                     marginTop: "5px",
+                                    marginLeft:0,
                                   }}
                                   onChange={() =>
                                     handleSourceCheckboxChange(
@@ -2117,7 +2122,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                           <div className="Article-Options-Right">
                             <div
                               class="searchResult-rate"
-                              style={{ display: displayIfLoggedIn }}
+                              // style={{ display: displayIfLoggedIn }}
                             >
                               {[5, 4, 3, 2, 1].map((value) => (
                                 <React.Fragment key={value}>
