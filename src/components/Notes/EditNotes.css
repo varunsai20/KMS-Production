@@ -43,6 +43,7 @@
 .edit-note__form {
   display: flex;
   flex-direction: column;
+  min-height: 15vh;
 }
 
 .edit-note__title {

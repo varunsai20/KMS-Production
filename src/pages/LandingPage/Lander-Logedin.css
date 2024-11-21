@@ -21,7 +21,7 @@
 }
 .Landing-Content-Left {
   position: relative;
-  height: 40vh;
+  /* height: 40vh; */
   display: grid;
   align-content: space-evenly;
 }
@@ -89,7 +89,7 @@
   letter-spacing: 0.02em;
   text-align: left;
   color: #454545;
-  padding: 10px 0px 0px 0px;
+  /* padding: 10px 0px 0px 0px; */
 }
 
 .Landing-Searchbar {
@@ -131,6 +131,7 @@
   border-radius: 24px;
   opacity: 0px;
   justify-content: space-between;
+
 }
 .core-pillars {
   display: flex;
@@ -139,6 +140,7 @@
   border-radius: 24px;
   opacity: 0px;
   justify-content: space-around;
+
 }
 .Feature-Item {
   text-align: center;
@@ -188,11 +190,13 @@
   border-radius: 16px;
   background-color: #ffffff;
   border-image-slice: 1;
-  transition: transform 0.3s;
+  transition: transform 0.3s, box-shadow 0.3s, background-color 0.3s;
 }
 
 .Landing-Features-card:hover {
-  transform: translateY(-5px);
+  /* transform: translateY(-5px); */
+  transform: scale(1.05);
+  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
 }
 
 .Landing-Features-card-Inner {
@@ -223,6 +227,8 @@
 .card-content {
   font-size: 14px;
   color: #666;
+  padding: 0px 7px;
+  text-align: left;
 }
 .Footer {
   width: 100%;
@@ -248,6 +254,13 @@
   border-radius: 8px;
   height: 70vh;
   width: 40%;
+}
+.notes-modal {
+  cursor: default; /* Normal window cursor */
+}
+
+.draggable-header {
+  cursor: move; /* Keep the draggable area cursor as move */
 }
 .close-modal-notes {
   position: absolute;
@@ -380,10 +393,10 @@
 }
 .lander-button-plus {
   color: white;
-  border: 2px solid white;
-  border-radius: 7px;
-  margin: 2% 0% 2% 2%;
   z-index: 1;
+}
+.lander-plusSqaure {
+  width: 2vw;
 }
 .lander-p {
   font-family: manrope;
@@ -898,6 +911,12 @@
     width: 85%;
     margin: 20px auto;
   }
+  .LoggedInFeatures {
+    display: grid;
+    width: 100%;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
 
   .Landing-Features-card {
     text-align: center;
@@ -944,7 +963,4 @@
     margin: 0 auto;
     align-items: center;
   }
-  /* .searchresult-item {
-    height: 10vh;
-  } */
 }

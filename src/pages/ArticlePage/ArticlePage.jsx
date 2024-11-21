@@ -2014,10 +2014,9 @@ const ArticlePage = () => {
                 <div
                   ref={popupRef}
                   className="popup-button"
-
                   style={{
                     position: "absolute",
-                    display: "none", 
+                    display: "none",
                     backgroundColor: "#afa7a7",
                     // padding: "5px",
                     color: "white",
@@ -2201,7 +2200,7 @@ const ArticlePage = () => {
               {openNotes && (
                 <div
                   className="notes-height"
-                  style={{ height: `${notesHeight}vh` }}
+                  style={{ height: `${notesHeight - 5}vh` }}
                 >
                   <Notes selectedText={savedText} notesHeight={notesHeight} />
                   <div

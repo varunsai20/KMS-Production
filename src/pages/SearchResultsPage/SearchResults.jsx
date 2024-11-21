@@ -395,7 +395,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   const handleAnnotate = () => {
     console.log("clicked");
     console.log(annotateData);
-  
+
     if (openAnnotate) {
       setOpenAnnotate(false);
     } else if (annotateData && Object.keys(annotateData).length > 0) {
@@ -424,28 +424,9 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       document.body.style.overflow = "auto";
     };
   }, [annotateLoading]);
-
-  const modalRef = useRef(null); // Ref for modal content
-
-  // Handle clicks outside the modal to close it
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (modalRef.current && !modalRef.current.contains(event.target)) {
-        setIsModalOpen(false); // Close modal if clicked outside
-      }
-    };
-
-    if (isModalOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    } else {
-      document.removeEventListener("mousedown", handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside); // Clean up the event listener
-    };
-  }, [isModalOpen]);
-
+  const handleCloseCollectionModal = () => {
+    setIsModalOpen(false);
+  };
   const isArticleBookmarked = (idType) => {
     const numericIdType = Number(idType);
 
@@ -625,22 +606,9 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       );
 
       if (response.status === 201) {
-        toast.success("Collection Created", {
-          position: "top-center",
-          autoClose: 2000,
-
-          style: {
-            backgroundColor: "rgba(237, 254, 235, 1)",
-            borderLeft: "5px solid rgba(15, 145, 4, 1)",
-            color: "rgba(15, 145, 4, 1)",
-          },
-          progressStyle: {
-            backgroundColor: "rgba(15, 145, 4, 1)",
-          },
-        });
         await fetchCollections(); // Refetch collections after successful creation
         setNewCollectionName("");
-        setIsModalOpen(false);
+        // setIsModalOpen(false);
       }
     } catch (error) {
       toast.error("Failed to CreateCollection", {
@@ -784,7 +752,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       endDate: customEndDate,
     });
   };
-  console.log(location.state)
+  console.log(location.state);
   const handleDateRangeChange = (newRange) => {
     setSelectedDateRange(newRange);
     if (newRange !== "custom") {
@@ -1847,9 +1815,15 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
 
                               {isModalOpen && (
                                 <div className="search-bookmark-modal-overlay">
+                                  <button
+                                    id="close-collection-modal"
+                                    onClick={handleCloseCollectionModal}
+                                  >
+                                    <IoCloseOutline size={20} />
+                                  </button>
                                   <div
                                     className="search-modal-content"
-                                    ref={modalRef}
+                                    // ref={modalRef}
                                   >
                                     <div className="bookmark-p">
                                       <p className="bookmark-para">Bookmarks</p>

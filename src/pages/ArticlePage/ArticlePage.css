@@ -319,11 +319,10 @@
 .derive-predefined-prompts {
   display: flex;
   /* justify-content: flex-end; */
-  gap: 20px;
+  gap: 10px;
   padding: 5px 10px 10px 10px;
 }
 .predefined-prompts button {
-  /* background-color: transparent; */
   border: 1px solid rgb(206 206 206);
   color: black;
   font-size: 14px;
@@ -966,6 +965,8 @@ td {
   }
   .article-chat-query {
     padding: 5px;
+    left: 22%;
+    width: 72%;
   }
   .predefined-prompts {
     padding: 5px 10px 5px 10px;
@@ -975,5 +976,8 @@ td {
   }
   .rate {
     width: 20vh;
+  }
+  .file-showing {
+    height: 7vh;
   }
 }

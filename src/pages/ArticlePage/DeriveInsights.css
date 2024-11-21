@@ -333,6 +333,8 @@
 @media (min-width: 900px) and (max-width: 1366px) {
   .derive-chat-query {
     padding: 5px;
+    left: 22%;
+    width: 72%;
   }
   .derive-predefined-prompts {
     padding: 5px 10px 5px 10px;
