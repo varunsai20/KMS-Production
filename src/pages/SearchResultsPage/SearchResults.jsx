@@ -1599,15 +1599,17 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                     <span style={{ color: "black", fontSize: "14px" }}>
                       Sort by:
                     </span>
-                    <select
-                      className="SearchResult-dropdown"
-                      onChange={handleSortChange}
-                      value={selectedSort}
-                    >
-                      <option value="best_match">Most Relevant</option>
-                      <option value="publication_date">Publication Date</option>
-                      <option value="Ratings">Rating</option>
-                    </select>
+                    <div className="SearchResult-dropdown-container">
+  <select
+    className="SearchResult-dropdown"
+    onChange={handleSortChange}
+    value={selectedSort}
+  >
+    <option value="best_match">Most Relevant</option>
+    <option value="publication_date">Publication Date</option>
+    <option value="Ratings">Rating</option>
+  </select>
+</div>
                   </div>
                 </div>
               </div>

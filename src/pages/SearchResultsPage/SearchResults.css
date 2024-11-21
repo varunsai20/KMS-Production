@@ -437,12 +437,40 @@ button {
   border: none;
 }
 .SearchResult-dropdown {
-  padding: 10px 0;
-  gap: 12px;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-color: white;
+  border: 1px solid #ccc;
+  padding: 10px 0 10px 5px;
+  font-size: 14px;
+  border-radius: 4px;
+  position: relative;
+  width: 100%;
   border-radius: 50px;
-  opacity: 0.7px;
-  outline: none;
 }
+
+.SearchResult-dropdown::-ms-expand {
+  display: none; /* Hides the default arrow in IE */
+}
+
+.SearchResult-dropdown-container {
+  position: relative;
+  width: 135px; /* Adjust as needed */
+}
+
+.SearchResult-dropdown-container::after {
+  content: "";
+    position: absolute;
+    top: 50%;
+    right: 14px;
+    transform: translateY(-25%);
+    border-width: 5px;
+    border-style: solid;
+    border-color: #333 transparent transparent transparent;
+    pointer-events: none;
+}
+
 
 .SearchResult-Options {
   gap: 4px;

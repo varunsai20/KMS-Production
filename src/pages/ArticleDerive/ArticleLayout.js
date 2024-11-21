@@ -354,10 +354,10 @@ const ArticleLayout = () => {
   const handleAnnotate = () => {
     const matchingIdExists =
       annotateData && Object.prototype.hasOwnProperty.call(annotateData, id);
-
+      let chatHistory = [];
     // Check for chatHistory in localStorage
-    const chatHistory = JSON.parse(localStorage.getItem("chatHistory")) || [];
-
+    const chatHistoryRaw = localStorage.getItem("chatHistory");
+      chatHistory = chatHistoryRaw ? JSON.parse(chatHistoryRaw) : [];
     // Find the latest entry with a file_url
     const latestFileEntry = chatHistory
       .filter((entry) => entry.file_url) // Filter entries with file_url
@@ -677,8 +677,18 @@ const ArticleLayout = () => {
               className={`search-annotate-icon ${
                 openAnnotate ? "open" : "closed"
               }`}
-              onClick={handleAnnotate}
-              style={{
+              onClick={() => {
+                let chatHistory = [];
+                // Check for chatHistory in localStorage
+                const chatHistoryRaw = localStorage.getItem("chatHistory");
+                  chatHistory = chatHistoryRaw ? JSON.parse(chatHistoryRaw) : [];
+                  if (chatHistory.length > 0) {
+                  handleAnnotate(); // Only call handleAnnotate if chatHistory exists
+                } else {
+                  alert("No chat history available"); // Optional: Notify the user
+                }
+              }}
+                            style={{
                 opacity: annotateData && annotateData.length > 0 ? 1 : 1, // Adjust visibility when disabled
               }}
             >

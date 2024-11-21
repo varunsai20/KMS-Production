@@ -62,7 +62,7 @@ const Annotation = ({
       console.error(`Article with ID ${articleId} not found in the source.`);
     }
   };
-
+  
   const capitalizeFirstLetter = (string) => {
     return string.charAt(0).toUpperCase() + string.slice(1);
   };
@@ -197,7 +197,12 @@ const Annotation = ({
       >
         <p style={{ textAlign: "start" }}>Annotations</p>
       </div>
-      {annotateData?<div className="search-Annotate-tables">
+      {annotateData &&
+  Object.keys(annotateData).some(
+    (key) =>
+      annotateData[key] && // Ensure value is not null or undefined
+      Object.keys(annotateData[key]).length > 0 // Check if value is a non-empty object
+  )?<div className="search-Annotate-tables">
         <table>
           <thead>
             <tr className="search-table-head">
@@ -209,7 +214,9 @@ const Annotation = ({
           </thead>
           <tbody>{renderAnnotations()}</tbody>
         </table>
-      </div>:<span>No annotate data to display</span>}
+      </div>:<div style={{ textAlign: "center", fontSize: "15px", marginTop: "20px" }}>
+      No data to display
+    </div>}
     </div>
   );
 };
