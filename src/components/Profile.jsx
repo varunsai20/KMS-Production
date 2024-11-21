@@ -308,7 +308,7 @@
 
             {/* Action Buttons */}
             <div className="form-actions">
-              <button type="submit" className="create-button" disabled={disableIfUserRole} style={{ opacity: disableIfUserRole ? 0.5 : 1,cursor:"not-allowed"}}>
+              <button type="submit" className="create-button" disabled={disableIfUserRole} style={{ opacity: disableIfUserRole ? 0.5 : 1,cursor:disableIfUserRole?"not-allowed":"pointer",display:disableIfUserRole?"none":"undefined"}}>
                 Save
               </button>
             </div>

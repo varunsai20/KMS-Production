@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import "./Annotations.css";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCaretDown, faCaretRight } from '@fortawesome/free-solid-svg-icons';
 const Annotation = ({
   openAnnotate,
   annotateData,

@@ -1816,7 +1816,8 @@ const ArticleDerive = ({
           {uploadedFile && (
             <div className="file-showing">
               <span className="uploaded-file-indicator">
-                {uploadedFile.name}
+                <img style={{width:"25px",height:"25px"}} src={FileIconForDocument} alt="File Icon" />
+                <span style={{width:"max-content"}}>{uploadedFile.name}</span>
                 <FontAwesomeIcon
                   icon={faTimes}
                   onClick={removeUploadedFile}

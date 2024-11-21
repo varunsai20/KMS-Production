@@ -344,7 +344,7 @@
   height: 5vh;
   border-radius: 5px;
   margin: 0% 0% 1% 2%;
-  background: #c4dad2;
+  background: rgba(234, 234, 236, 1);
 }
 .cancel-file {
   padding: 2px 0px 0px 9px;
@@ -953,7 +953,7 @@ td {
   flex-direction: row;
   /* justify-content: flex-start; */
   float: right;
-  background: aquamarine;
+  background: rgba(234, 234, 236, 1);
   padding: 10px;
   border-radius: 12px;
   align-items: flex-end;
