@@ -919,14 +919,6 @@ const ArticleDerive = ({
   const storedSessionId =
     localStorage.getItem("sessionId") || localStorage.getItem("session_id");
   const handleDeriveClick = async () => {
-    if (!query.trim()) {
-      // Check if query is empty or contains only whitespace
-      toast.error("Please enter a question to proceed", {
-        position: "top-center",
-        autoClose: 2000,
-      });
-      return; // Exit the function to prevent further execution
-    }
     if (!query && !uploadedFile) {
       toast.error("Please enter a query or upload a file", {
         position: "top-center",
@@ -1788,7 +1780,7 @@ const ArticleDerive = ({
           className="Popup-buttons"
           title="Send to Notes"
         >
-          <span className="send-to-notes">send to notes</span>
+          <span className="send-to-notes">Send to notes</span>
           <LiaTelegramPlane size={20} color="black" />
         </button>
       </div>
