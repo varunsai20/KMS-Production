@@ -7,6 +7,9 @@ import Loading from "./Loading";
 import ReactMarkdown from "react-markdown";
 import Copy from "../assets/images/Copy.svg";
 import Download from "../assets/images/Download.svg";
+import { BsFiletypePdf } from "react-icons/bs";
+import { BsFiletypeDocx } from "react-icons/bs";   
+import { BsFiletypeTxt } from "react-icons/bs";  
 const Citations = ({ handleCloseCitations }) => {
   const [uploadedFile, setUploadedFile] = useState(null);
   const [citationData, setCitationData] = useState([]);
@@ -57,7 +60,19 @@ const Citations = ({ handleCloseCitations }) => {
       setCitationLoading(false);
     }
   };
-  
+  const getFileIcon = (filename) => {
+    const fileExtension = filename.split(".").pop().toLowerCase();
+    switch (fileExtension) {
+      case "pdf":
+        return <BsFiletypePdf style={{ width: "25px", height: "25px" }} />;
+      case "docx":
+        return <BsFiletypeDocx style={{ width: "25px", height: "25px" }} />;
+      case "txt":
+        return <BsFiletypeTxt style={{ width: "25px", height: "25px" }} />;
+      default:
+        return <span style={{ fontSize: "20px" }}>📄</span>;
+    }
+  };
   return (
     <>
       <div className="citation-container">
@@ -67,6 +82,7 @@ const Citations = ({ handleCloseCitations }) => {
           <div className="upload-file" onClick={triggerFileUpload}>
             {uploadedFile ? (
               <div className="uploaded-file-info">
+                {getFileIcon(uploadedFile.name)}
                 <p>{uploadedFile.name}</p> {/* Display uploaded file name */}
               </div>
             ) : (

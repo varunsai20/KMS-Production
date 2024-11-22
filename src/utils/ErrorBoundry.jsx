@@ -20,11 +20,6 @@ const ErrorBoundry = ({ errorCode, onRetry }) => {
       title = "422 - Unprocessable Entity";
       message = "There is a problem with the api";
       break;
-
-    case 403:
-      title = "403 - Forbidden";
-      message = "You don't have permission to access this resource.";
-      break;
     default:
       title = "Error";
       message = "An error occurred. Please try again.";

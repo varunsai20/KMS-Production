@@ -229,7 +229,7 @@ const Lander = () => {
       <div className="Landing-Header">
         <Header />
       </div>
-
+    
       <div className="Landing-Content">
         <div className="Landing-Content-Left">
           <img className="Right2" src={ReactLogo} alt="Right Graphic 2" />
@@ -270,7 +270,7 @@ const Lander = () => {
       <div className="Landing-Features">
         {isLoggedIn ? (
           // Show this section if logged in
-          <>
+          <div className="LoggedinFeatures">
             <div className="Feature-Item">
               <img
                 className="Landing-History-Icon"
@@ -323,7 +323,7 @@ const Lander = () => {
               <span>About Infer</span>
               <span>FAQs</span>
             </div>
-          </>
+          </div>
         ) : (
           // Show this section if not logged in
           <section className="WhyInfer-points">
@@ -419,7 +419,6 @@ const Lander = () => {
               height: "100%",
               display: "flex",
               flexDirection: "column",
-              border: "1px solid #ddd",
             }}
           >
             <div
