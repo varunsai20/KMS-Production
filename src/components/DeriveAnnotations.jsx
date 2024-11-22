@@ -155,9 +155,9 @@ const Annotation = ({
   return (
     <div
       className="search-tables"
-      style={{ height: `${annotateHeight}vh`  }}
+      style={{ height: `${annotateHeight}vh`,border:"none"}}
     >
-      <div
+      {annotateData && Object.keys(annotateData).length > 0?<div
         style={{
           background:
             "linear-gradient(90deg,rgba(254, 118, 117, 0.7) -21.07%,rgba(204, 129, 185, 0.7) 37.85%,rgba(26, 168, 210, 0.7) 97.5%,rgba(76, 210, 217, 0.7) 151.24%)",
@@ -166,23 +166,23 @@ const Annotation = ({
         }}
       >
         <p style={{ textAlign: "start",fontSize:"18px" }}>Annotations</p>
-      </div>
+      </div>:""}
       {annotateData && Object.keys(annotateData).length > 0 ?
       <div className="search-Annotate-tables">
         <table>
           <thead>
             <tr className="search-table-head">
-              <th style={{ width: "25%", fontSize:"15px" }}>Score</th>
-              <th style={{ width: "20%", fontSize:"15px" }}>Values</th>
+              <th style={{ width: "25%", fontSize:"15px" }}>Values</th>
+              <th style={{ width: "20%", fontSize:"15px" }}>Score</th>
               <th style={{ width: "65%", fontSize:"15px" }}>Type</th>
             </tr>
           </thead>
           <tbody>{renderAnnotations()}</tbody>
         </table>
       </div>
-      :<div style={{ textAlign: "center", fontSize: "15px", marginTop: "20px" }}>
+      :openAnnotate && !annotateData?<div style={{ textAlign: "center", fontSize: "15px", marginTop: "20px" }}>
       No data to display
-    </div>}
+    </div>:""}
     </div>
   );
   

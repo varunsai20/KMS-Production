@@ -5,7 +5,9 @@ import { IoCloseOutline } from "react-icons/io5";
 import { useSelector } from "react-redux";
 import Annotation from "./DeriveAnnotations";
 import Loading from "./Loading";
-
+import { BsFiletypePdf } from "react-icons/bs";
+import { BsFiletypeDocx } from "react-icons/bs";   
+import { BsFiletypeTxt } from "react-icons/bs";  
 const GenerateAnnotate = ({ handleCloseAnnotate }) => {
   const { user } = useSelector((state) => state.auth);
   const token = useSelector((state) => state.auth.access_token);
@@ -71,7 +73,19 @@ const GenerateAnnotate = ({ handleCloseAnnotate }) => {
       console.error("Error generating annotations:", error);
     }
   };
-  
+  const getFileIcon = (filename) => {
+    const fileExtension = filename.split(".").pop().toLowerCase();
+    switch (fileExtension) {
+      case "pdf":
+        return <BsFiletypePdf style={{ width: "25px", height: "25px" }} />;
+      case "docx":
+        return <BsFiletypeDocx style={{ width: "25px", height: "25px" }} />;
+      case "txt":
+        return <BsFiletypeTxt style={{ width: "25px", height: "25px" }} />;
+      default:
+        return <span style={{ fontSize: "20px" }}>📄</span>;
+    }
+  };
   return (
     <>
 
@@ -83,6 +97,7 @@ const GenerateAnnotate = ({ handleCloseAnnotate }) => {
           <div className="upload-file" onClick={triggerFileUpload}>
             {uploadedFile ? (
               <div className="uploaded-file-info">
+                {getFileIcon(uploadedFile.name)}
                 <p>{uploadedFile.name}</p> {/* Display uploaded file name */}
               </div>
             ) : (
