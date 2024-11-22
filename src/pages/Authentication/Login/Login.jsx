@@ -6,8 +6,6 @@ import axios from "axios";
 import { login } from "../../../redux/reducers/LoginAuth"; // Import login action
 import { toast } from "react-toastify";
 import Logo from "../../../assets/images/InfersolD17aR04aP01ZL-Polk4a 1.svg";
-//import { SiFacebook } from "react-icons/si";
-import ErrorBoundry from "../../../utils/ErrorBoundry";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -16,7 +14,7 @@ const Login = () => {
   //const [loginError, setloginError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [isButtonDisabled, setIsButtonDisabled] = useState(true);
-  const [errorCode, setErrorCode] = useState(null);
+  //const [errorCode, setErrorCode] = useState(null);
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [showPassword, setShowPassword] = useState(false);
@@ -123,7 +121,7 @@ const Login = () => {
         if (error.response) {
           const statusCode = error.response.status;
 
-          if (statusCode === 401) {
+          if (statusCode === 401 || statusCode === 403) {
             toast.error("Login failed. Please check your credentials.", {
               position: "top-center",
               autoClose: 2000,
@@ -137,21 +135,19 @@ const Login = () => {
               },
             });
             //setloginError("Login failed. Please check your credentials.");
-          } else {
-            setErrorCode(statusCode);
           }
         } else {
           console.error("Unknown error occurred:", error);
-          setErrorCode(500); // Default to internal server error if no response
+          //setErrorCode(500);
         }
       }
     }
   };
-  if (errorCode) {
-    return (
-      <ErrorBoundry errorCode={errorCode} onRetry={() => setErrorCode(null)} />
-    );
-  }
+  // if (errorCode) {
+  //   return (
+  //     <ErrorBoundry errorCode={errorCode} onRetry={() => setErrorCode(null)} />
+  //   );
+  // }
 
   return (
     <>

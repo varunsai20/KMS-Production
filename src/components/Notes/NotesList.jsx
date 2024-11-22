@@ -48,7 +48,7 @@ const NotesList = ({
   return (
     <section className={isOpenNotes ? "Lander-Notes-List" : "Notes-List"}>
       <header className="Notes-List-header">
-        <div className="plus-dots">
+        <div className={isOpenNotes ? "lander-plus-dots" : "plus-dots"}>
           <button
             title="New Note"
             className={isOpenNotes ? "lander-button-plus" : "button-plus"}

@@ -294,12 +294,16 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   }, [selectedSort]);
 
   const sortedRatingData = useMemo(() => {
+    if (!data || !data.articles || !Array.isArray(data.articles)) {
+      return []; // Return an empty array if data or data.articles is missing or not an array
+    }
+
     return [...data.articles].sort((a, b) => {
       const ratingA = getRatingForArticle(a.bioRxiv_id);
       const ratingB = getRatingForArticle(b.bioRxiv_id);
       return ratingB - ratingA; // Sort in descending order by rating
     });
-  }, [data.articles]);
+  }, [data?.articles, getRatingForArticle]);
 
   // Function to handle sorting based on selected option
   const handleSortChange = (e) => {
@@ -348,11 +352,16 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
 
   // Memoized sorting based on similarity score
   const sortedSimilarityData = useMemo(() => {
+    if (!data || !data.articles || !Array.isArray(data.articles)) {
+      return []; // Return an empty array if data or data.articles is invalid
+    }
+
     // Sort the data in descending order by similarity score
     return [...data.articles].sort(
       (a, b) => getSimilarityScore(b) - getSimilarityScore(a)
     );
-  }, [data.articles]); // Re-run sorting only when articles change
+  }, [data?.articles, getSimilarityScore]);
+  // Re-run sorting only when articles change
 
   //
 
@@ -470,19 +479,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
             "collections",
             JSON.stringify(updatedCollections)
           );
-          toast.success("Bookmark unsaved successfully", {
-            position: "top-center",
-            autoClose: 2000,
-            style: {
-              backgroundColor: "rgba(237, 254, 235, 1)",
-              borderLeft: "5px solid rgba(15, 145, 4, 1)",
-              color: "rgba(15, 145, 4, 1)",
-            },
-            progressStyle: {
-              backgroundColor: "rgba(15, 145, 4, 1)",
-            },
-          });
-
           await fetchCollections(); // Refetch collections after successful deletion
         }
       } catch (error) {
@@ -546,7 +542,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
             },
           ],
         };
-
         setCollections(updatedCollections);
         localStorage.setItem("collections", JSON.stringify(updatedCollections));
         toast.success("Added to Existing Collection", {
@@ -608,8 +603,20 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       if (response.status === 201) {
         await fetchCollections(); // Refetch collections after successful creation
         setNewCollectionName("");
-        // setIsModalOpen(false);
+        setIsModalOpen(false);
       }
+      toast.success("New Collection Created", {
+        position: "top-center",
+        autoClose: 1500,
+        style: {
+          backgroundColor: "rgba(237, 254, 235, 1)",
+          borderLeft: "5px solid rgba(15, 145, 4, 1)",
+          color: "rgba(15, 145, 4, 1)",
+        },
+        progressStyle: {
+          backgroundColor: "rgba(15, 145, 4, 1)",
+        },
+      });
     } catch (error) {
       toast.error("Failed to CreateCollection", {
         position: "top-center",
@@ -878,12 +885,19 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
     if (!text) return "";
     if (!searchTerm) return String(text);
 
-    // Convert text to a string before using split
+    // Escape special regex characters in the searchTerm
+    const escapeRegex = (term) =>
+      term.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
+
+    const sanitizedSearchTerm = escapeRegex(searchTerm);
+
+    if (!sanitizedSearchTerm.trim()) return String(text); // Return original text if searchTerm is invalid after escaping
+
     const textString = String(text);
-    const regex = new RegExp(`(${searchTerm})`, "gi");
+    const regex = new RegExp(`(${sanitizedSearchTerm})`, "gi");
 
     return textString.split(regex).map((part, index) =>
-      part.toLowerCase() === searchTerm.toLowerCase() ? (
+      part.toLowerCase() === sanitizedSearchTerm.toLowerCase() ? (
         <b key={index} className="bold" style={{}}>
           <i>{part}</i>
         </b>
@@ -987,9 +1001,9 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
           : [...prevSelected, pmid] // Add checked article
     );
   };
-  console.log(selectedArticles)
-  console.log(bioRxivArticles)
-  console.log(plosArticles)
+  console.log(selectedArticles);
+  console.log(bioRxivArticles);
+  console.log(plosArticles);
 
   const handleBioRxivBoxChange = (pmid) => {
     setBioRxivArticles(
@@ -1048,7 +1062,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   };
 
   const isArticleSelected = (source, idType) => {
-    console.log("soucr from selected",source,":",idType)
+    console.log("soucr from selected", source, ":", idType);
     const uniqueId = `${source}_${idType}`; // Create unique ID for checking selection state
     if (source === "BioRxiv") {
       return bioRxivArticles.includes(uniqueId);
@@ -1600,16 +1614,18 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                       Sort by:
                     </span>
                     <div className="SearchResult-dropdown-container">
-  <select
-    className="SearchResult-dropdown"
-    onChange={handleSortChange}
-    value={selectedSort}
-  >
-    <option value="best_match">Most Relevant</option>
-    <option value="publication_date">Publication Date</option>
-    <option value="Ratings">Rating</option>
-  </select>
-</div>
+                      <select
+                        className="SearchResult-dropdown"
+                        onChange={handleSortChange}
+                        value={selectedSort}
+                      >
+                        <option value="best_match">Most Relevant</option>
+                        <option value="publication_date">
+                          Publication Date
+                        </option>
+                        <option value="Ratings">Rating</option>
+                      </select>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1753,7 +1769,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                                     height: "14px",
                                     width: "14px",
                                     marginTop: "5px",
-                                    marginLeft:0,
+                                    marginLeft: 0,
                                   }}
                                   onChange={() =>
                                     handleSourceCheckboxChange(

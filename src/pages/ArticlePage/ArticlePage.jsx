@@ -12,6 +12,7 @@ import annotate from "../../assets/images/task-square.svg";
 import { useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import { CircularProgress } from "@mui/material";
+
 import uploadimage from "../../assets/images/Upload.svg";
 import FileIconForDocument from "../../assets/images/FileIconforDocument.svg";
 import { TextField } from "@mui/material";
@@ -442,26 +443,6 @@ const ArticlePage = () => {
       }
     }
   };
-
-  const modalRef = useRef(null);
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (modalRef.current && !modalRef.current.contains(event.target)) {
-        setIsModalOpen(false);
-      }
-    };
-
-    if (isModalOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    } else {
-      document.removeEventListener("mousedown", handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [isModalOpen]);
 
   const isArticleBookmarked = (idType) => {
     const numericIdType = Number(idType);
@@ -1831,7 +1812,8 @@ const ArticlePage = () => {
 
                   {isModalOpen && (
                     <div className="bookmark-modal-overlay">
-                      <div className="modal-content" ref={modalRef}>
+                      
+                      <div className="modal-content">
                         {/* Existing Collections */}
                         <div className="bookmark-p">
                           <p className="bookmark-para">Bookmarks</p>
@@ -2030,7 +2012,7 @@ const ArticlePage = () => {
                     className="Popup-buttons"
                     title="Send to Notes"
                   >
-                    <span className="send-to-notes">send to notes</span>
+                    <span className="send-to-notes">Send to notes</span>
                     <LiaTelegramPlane size={20} color="black" />
                   </button>
                 </div>

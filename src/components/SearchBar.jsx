@@ -92,12 +92,17 @@ const SearchBar = ({ renderInputContainer, className }) => {
           console.log(error);
           clearTimeout(timeoutId);
           setLoading(false);
-          if (error.response && error.response.status === 500) {
+          if (
+            error.response &&
+            (error.response.status === 500 ||
+              error.response.status === 404 ||
+              error.response.status === 422)
+          ) {
             navigate("/server-error");
           } else {
             navigate("/search", { state: { data: [], searchQuery } });
           }
-          navigate("/search", { state: { data: [], searchQuery } });
+          // navigate("/search", { state: { data: [], searchQuery } });
           console.error("Error fetching data from the API", error);
         });
     }
