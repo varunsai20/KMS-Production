@@ -678,15 +678,7 @@ const ArticleLayout = () => {
                 openAnnotate ? "open" : "closed"
               }`}
               onClick={() => {
-                let chatHistory = [];
-                // Check for chatHistory in localStorage
-                const chatHistoryRaw = localStorage.getItem("chatHistory");
-                  chatHistory = chatHistoryRaw ? JSON.parse(chatHistoryRaw) : [];
-                  if (chatHistory.length > 0) {
-                  handleAnnotate(); // Only call handleAnnotate if chatHistory exists
-                } else {
-                  alert("No chat history available"); // Optional: Notify the user
-                }
+                handleAnnotate();
               }}
                             style={{
                 opacity: annotateData && annotateData.length > 0 ? 1 : 1, // Adjust visibility when disabled

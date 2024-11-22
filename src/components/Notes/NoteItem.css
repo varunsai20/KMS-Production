@@ -17,9 +17,9 @@
   transition: background-color 0.3s ease;
 }
 
-.NoteItem:hover {
+/* .NoteItem:hover {
   box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.5);
-}
+} */
 
 #title {
   font-family: Manrope;

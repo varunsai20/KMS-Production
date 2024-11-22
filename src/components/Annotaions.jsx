@@ -184,7 +184,7 @@ const Annotation = ({
   return (
     <div
       className="search-tables"
-      style={{ height: `${annotateHeight}vh`, overflowY: "auto" }}
+      style={{ height: `${annotateHeight}vh` }}
     >
       <div
         style={{
@@ -202,14 +202,17 @@ const Annotation = ({
     (key) =>
       annotateData[key] && // Ensure value is not null or undefined
       Object.keys(annotateData[key]).length > 0 // Check if value is a non-empty object
-  )?<div className="search-Annotate-tables">
+  )?<div className="search-Annotate-tables"style={{
+    maxHeight: `${annotateHeight - 10}vh`,
+    overflowY: "auto",
+  }}>
         <table>
           <thead>
             <tr className="search-table-head">
-              <th style={{ width: "23%", textAlign: "center" }}>ID</th>
-              <th style={{ width: "12%", textAlign: "center" }}>Score</th>
-              <th style={{ width: "20%", textAlign: "center" }}>Type</th>
-              <th style={{ width: "40%", textAlign: "center" }}>Text</th>
+              <th style={{ width: "23%" }}>ID</th>
+              <th style={{ width: "12%" }}>Score</th>
+              <th style={{ width: "20%" }}>Type</th>
+              <th style={{ width: "40%" }}>Text</th>
             </tr>
           </thead>
           <tbody>{renderAnnotations()}</tbody>

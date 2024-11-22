@@ -229,7 +229,7 @@ const Lander = () => {
       <div className="Landing-Header">
         <Header />
       </div>
-
+    
       <div className="Landing-Content">
         <div className="Landing-Content-Left">
           <img className="Right2" src={ReactLogo} alt="Right Graphic 2" />

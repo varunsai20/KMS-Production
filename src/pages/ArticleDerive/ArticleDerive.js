@@ -13,6 +13,9 @@ import ReactMarkdown from "react-markdown";
 import { CircularProgress } from "@mui/material";
 import uploadimage from "../../assets/images/Upload.svg";
 import FileIconForDocument from "../../assets/images/FileIconforDocument.svg";
+import { BsFiletypePdf } from "react-icons/bs";
+import { BsFiletypeDocx } from "react-icons/bs";   
+import { BsFiletypeTxt } from "react-icons/bs";                                   
 import { TextField } from "@mui/material";
 import Annotation from "../../components/Annotaions";
 import { faBookmark as regularBookmark } from "@fortawesome/free-regular-svg-icons";
@@ -1607,7 +1610,19 @@ const ArticleDerive = ({
   const handleDragLeave = () => {
     setIsDragging(false);
   };
-
+  const getFileIcon = (filename) => {
+    const fileExtension = filename.split(".").pop().toLowerCase();
+    switch (fileExtension) {
+      case "pdf":
+        return <BsFiletypePdf style={{ width: "25px", height: "25px" }} />;
+      case "docx":
+        return <BsFiletypeDocx style={{ width: "25px", height: "25px" }} />;
+      case "txt":
+        return <BsFiletypeTxt style={{ width: "25px", height: "25px" }} />;
+      default:
+        return <span style={{ fontSize: "20px" }}>📄</span>;
+    }
+  };
   const handleDrop = (event) => {
     event.preventDefault();
     setIsDragging(false);
@@ -1622,6 +1637,7 @@ const ArticleDerive = ({
       handleFileUpload({ target: { files: [file] } });
     }
   };
+  
   return (
     <>
       <div
@@ -1676,7 +1692,7 @@ const ArticleDerive = ({
                   {chat.file_url ? (
                     <div className="chat-file">
                       <div>
-                        <img src={FileIconForDocument} alt="File Icon" />
+                      {getFileIcon(chat.file_url)}
                       </div>
                       <div
                         style={{
@@ -1690,16 +1706,16 @@ const ArticleDerive = ({
                             {decodeURIComponent(chat.file_url.split("/").pop())}
                           </strong>
                         </span>
-                        <span>
+                        {/* <span>
                           {chat.file_url.split(".").pop().toUpperCase()}
-                        </span>
+                        </span> */}
                       </div>
                     </div>
                   ) : (
                     chat.file && (
                       <div className="chat-file">
                         <div>
-                          <img src={FileIconForDocument} alt="File Icon" />
+                        {getFileIcon(chat.file.name)}
                         </div>
                         <div
                           style={{
@@ -1825,7 +1841,7 @@ const ArticleDerive = ({
           {uploadedFile && (
             <div className="file-showing">
               <span className="uploaded-file-indicator">
-                <img style={{width:"25px",height:"25px"}} src={FileIconForDocument} alt="File Icon" />
+              {getFileIcon(uploadedFile.name)}
                 <span style={{width:"max-content"}}>{uploadedFile.name}</span>
                 <FontAwesomeIcon
                   icon={faTimes}

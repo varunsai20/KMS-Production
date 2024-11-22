@@ -54,10 +54,11 @@
   border: none;
 }
 .generate-close-collection {
+  border-bottom: 1px dashed; 
   padding: 0;
   position: absolute;
   top: calc(50% - 38vh);
-  right: calc(1% - 13px);
+  right: calc(1% - 9px);
   border: none;
   cursor: pointer;
   z-index: 1001;

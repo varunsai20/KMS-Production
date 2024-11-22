@@ -17,9 +17,10 @@ const NotesList = ({
   isOpenNotes,
   height,
   oncloseNotes,
+  notesHeight
 }) => {
   const [filteredNotes, setFilteredNotes] = useState(notes);
-
+  console.log(height)
   useEffect(() => {
     // Filter and sort notes based on last_updated_at
     if (filterText.trim() === "") {
@@ -88,7 +89,7 @@ const NotesList = ({
       <div
         className={isOpenNotes ? "lander-notes__container" : "notes__container"}
         style={
-          isOpenNotes ? { height: `${height - 110}px`, overflowY: "auto" } : {}
+          isOpenNotes ? { height: `${height - 110}px`, overflowY: "auto" } : {height: `${notesHeight - 10}vh`, overflowY: "auto"}
         }
       >
         {filteredNotes.length === 0 && (

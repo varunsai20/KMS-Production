@@ -15,7 +15,7 @@ const NotesManager = ({
   oncloseNotes,
 }) => {
   console.log(propSelectedText);
-
+  console.log(notesHeight)
   const { user } = useSelector((state) => state.auth);
   const user_id = user?.user_id;
   const token = useSelector((state) => state.auth.access_token);
@@ -190,6 +190,7 @@ const NotesManager = ({
           onDeleteNote={handleDeleteNote}
           isOpenNotes={isOpenNotes}
           height={height}
+          notesHeight={notesHeight}
           oncloseNotes={oncloseNotes}
           fetchNotes={fetchNotes}
         />
