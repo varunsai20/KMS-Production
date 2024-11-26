@@ -61,9 +61,6 @@ const Login = () => {
           email,
           password,
         });
-
-        // Check the login response and ensure token, userId, and other fields are received
-
         if (response.status === 200) {
           const token = response.data.access_token;
           const userId = response.data.user_id;
@@ -134,20 +131,16 @@ const Login = () => {
                 backgroundColor: "rgba(145, 4, 4, 1)",
               },
             });
-            //setloginError("Login failed. Please check your credentials.");
+          } else {
+            navigate("/server-error");
           }
         } else {
           console.error("Unknown error occurred:", error);
-          //setErrorCode(500);
+          navigate("/server-error");
         }
       }
     }
   };
-  // if (errorCode) {
-  //   return (
-  //     <ErrorBoundry errorCode={errorCode} onRetry={() => setErrorCode(null)} />
-  //   );
-  // }
 
   return (
     <>
@@ -255,11 +248,6 @@ const Login = () => {
               Continue with Facebook
             </button>
           </div>
-          {/* {loginError && (
-            <p className="error-message" style={{ color: "red" }}>
-              {loginError}
-            </p>
-          )} */}
         </form>
       </div>
     </>

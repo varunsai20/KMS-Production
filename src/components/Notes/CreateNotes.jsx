@@ -269,13 +269,6 @@ const Createnotes = ({
     //}
   };
   console.log("text is saved", textToSave);
-  // const handleCloseClick = () => {
-  //   if (unsavedChanges) {
-  //     setShowConfirm(true);
-  //   } else {
-  //     onClose();
-  //   }
-  // };
   const handleCloseClick = () => {
     const localUnsavedChanges = localStorage.getItem("unsavedChanges");
     if (unsavedChanges || localUnsavedChanges === "true") {

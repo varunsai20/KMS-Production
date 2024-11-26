@@ -1,6 +1,7 @@
 import React from "react";
 import { Box, Typography, Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import { PiSmileySad } from "react-icons/pi";
 
 const Error500 = () => {
   const navigate = useNavigate();
@@ -19,7 +20,7 @@ const Error500 = () => {
       }}
     >
       <Typography variant="h3" sx={{ mb: 2, fontWeight: "bold" }}>
-        500 - Server Error
+        <PiSmileySad size={100} />
       </Typography>
       <Typography variant="body1" sx={{ mb: 4 }}>
         Oops! Something went wrong. Please try again later.
