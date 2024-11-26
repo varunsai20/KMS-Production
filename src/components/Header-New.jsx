@@ -9,7 +9,6 @@ import "./Header-New.css";
 import Logo from "../assets/images/InfersolD17aR04aP01ZL-Polk4a 1.svg";
 import ProfileIcon from "../assets/images/Profile-start.svg";
 import { toast } from "react-toastify";
-import ErrorBoundry from "../utils/ErrorBoundry";
 
 import axios from "axios";
 
@@ -20,7 +19,7 @@ const Header = () => {
 
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
   const { user, profileUpdated } = useSelector((state) => state.auth);
-  const [errorCode, setErrorCode] = useState();
+  //const [errorCode, setErrorCode] = useState();
 
   const [currentProfileImage, setCurrentProfileImage] = useState(ProfileIcon);
 
@@ -48,16 +47,11 @@ const Header = () => {
       dispatch(logout());
       navigate("/");
     } catch (error) {
-      setErrorCode(error.response.status);
+      navigate("/server-error");
       console.error("Error logging out:", error);
       toast.error("Error logging out:", error);
     }
   };
-  if (errorCode) {
-    return (
-      <ErrorBoundry errorCode={errorCode} onRetry={() => setErrorCode(null)} />
-    );
-  }
 
   // Handle profile click
   const handleProfileClick = () => {

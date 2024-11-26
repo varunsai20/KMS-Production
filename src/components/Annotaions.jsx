@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCaretDown, faCaretRight } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCaretDown, faCaretRight } from "@fortawesome/free-solid-svg-icons";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import "./Annotations.css";
 const Annotation = ({
@@ -62,7 +62,7 @@ const Annotation = ({
       console.error(`Article with ID ${articleId} not found in the source.`);
     }
   };
-  
+
   const capitalizeFirstLetter = (string) => {
     return string.charAt(0).toUpperCase() + string.slice(1);
   };
@@ -131,28 +131,37 @@ const Annotation = ({
             <tr className="search-table-body" key={categoryKey}>
               <td
                 style={{
-                  paddingLeft: index === 0 ? 0 : 30
-                }}  
+                  paddingLeft: index === 0 ? 0 : 30,
+                }}
               >
-                <div style={{display:"flex"}}>
-                {index === 0 && (
-                  <button onClick={() => toggleExpandPmid(pmid)}>
-                    {isExpanded ? <FontAwesomeIcon icon={faCaretDown} style={{ color: 'grey', width: '16px' }}  />: <FontAwesomeIcon icon={faCaretRight} style={{ color: 'grey', fontSize: '16px' }} />}
-                  </button>
-                )}
-                {index === 0 && (
-                  <a
-                    style={{
-                      color: "#1a82ff",
-                      fontWeight: 600,
-                      cursor: "pointer",
-                    }}
-                    onClick={() => handleNavigate(pmid)}
-                  >
-                    {pmid}
-                  </a>
-
-                )}
+                <div style={{ display: "flex" }}>
+                  {index === 0 && (
+                    <button onClick={() => toggleExpandPmid(pmid)}>
+                      {isExpanded ? (
+                        <FontAwesomeIcon
+                          icon={faCaretDown}
+                          style={{ color: "grey", width: "16px" }}
+                        />
+                      ) : (
+                        <FontAwesomeIcon
+                          icon={faCaretRight}
+                          style={{ color: "grey", fontSize: "16px" }}
+                        />
+                      )}
+                    </button>
+                  )}
+                  {index === 0 && (
+                    <a
+                      style={{
+                        color: "#1a82ff",
+                        fontWeight: 600,
+                        cursor: "pointer",
+                      }}
+                      onClick={() => handleNavigate(pmid)}
+                    >
+                      {pmid}
+                    </a>
+                  )}
                 </div>
               </td>
               <td>{annotationScore}</td>
@@ -182,10 +191,7 @@ const Annotation = ({
   };
 
   return (
-    <div
-      className="search-tables"
-      style={{ height: `${annotateHeight}vh` }}
-    >
+    <div className="search-tables" style={{ height: `${annotateHeight}vh` }}>
       <div
         style={{
           // background: "rgba(251, 251, 253, 1)",
@@ -198,28 +204,38 @@ const Annotation = ({
         <p style={{ textAlign: "start" }}>Annotations</p>
       </div>
       {annotateData &&
-  Object.keys(annotateData).some(
-    (key) =>
-      annotateData[key] && // Ensure value is not null or undefined
-      Object.keys(annotateData[key]).length > 0 // Check if value is a non-empty object
-  )?<div className="search-Annotate-tables"style={{
-    maxHeight: `${annotateHeight - 10}vh`,
-    overflowY: "auto",
-  }}>
-        <table>
-          <thead>
-            <tr className="search-table-head">
-              <th style={{ width: "23%" }}>ID</th>
-              <th style={{ width: "12%" }}>Score</th>
-              <th style={{ width: "20%" }}>Type</th>
-              <th style={{ width: "40%" }}>Text</th>
-            </tr>
-          </thead>
-          <tbody>{renderAnnotations()}</tbody>
-        </table>
-      </div>:<div style={{ textAlign: "center", fontSize: "15px", marginTop: "20px" }}>
-      No data to display
-    </div>}
+      Object.keys(annotateData).some(
+        (key) =>
+          annotateData[key] && // Ensure value is not null or undefined
+          Object.keys(annotateData[key]).length > 0 // Check if value is a non-empty object
+      ) ? (
+        <div
+          className="search-Annotate-tables"
+          style={{
+            maxHeight: `${annotateHeight - 10}vh`,
+            overflowY: "auto",
+            overflowX: "hidden",
+          }}
+        >
+          <table>
+            <thead>
+              <tr className="search-table-head">
+                <th style={{ width: "23%" }}>ID</th>
+                <th style={{ width: "12%" }}>Score</th>
+                <th style={{ width: "20%" }}>Type</th>
+                <th style={{ width: "40%" }}>Text</th>
+              </tr>
+            </thead>
+            <tbody>{renderAnnotations()}</tbody>
+          </table>
+        </div>
+      ) : (
+        <div
+          style={{ textAlign: "center", fontSize: "15px", marginTop: "20px" }}
+        >
+          No data to display
+        </div>
+      )}
     </div>
   );
 };

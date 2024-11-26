@@ -1,42 +1,87 @@
-import React from "react";
-//import "./ErrorHandler.css"; // Add appropriate styles
+import React, { useState, useEffect } from "react";
+import { Offline, Online } from "react-detect-offline";
+import { MdOutlineWifiOff } from "react-icons/md";
+import { IoWifiSharp } from "react-icons/io5";
 
-const ErrorBoundry = ({ errorCode, onRetry }) => {
-  let title = "Something went wrong";
-  let message = "An unexpected error occurred.";
-  let buttonLabel = "Retry";
+const ErrorBoundary = () => {
+  const [showOnlineMessage, setShowOnlineMessage] = useState(false);
 
-  switch (errorCode) {
-    case 404:
-      title = "404 - Page Not Found";
-      message = "The page you are looking for does not exist.";
-      buttonLabel = "Go Back";
-      break;
-    case 500:
-      title = "500 - Internal Server Error";
-      message = "Our servers are facing issues. Please try again later.";
-      break;
-    case 422:
-      title = "422 - Unprocessable Entity";
-      message = "There is a problem with the api";
-      break;
-    default:
-      title = "Error";
-      message = "An error occurred. Please try again.";
-      break;
-  }
+  useEffect(() => {
+    const handleOnline = () => {
+      setShowOnlineMessage(true);
+      setTimeout(() => setShowOnlineMessage(false), 3000);
+    };
+
+    // Listen for the 'online' event
+    window.addEventListener("online", handleOnline);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+    };
+  }, []);
 
   return (
-    <div className="error-handler">
-      <h1>{title}</h1>
-      <p>{message}</p>
-      {onRetry && (
-        <button onClick={onRetry} className="error-handler-button">
-          {buttonLabel}
-        </button>
-      )}
-    </div>
+    <>
+      <Online>
+        {showOnlineMessage && (
+          <div style={styles.onlineBanner}>
+            <IoWifiSharp style={styles.icon} />
+            <span style={styles.text}>You're back online!</span>
+          </div>
+        )}
+      </Online>
+      <Offline>
+        <div style={styles.offlineBanner}>
+          <MdOutlineWifiOff style={styles.icon} />
+          <span style={styles.text}>
+            Internet connection lost. Please check your connection.
+          </span>
+        </div>
+      </Offline>
+    </>
   );
 };
 
-export default ErrorBoundry;
+const styles = {
+  onlineBanner: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 1000,
+    backgroundColor: "#4caf50",
+    color: "white",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "10px 0",
+    boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+    fontFamily: "manrope",
+    transition: "opacity 0.5s ease-in-out",
+  },
+  offlineBanner: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 1000,
+    backgroundColor: "#f44336",
+    color: "white",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "10px 0",
+    boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+    fontFamily: "manrope",
+    transition: "opacity 0.5s ease-in-out",
+  },
+  icon: {
+    marginRight: "10px",
+    fontSize: "24px",
+  },
+  text: {
+    fontSize: "16px",
+  },
+};
+
+export default ErrorBoundary;

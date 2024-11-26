@@ -29,14 +29,10 @@
 }
 
 .edit-save-button {
-  /* padding: 5px 3px 5px 5px; */
   font-size: 17px;
-  /* width: 18%; */
   height: 30px;
   color: white;
   border-radius: 5px;
-  /* background-color: #1a82ff;
-  box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px; */
   cursor: pointer;
 }
 
@@ -304,17 +300,12 @@
 }
 
 .custom-ordered-list li {
-  counter-increment: myCounter; /* Increment the counter */
+  counter-increment: myCounter;
 }
-
 .custom-ordered-list li::before {
-  content: counter(myCounter) ") "; /* Add the number followed by ')' */
+  content: counter(myCounter) ") ";
 }
-
-/* Ensure the contentEditable div has a proper border and padding */
 .edit-note__details {
-  /* border: 1px solid #ccc; */
   border-radius: 5px;
   padding: 10px;
-  /* min-height: 150px; */
 }

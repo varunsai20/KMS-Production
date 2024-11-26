@@ -149,29 +149,25 @@
 .note-save-button {
   margin: 2%;
   font-size: 16px;
-  /* width: 16%; */
+
   height: 30px;
   color: white;
 
   border-radius: 8px;
-  /* background-color: #1a82ff; */
-  /* box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px; */
-  /* padding-top: 10px; */
 }
 .custom-ordered-list {
   margin: 0;
   padding: 0;
-  list-style-type: none; /* Remove default numbering */
-  counter-reset: myCounter; /* Reset the counter */
+  list-style-type: none;
+  counter-reset: myCounter;
 }
 
 .custom-ordered-list li {
-  counter-increment: myCounter; /* Increment the counter */
+  counter-increment: myCounter;
 }
 
 .custom-ordered-list li::before {
-  content: counter(myCounter) ") "; /* Add the number followed by ')' */
-  /* margin-right: 10px; */
+  content: counter(myCounter) ") ";
 }
 .note-taking ol {
   margin: 0px 0px 0px 16px;
@@ -188,13 +184,13 @@
 }
 .note-taking p {
   margin-top: 0;
-  margin-bottom: 1em; /* Controls gap between paragraphs */
+  margin-bottom: 1em;
 }
 .share-message {
   position: fixed;
   bottom: 20px;
   right: 20px;
-  background-color: #4caf50; /* Green background */
+  background-color: #4caf50;
   color: white;
   padding: 10px 20px;
   border-radius: 5px;

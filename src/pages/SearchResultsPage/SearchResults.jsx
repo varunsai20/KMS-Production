@@ -992,7 +992,12 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
     };
   }, [loading]);
   // Calculate total pages
-  const totalPages = Math.ceil(data.articles.length / ITEMS_PER_PAGE);
+  //const totalPages = Math.ceil(data.articles.length / ITEMS_PER_PAGE);
+  const totalPages =
+    data && data.articles
+      ? Math.ceil(data.articles.length / ITEMS_PER_PAGE)
+      : 0;
+
   const handleCheckboxChange = (pmid) => {
     setSelectedArticles(
       (prevSelected) =>
