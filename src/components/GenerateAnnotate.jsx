@@ -5,9 +5,9 @@ import { IoCloseOutline } from "react-icons/io5";
 import { useSelector } from "react-redux";
 import Annotation from "./DeriveAnnotations";
 import Loading from "./Loading";
-import { BsFiletypePdf } from "react-icons/bs";
-import { BsFiletypeDocx } from "react-icons/bs";   
-import { BsFiletypeTxt } from "react-icons/bs";  
+import pdfICon from "../assets/images/pdf.png";
+import docxIcon from "../assets/images/docx-file.png";   
+import txtIcon from "../assets/images/txt-file.png";  
 const GenerateAnnotate = ({ handleCloseAnnotate }) => {
   const { user } = useSelector((state) => state.auth);
   const token = useSelector((state) => state.auth.access_token);
@@ -77,11 +77,11 @@ const GenerateAnnotate = ({ handleCloseAnnotate }) => {
     const fileExtension = filename.split(".").pop().toLowerCase();
     switch (fileExtension) {
       case "pdf":
-        return <BsFiletypePdf style={{ width: "25px", height: "25px" }} />;
+        return <img src={pdfICon} alt-="pdf-icon" style={{ width: "25px", height: "25px" }} />;
       case "docx":
-        return <BsFiletypeDocx style={{ width: "25px", height: "25px" }} />;
+        return <img src={docxIcon} alt-="pdf-icon" style={{ width: "25px", height: "25px" }} />;
       case "txt":
-        return <BsFiletypeTxt style={{ width: "25px", height: "25px" }} />;
+        return <img src={txtIcon} alt-="pdf-icon" style={{ width: "25px", height: "25px" }} />;
       default:
         return <span style={{ fontSize: "20px" }}>📄</span>;
     }

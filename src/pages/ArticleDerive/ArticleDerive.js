@@ -13,9 +13,9 @@ import ReactMarkdown from "react-markdown";
 import { CircularProgress } from "@mui/material";
 import uploadimage from "../../assets/images/Upload.svg";
 import FileIconForDocument from "../../assets/images/FileIconforDocument.svg";
-import { BsFiletypePdf } from "react-icons/bs";
-import { BsFiletypeDocx } from "react-icons/bs";   
-import { BsFiletypeTxt } from "react-icons/bs";                                   
+import pdfICon from "../../assets/images/pdf (1).png";
+import docxIcon from "../../assets/images/docx-file.png";   
+import txtIcon from "../../assets/images/txt-file.png";                                  
 import { TextField } from "@mui/material";
 import Annotation from "../../components/Annotaions";
 import { faBookmark as regularBookmark } from "@fortawesome/free-regular-svg-icons";
@@ -1606,11 +1606,11 @@ const ArticleDerive = ({
     const fileExtension = filename.split(".").pop().toLowerCase();
     switch (fileExtension) {
       case "pdf":
-        return <BsFiletypePdf style={{ width: "25px", height: "25px" }} />;
+        return <img src={pdfICon} alt-="pdf-icon" style={{ width: "30px", height: "30px" }} />;
       case "docx":
-        return <BsFiletypeDocx style={{ width: "25px", height: "25px" }} />;
+        return <img src={docxIcon} alt-="pdf-icon" style={{ width: "30px", height: "30px" }} />;
       case "txt":
-        return <BsFiletypeTxt style={{ width: "25px", height: "25px" }} />;
+        return <img src={txtIcon} alt-="pdf-icon" style={{ width: "30px", height: "30px" }} />;
       default:
         return <span style={{ fontSize: "20px" }}>📄</span>;
     }
@@ -1728,7 +1728,7 @@ const ArticleDerive = ({
                   )}
 
                   {/* Display the query */}
-                  <div className="derive-query-asked">
+                  {chat.query?<div className="derive-query-asked">
                     <span>
                       {chat.query === "Summarize this article"
                         ? "Summarize"
@@ -1740,7 +1740,7 @@ const ArticleDerive = ({
                         ? "Key Highlights"
                         : chat.query}
                     </span>
-                  </div>
+                  </div>:""}
 
                   {/* Display the response */}
                   <div className="response" style={{ textAlign: "left" }}>

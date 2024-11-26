@@ -674,28 +674,28 @@ const ArticleContent = ({
 
   const uniqueId = getid();
 
-  // useEffect(() => {
-  //   const articleContent = document.querySelector(".meta");
-  //   const handleScroll = () => {
-  //     if (articleContent.scrollTop > 20) {
-  //       document.getElementById("scrollTopBtn").style.display = "block"; // Show the button
-  //     } else {
-  //       document.getElementById("scrollTopBtn").style.display = "none"; // Hide the button
-  //     }
-  //   };
+  useEffect(() => {
+    const articleContent = document.querySelector(".meta");
+    const handleScroll = () => {
+      if (articleContent.scrollTop > 20) {
+        document.getElementById("scrollTopBtn").style.display = "block"; // Show the button
+      } else {
+        document.getElementById("scrollTopBtn").style.display = "none"; // Hide the button
+      }
+    };
+    
+    // Attach the scroll event listener to .article-content
+    if (articleContent) {
+      articleContent.addEventListener("scroll", handleScroll);
+    }
 
-  //   // Attach the scroll event listener to .article-content
-  //   if (articleContent) {
-  //     articleContent.addEventListener("scroll", handleScroll);
-  //   }
-
-  //   // Clean up event listener on component unmount
-  //   return () => {
-  //     if (articleContent) {
-  //       articleContent.removeEventListener("scroll", handleScroll);
-  //     }
-  //   };
-  // });
+    // Clean up event listener on component unmount
+    return () => {
+      if (articleContent) {
+        articleContent.removeEventListener("scroll", handleScroll);
+      }
+    };
+  });
 
   function scrollToTop() {
     const articleContent = document.querySelector(".meta");
@@ -714,143 +714,161 @@ const ArticleContent = ({
     }
   }, [chatHistory]); // This will trigger when chatHistory changes
 
-  const handleAskClick = async () => {
-    if (!query) {
-      toast.error("Please enter a query");
-      return;
-    }
+    const handleAskClick = async () => {
+      if (!query) {
+        toast.error("Please enter a query");
+        return;
+      }
 
-    setShowStreamingSection(true);
-    setLoading(true);
+      setShowStreamingSection(true);
+      setLoading(true);
 
-    const newChatEntry = { query, response: "", showDot: true };
-    setChatHistory((prevChatHistory) => [...prevChatHistory, newChatEntry]);
+      const newChatEntry = { query, response: "", showDot: true };
+      setChatHistory((prevChatHistory) => [...prevChatHistory, newChatEntry]);
 
-    // Create a unique key for the session based on the source and article id
-    const sessionKey = `${source}_${id}`;
-    const storedSessionId =
-      JSON.parse(sessionStorage.getItem("articleSessions"))?.[sessionKey] || "";
+      // Create a unique key for the session based on the source and article id
+      const sessionKey = `${source}_${id}`;
+      const storedSessionId =
+        JSON.parse(sessionStorage.getItem("articleSessions"))?.[sessionKey] || "";
 
-    const bodyData = JSON.stringify({
-      question: query,
-      user_id: user_id,
-      session_id: storedSessionId || undefined, // Use stored session_id if available
-      source: source,
-      article_id: Number(id),
-    });
+      const bodyData = JSON.stringify({
+        question: query,
+        user_id: user_id,
+        session_id: storedSessionId || undefined, // Use stored session_id if available
+        source: source,
+        article_id: Number(id),
+      });
 
-    try {
-      const response = await fetch(
-        "http://13.127.207.184:80/view_article/generateanswer",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`, // Add the Bearer token here
-          },
-          body: bodyData,
-        }
-      );
-      // console.log("API Response:", response);
+      try {
+        const response = await fetch(
+          "http://13.127.207.184:80/view_article/generateanswer",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`, // Add the Bearer token here
+            },
+            body: bodyData,
+          }
+        );
+        // console.log("API Response:", response);
 
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = "";
-      setQuery("");
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+        setQuery("");
 
-      const readStream = async () => {
-        let done = false;
-        const delay = 100; // Delay between words
-
-        while (!done) {
-          const { value, done: streamDone } = await reader.read();
-          done = streamDone;
-
-          if (value) {
-            buffer += decoder.decode(value, { stream: true });
-
-            while (buffer.indexOf("{") !== -1 && buffer.indexOf("}") !== -1) {
-              let start = buffer.indexOf("{");
-              let end = buffer.indexOf("}", start);
-              if (start !== -1 && end !== -1) {
-                const jsonChunk = buffer.slice(start, end + 1);
-                buffer = buffer.slice(end + 1);
-
-                try {
-                  const parsedData = JSON.parse(jsonChunk);
-                  // console.log("Received Data Chunk:", parsedData); // Log each parsed data chunk
-
-                  // Store session_id for the specific article and source in sessionStorage if it exists
-                  if (parsedData.session_id) {
-                    const articleSessions =
-                      JSON.parse(sessionStorage.getItem("articleSessions")) ||
-                      {};
-                    articleSessions[sessionKey] = parsedData.session_id; // Store session_id under source_id key
-                    sessionStorage.setItem(
-                      "articleSessions",
-                      JSON.stringify(articleSessions)
-                    );
-                  }
-
-                  const answer = parsedData.answer;
-                  const words = answer.split(" ");
-
-                  for (const word of words) {
-                    await new Promise((resolve) => setTimeout(resolve, delay));
-
-                    setChatHistory((chatHistory) => {
-                      const updatedChatHistory = [...chatHistory];
-                      const lastEntryIndex = updatedChatHistory.length - 1;
-
-                      if (lastEntryIndex >= 0) {
-                        updatedChatHistory[lastEntryIndex] = {
-                          ...updatedChatHistory[lastEntryIndex],
-                          response:
-                            (updatedChatHistory[lastEntryIndex].response ||
-                              "") +
-                            " " +
-                            word,
-                          showDot: true,
-                        };
+        const readStream = async () => {
+          try {
+            let done = false;
+            const delay = 100; // Delay between words
+        
+            while (!done) {
+              const { value, done: streamDone } = await reader.read();
+              done = streamDone;
+        
+              if (value) {
+                buffer += decoder.decode(value, { stream: true });
+        
+                while (buffer.indexOf("{") !== -1 && buffer.indexOf("}") !== -1) {
+                  let start = buffer.indexOf("{");
+                  let end = buffer.indexOf("}", start);
+                  if (start !== -1 && end !== -1) {
+                    const jsonChunk = buffer.slice(start, end + 1);
+                    buffer = buffer.slice(end + 1);
+        
+                    try {
+                      const parsedData = JSON.parse(jsonChunk);
+        
+                      if (parsedData.session_id) {
+                        const articleSessions =
+                          JSON.parse(sessionStorage.getItem("articleSessions")) || {};
+                        articleSessions[sessionKey] = parsedData.session_id;
+                        sessionStorage.setItem(
+                          "articleSessions",
+                          JSON.stringify(articleSessions)
+                        );
                       }
-
-                      return updatedChatHistory;
-                    });
-
-                    setResponse((prev) => prev + " " + word);
-
-                    if (endOfMessagesRef.current) {
-                      endOfMessagesRef.current.scrollIntoView({
-                        behavior: "smooth",
+        
+                      const answer = parsedData.answer;
+                      const words = answer.split(" ");
+        
+                      for (const word of words) {
+                        await new Promise((resolve) => setTimeout(resolve, delay));
+        
+                        setChatHistory((chatHistory) => {
+                          const updatedChatHistory = [...chatHistory];
+                          const lastEntryIndex = updatedChatHistory.length - 1;
+        
+                          if (lastEntryIndex >= 0) {
+                            updatedChatHistory[lastEntryIndex] = {
+                              ...updatedChatHistory[lastEntryIndex],
+                              response:
+                                (updatedChatHistory[lastEntryIndex].response || "") +
+                                " " +
+                                word,
+                              showDot: true,
+                            };
+                          }
+        
+                          return updatedChatHistory;
+                        });
+        
+                        setResponse((prev) => prev + " " + word);
+        
+                        if (endOfMessagesRef.current) {
+                          endOfMessagesRef.current.scrollIntoView({
+                            behavior: "smooth",
+                          });
+                        }
+                      }
+                      setChatHistory((chatHistory) => {
+                        const updatedChatHistory = [...chatHistory];
+                        const lastEntryIndex = updatedChatHistory.length - 1;
+                        if (lastEntryIndex >= 0) {
+                          updatedChatHistory[lastEntryIndex].showDot = false;
+                        }
+                        return updatedChatHistory;
                       });
+                    } catch (error) {
+                      console.error("Error parsing JSON chunk:", error);
                     }
                   }
-                  setChatHistory((chatHistory) => {
-                    const updatedChatHistory = [...chatHistory];
-                    const lastEntryIndex = updatedChatHistory.length - 1;
-                    if (lastEntryIndex >= 0) {
-                      updatedChatHistory[lastEntryIndex].showDot = false;
-                    }
-                    return updatedChatHistory;
-                  });
-                } catch (error) {
-                  console.error("Error parsing JSON chunk:", error);
                 }
               }
             }
+            setRefreshSessions((prev) => !prev);
+            setLoading(false);
+            localStorage.setItem("chatHistory", JSON.stringify(chatHistory));
+          } catch (error) {
+            console.error("Error fetching or reading stream:", error);
+        
+            setChatHistory((chatHistory) => {
+              const updatedChatHistory = [...chatHistory];
+              const lastEntryIndex = updatedChatHistory.length - 1;
+        
+              if (lastEntryIndex >= 0) {
+                updatedChatHistory[lastEntryIndex] = {
+                  ...updatedChatHistory[lastEntryIndex],
+                  response: "There is some error. Please try again after some time.",
+                  showDot: false,
+                };
+              }
+        
+              return updatedChatHistory;
+            });
+        
+            setLoading(false);
           }
-        }
-        setRefreshSessions((prev) => !prev);
+        };
+        
+        
+        readStream();
+      } catch (error) {
+        console.error("Error fetching or reading stream:", error);
         setLoading(false);
-        localStorage.setItem("chatHistory", JSON.stringify(chatHistory));
-      };
-
-      readStream();
-    } catch (error) {
-      console.error("Error fetching or reading stream:", error);
-      setLoading(false);
-    }
-  };
+      }
+    };
 
   const handlePromptClick = (queryText) => {
     setQuery(queryText);

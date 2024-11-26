@@ -16,6 +16,9 @@ import ArticleContent from "./ArticleContent";
 import ArticleDerive from "./ArticleDerive";
 import Loading from "../../components/Loading";
 import GenerateAnnotate from "../../components/DeriveAnnotations";
+import { faTimes, faAnglesUp } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+
 const ArticleLayout = () => {
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
   const { user } = useSelector((state) => state.auth);
@@ -509,8 +512,17 @@ const ArticleLayout = () => {
       window.addEventListener("mouseup", onMouseUp);
     }
   };
-
+  function scrollToTop() {
+    const articleContent = document.querySelector(".meta");
+    if (articleContent) {
+      articleContent.scrollTo({
+        top: 0,
+        behavior: "smooth", // This will create the smooth scrolling effect
+      });
+    }
+  }
   return (
+    <>
     <div className="container">
       <Header style={{ width: "100%" }} />
       <div className="content" style={{ width: widthIfLoggedIn }}>
@@ -710,6 +722,12 @@ const ArticleLayout = () => {
         </div>
       </div>
     </div>
+    <div className="ScrollTop">
+    <button onClick={scrollToTop} id="scrollTopBtn" title="Go to top">
+      <FontAwesomeIcon icon={faAnglesUp} />
+    </button>
+  </div>
+  </>
   );
 };
 
