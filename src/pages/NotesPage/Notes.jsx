@@ -62,7 +62,7 @@ const NotesManager = ({
   const fetchNotes = async () => {
     try {
       const response = await axios.get(
-        `http://13.127.207.184:80/notes/getnotes/${user_id}`,
+        `http://13.127.207.184:3000/notes/getnotes/${user_id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -131,7 +131,7 @@ const NotesManager = ({
   const handleDeleteNote = async (noteId) => {
     try {
       const response = await axios.delete(
-        `http://13.127.207.184:80/notes/deletenote/${user_id}/${noteId}`,
+        `http://13.127.207.184:3000/notes/deletenote/${user_id}/${noteId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

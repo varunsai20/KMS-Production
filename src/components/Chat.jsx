@@ -113,7 +113,7 @@ const ArticlePage = () => {
     });
   
     try {
-      const response = await fetch("http://13.127.207.184:80/generateanswer", {
+      const response = await fetch("http://13.127.207.184:3000/generateanswer", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

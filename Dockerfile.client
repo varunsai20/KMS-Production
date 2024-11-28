@@ -21,7 +21,7 @@ COPY . .
 RUN npm run build || cat npm-debug.log
 
 # Expose the application port
-EXPOSE 3000
+EXPOSE 80
 
 # Start the application
 CMD ["npm", "start"]

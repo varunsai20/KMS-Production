@@ -213,7 +213,7 @@ const Createnotes = ({
 
     try {
       const response = await axios.post(
-        "http://13.127.207.184:80/notes/createnote",
+        "http://13.127.207.184:3000/notes/createnote",
         {
           user_id,
           title: note.title,

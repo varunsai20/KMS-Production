@@ -35,7 +35,7 @@ const Researchers = () => {
     const fetchUsers = async () => {
       try {
         const response = await axios.get(
-          `http://13.127.207.184:80/admin/all_users/${adminId}/${organizationName}`,
+          `http://13.127.207.184:3000/admin/all_users/${adminId}/${organizationName}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -94,7 +94,7 @@ const Researchers = () => {
 
     try {
       const response = await axios.put(
-        `http://13.127.207.184:80/admin/update_user_status`,
+        `http://13.127.207.184:3000/admin/update_user_status`,
         {
           admin_id: adminId,
           user_id: userId,
@@ -146,7 +146,7 @@ const Researchers = () => {
   const handleDeleteClick = async (userId) => {
     try {
       await axios.delete(
-        `http://13.127.207.184:80/admin/delete_user/${userId}`,
+        `http://13.127.207.184:3000/admin/delete_user/${userId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

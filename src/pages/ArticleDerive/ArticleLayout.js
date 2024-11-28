@@ -76,7 +76,7 @@ const ArticleLayout = () => {
     const fetchSessions = async () => {
       try {
         const response = await axios.get(
-          `http://13.127.207.184:80/history/conversations/history/${user_id}`,
+          `http://13.127.207.184:3000/history/conversations/history/${user_id}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -127,7 +127,7 @@ const ArticleLayout = () => {
     localStorage.removeItem("session_id");
     try {
       const conversationResponse = await axios.get(
-        `http://13.127.207.184:80/history/conversations/history/${user_id}/${session_id}`,
+        `http://13.127.207.184:3000/history/conversations/history/${user_id}/${session_id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -215,7 +215,7 @@ const ArticleLayout = () => {
   const fetchSessionData = async (session_id) => {
     try {
       const conversationResponse = await axios.get(
-        `http://13.127.207.184:80/history/conversations/history/${user_id}/${session_id}`,
+        `http://13.127.207.184:3000/history/conversations/history/${user_id}/${session_id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -295,7 +295,7 @@ const ArticleLayout = () => {
   const handleSaveEdit = async (sessionId) => {
     try {
       await axios.put(
-        "http://13.127.207.184:80/history/conversations/edit",
+        "http://13.127.207.184:3000/history/conversations/edit",
         {
           user_id,
           session_id: sessionId,
@@ -390,7 +390,7 @@ const ArticleLayout = () => {
     setAnnotateLoading(true);
     try {
       const response = await axios.post(
-        "http://13.127.207.184:80/core_search/annotate_from_url",
+        "http://13.127.207.184:3000/core_search/annotate_from_url",
         { url: fileUrl },
         {
           headers: {
@@ -429,7 +429,7 @@ const ArticleLayout = () => {
     setAnnotateLoading(true);
     try {
       const response = await axios.post(
-        "http://13.127.207.184:80/core_search/annotate",
+        "http://13.127.207.184:3000/core_search/annotate",
         requestBody,
         {
           headers: {

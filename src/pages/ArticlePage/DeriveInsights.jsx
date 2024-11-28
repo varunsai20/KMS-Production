@@ -84,7 +84,7 @@ const DeriveInsights = () => {
     setChatHistory((prevChatHistory) => [...prevChatHistory, newChatEntry]);
 
     try {
-      let url = "http://13.127.207.184:80/insights/upload";
+      let url = "http://13.127.207.184:3000/insights/upload";
       const headers = {
         Authorization: `Bearer ${token}`,
         "ngrok-skip-browser-warning": true,
@@ -107,7 +107,7 @@ const DeriveInsights = () => {
       }
 
       if (session_id) {
-        url = "http://13.127.207.184:80/insights/ask";
+        url = "http://13.127.207.184:3000/insights/ask";
       }
 
       // Use fetch instead of axios to handle streaming response
