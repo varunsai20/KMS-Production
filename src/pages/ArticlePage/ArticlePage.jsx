@@ -125,7 +125,7 @@ const ArticlePage = () => {
   const fetchCollections = async () => {
     try {
       const response = await axios.get(
-        `http://13.127.207.184:80/bookmarks/${user_id}/collections`,
+        `http://13.127.207.184:3000/bookmarks/${user_id}/collections`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -213,7 +213,7 @@ const ArticlePage = () => {
     try {
       // Make API call to /auth/logout with user_id as a parameter
       await axios.post(
-        `http://13.127.207.184:80/auth/logout/?user_id=${user_id}`
+        `http://13.127.207.184:3000/auth/logout/?user_id=${user_id}`
       );
 
       // Dispatch logout action and navigate to the home page
@@ -340,7 +340,7 @@ const ArticlePage = () => {
 
     try {
       const response = await axios.get(
-        `http://13.127.207.184:80/rating/user-ratings/${user_id}/${article_id}/${source}`,
+        `http://13.127.207.184:3000/rating/user-ratings/${user_id}/${article_id}/${source}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -387,7 +387,7 @@ const ArticlePage = () => {
 
     try {
       await axios.post(
-        "http://13.127.207.184:80/rating/rate",
+        "http://13.127.207.184:3000/rating/rate",
         {
           user_id, // Assuming `user_id` is available in the component's state or props
           rating_data: {
@@ -464,7 +464,7 @@ const ArticlePage = () => {
     if (isBookmarked) {
       try {
         const response = await axios.delete(
-          `http://13.127.207.184:80/bookmarks/users/${user_id}/collections/${collectionName}/${idType}`,
+          `http://13.127.207.184:3000/bookmarks/users/${user_id}/collections/${collectionName}/${idType}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -523,7 +523,7 @@ const ArticlePage = () => {
 
     try {
       const response = await axios.post(
-        "http://13.127.207.184:80/bookmarks/users/collections",
+        "http://13.127.207.184:3000/bookmarks/users/collections",
         bookmarkData,
         {
           headers: {
@@ -594,7 +594,7 @@ const ArticlePage = () => {
 
     try {
       const response = await axios.post(
-        "http://13.127.207.184:80/bookmarks/users/collections",
+        "http://13.127.207.184:3000/bookmarks/users/collections",
         newCollection,
         {
           headers: {
@@ -751,7 +751,7 @@ const ArticlePage = () => {
 
     try {
       const response = await fetch(
-        "http://13.127.207.184:80/view_article/generateanswer",
+        "http://13.127.207.184:3000/view_article/generateanswer",
         {
           method: "POST",
           headers: {
@@ -900,7 +900,7 @@ const ArticlePage = () => {
     setChatHistory((prevChatHistory) => [...prevChatHistory, newChatEntry]);
 
     try {
-      let url = "http://13.127.207.184:80/insights/upload";
+      let url = "http://13.127.207.184:3000/insights/upload";
       const headers = {
         Authorization: `Bearer ${token}`,
         "ngrok-skip-browser-warning": true,
@@ -923,7 +923,7 @@ const ArticlePage = () => {
       }
 
       if (storedSessionId) {
-        url = "http://13.127.207.184:80/insights/ask";
+        url = "http://13.127.207.184:3000/insights/ask";
       }
       console.log(storedSessionId);
       // Use fetch instead of axios to handle streaming response
@@ -1092,7 +1092,7 @@ const ArticlePage = () => {
     setAnnotateLoading(true);
     try {
       const response = await axios.post(
-        "http://13.127.207.184:80/core_search/annotate",
+        "http://13.127.207.184:3000/core_search/annotate",
         requestBody,
         {
           headers: {
@@ -1261,7 +1261,7 @@ const ArticlePage = () => {
     const fetchSessions = async () => {
       try {
         const response = await axios.get(
-          `http://13.127.207.184:80/history/conversations/history/${user_id}`,
+          `http://13.127.207.184:3000/history/conversations/history/${user_id}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -1297,7 +1297,7 @@ const ArticlePage = () => {
   const handleSaveEdit = async (sessionId) => {
     try {
       await axios.put(
-        "http://13.127.207.184:80/history/conversations/edit",
+        "http://13.127.207.184:3000/history/conversations/edit",
         {
           user_id,
           session_id: sessionId,
@@ -1343,7 +1343,7 @@ const ArticlePage = () => {
   const handleSessionClick = async (session_id) => {
     try {
       const conversationResponse = await axios.get(
-        `http://13.127.207.184:80/history/conversations/history/${user_id}/${session_id}`,
+        `http://13.127.207.184:3000/history/conversations/history/${user_id}/${session_id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

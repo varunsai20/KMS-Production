@@ -32,7 +32,7 @@ const EditResearcher = () => {
   useEffect(() => {
     const fetchUserDetails = async () => {
       try {
-        const response = await axios.get(`http://13.127.207.184:80/user/profile/${user_id}`, {
+        const response = await axios.get(`http://13.127.207.184:3000/user/profile/${user_id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -108,7 +108,7 @@ const EditResearcher = () => {
         };
   
         const response = await axios.put(
-          `http://13.127.207.184:80/admin/edit_user`,
+          `http://13.127.207.184:3000/admin/edit_user`,
           requestBody,
           {
             headers: {

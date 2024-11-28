@@ -19,7 +19,7 @@ const RecentIntercaions = (displayIfLoggedIn) => {
         const fetchSessions = async () => {
           try {
             const response = await axios.get(
-              `http://13.127.207.184:80/history/conversations/history/${user_id}`,
+              `http://13.127.207.184:3000/history/conversations/history/${user_id}`,
               {
                 headers: {
                   Authorization: `Bearer ${token}`,
@@ -43,7 +43,7 @@ const RecentIntercaions = (displayIfLoggedIn) => {
     const handleSessionClick = async (article_id, source, session_id) => {
         // try {
         //   const conversationResponse = await axios.get(
-        //     `http://13.127.207.184:80/history/conversations/history/${user_id}/${session_id}`,
+        //     `http://13.127.207.184:3000/history/conversations/history/${user_id}/${session_id}`,
         //     {
         //       headers: {
         //         Authorization: `Bearer ${token}`,
@@ -114,7 +114,7 @@ const RecentIntercaions = (displayIfLoggedIn) => {
       const handleSaveEdit = async (sessionId) => {
         try {
           await axios.put(
-            "http://13.127.207.184:80/history/conversations/edit",
+            "http://13.127.207.184:3000/history/conversations/edit",
             {
               user_id,
               session_id: sessionId,

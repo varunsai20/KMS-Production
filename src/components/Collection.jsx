@@ -20,7 +20,7 @@ const Collection = ({ setIsCollectionOpen }) => {
     const fetchCollections = async () => {
       try {
         const response = await axios.get(
-          `http://13.127.207.184:80/bookmarks/${user_id}/collections`,
+          `http://13.127.207.184:3000/bookmarks/${user_id}/collections`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
