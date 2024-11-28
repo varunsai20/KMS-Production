@@ -44,7 +44,7 @@ const NoteItem = ({ note, onEdit, onDelete, isOpenNotes }) => {
 
     try {
       const response = await axios.post(
-        "http://13.127.207.184:3000/notes/sharenotes",
+        "http://13.127.207.184:8081/notes/sharenotes",
         requestData,
         {
           headers: {

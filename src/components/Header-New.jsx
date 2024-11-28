@@ -42,7 +42,7 @@ const Header = () => {
   const handleLogout = async () => {
     try {
       await axios.post(
-        `http://13.127.207.184:3000/auth/logout/?user_id=${userId}`
+        `http://13.127.207.184:8081/auth/logout/?user_id=${userId}`
       );
       dispatch(logout());
       navigate("/");

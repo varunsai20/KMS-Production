@@ -90,7 +90,7 @@ const Lander = () => {
     const fetchSessions = async () => {
       try {
         const response = await axios.get(
-          `http://13.127.207.184:3000/history/conversations/history/${user_id}`,
+          `http://13.127.207.184:8081/history/conversations/history/${user_id}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -130,7 +130,7 @@ const Lander = () => {
     console.log(sessions[0]);
     try {
       const conversationResponse = await axios.get(
-        `http://13.127.207.184:3000/history/conversations/history/${user_id}/${session_id}`,
+        `http://13.127.207.184:8081/history/conversations/history/${user_id}/${session_id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
