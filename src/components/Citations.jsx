@@ -41,7 +41,7 @@ const Citations = ({ handleCloseCitations }) => {
     formData.append("file", uploadedFile);
 
     try {
-      const response = await fetch("http://13.127.207.184:3000/core_search/citations", {
+      const response = await fetch("http://13.127.207.184:8081/core_search/citations", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`, // Replace YOUR_TOKEN_HERE with actual token

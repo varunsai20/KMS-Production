@@ -66,7 +66,7 @@ const Login = () => {
           const userId = response.data.user_id;
           // Fetch user profile with token
           const profileResponse = await axios.get(
-            `http://13.127.207.184:3000/user/profile/${userId}`,
+            `http://13.127.207.184:8081/user/profile/${userId}`,
             {
               headers: {
                 Authorization: `Bearer ${token}`,

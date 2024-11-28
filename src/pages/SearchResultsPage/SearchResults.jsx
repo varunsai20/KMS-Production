@@ -52,7 +52,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   const fetchCollections = async () => {
     try {
       const response = await axios.get(
-        `http://13.127.207.184:3000/bookmarks/${user_id}/collections`,
+        `http://13.127.207.184:8081/bookmarks/${user_id}/collections`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -84,7 +84,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
     try {
       // Make API call to /auth/logout with user_id as a parameter
       await axios.post(
-        `http://13.127.207.184:3000/auth/logout/?user_id=${user_id}`
+        `http://13.127.207.184:8081/auth/logout/?user_id=${user_id}`
       );
 
       // Dispatch logout action and navigate to the home page
@@ -172,7 +172,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
     const fetchRatedArticles = async () => {
       try {
         const response = await axios.get(
-          "http://13.127.207.184:3000/rating/rated-articles",
+          "http://13.127.207.184:8081/rating/rated-articles",
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -459,7 +459,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
     if (isBookmarked) {
       try {
         const response = await axios.delete(
-          `http://13.127.207.184:3000/bookmarks/users/${user_id}/collections/${collectionName}/${idType}`,
+          `http://13.127.207.184:8081/bookmarks/users/${user_id}/collections/${collectionName}/${idType}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -506,7 +506,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
 
     try {
       const response = await axios.post(
-        "http://13.127.207.184:3000/bookmarks/users/collections",
+        "http://13.127.207.184:8081/bookmarks/users/collections",
         bookmarkData,
         {
           headers: {
@@ -591,7 +591,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
 
     try {
       const response = await axios.post(
-        "http://13.127.207.184:3000/bookmarks/users/collections",
+        "http://13.127.207.184:8081/bookmarks/users/collections",
         newCollection,
         {
           headers: {
@@ -674,7 +674,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
     }
 
     // Base URL for the API
-    let apiUrl = `http://13.127.207.184:3000/core_search/?term=${encodeURIComponent(
+    let apiUrl = `http://13.127.207.184:8081/core_search/?term=${encodeURIComponent(
       searchTerm
     )}`;
 
@@ -785,7 +785,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   //     .map((type) => `article_type=${encodeURIComponent(type)}`) // Encode each type for URL safety
   //     .join("&");
 
-  //   const apiUrl = `http://13.127.207.184:3000/core_search/?term=${encodeURIComponent(
+  //   const apiUrl = `http://13.127.207.184:8081/core_search/?term=${encodeURIComponent(
   //     searchTerm
   //   )}&${queryParams}`;
 
@@ -1105,7 +1105,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
     console.log(links);
     try {
       const response = await axios.post(
-        "http://13.127.207.184:3000/core_search/sharearticle",
+        "http://13.127.207.184:8081/core_search/sharearticle",
         emailData,
         {
           headers: {
@@ -1187,7 +1187,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
 
       axios
         .post(
-          "http://13.127.207.184:3000/core_search/annotate",
+          "http://13.127.207.184:8081/core_search/annotate",
           {
             pubmed: pubmedIds,
             biorxiv: biorxivIds,
