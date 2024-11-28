@@ -73,7 +73,7 @@
   
         try {
           const response = await axios.post(
-            `http://13.127.207.184/user/upload_profile_picture?user_id=${user_id}`,
+            `http://13.127.207.184:8081/user/upload_profile_picture?user_id=${user_id}`,
             formData,
             {
               headers: { Authorization: `Bearer ${token}` }

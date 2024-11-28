@@ -57,7 +57,7 @@ const Login = () => {
 
     if (!emailError && !passwordError && email && password) {
       try {
-        const response = await axios.post("http://13.127.207.184/auth/login", {
+        const response = await axios.post("http://13.127.207.184:8081/auth/login", {
           email,
           password,
         });

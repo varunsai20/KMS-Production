@@ -221,7 +221,7 @@ const ArticleContent = ({
       const fetchArticleData = async () => {
         try {
           const response = await axios.get(
-            `http://13.127.207.184/view_article/get_article/${id}?source=${source}`,
+            `http://13.127.207.184:8081/view_article/get_article/${id}?source=${source}`,
             {
               headers: {
                 Authorization: `Bearer ${token}`,
@@ -1442,7 +1442,7 @@ const ArticleContent = ({
       }
 
       const response = await axios.get(
-        `http://13.127.207.184/view_article/get_article/${articleId}?source=${source}`,
+        `http://13.127.207.184:8081/view_article/get_article/${articleId}?source=${source}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
