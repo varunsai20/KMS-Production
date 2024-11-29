@@ -158,7 +158,7 @@ const Editnotes = ({
 
     try {
       const response = await axios.post(
-        "http://13.127.207.184:8081/notes/sharenotes",
+        "https://inferai.ai/api/notes/sharenotes",
         requestData,
         {
           headers: {
@@ -272,7 +272,7 @@ const Editnotes = ({
       try {
         // Post the note to the server
         const response = await axios.put(
-          "http://13.127.207.184:8081/notes/updatenote",
+          "https://inferai.ai/api/notes/updatenote",
           {
             user_id, // Ensure `user_id` is defined and available in your component
             title: updatedNote.title,

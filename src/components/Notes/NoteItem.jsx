@@ -44,7 +44,7 @@ const NoteItem = ({ note, onEdit, onDelete, isOpenNotes }) => {
 
     try {
       const response = await axios.post(
-        "http://13.127.207.184:8081/notes/sharenotes",
+        "https://inferai.ai/api/notes/sharenotes",
         requestData,
         {
           headers: {

@@ -42,7 +42,7 @@ const Header = () => {
   const handleLogout = async () => {
     try {
       await axios.post(
-        `http://13.127.207.184:8081/auth/logout/?user_id=${userId}`
+        `https://inferai.ai/api/auth/logout/?user_id=${userId}`
       );
       dispatch(logout());
       navigate("/");

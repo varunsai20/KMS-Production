@@ -75,7 +75,7 @@ const SearchBar = ({ renderInputContainer, className }) => {
       }, 60000); // 60 seconds
 
       axios
-        .get(`http://13.127.207.184:8081/core_search/?term=${searchQuery}`, {
+        .get(`https://inferai.ai/api/core_search/?term=${searchQuery}`, {
           headers: {
             Authorization: `Bearer ${token}`, // Add your Bearer token here
           },

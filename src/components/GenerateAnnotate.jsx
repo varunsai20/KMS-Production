@@ -52,7 +52,7 @@ const GenerateAnnotate = ({ handleCloseAnnotate }) => {
     formData.append("file", uploadedFile);
 
     try {
-      const response = await fetch("http://13.127.207.184:8081/core_search/annotate_file", {
+      const response = await fetch("https://inferai.ai/api/core_search/annotate_file", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
