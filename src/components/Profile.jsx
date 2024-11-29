@@ -73,7 +73,7 @@
   
         try {
           const response = await axios.post(
-            `https://inferai.ai/api/user/upload_profile_picture?user_id=${user_id}`,
+            `https://inferai.ai/api/user/upload_profile_picture/?user_id=${user_id}`,
             formData,
             {
               headers: { Authorization: `Bearer ${token}` }
