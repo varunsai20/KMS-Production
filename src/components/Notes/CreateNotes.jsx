@@ -213,7 +213,7 @@ const Createnotes = ({
 
     try {
       const response = await axios.post(
-        "http://13.127.207.184:8081/notes/createnote",
+        "https://inferai.ai/api/notes/createnote",
         {
           user_id,
           title: note.title,

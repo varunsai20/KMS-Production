@@ -149,7 +149,7 @@ const ArticleDerive = ({
   const fetchCollections = async () => {
     try {
       const response = await axios.get(
-        `http://13.127.207.184:8081/bookmarks/${user_id}/collections`,
+        `https://inferai.ai/api/bookmarks/${user_id}/collections`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -237,7 +237,7 @@ const ArticleDerive = ({
     try {
       // Make API call to /auth/logout with user_id as a parameter
       await axios.post(
-        `http://13.127.207.184:8081/auth/logout/?user_id=${user_id}`
+        `https://inferai.ai/api/auth/logout/?user_id=${user_id}`
       );
 
       // Dispatch logout action and navigate to the home page
@@ -259,7 +259,7 @@ const ArticleDerive = ({
       const fetchArticleData = async () => {
         try {
           const response = await axios.get(
-            `http://13.127.207.184:8081/view_article/get_article/${id}?source=${source}`,
+            `https://inferai.ai/api/view_article/get_article/${id}?source=${source}`,
             {
               headers: {
                 Authorization: `Bearer ${token}`,
@@ -364,7 +364,7 @@ const ArticleDerive = ({
 
     try {
       const response = await axios.get(
-        `http://13.127.207.184:8081/rating/user-ratings/${user_id}/${article_id}/${source}`,
+        `https://inferai.ai/api/rating/user-ratings/${user_id}/${article_id}/${source}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -411,7 +411,7 @@ const ArticleDerive = ({
 
     try {
       await axios.post(
-        "http://13.127.207.184:8081/rating/rate",
+        "https://inferai.ai/api/rating/rate",
         {
           user_id, // Assuming `user_id` is available in the component's state or props
           rating_data: {
@@ -506,7 +506,7 @@ const ArticleDerive = ({
     if (isBookmarked) {
       try {
         const response = await axios.delete(
-          `http://13.127.207.184:8081/bookmarks/users/${user_id}/collections/${collectionName}/${idType}`,
+          `https://inferai.ai/api/bookmarks/users/${user_id}/collections/${collectionName}/${idType}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -565,7 +565,7 @@ const ArticleDerive = ({
 
     try {
       const response = await axios.post(
-        "http://13.127.207.184:8081/bookmarks/users/collections",
+        "https://inferai.ai/api/bookmarks/users/collections",
         bookmarkData,
         {
           headers: {
@@ -636,7 +636,7 @@ const ArticleDerive = ({
 
     try {
       const response = await axios.post(
-        "http://13.127.207.184:8081/bookmarks/users/collections",
+        "https://inferai.ai/api/bookmarks/users/collections",
         newCollection,
         {
           headers: {
@@ -790,7 +790,7 @@ const ArticleDerive = ({
 
     try {
       const response = await fetch(
-        "http://13.127.207.184:8081/view_article/generateanswer",
+        "https://inferai.ai/api/view_article/generateanswer",
         {
           method: "POST",
           headers: {
@@ -938,7 +938,7 @@ const ArticleDerive = ({
     setChatHistory((prevChatHistory) => [...prevChatHistory, newChatEntry]);
 
     try {
-      let url = "http://13.127.207.184:8081/insights/upload";
+      let url = "https://inferai.ai/api/insights/upload";
       const headers = {
         Authorization: `Bearer ${token}`,
         "ngrok-skip-browser-warning": true,
@@ -961,7 +961,7 @@ const ArticleDerive = ({
       }
 
       if (storedSessionId) {
-        url = "http://13.127.207.184:8081/insights/ask";
+        url = "https://inferai.ai/api/insights/ask";
       }
       console.log(storedSessionId);
       // Use fetch instead of axios to handle streaming response
@@ -1134,7 +1134,7 @@ const ArticleDerive = ({
     setAnnotateLoading(true);
     try {
       const response = await axios.post(
-        "http://13.127.207.184:8081/core_search/annotate",
+        "https://inferai.ai/api/core_search/annotate",
         requestBody,
         {
           headers: {
@@ -1303,7 +1303,7 @@ const ArticleDerive = ({
     const fetchSessions = async () => {
       try {
         const response = await axios.get(
-          `http://13.127.207.184:8081/history/conversations/history/${user_id}`,
+          `https://inferai.ai/api/history/conversations/history/${user_id}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -1339,7 +1339,7 @@ const ArticleDerive = ({
   const handleSaveEdit = async (sessionId) => {
     try {
       await axios.put(
-        "http://13.127.207.184:8081/history/conversations/edit",
+        "https://inferai.ai/api/history/conversations/edit",
         {
           user_id,
           session_id: sessionId,
@@ -1385,7 +1385,7 @@ const ArticleDerive = ({
   const handleSessionClick = async (session_id) => {
     try {
       const conversationResponse = await axios.get(
-        `http://13.127.207.184:8081/history/conversations/history/${user_id}/${session_id}`,
+        `https://inferai.ai/api/history/conversations/history/${user_id}/${session_id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -1498,7 +1498,7 @@ const ArticleDerive = ({
       }
 
       const response = await axios.get(
-        `http://13.127.207.184:8081/view_article/get_article/${articleId}?source=${source}`,
+        `https://inferai.ai/api/view_article/get_article/${articleId}?source=${source}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

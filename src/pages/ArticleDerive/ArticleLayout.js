@@ -76,7 +76,7 @@ const ArticleLayout = () => {
     const fetchSessions = async () => {
       try {
         const response = await axios.get(
-          `http://13.127.207.184:8081/history/conversations/history/${user_id}`,
+          `https://inferai.ai/api/history/conversations/history/${user_id}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -127,7 +127,7 @@ const ArticleLayout = () => {
     localStorage.removeItem("session_id");
     try {
       const conversationResponse = await axios.get(
-        `http://13.127.207.184:8081/history/conversations/history/${user_id}/${session_id}`,
+        `https://inferai.ai/api/history/conversations/history/${user_id}/${session_id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -215,7 +215,7 @@ const ArticleLayout = () => {
   const fetchSessionData = async (session_id) => {
     try {
       const conversationResponse = await axios.get(
-        `http://13.127.207.184:8081/history/conversations/history/${user_id}/${session_id}`,
+        `https://inferai.ai/api/history/conversations/history/${user_id}/${session_id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -295,7 +295,7 @@ const ArticleLayout = () => {
   const handleSaveEdit = async (sessionId) => {
     try {
       await axios.put(
-        "http://13.127.207.184:8081/history/conversations/edit",
+        "https://inferai.ai/api/history/conversations/edit",
         {
           user_id,
           session_id: sessionId,
@@ -390,7 +390,7 @@ const ArticleLayout = () => {
     setAnnotateLoading(true);
     try {
       const response = await axios.post(
-        "http://13.127.207.184:8081/core_search/annotate_from_url",
+        "https://inferai.ai/api/core_search/annotate_from_url",
         { url: fileUrl },
         {
           headers: {
@@ -429,7 +429,7 @@ const ArticleLayout = () => {
     setAnnotateLoading(true);
     try {
       const response = await axios.post(
-        "http://13.127.207.184:8081/core_search/annotate",
+        "https://inferai.ai/api/core_search/annotate",
         requestBody,
         {
           headers: {

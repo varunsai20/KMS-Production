@@ -62,7 +62,7 @@ const NotesManager = ({
   const fetchNotes = async () => {
     try {
       const response = await axios.get(
-        `http://13.127.207.184:8081/notes/getnotes/${user_id}`,
+        `https://inferai.ai/api/notes/getnotes/${user_id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -131,7 +131,7 @@ const NotesManager = ({
   const handleDeleteNote = async (noteId) => {
     try {
       const response = await axios.delete(
-        `http://13.127.207.184:8081/notes/deletenote/${user_id}/${noteId}`,
+        `https://inferai.ai/api/notes/deletenote/${user_id}/${noteId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

@@ -89,7 +89,7 @@ const CreateResearcher = () => {
 
       try {
         const response = await axios.post(
-          `http://13.127.207.184:8081/admin/create-user/${user_id}`,
+          `https://inferai.ai/api/admin/create-user/${user_id}`,
           apiData,
           {
             headers: {

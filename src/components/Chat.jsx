@@ -113,7 +113,7 @@ const ArticlePage = () => {
     });
   
     try {
-      const response = await fetch("http://13.127.207.184:8081/generateanswer", {
+      const response = await fetch("https://inferai.ai/api/generateanswer", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

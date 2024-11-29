@@ -26,7 +26,7 @@ export const fetchSearchResults = (searchTerm) => {
   return async (dispatch) => {
     dispatch(fetchSearchResultsRequest());
     try {
-      const response = await axios.post('http://13.127.207.184:8081/query', { query: searchTerm });
+      const response = await axios.post('https://inferai.ai/api/query', { query: searchTerm });
       dispatch(fetchSearchResultsSuccess(response.data));
     } catch (error) {
       dispatch(fetchSearchResultsFailure(error.message));

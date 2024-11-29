@@ -57,7 +57,7 @@ const Login = () => {
 
     if (!emailError && !passwordError && email && password) {
       try {
-        const response = await axios.post("http://13.127.207.184:8081/auth/login", {
+        const response = await axios.post("https://inferai.ai/api/auth/login", {
           email,
           password,
         });
@@ -66,7 +66,7 @@ const Login = () => {
           const userId = response.data.user_id;
           // Fetch user profile with token
           const profileResponse = await axios.get(
-            `http://13.127.207.184:8081/user/profile/${userId}`,
+            `https://inferai.ai/api/user/profile/${userId}`,
             {
               headers: {
                 Authorization: `Bearer ${token}`,
