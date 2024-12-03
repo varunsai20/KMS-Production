@@ -96,9 +96,9 @@ function AppRoutes() {
 function App() {
   return (
     <Router>
-      // <LogoutHandler>
+
         <AppRoutes />
-      // </LogoutHandler>
+
     </Router>
   );
 }
