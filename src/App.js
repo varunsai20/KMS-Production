@@ -46,7 +46,7 @@ function AppRoutes() {
   return (
     <div className="App">
       <ToastContainer />
-      // <ErrorBoundary />
+
       <Routes>
         <Route path="/" element={<Lander />} />
         <Route path="/login" element={<Login />} />
