@@ -20,7 +20,6 @@ import Profile from "./components/Profile";
 import EditResearcher from "./pages/Admin/EditResearcher";
 import ProtectedRoute from "./protectedRoute";
 import DeriveInsights from "./pages/ArticlePage/DeriveInsights";
-import LogoutHandler from "./LogoutHandler";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -46,7 +45,7 @@ function AppRoutes() {
   return (
     <div className="App">
       <ToastContainer />
-      // <ErrorBoundary />
+
       <Routes>
         <Route path="/" element={<Lander />} />
         <Route path="/login" element={<Login />} />
@@ -96,9 +95,7 @@ function AppRoutes() {
 function App() {
   return (
     <Router>
-      // <LogoutHandler>
-        <AppRoutes />
-      // </LogoutHandler>
+      <AppRoutes />
     </Router>
   );
 }

@@ -8,8 +8,8 @@ import ReactMarkdown from "react-markdown";
 import Copy from "../assets/images/Copy.svg";
 import Download from "../assets/images/Download.svg";
 import pdfICon from "../assets/images/pdf.png";
-import docxIcon from "../assets/images/docx-file.png";   
-import txtIcon from "../assets/images/txt-file.png";  
+import docxIcon from "../assets/images/docx-file.png";
+import txtIcon from "../assets/images/txt-file.png";
 
 const Citations = ({ handleCloseCitations }) => {
   const [uploadedFile, setUploadedFile] = useState(null);
@@ -41,13 +41,16 @@ const Citations = ({ handleCloseCitations }) => {
     formData.append("file", uploadedFile);
 
     try {
-      const response = await fetch("https://inferai.ai/api/core_search/citations", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`, // Replace YOUR_TOKEN_HERE with actual token
-        },
-        body: formData,
-      });
+      const response = await fetch(
+        "https://inferai.ai/api/core_search/citations",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`, // Replace YOUR_TOKEN_HERE with actual token
+          },
+          body: formData,
+        }
+      );
 
       if (response.ok) {
         const result = await response.json();
@@ -65,11 +68,29 @@ const Citations = ({ handleCloseCitations }) => {
     const fileExtension = filename.split(".").pop().toLowerCase();
     switch (fileExtension) {
       case "pdf":
-        return <img src={pdfICon} alt-="pdf-icon" style={{ width: "25px", height: "25px" }} />;
+        return (
+          <img
+            src={pdfICon}
+            alt="pdf-icon"
+            style={{ width: "25px", height: "25px" }}
+          />
+        );
       case "docx":
-        return <img src={docxIcon} alt-="pdf-icon" style={{ width: "25px", height: "25px" }} />;
+        return (
+          <img
+            src={docxIcon}
+            alt="pdf-icon"
+            style={{ width: "25px", height: "25px" }}
+          />
+        );
       case "txt":
-        return <img src={txtIcon} alt-="pdf-icon" style={{ width: "25px", height: "25px" }} />;
+        return (
+          <img
+            src={txtIcon}
+            alt="pdf-icon"
+            style={{ width: "25px", height: "25px" }}
+          />
+        );
       default:
         return <span style={{ fontSize: "20px" }}>📄</span>;
     }
@@ -114,53 +135,63 @@ const Citations = ({ handleCloseCitations }) => {
             >
               Start New
             </button>
-            <button className="generate-button" disabled={!uploadedFile} style={{background:!uploadedFile?"rgba(234, 234, 236, 1)":"",color:!uploadedFile?"rgba(78, 78, 86, 1)":"",cursor:!uploadedFile?"not-allowed":"pointer"}}onClick={handleGenerate}>
-  Generate
-</button>
+            <button
+              className="generate-button"
+              disabled={!uploadedFile}
+              style={{
+                background: !uploadedFile ? "rgba(234, 234, 236, 1)" : "",
+                color: !uploadedFile ? "rgba(78, 78, 86, 1)" : "",
+                cursor: !uploadedFile ? "not-allowed" : "pointer",
+              }}
+              onClick={handleGenerate}
+            >
+              Generate
+            </button>
           </div>
         </div>
         <div className="citation-annotations">
-      {Object.entries(citationData).map(([type, value]) => (
-        <div key={type} className="citation-section">
-          <div className="citations-head-buttons">
-          <h3>{type}:</h3>
-          <div className="action-icons">
-            <img
-            src={Copy}
-            title="Copy"
-            alt="Copy-icon"
-            style={{width:"20px",cursor:"pointer"}}
-              className="copy-button"
-              onClick={() => navigator.clipboard.writeText(value)}
-            >
+          {Object.entries(citationData).map(([type, value]) => (
+            <div key={type} className="citation-section">
+              <div className="citations-head-buttons">
+                <h3>{type}:</h3>
+                <div className="action-icons">
+                  <img
+                    src={Copy}
+                    title="Copy"
+                    alt="Copy-icon"
+                    style={{ width: "20px", cursor: "pointer" }}
+                    className="copy-button"
+                    onClick={() => navigator.clipboard.writeText(value)}
+                  ></img>
+                  <img
+                    src={Download}
+                    alt="DownloadIcon"
+                    title="Download Citation"
+                    className="download-button"
+                    style={{ width: "20px", cursor: "pointer" }}
+                    onClick={() => {
+                      const blob = new Blob([value], { type: "text/plain" });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement("a");
+                      a.href = url;
+                      a.download = `${type}-citation.txt`;
+                      a.click();
+                      URL.revokeObjectURL(url);
+                    }}
+                  ></img>
+                </div>
+              </div>
+              <ReactMarkdown>{value}</ReactMarkdown>
+            </div>
+          ))}
+        </div>{" "}
+      </div>
 
-            </img>
-            <img
-            src={Download}
-            alt="DownloadIcon"
-            title="Download Citation"
-              className="download-button"
-              style={{width:"20px",cursor:"pointer"}}
-              onClick={() => {
-                const blob = new Blob([value], { type: "text/plain" });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement("a");
-                a.href = url;
-                a.download = `${type}-citation.txt`;
-                a.click();
-                URL.revokeObjectURL(url);
-              }}
-            >
-
-            </img>
-          </div>
-          </div>
-<ReactMarkdown>{value}</ReactMarkdown>          
-        </div>
-      ))}
-    </div>        </div>
-
-      <button className="citation-close-collection" title="Close" onClick={handleCloseCitations}>
+      <button
+        className="citation-close-collection"
+        title="Close"
+        onClick={handleCloseCitations}
+      >
         <IoCloseOutline size={30} color="black" />
       </button>
     </>

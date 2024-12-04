@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import "./Annotations.css";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCaretDown, faCaretRight } from '@fortawesome/free-solid-svg-icons';
 const Annotation = ({
   openAnnotate,
   annotateData,
@@ -33,17 +31,7 @@ const Annotation = ({
       sessionStorage.setItem("source", JSON.stringify(passedSource));
     }
   }, [passedSource]);
-  // useEffect(() => {
-  //   // Reset expandedTexts when openAnnotate changes
-  //   if (openAnnotate) {
-  //     setExpandedTexts({}); // Resets all expanded texts to the collapsed (sliced) state
-  //   }
-  // }, [openAnnotate]);
-  //   const handleNavigate = (article) => {
-  //   // const idType = getIdType(article); // Determine whether it's pmid or bioRxiv_id
-  //   const type = article.source === "BioRxiv" ? "bioRxiv_id" : article.source === "Public Library of Science (PLOS)" ? "plos_id" : "pmid";// Pass the type explicitly
-  //   navigate(`/article/${type}:${article}`, { state: { data: data, searchTerm,annotateData: annotateData } });
-  // };
+
   const handleNavigate = (articleId) => {
     const article = source.find((entry) => entry.idType === articleId);
 
@@ -93,46 +81,47 @@ const Annotation = ({
       [key]: !prevState[key], // Toggle between full text and sliced text for a specific row
     }));
   };
-  console.log(annotateData)
+  console.log(annotateData);
   const renderAnnotations = () => {
     const annotationEntries =
       annotateData && typeof annotateData === "object"
         ? Object.entries(annotateData)
         : [];
-  
+
     // Sort entries by annotation_score in descending order
-    const sortedAnnotationEntries = annotationEntries.sort(([, aValues], [, bValues]) => 
-      (bValues.annotation_score || 0) - (aValues.annotation_score || 0)
+    const sortedAnnotationEntries = annotationEntries.sort(
+      ([, aValues], [, bValues]) =>
+        (bValues.annotation_score || 0) - (aValues.annotation_score || 0)
     );
-  
+
     return sortedAnnotationEntries.flatMap(([type, values]) => {
       const rows = [];
       const isExpanded = expandedPmids[type] || false; // Track expansion state for each type
-  
+
       const annotationScore = values.annotation_score
         ? `${values.annotation_score.toFixed(2)}%`
         : "N/A";
-  
+
       // Remove `annotation_score` from the entries and get other value keys
       const valueTexts = Object.keys(values)
         .filter((key) => key !== "annotation_score")
         .join(", ");
-  
+
       // Control expansion for the text content
       const typeKey = `${type}`;
       const isTextExpanded = expandedTexts[typeKey];
-      const displayText = valueTexts
-  
+      const displayText = valueTexts;
+
       rows.push(
         <tr className="search-table-body" key={type}>
-          <td style={{fontSize:"14px",width:"25%"}} >
+          <td style={{ fontSize: "14px", width: "25%" }}>
             {/* <button onClick={() => toggleExpandPmid(type)}>
               {isExpanded ? "▼" : "▶"}
             </button> */}
             {capitalizeFirstLetter(type)}
           </td>
-          <td style={{fontSize:"14px",width:"20%"}}>{annotationScore}</td>
-          <td style={{fontSize:"14px",width:"65%"}}>
+          <td style={{ fontSize: "14px", width: "20%" }}>{annotationScore}</td>
+          <td style={{ fontSize: "14px", width: "65%" }}>
             {displayText}
             {/* {valueTexts.length > 30 && (
               <span
@@ -145,47 +134,54 @@ const Annotation = ({
           </td>
         </tr>
       );
-  
+
       return rows;
     });
   };
-  
-  
 
   return (
     <div
       className="search-tables"
-      style={{ height: `${annotateHeight}vh`,border:"none"}}
+      style={{ height: `${annotateHeight}vh`, border: "none" }}
     >
-      {annotateData && Object.keys(annotateData).length > 0?<div
-        style={{
-          background:
-            "linear-gradient(90deg,rgba(254, 118, 117, 0.7) -21.07%,rgba(204, 129, 185, 0.7) 37.85%,rgba(26, 168, 210, 0.7) 97.5%,rgba(76, 210, 217, 0.7) 151.24%)",
-          borderRadius: "16px 16px 0 0",
-          padding: "5px",
-        }}
-      >
-        <p style={{ textAlign: "start",fontSize:"18px" }}>Annotations</p>
-      </div>:""}
-      {annotateData && Object.keys(annotateData).length > 0 ?
-      <div className="search-Annotate-tables">
-        <table>
-          <thead>
-            <tr className="search-table-head">
-              <th style={{ width: "25%", fontSize:"15px" }}>Values</th>
-              <th style={{ width: "20%", fontSize:"15px" }}>Score</th>
-              <th style={{ width: "65%", fontSize:"15px" }}>Type</th>
-            </tr>
-          </thead>
-          <tbody>{renderAnnotations()}</tbody>
-        </table>
-      </div>
-      :openAnnotate && !annotateData?<div style={{ textAlign: "center", fontSize: "15px", marginTop: "20px" }}>
-      No data to display
-    </div>:""}
+      {annotateData && Object.keys(annotateData).length > 0 ? (
+        <div
+          style={{
+            background:
+              "linear-gradient(90deg,rgba(254, 118, 117, 0.7) -21.07%,rgba(204, 129, 185, 0.7) 37.85%,rgba(26, 168, 210, 0.7) 97.5%,rgba(76, 210, 217, 0.7) 151.24%)",
+            borderRadius: "16px 16px 0 0",
+            padding: "5px",
+          }}
+        >
+          <p style={{ textAlign: "start", fontSize: "18px" }}>Annotations</p>
+        </div>
+      ) : (
+        ""
+      )}
+      {annotateData && Object.keys(annotateData).length > 0 ? (
+        <div className="search-Annotate-tables">
+          <table>
+            <thead>
+              <tr className="search-table-head">
+                <th style={{ width: "25%", fontSize: "15px" }}>Values</th>
+                <th style={{ width: "20%", fontSize: "15px" }}>Score</th>
+                <th style={{ width: "65%", fontSize: "15px" }}>Type</th>
+              </tr>
+            </thead>
+            <tbody>{renderAnnotations()}</tbody>
+          </table>
+        </div>
+      ) : openAnnotate && !annotateData ? (
+        <div
+          style={{ textAlign: "center", fontSize: "15px", marginTop: "20px" }}
+        >
+          No data to display
+        </div>
+      ) : (
+        ""
+      )}
     </div>
   );
-  
 };
 
 export default Annotation;

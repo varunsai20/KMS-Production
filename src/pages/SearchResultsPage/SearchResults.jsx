@@ -3,7 +3,7 @@ import "./SearchResults.css";
 import Footer from "../../components/Footer-New";
 import SearchBar from "../../components/SearchBar";
 import Loading from "../../components/Loading";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import Annotation from "../../components/Annotaions";
 import { useLocation, useNavigate } from "react-router-dom";
 import annotate from "../../assets/images/task-square.svg";
@@ -12,13 +12,9 @@ import { faBookmark as regularBookmark } from "@fortawesome/free-regular-svg-ico
 import { faBookmark as solidBookmark } from "@fortawesome/free-solid-svg-icons";
 import { faAnglesUp } from "@fortawesome/free-solid-svg-icons";
 import uparrow from "../../assets/images/uparrow.svg";
-import { IoCloseOutline, IoShareSocial } from "react-icons/io5";
+import { IoCloseOutline } from "react-icons/io5";
 import downarrow from "../../assets/images/downarrow.svg";
 import axios from "axios";
-import { login, logout } from "../../redux/reducers/LoginAuth"; // Import login and logout actions
-import Button from "../../components/Buttons";
-import Logo from "../../assets/images/Logo_New.svg";
-import ProfileIcon from "../../assets/images/Profile-dummy.svg";
 import { toast } from "react-toastify";
 import Header from "../../components/Header-New";
 const ITEMS_PER_PAGE = 10;
@@ -26,10 +22,8 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   const location = useLocation(); // Access the passed state
   const { data } = location.state || { data: [] };
   const { user } = useSelector((state) => state.auth);
-  const profilePictureUrl = user?.profile_picture_url;
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
   const displayIfLoggedIn = isLoggedIn ? null : "none";
-  const dispatch = useDispatch();
   const user_id = user?.user_id;
   const token = useSelector((state) => state.auth.access_token);
   const searchTerm = sessionStorage.getItem("SearchTerm");
@@ -72,51 +66,18 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       console.error("Error fetching collections:", error);
     }
   };
-  const handleProfileClick = () => {
-    if (user?.role === "Admin") {
-      navigate(`/admin/users/profile/${user_id}`); // Navigate to Admin profile page
-    } else if (user?.role === "User") {
-      navigate(`/users/profile/${user_id}`); // Navigate to User profile page
-    }
-  };
-  const handleLogin = () => navigate("/login");
-  const handleLogout = async () => {
-    try {
-      // Make API call to /auth/logout with user_id as a parameter
-      await axios.post(
-        `https://inferai.ai/api/auth/logout/?user_id=${user_id}`
-      );
 
-      // Dispatch logout action and navigate to the home page
-      dispatch(logout());
-      navigate("/");
-    } catch (error) {
-      console.error("Error logging out:", error);
-    }
-  };
   useEffect(() => {
     if (user_id && token) {
       fetchCollections();
     }
   }, [user_id, token]);
-  // const isBookmarked = (idType) => {
-  //   // Convert idType to a number for comparison
-  //   const numericIdType = Number(idType);
-
-  //   // Check if the article is bookmarked
-  //   const result = Object.values(collections).some((articleArray) =>
-  //     articleArray.some(
-  //       (article) => Number(article.article_id) === numericIdType
-  //     )
-  //   );
-
-  //   return result;
-  // };
 
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
-  const handleEmailClick = () => setIsEmailModalOpen(true);
-  //const handleCloseEmailModal = () => setIsEmailModalOpen(false);
+
   const [email, setEmail] = useState();
+
+  // eslint-disable-next-line no-unused-vars
   const [emailSubject, setEmailSubject] = useState();
 
   const [newCollectionName, setNewCollectionName] = useState("");
@@ -125,11 +86,9 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   const [selectedDateRange, setSelectedDateRange] = useState("");
   const [customStartDate, setCustomStartDate] = useState("");
   const [customEndDate, setCustomEndDate] = useState("");
+  // eslint-disable-next-line no-unused-vars
   const [completePMID, setCompletePMID] = useState([]);
-  // const [ratingsList, setRatingsList] = useState(() => {
-  //   // Get ratingsList from sessionStorage or initialize an empty array
-  //   return JSON.parse(sessionStorage.getItem("ratingsList")) || [];
-  // });
+
   const [ratingsList, setRatingsList] = useState([]);
 
   // Function to get the rating for a specific article by pmid
@@ -151,17 +110,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
         item.article_id === String(id) &&
         item.article_source === standardizedSource
     );
-
-    // Log when both `article_id` and `article_source` match
-
-    // Find entries where only `article_id` matches
-    const idOnlyMatch = ratingsArray.find(
-      (item) =>
-        item.article_id === String(id) &&
-        item.article_source !== standardizedSource
-    );
-
-    // Log if only `article_id` matches but `article_source` does not
 
     // Return the saved rating or default to 3 if not found
     return savedRating ? savedRating.average_rating : 0;
@@ -230,8 +178,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   }, [selectedDateRange]);
   const [articleTitle, setArticleTitle] = useState("");
   const [source, setSource] = useState("");
-  const topPageRef = useRef(null);
-  const [showFilterPopup, setShowFilterPopup] = useState(false);
   const [showTextAvailability, setShowTextAvailability] = useState(true);
   const [showArticleType, setShowArticleType] = useState(true);
   const [showSourceType, setShowSourceType] = useState(true);
@@ -361,9 +307,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       (a, b) => getSimilarityScore(b) - getSimilarityScore(a)
     );
   }, [data?.articles, getSimilarityScore]);
-  // Re-run sorting only when articles change
-
-  //
 
   useEffect(() => {
     // Check for updates in sortedData and reset pagination if there's a change
@@ -397,10 +340,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
     }
   };
 
-  // useEffect(() => {
-  //   // Store the current page number in sessionStorage whenever it changes
-  //
-  // }, [handlePageChange]);
   const handleAnnotate = () => {
     console.log("clicked");
     console.log(annotateData);
@@ -409,14 +348,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       setOpenAnnotate(false);
     } else if (annotateData && Object.keys(annotateData).length > 0) {
       setOpenAnnotate(true);
-    }
-  };
-  const handleNotes = () => {
-    if (openNotes) {
-      setOpenNotes(false);
-    } else {
-      setOpenAnnotate(false);
-      setOpenNotes(true);
     }
   };
   useEffect(() => {
@@ -515,21 +446,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
         }
       );
 
-      // if (response.status === 201) {
-      //   console.log(response.data.collections);
-
-      //   const updatedCollections = collections.map((collection) => {
-      //     if (collection === collectionName) {
-      //       // Append the new article ID to the articles if it doesn't already exist
-      //       console.log(response.data.collections);
-
-      //       return {
-      //         ...collection,
-      //         articles: [...(collection.articles || []), currentIdType],
-      //       };
-      //     }
-      //     return collection;
-      //   });
       if (response.status === 201) {
         const updatedCollections = {
           ...collections,
@@ -760,74 +676,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
     });
   };
   console.log(location.state);
-  const handleDateRangeChange = (newRange) => {
-    setSelectedDateRange(newRange);
-    if (newRange !== "custom") {
-      fetchFilteredResults({
-        sourceTypes: filters.sourceType,
-        dateRange: newRange,
-      });
-    }
-  };
-
-  const handleCustomDateFilter = () => {
-    fetchFilteredResults({
-      sourceTypes: filters.sourceType,
-      dateRange: "custom",
-      startDate: customStartDate,
-      endDate: customEndDate,
-    });
-  };
-
-  // const handleArticleTypeFilter = (selectedArticleTypes) => {
-  //   const filterTypes = selectedArticleTypes.articleType; // Assuming this is an array
-  //   const queryParams = filterTypes
-  //     .map((type) => `article_type=${encodeURIComponent(type)}`) // Encode each type for URL safety
-  //     .join("&");
-
-  //   const apiUrl = `https://inferai.ai/api/core_search/?term=${encodeURIComponent(
-  //     searchTerm
-  //   )}&${queryParams}`;
-
-  //   setLoading(true);
-
-  //   axios
-  //     .get(apiUrl, {
-  //       headers: {
-  //         Authorization: `Bearer ${token}`, // Add Bearer token here
-  //       },
-  //     })
-  //     .then((response) => {
-  //       console.log("Response from API with article types:", response);
-  //       const data = response.data;
-  //       setResults(data);
-  //       setLoading(false);
-
-  //       // Save the filter state
-  //       localStorage.setItem(
-  //         "articleTypeFilter",
-  //         JSON.stringify({
-  //           selectedArticleTypes,
-  //         })
-  //       );
-  //       navigate("/search", { state: { data, searchTerm } });
-  //     })
-  //     .catch((error) => {
-  //       console.error(
-  //         "Error fetching data from the API with article type filters",
-  //         error
-  //       );
-  //       setLoading(false);
-  //       navigate("/search", {
-  //         state: { data: [], searchTerm, dateloading: true },
-  //       });
-  //     });
-  // };
-
-  const handleApplyFilters = () => {
-    applyFilters(filters);
-    setShowFilterPopup(false);
-  };
   useEffect(() => {
     const storedData = sessionStorage.getItem("AnnotateData");
 
@@ -923,10 +771,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
     // Clear the filters from localStorage
     localStorage.removeItem("filters");
     localStorage.removeItem("publicationDate");
-    // Optionally, you can also trigger the API call without any filters
-    // const storeddata=sessionStorage.getItem("ResultData")
-    // const parseddata=JSON.parse(storeddata)
-    // const data=parseddata
 
     navigate("/search", { state: { data: searchResults, searchTerm } });
   };
@@ -949,25 +793,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       state: { data: data, searchTerm, annotateData: annotateData },
     });
   };
-  // Calculate the index range for articles to display
-  // const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  // const endIndex = startIndex + ITEMS_PER_PAGE;
-  // const paginatedArticles = data.articles && data.articles.slice(startIndex, endIndex) || [];
 
-  // Handle page change
-
-  // const handlePageChange = (newPage) => {
-  //   if (newPage > 0 && newPage <= totalPages) {
-  //     setCurrentPage(newPage);
-  //     setPageInput(newPage);
-  //     scrollToTop();
-  //     // contentRightRef.current.scrollIntoView({ behavior: "smooth" });
-  //   }
-  // };
-  const handlePageInputChange = (e) => {
-    const value = e.target.value;
-    setPageInput(value); // Update the input field value regardless of its validity
-  };
   const handlePageInputSubmit = () => {
     const pageNumber = parseInt(pageInput, 10);
     if (!isNaN(pageNumber) && pageNumber > 0 && pageNumber <= totalPages) {
@@ -976,10 +802,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       setPageInput(currentPage); // Reset input to current page if invalid
     }
   };
-  // useEffect(() => {
-  //   setCurrentPage(1); // Reset currentPage to 1 whenever new search results are loaded
-  //   setPageInput(1); // Reset the input field to 1 as well
-  // }, [data.articles]);
+
   useEffect(() => {
     if (loading) {
       document.body.style.overflow = "hidden"; // Prevent scrolling
@@ -1218,40 +1041,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
     }
   };
 
-  const [expandedPmids, setExpandedPmids] = useState({}); // Track which PMIDs are expanded
-  const [expandedTexts, setExpandedTexts] = useState({});
-  // Function to toggle the expansion for all rows associated with a given PMID
-  useEffect(() => {
-    // Reset expandedTexts when openAnnotate changes
-    if (openAnnotate) {
-      setExpandedTexts({}); // Resets all expanded texts to the collapsed (sliced) state
-    }
-  }, [openAnnotate]);
-  const toggleExpandPmid = (pmid) => {
-    setExpandedPmids((prevState) => {
-      const isExpanding = !prevState[pmid]; // Determine if we are expanding or collapsing
-      if (!isExpanding) {
-        // If we are collapsing, reset the expanded texts for this PMID
-        const updatedTexts = { ...expandedTexts };
-        Object.keys(updatedTexts).forEach((key) => {
-          if (key.startsWith(`${pmid}-`)) {
-            delete updatedTexts[key]; // Remove expanded text for this PMID's rows
-          }
-        });
-        setExpandedTexts(updatedTexts); // Update expanded texts
-      }
-      return {
-        ...prevState,
-        [pmid]: isExpanding, // Toggle expansion for the specific PMID
-      };
-    });
-  };
-  const toggleExpandText = (key) => {
-    setExpandedTexts((prevState) => ({
-      ...prevState,
-      [key]: !prevState[key], // Toggle between full text and sliced text for a specific row
-    }));
-  };
   const handleKeyDown = (event) => {
     if (event.key === "Enter") {
       event.preventDefault(); // Prevents default form submission
@@ -1281,9 +1070,9 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
               <h5 onClick={() => setShowArticleType(!showArticleType)}>
                 Article type{" "}
                 {showArticleType ? (
-                  <img src={downarrow} />
+                  <img src={downarrow} alt="down-arrow" />
                 ) : (
-                  <img src={uparrow} />
+                  <img src={uparrow} alt="up-arrow" />
                 )}
               </h5>
               {showArticleType && (
@@ -1338,9 +1127,9 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
               <h5 onClick={() => setShowSourceType(!showSourceType)}>
                 Source Type{" "}
                 {showSourceType ? (
-                  <img src={downarrow} />
+                  <img src={downarrow} alt="down-arrow" />
                 ) : (
-                  <img src={uparrow} />
+                  <img src={uparrow} alt="up-arrow" />
                 )}
               </h5>
 
@@ -1385,9 +1174,9 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                   Publication date{" "}
                   <span>
                     {showPublicationDate ? (
-                      <img src={downarrow} />
+                      <img src={downarrow} alt="down-arrow" />
                     ) : (
-                      <img src={uparrow} />
+                      <img src={uparrow} alt="up-arrow" />
                     )}
                   </span>
                 </h5>
@@ -1470,9 +1259,9 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                 <span>Text availability</span>
                 <span>
                   {showTextAvailability ? (
-                    <img src={downarrow} />
+                    <img src={downarrow} alt="down-arrow" />
                   ) : (
-                    <img src={uparrow} />
+                    <img src={uparrow} alt="up-arrow" />
                   )}
                 </span>
               </h5>
@@ -1711,11 +1500,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
               <div className="searchContent-articles">
                 <div className="searchresults-list">
                   {paginatedArticles.map((result, index) => {
-                    // Assuming you already have access to Redux searchResults
-
-                    // Assuming you already have access to Redux searchResult
-
-                    // Define the logic to get similarity_score from Redux (searchResults)
                     let similarityScore = result.similarity_score;
 
                     if (!similarityScore && searchResults) {
@@ -1764,7 +1548,10 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                           }}
                         >
                           <div className="div1">
-                            <div className="searchresult-title-container" style={{marginLeft:!isLoggedIn?"17px":""}}>
+                            <div
+                              className="searchresult-title-container"
+                              style={{ marginLeft: !isLoggedIn ? "17px" : "" }}
+                            >
                               <div className="searchresult-ArticleTitle">
                                 <input
                                   type="checkbox"
@@ -1985,15 +1772,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                                         className="email-input"
                                         onKeyDown={handleKeyDown}
                                       />
-                                      {/* <input
-                                        type="text"
-                                        value={emailSubject}
-                                        onChange={(e) =>
-                                          setEmailSubject(e.target.value)
-                                        }
-                                        placeholder="Subject"
-                                        className="email-input"
-                                      /> */}
+
                                       <div className="confirm-buttons">
                                         <button
                                           onClick={handleCloseEmailModal}
@@ -2027,19 +1806,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                             <p className="searchresult-authors">{`Published on: ${result.publication_date}`}</p>
                             <div className="searchresult-ID">
                               <p className="searchresult-pmid">{`ID: ${idType}`}</p>
-                              {/* {result.doi ? (
-                                <p className="searchresult-pmid">
-                                  {" "}
-                                  DoI:
-                                  <a
-                                    href={`https://doi.org/${result.doi}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                  >{`${result.doi}`}</a>
-                                </p>
-                              ) : (
-                                ""
-                              )} */}
                             </div>
                             <p
                               className="searchresult-description"
@@ -2278,30 +2044,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                 />
               </div>
             )}
-
-            {/* {openNotes && (
-                          <div className="search-notes">
-                            
-                            <div className="search-stream-input" >
-                                  <img src={flag} alt="flag-logo" className="stream-flag-logo" />
-                                  <input
-                                    type="text"
-                                    placeholder="Ask anything..."
-                                    value={query}
-                                    onChange={(e) => setQuery(e.target.value)}
-                                    onKeyDown={handleKeyDown}
-                                  />
-                                 
-                                    {loading ? (
-                                      <CircularProgress size={24} color="white" />
-                                    ) : (
-                                      <FontAwesomeIcon className="button" onClick={handleAskClick} icon={faTelegram} size={"xl"} />
-                                    )}
-                                  
-                                </div>
-                          </div>
-                        )} */}
-
             <div className="search-icons-group">
               <>
                 <div
@@ -2319,15 +2061,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                 >
                   <img src={annotate} alt="annotate-icon" />
                 </div>
-                {/* <div
-                className={`notes-icon ${openNotes ? "open" : "closed"}`}
-                onClick={() => {
-                  handleNotes();
-                  // handleResize();
-                }}
-              >
-                <img src={notesicon} alt="notes-icon" />
-              </div> */}
               </>
             </div>
           </div>

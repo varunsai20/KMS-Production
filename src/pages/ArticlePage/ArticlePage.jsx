@@ -12,32 +12,20 @@ import annotate from "../../assets/images/task-square.svg";
 import { useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import { CircularProgress } from "@mui/material";
-
-import uploadimage from "../../assets/images/Upload.svg";
 import FileIconForDocument from "../../assets/images/FileIconforDocument.svg";
-import { TextField } from "@mui/material";
 import Annotation from "../../components/Annotaions";
 import { faBookmark as regularBookmark } from "@fortawesome/free-regular-svg-icons";
-import {
-  faL,
-  faBookmark as solidBookmark,
-} from "@fortawesome/free-solid-svg-icons";
+import { faBookmark as solidBookmark } from "@fortawesome/free-solid-svg-icons";
 import notesicon from "../../assets/images/note-2.svg";
 import rehypeRaw from "rehype-raw";
 import newChat from "../../assets/images/20px@2x.svg";
 import pen from "../../assets/images/16px.svg";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTelegram } from "@fortawesome/free-brands-svg-icons";
-import { faPen } from "@fortawesome/free-solid-svg-icons";
 import { LiaTelegramPlane } from "react-icons/lia";
-//import { BiSolidPaperPlane } from "react-icons/bi";
-import { IoMdPaperPlane } from "react-icons/io";
 import Notes from "../NotesPage/Notes";
-import { login, logout } from "../../redux/reducers/LoginAuth"; // Import login and logout actions
-import ProfileIcon from "../../assets/images/Profile-dummy.svg";
 import { toast } from "react-toastify";
 import { faTimes, faAnglesUp } from "@fortawesome/free-solid-svg-icons";
-//import { TbFileUpload } from "react-icons/tb";
 import upload from "../../assets/images/upload-file.svg";
 import Header from "../../components/Header-New";
 
@@ -51,7 +39,6 @@ const ArticlePage = () => {
   const heightIfLoggedIn = isLoggedIn ? null : "80vh";
   const { pmid } = useParams();
   const { user } = useSelector((state) => state.auth);
-  const profilePictureUrl = user?.profile_picture_url;
   const token = useSelector((state) => state.auth.access_token);
   const dispatch = useDispatch();
   const user_id = user?.user_id;
@@ -114,7 +101,6 @@ const ArticlePage = () => {
   });
   const [triggerAskClick, setTriggerAskClick] = useState(false);
   const [triggerDeriveClick, setTriggerDeriveClick] = useState(false);
-  const [editingPmid, setEditingPmid] = useState(null);
   const [editedTitle, setEditedTitle] = useState("");
   const [articleTitle, setArticleTitle] = useState("");
   const [collections, setCollections] = useState([]);
@@ -158,8 +144,6 @@ const ArticlePage = () => {
   const [hasFetchedAnnotateData, setHasFetchedAnnotateData] = useState(false);
   const [sessions, setSessions] = useState([]);
   const [editingSessionId, setEditingSessionId] = useState(null);
-
-  const [bookmarkedPmids, setBookmarkedPmids] = useState({});
   const [savedText, setSavedText] = useState("");
   const selectedTextRef = useRef("");
   const popupRef = useRef(null);
@@ -168,10 +152,6 @@ const ArticlePage = () => {
   const [notesHeight, setNotesHeight] = useState(35);
   const minHeight = 15;
   const maxHeight = 60;
-  const [reloadArticle, setReloadArticle] = useState(
-    sessionStorage.getItem("reloadArticle") === "true"
-  );
-  // Add this useEffect to reset savedText when openNotes becomes false
   useEffect(() => {
     if (!openNotes) {
       setSavedText(""); // Reset savedText when notes are closed
@@ -201,28 +181,6 @@ const ArticlePage = () => {
     }
   }, [type]);
 
-  const handleProfileClick = () => {
-    if (user?.role === "Admin") {
-      navigate(`/admin/users/profile/${user_id}`); // Navigate to Admin profile page
-    } else if (user?.role === "User") {
-      navigate(`/users/profile/${user_id}`); // Navigate to User profile page
-    }
-  };
-  const handleLogin = () => navigate("/login");
-  const handleLogout = async () => {
-    try {
-      // Make API call to /auth/logout with user_id as a parameter
-      await axios.post(
-        `https://inferai.ai/api/auth/logout/?user_id=${user_id}`
-      );
-
-      // Dispatch logout action and navigate to the home page
-      dispatch(logout());
-      navigate("/");
-    } catch (error) {
-      console.error("Error logging out:", error);
-    }
-  };
   useEffect(() => {
     if (user_id && token) {
       fetchCollections();
@@ -330,37 +288,6 @@ const ArticlePage = () => {
       setContentWidth(`${width}px`);
     }
   }, [openNotes]);
-
-  const getRatingForArticle = async (uniqueId) => {
-    // Check if the rating is already available in ratingsList
-    const cachedRating = ratingsList.find((item) => item.uniqueId === uniqueId);
-    if (cachedRating) return cachedRating.rating;
-
-    const [source, article_id] = uniqueId.split("_");
-
-    try {
-      const response = await axios.get(
-        `https://inferai.ai/api/rating/user-ratings/${user_id}/${article_id}/${source}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      const avgRating = response.data?.average_rating || 0;
-
-      // Update the local rating list with the fetched average rating
-      setRatingsList((prevRatings) => [
-        ...prevRatings.filter((item) => item.uniqueId !== uniqueId),
-        { uniqueId, rating: avgRating },
-      ]);
-
-      return avgRating;
-    } catch (error) {
-      console.error("Error fetching rating:", error);
-      return 0;
-    }
-  };
 
   const handleRatingChange = async (uniqueId, newRating) => {
     // Ensure ratingsList is an array
@@ -661,22 +588,6 @@ const ArticlePage = () => {
       document.removeEventListener("mouseup", handleMouseUp);
     };
   }, []);
-
-  // const handleSaveToNote = () => {
-  //   const textToSave = selectedText;
-  //   console.log(selectedText);
-
-  //   if (textToSave) {
-  //     console.log(textToSave);
-  //     setSavedText(textToSave);
-  //     setShowPopup(false);
-
-  //     if (!openNotes) {
-  //       setOpenNotes(true);
-  //     }
-  //     window.getSelection().removeAllRanges();
-  //   }
-  // };
 
   const getid = () => {
     return `${source}_${id}`;
@@ -1037,8 +948,6 @@ const ArticlePage = () => {
     } else {
       navigate(-1);
     }
-    //localStorage.removeItem("unsavedChanges");
-    //navigate(-1);
   };
 
   const handleCancelConfirm = () => {
@@ -1048,10 +957,6 @@ const ArticlePage = () => {
     setShowConfirmPopup(false);
     localStorage.removeItem("unsavedChanges");
     navigate(-1);
-  };
-
-  const handleNavigationClick = (section) => {
-    setActiveSection(section);
   };
 
   const boldTerm = (text) => {
@@ -1141,10 +1046,6 @@ const ArticlePage = () => {
   const capitalizeFirstLetter = (text) => {
     return text.replace(/\b\w/g, (char) => char.toUpperCase());
   };
-  const capitalize = (text) => {
-    if (!text) return text; // Return if the text is empty
-    return text.charAt(0).toUpperCase() + text.slice(1);
-  };
   const MyMarkdownComponent = ({ markdownContent, handleMouseUp }) => {
     return (
       <div onMouseUp={handleMouseUp}>
@@ -1204,29 +1105,6 @@ const ArticlePage = () => {
           </div>
         );
       }
-
-      // Handle Images Section
-      // if (cleanedSectionKey.toLowerCase() === "images") {
-      //   const imageEntries = Object.values(sectionData); // Extract image objects
-
-      //   return imageEntries.map((image, index) => (
-      //     <div
-      //       key={index}
-      //       style={{ marginBottom: "20px", textAlign: "center" }}
-      //     >
-      //       <img
-      //         src={image.image_url}
-      //         alt={image.label || "Image"}
-      //         style={{ maxWidth: "100%", height: "auto", borderRadius: "8px" }}
-      //       />
-      //       {image.caption && (
-      //         <Typography variant="body2" style={{ marginTop: "8px" }}>
-      //           <strong>{image.label}</strong>: {image.caption}
-      //         </Typography>
-      //       )}
-      //     </div>
-      //   ));
-      // }
 
       // Handle nested objects or other content
       if (typeof sectionData === "object") {
@@ -1424,13 +1302,6 @@ const ArticlePage = () => {
             data: location.state?.data,
           },
         });
-        // Fetch article data before navigating
-        // dispatch(setDeriveInsights(false));
-        // await fetchArticleBeforeNavigate(
-        //   conversationResponse.data.article_id,
-        //   sourceType,
-        //   location.state?.data
-        // );
       }
     } catch (error) {
       console.error("Error fetching article or conversation data:", error);
@@ -1449,41 +1320,6 @@ const ArticlePage = () => {
     }
   };
 
-  const fetchArticleBeforeNavigate = async (articleId, sourceType, data) => {
-    try {
-      // Map sourceType to source using the utility function
-      const source = getSourceFromType(sourceType);
-      if (!source) {
-        console.error("Invalid sourceType provided");
-        return;
-      }
-
-      const response = await axios.get(
-        `https://inferai.ai/api/view_article/get_article/${articleId}?source=${source}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      const article = response.data;
-      setArticleData(article);
-      console.log(data);
-      // Navigate after article is fetched
-      navigate(`/article/${sourceType}:${articleId}`, {
-        state: {
-          id: articleId,
-          source: sourceType,
-          token: token,
-          user: { access_token: token, user_id: user_id },
-          data: data,
-        },
-      });
-    } catch (error) {
-      console.error("Error fetching article data:", error);
-    }
-  };
   useEffect(() => {
     const storedSessionId = sessionStorage.getItem("session_id");
     if (storedSessionId) {
@@ -1504,12 +1340,6 @@ const ArticlePage = () => {
     }
   }, [handleDeriveClick, uploadedFile]);
 
-  // const handleFileUpload = (e) => {
-  //   const file = e.target.files[0];
-  //   if (file) {
-  //     setUploadedFile(file);
-  //   }
-  // };
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return; // Exit if no file was selected
@@ -1812,7 +1642,6 @@ const ArticlePage = () => {
 
                   {isModalOpen && (
                     <div className="bookmark-modal-overlay">
-                      
                       <div className="modal-content">
                         {/* Existing Collections */}
                         <div className="bookmark-p">
@@ -2046,7 +1875,7 @@ const ArticlePage = () => {
                       style={{ display: "none" }}
                     />
                     <span>
-                      Drag & drop files here or <a href="#">Upload</a>
+                      Drag & drop files here or <a href="#upload">Upload</a>
                     </span>
                   </div>
                 </div>

@@ -1,13 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
-import axios from "axios";
 import { useSelector } from "react-redux";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import "./DeriveInsights.css";
-import Loading from "../../components/Loading";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTelegram } from "@fortawesome/free-brands-svg-icons";
 import { faTimes, faAnglesUp } from "@fortawesome/free-solid-svg-icons";
-//import { TbFileUpload } from "react-icons/tb";
 import { CircularProgress } from "@mui/material";
 import Header from "../../components/Header-New";
 import uploadimage from "../../assets/images/Upload.svg";
@@ -21,15 +18,14 @@ const DeriveInsights = () => {
   const displayIfLoggedIn = isLoggedIn ? null : "none";
   const { user } = useSelector((state) => state.auth);
   const token = useSelector((state) => state.auth.access_token);
-  const navigate = useNavigate();
+
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [session_id, setSessionId] = useState(null);
   const [showStreamingSection, setShowStreamingSection] = useState(false);
   const location = useLocation();
   const [chatHistory, setChatHistory] = useState(() => {
-    const storedHistory =
-      JSON.parse(localStorage.getItem("chatHistory")) || [];
+    const storedHistory = JSON.parse(localStorage.getItem("chatHistory")) || [];
     return storedHistory;
   });
   const [uploadedFile, setUploadedFile] = useState(null);
@@ -68,6 +64,7 @@ const DeriveInsights = () => {
       setShowStreamingSection(false); // Default to false if no stored chat history
     }
   }, [location.state]);
+
   const handleAskClick = async () => {
     if (!query && !uploadedFile) {
       toast.error("Please enter a query or upload a file");
@@ -127,7 +124,7 @@ const DeriveInsights = () => {
 
       const readStream = async () => {
         let done = false;
-        const delay = 100;
+        //const delay = 100;
 
         while (!done) {
           const { value, done: streamDone } = await reader.read();
@@ -207,11 +204,6 @@ const DeriveInsights = () => {
       endOfMessagesRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [chatHistory]);
-
-  const handlePromptClick = (queryText) => {
-    setQuery(queryText);
-    handleAskClick();
-  };
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {

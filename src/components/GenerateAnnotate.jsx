@@ -6,16 +6,15 @@ import { useSelector } from "react-redux";
 import Annotation from "./DeriveAnnotations";
 import Loading from "./Loading";
 import pdfICon from "../assets/images/pdf.png";
-import docxIcon from "../assets/images/docx-file.png";   
-import txtIcon from "../assets/images/txt-file.png";  
+import docxIcon from "../assets/images/docx-file.png";
+import txtIcon from "../assets/images/txt-file.png";
 const GenerateAnnotate = ({ handleCloseAnnotate }) => {
-  const { user } = useSelector((state) => state.auth);
   const token = useSelector((state) => state.auth.access_token);
   const [uploadedFile, setUploadedFile] = useState(null);
   const [annotateData, setAnnotateData] = useState([]);
-  const [isDragging, setIsDragging] = useState(false);
+
   const [annotateLoading, setAnnotateLoading] = useState(false);
-  
+
   // Ref for the file input element
   const fileInputRef = useRef(null);
 
@@ -52,14 +51,17 @@ const GenerateAnnotate = ({ handleCloseAnnotate }) => {
     formData.append("file", uploadedFile);
 
     try {
-      const response = await fetch("https://inferai.ai/api/core_search/annotate_file", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: formData,
-      });
-      
+      const response = await fetch(
+        "https://inferai.ai/api/core_search/annotate_file",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: formData,
+        }
+      );
+
       if (response.ok) {
         const result = await response.json();
         setAnnotateData(result);
@@ -77,22 +79,38 @@ const GenerateAnnotate = ({ handleCloseAnnotate }) => {
     const fileExtension = filename.split(".").pop().toLowerCase();
     switch (fileExtension) {
       case "pdf":
-        return <img src={pdfICon} alt-="pdf-icon" style={{ width: "25px", height: "25px" }} />;
+        return (
+          <img
+            src={pdfICon}
+            alt="pdf-icon"
+            style={{ width: "25px", height: "25px" }}
+          />
+        );
       case "docx":
-        return <img src={docxIcon} alt-="pdf-icon" style={{ width: "25px", height: "25px" }} />;
+        return (
+          <img
+            src={docxIcon}
+            alt="pdf-icon"
+            style={{ width: "25px", height: "25px" }}
+          />
+        );
       case "txt":
-        return <img src={txtIcon} alt-="pdf-icon" style={{ width: "25px", height: "25px" }} />;
+        return (
+          <img
+            src={txtIcon}
+            alt="pdf-icon"
+            style={{ width: "25px", height: "25px" }}
+          />
+        );
       default:
         return <span style={{ fontSize: "20px" }}>📄</span>;
     }
   };
   return (
     <>
-
       <div className="generate-annotate-container">
         {annotateLoading ? <Loading /> : ""}
         <div className="generate-annotate-file-upload">
-
           <h3>Generate Annotations</h3>
           <div className="upload-file" onClick={triggerFileUpload}>
             {uploadedFile ? (
@@ -116,8 +134,8 @@ const GenerateAnnotate = ({ handleCloseAnnotate }) => {
             />
           </div>
           <div className="annotates-buttons">
-            <button 
-              className="start-new" 
+            <button
+              className="start-new"
               onClick={() => {
                 setUploadedFile(null);
                 setAnnotateData([]);
@@ -128,21 +146,31 @@ const GenerateAnnotate = ({ handleCloseAnnotate }) => {
             >
               Start New
             </button>
-            <button className="generate-button" disabled={!uploadedFile} style={{background:!uploadedFile?"rgba(234, 234, 236, 1)":"",color:!uploadedFile?"rgba(78, 78, 86, 1)":"",cursor:!uploadedFile?"not-allowed":"pointer"}}onClick={handleGenerate}>
-  Generate
-</button>
+            <button
+              className="generate-button"
+              disabled={!uploadedFile}
+              style={{
+                background: !uploadedFile ? "rgba(234, 234, 236, 1)" : "",
+                color: !uploadedFile ? "rgba(78, 78, 86, 1)" : "",
+                cursor: !uploadedFile ? "not-allowed" : "pointer",
+              }}
+              onClick={handleGenerate}
+            >
+              Generate
+            </button>
           </div>
         </div>
-        
+
         {/* Conditional Rendering for Annotations */}
         <div className="annotate-annotations">
-          
-            <Annotation annotateData={annotateData} />
-          
+          <Annotation annotateData={annotateData} />
         </div>
       </div>
-      
-      <button className="generate-close-collection" onClick={handleCloseAnnotate}>
+
+      <button
+        className="generate-close-collection"
+        onClick={handleCloseAnnotate}
+      >
         <IoCloseOutline size={30} color="black" />
       </button>
     </>

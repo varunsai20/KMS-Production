@@ -179,7 +179,7 @@
   border-bottom: 1px solid rgba(235, 235, 243, 1);
   /* margin-left: 10%; */
 }
-.derive-history-pagination ul li a {
+.derive-history-pagination ul li span {
   text-decoration: none;
   justify-content: start;
   color: black;
@@ -199,7 +199,7 @@
   height: 1px;
 }
 
-.history-pagination ul li.active a::before {
+.history-pagination ul li.active span::before {
   content: "";
   position: absolute;
   left: -15px;
@@ -266,12 +266,10 @@
 }
 .uploaded-file-indicator {
   display: flex;
-      gap: 5px;
-      padding: 10px;
-      align-items: center;
-      color: rgb(0, 0, 0);
-      /* width: -webkit-fill-available;
-  /* width: -webkit-fill-available; */
+  gap: 5px;
+  padding: 10px;
+  align-items: center;
+  color: rgb(0, 0, 0);
 }
 .derive-stream-input input {
   flex-grow: 1;

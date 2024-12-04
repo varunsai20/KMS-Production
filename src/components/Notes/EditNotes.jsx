@@ -10,7 +10,6 @@ import { BsListOl } from "react-icons/bs";
 import { IoCloseOutline, IoShareSocial } from "react-icons/io5";
 import { MdEmail } from "react-icons/md";
 import { IoCopyOutline } from "react-icons/io5";
-//import { IoSaveOutline } from "react-icons/io5";
 import { BiSave } from "react-icons/bi";
 import DOMPurify from "dompurify";
 import "./EditNotes.css"; // Import CSS for styling
@@ -45,16 +44,12 @@ const Editnotes = ({
   });
   const [shareMessage, setShareMessage] = useState(""); // State for feedback message
   const editorRef = useRef(null);
-  //const date = useCreateDate();
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [email, setEmail] = useState("");
-  //const [recipient_name, setRecipientName] = useState("");
-  //const [subject, setSubject] = useState("");
   const [showConfirmSave, setShowConfirmSave] = useState(false);
   const [unsavedChanges, setUnsavedChanges] = useState(false);
   const initialText = useRef("");
-  //const [subject, setSubject] = useState("");
   useEffect(() => {
     const localUnsavedChanges = localStorage.getItem("unsavedChanges");
     if (localUnsavedChanges === "true") {
@@ -353,13 +348,6 @@ const Editnotes = ({
     }
   };
 
-  // const handleBlur = () => {
-  //   if (editorRef.current.innerText.trim() === "") {
-  //     setIsPlaceholderVisible(true);
-  //     editorRef.current.innerHTML = "Take your note...";
-  //   }
-  // };
-
   const handleFormat = (command) => {
     document.execCommand(command, false, null);
 
@@ -462,10 +450,10 @@ const Editnotes = ({
           contentEditable={true}
           suppressContentEditableWarning={true}
           onClick={handleEditorClick}
-          // onBlur={handleBlur}
+        
           onInput={handleInput}
         >
-          {/* {isPlaceholderVisible && "Take your note..."} */}
+          
         </div>
       </form>
       {/* Feedback Message */}
@@ -647,22 +635,7 @@ const Editnotes = ({
                 required
                 onKeyDown={handleKeyDown}
               />
-              {/* <input
-                type="text"
-                value={recipient_name}
-                onChange={(e) => setRecipientName(e.target.value)}
-                placeholder="Recipient Name"
-                className="recipient-input"
-                onKeyDown={handleKeyDown}
-              />
-              <input
-                type="text"
-                value={subject}
-                onChange={(e) => setSubject(e.target.value)}
-                placeholder="Subject"
-                className="subject-input"
-                onKeyDown={handleKeyDown}
-              /> */}
+              
 
               <div className="email-button-group">
                 <button

@@ -16,7 +16,7 @@ import ArticleContent from "./ArticleContent";
 import ArticleDerive from "./ArticleDerive";
 import Loading from "../../components/Loading";
 import GenerateAnnotate from "../../components/DeriveAnnotations";
-import { faTimes, faAnglesUp } from "@fortawesome/free-solid-svg-icons";
+import { faAnglesUp } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 const ArticleLayout = () => {
@@ -39,7 +39,6 @@ const ArticleLayout = () => {
   const [annotateLoading, setAnnotateLoading] = useState(false);
   const [showConfirmIcon, setShowConfirmIcon] = useState(false);
   const [savedText, setSavedText] = useState("");
-  //const selectedTextRef = useRef("");
   console.log("tet saved in", savedText);
   const [openNotes, setOpenNotes] = useState(false);
   const [type, id1] = pmid ? pmid.split(":") : "";
@@ -47,7 +46,7 @@ const ArticleLayout = () => {
   const [source, setSource] = useState();
   const displayIfLoggedIn = isLoggedIn ? null : "none";
   const widthIfLoggedIn = isLoggedIn ? null : "80%";
-  const heightIfLoggedIn = isLoggedIn ? null : "80vh";
+  //const heightIfLoggedIn = isLoggedIn ? null : "80vh";
   const minHeight = 15;
   const maxHeight = 55;
   const [sessions, setSessions] = useState([]);
@@ -307,9 +306,6 @@ const ArticleLayout = () => {
           },
         }
       );
-      // console.log(sessionId);
-      // console.log(editedTitle);
-      // Update the local sessions state after a successful edit
       setSessions((prevSessions) =>
         prevSessions.map((session) =>
           session.session_id === sessionId
@@ -357,10 +353,10 @@ const ArticleLayout = () => {
   const handleAnnotate = () => {
     const matchingIdExists =
       annotateData && Object.prototype.hasOwnProperty.call(annotateData, id);
-      let chatHistory = [];
+    let chatHistory = [];
     // Check for chatHistory in localStorage
     const chatHistoryRaw = localStorage.getItem("chatHistory");
-      chatHistory = chatHistoryRaw ? JSON.parse(chatHistoryRaw) : [];
+    chatHistory = chatHistoryRaw ? JSON.parse(chatHistoryRaw) : [];
     // Find the latest entry with a file_url
     const latestFileEntry = chatHistory
       .filter((entry) => entry.file_url) // Filter entries with file_url
@@ -523,211 +519,217 @@ const ArticleLayout = () => {
   }
   return (
     <>
-    <div className="container">
-      <Header style={{ width: "100%" }} />
-      <div className="content" style={{ width: widthIfLoggedIn }}>
-        <div
-          className="history-pagination"
-          style={{ display: displayIfLoggedIn }}
-        >
+      <div className="container">
+        <Header style={{ width: "100%" }} />
+        <div className="content" style={{ width: widthIfLoggedIn }}>
           <div
-            className="history-pagination-header"
-            style={{ display: "flex", justifyContent: "space-between" }}
+            className="history-pagination"
+            style={{ display: displayIfLoggedIn }}
           >
-            <p>Recent Interactions</p>
-            <button className="new-chat-button" onClick={handleOpenChat}>
-              <img
-                src={newChat}
-                alt="new-chat-icon"
-                // style={{ paddingRight: "10px" }}
-              />
-            </button>
-          </div>
-          <ul>
-            {sessions.length > 0 ? (
-              sessions.map((session) => {
-                // Mapping keywords to custom titles
-                const mappedTitle = session.session_title.includes(
-                  "what are the key highlights from this article"
-                )
-                  ? "Key Highlights"
-                  : session.session_title.includes(
-                      "what can we conclude form this article"
-                    )
-                  ? "Conclusion"
-                  : session.session_title.includes("Summarize this article")
-                  ? "Summarize"
-                  : session.session_title; // Default title if no keyword match
+            <div
+              className="history-pagination-header"
+              style={{ display: "flex", justifyContent: "space-between" }}
+            >
+              <p>Recent Interactions</p>
+              <button className="new-chat-button" onClick={handleOpenChat}>
+                <img
+                  src={newChat}
+                  alt="new-chat-icon"
+                  // style={{ paddingRight: "10px" }}
+                />
+              </button>
+            </div>
+            <ul>
+              {sessions.length > 0 ? (
+                sessions.map((session) => {
+                  // Mapping keywords to custom titles
+                  const mappedTitle = session.session_title.includes(
+                    "what are the key highlights from this article"
+                  )
+                    ? "Key Highlights"
+                    : session.session_title.includes(
+                        "what can we conclude form this article"
+                      )
+                    ? "Conclusion"
+                    : session.session_title.includes("Summarize this article")
+                    ? "Summarize"
+                    : session.session_title; // Default title if no keyword match
 
-                return (
-                  <li
-                    key={session.session_id}
-                    className={
-                      session.session_id === activeSessionId ? "active" : ""
-                    }
-                    onClick={() => {
-                      handleSessionClick(
-                        // session.article_id,
-                        // session.source,
-                        session.session_id
-                        // user_id,
-                        // session.session_type
-                      );
-                    }}
-                  >
-                    {editingSessionId === session.session_id ? (
-                      <input
-                        type="text"
-                        style={{
-                          padding: "0",
-                          height: "20px",
-                          width: "100%",
-                          fontSize: "16px",
-                          outline: "none",
-                          borderColor: editedTitle ? "#1a82ff" : "#1a82ff",
-                        }}
-                        value={editedTitle}
-                        onChange={handleTitleChange}
-                        onBlur={() => handleSaveEdit(session.session_id)} // Save on blur
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            handleSaveEdit(session.session_id);
-                          }
-                        }}
-                        autoFocus
-                      />
-                    ) : (
-                      <a>
-                        {mappedTitle.slice(0, 25)}
-                        {mappedTitle.length > 25 ? "..." : ""}
-                      </a>
-                    )}
-                    <img
-                      src={pen}
-                      alt="pen-icon"
-                      title="Rename the title"
-                      //icon={faPen}
-                      onClick={() =>
-                        handleEditClick(session.session_id, mappedTitle)
+                  return (
+                    <li
+                      key={session.session_id}
+                      className={
+                        session.session_id === activeSessionId ? "active" : ""
                       }
-                      style={{ cursor: "pointer", marginLeft: "10px" }}
+                      onClick={() => {
+                        handleSessionClick(
+                          // session.article_id,
+                          // session.source,
+                          session.session_id
+                          // user_id,
+                          // session.session_type
+                        );
+                      }}
+                    >
+                      {editingSessionId === session.session_id ? (
+                        <input
+                          type="text"
+                          style={{
+                            padding: "0",
+                            height: "20px",
+                            width: "100%",
+                            fontSize: "16px",
+                            outline: "none",
+                            borderColor: editedTitle ? "#1a82ff" : "#1a82ff",
+                          }}
+                          value={editedTitle}
+                          onChange={handleTitleChange}
+                          onBlur={() => handleSaveEdit(session.session_id)} // Save on blur
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              handleSaveEdit(session.session_id);
+                            }
+                          }}
+                          autoFocus
+                        />
+                      ) : (
+                        <span>
+                          {mappedTitle.slice(0, 25)}
+                          {mappedTitle.length > 25 ? "..." : ""}
+                        </span>
+                      )}
+                      <img
+                        src={pen}
+                        alt="pen-icon"
+                        title="Rename the title"
+                        //icon={faPen}
+                        onClick={() =>
+                          handleEditClick(session.session_id, mappedTitle)
+                        }
+                        style={{ cursor: "pointer", marginLeft: "10px" }}
+                      />
+                    </li>
+                  );
+                })
+              ) : (
+                <li>No sessions available</li>
+              )}
+            </ul>
+          </div>
+          {/* <ArticleContent/> */}
+          {annotateLoading ? <Loading /> : ""}
+          {deriveInsights ? (
+            <ArticleDerive
+              setRefreshSessions={setRefreshSessions}
+              openAnnotate={openAnnotate}
+              setOpenAnnotate={setOpenAnnotate}
+              setOpenNotes={setOpenNotes}
+              openNotes={openNotes}
+              setSavedText={setSavedText}
+              annotateLoading={annotateLoading}
+              setAnnotateLoading={setAnnotateLoading}
+            />
+          ) : (
+            <ArticleContent
+              setSavedText={setSavedText}
+              setRefreshSessions={setRefreshSessions}
+              openAnnotate={openAnnotate}
+              setOpenAnnotate={setOpenAnnotate}
+              setOpenNotes={setOpenNotes}
+              openNotes={openNotes}
+              annotateLoading={annotateLoading}
+              setAnnotateLoading={setAnnotateLoading}
+            />
+          )}
+          <div className="right-aside" style={{ display: displayIfLoggedIn }}>
+            <div className="annotate-note">
+              {openAnnotate && (
+                <div
+                  className="annotate-height"
+                  style={{
+                    height: `${annotateHeight}vh`,
+                  }}
+                >
+                  {annotateFile ? (
+                    <GenerateAnnotate
+                      openAnnotate={openAnnotate}
+                      annotateData={annotateData}
+                      annotateHeight={annotateHeight}
                     />
-                  </li>
-                );
-              })
-            ) : (
-              <li>No sessions available</li>
-            )}
-          </ul>
-        </div>
-        {/* <ArticleContent/> */}
-        {annotateLoading ? <Loading /> : ""}
-        {deriveInsights ? (
-          <ArticleDerive
-            setRefreshSessions={setRefreshSessions}
-            openAnnotate={openAnnotate}
-            setOpenAnnotate={setOpenAnnotate}
-            setOpenNotes={setOpenNotes}
-            openNotes={openNotes}
-            setSavedText={setSavedText}
-            annotateLoading={annotateLoading}
-            setAnnotateLoading={setAnnotateLoading}
-          />
-        ) : (
-          <ArticleContent
-            setSavedText={setSavedText}
-            setRefreshSessions={setRefreshSessions}
-            openAnnotate={openAnnotate}
-            setOpenAnnotate={setOpenAnnotate}
-            setOpenNotes={setOpenNotes}
-            openNotes={openNotes}
-            annotateLoading={annotateLoading}
-            setAnnotateLoading={setAnnotateLoading}
-          />
-        )}
-        <div className="right-aside" style={{ display: displayIfLoggedIn }}>
-          <div className="annotate-note">
-            {openAnnotate && (
+                  ) : (
+                    <Annotation
+                      openAnnotate={openAnnotate}
+                      annotateData={annotateData}
+                      annotateHeight={annotateHeight}
+                    />
+                  )}
+                  <div
+                    className="annotate-line2"
+                    onMouseDown={handleAnnotateResize}
+                  />
+                </div>
+              )}
+              {openNotes && (
+                <div
+                  className="notes-height"
+                  style={{ height: `${notesHeight}vh` }}
+                >
+                  <Notes selectedText={savedText} notesHeight={notesHeight} />
+                  <div
+                    className="notes-line1"
+                    onMouseDown={handleNotesResize}
+                  />
+                  <div
+                    className="notes-line2"
+                    onMouseDown={handleNotesResize}
+                  />
+                </div>
+              )}
+            </div>
+            <div className="icons-group">
               <div
-                className="annotate-height"
+                className={`search-annotate-icon ${
+                  openAnnotate ? "open" : "closed"
+                }`}
+                onClick={() => {
+                  handleAnnotate();
+                }}
                 style={{
-                  height: `${annotateHeight}vh`,
+                  opacity: annotateData && annotateData.length > 0 ? 1 : 1, // Adjust visibility when disabled
                 }}
               >
-                {annotateFile ? (
-                  <GenerateAnnotate
-                    openAnnotate={openAnnotate}
-                    annotateData={annotateData}
-                    annotateHeight={annotateHeight}
-                  />
-                ) : (
-                  <Annotation
-                    openAnnotate={openAnnotate}
-                    annotateData={annotateData}
-                    annotateHeight={annotateHeight}
-                  />
-                )}
-                <div
-                  className="annotate-line2"
-                  onMouseDown={handleAnnotateResize}
-                />
+                <img src={annotate} alt="annotate-icon" />
               </div>
-            )}
-            {openNotes && (
               <div
-                className="notes-height"
-                style={{ height: `${notesHeight}vh` }}
+                className={`notes-icon ${openNotes ? "open" : "closed"}`}
+                onClick={() => {
+                  handleNotes();
+                }}
               >
-                <Notes selectedText={savedText} notesHeight={notesHeight} />
-                <div className="notes-line1" onMouseDown={handleNotesResize} />
-                <div className="notes-line2" onMouseDown={handleNotesResize} />
+                <img src={notesicon} alt="notes-icon" />
               </div>
-            )}
-          </div>
-          <div className="icons-group">
-            <div
-              className={`search-annotate-icon ${
-                openAnnotate ? "open" : "closed"
-              }`}
-              onClick={() => {
-                handleAnnotate();
-              }}
-                            style={{
-                opacity: annotateData && annotateData.length > 0 ? 1 : 1, // Adjust visibility when disabled
-              }}
-            >
-              <img src={annotate} alt="annotate-icon" />
-            </div>
-            <div
-              className={`notes-icon ${openNotes ? "open" : "closed"}`}
-              onClick={() => {
-                handleNotes();
-              }}
-            >
-              <img src={notesicon} alt="notes-icon" />
-            </div>
-            {showConfirmIcon && (
-              <div className="Article-popup-overlay">
-                <div className="Article-popup-content">
-                  <p className="Saving-note">Saving Note</p>
-                  <p id="confirming">Are you sure to leave without saving?</p>
-                  <div className="Article-confirm-buttons">
-                    <button onClick={handleCancelIcon}>Cancel</button>
-                    <button onClick={handleCloseIcon}>Leave</button>
+              {showConfirmIcon && (
+                <div className="Article-popup-overlay">
+                  <div className="Article-popup-content">
+                    <p className="Saving-note">Saving Note</p>
+                    <p id="confirming">Are you sure to leave without saving?</p>
+                    <div className="Article-confirm-buttons">
+                      <button onClick={handleCancelIcon}>Cancel</button>
+                      <button onClick={handleCloseIcon}>Leave</button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
       </div>
-    </div>
-    <div className="ScrollTop">
-    <button onClick={scrollToTop} id="scrollTopBtn" title="Go to top">
-      <FontAwesomeIcon icon={faAnglesUp} />
-    </button>
-  </div>
-  </>
+      <div className="ScrollTop">
+        <button onClick={scrollToTop} id="scrollTopBtn" title="Go to top">
+          <FontAwesomeIcon icon={faAnglesUp} />
+        </button>
+      </div>
+    </>
   );
 };
 

@@ -13,7 +13,7 @@ const Annotation = ({
   console.log(annotateData);
   const location = useLocation();
   const navigate = useNavigate();
-  const { pmid: pmidFromUrl } = useParams(); // Extract pmid from the URL
+  //const { pmid: pmidFromUrl } = useParams(); // Extract pmid from the URL
   const [expandedPmids, setExpandedPmids] = useState({}); // Track which PMIDs are expanded
   const [expandedTexts, setExpandedTexts] = useState({});
   const { data } = location.state || { data: [] };
@@ -151,7 +151,7 @@ const Annotation = ({
                     </button>
                   )}
                   {index === 0 && (
-                    <a
+                    <span
                       style={{
                         color: "#1a82ff",
                         fontWeight: 600,
@@ -160,7 +160,7 @@ const Annotation = ({
                       onClick={() => handleNavigate(pmid)}
                     >
                       {pmid}
-                    </a>
+                    </span>
                   )}
                 </div>
               </td>

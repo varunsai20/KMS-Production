@@ -45,8 +45,8 @@ const Createnotes = ({
     unorderedList: false,
   });
   const editorRef = useRef(null);
+  
   const [noteContent, setNoteContent] = useState("");
-  //const [shareMessage, setShareMessage] = useState("");
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const { user } = useSelector((state) => state.auth);
   const user_id = user?.user_id;

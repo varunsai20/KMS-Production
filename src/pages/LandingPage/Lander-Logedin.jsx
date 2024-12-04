@@ -34,19 +34,16 @@ const Lander = () => {
   const isLoggedIn = useSelector((state) => state.auth?.isLoggedIn);
   const [sessions, setSessions] = useState([]);
   const [isLanderNotesOpen, setIsLanderNotesOpen] = useState(false);
-  //const [openInsights, setOpenInsights] = useState(false);
-  const [refreshSessions, setRefreshSessions] = useState(false);
+
   const [isCollectionOpen, setIsCollectionOpen] = useState(false);
   const [isCitationsOpen, setIsCitationsOpen] = useState(false);
   const [isAnnotateOpen, setIsAnnotateOpen] = useState(false);
 
-  const [openInsights, setOpenInsights] = useState(false);
   const [dimensions, setDimensions] = useState({ width: 400, height: 380 });
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const { user } = useSelector((state) => state.auth);
   const token = useSelector((state) => state.auth.access_token);
   const user_id = user?.user_id;
-  const [isDeriveInsights, setIsDeriveInsights] = useState(false);
   const navigate = useNavigate();
   const handleOpenNotes = () => {
     setIsLanderNotesOpen(true);
@@ -58,9 +55,7 @@ const Lander = () => {
   const handleOpenCollection = () => {
     setIsCollectionOpen(true);
   };
-  const handleCloseCollection = () => {
-    setIsCollectionOpen(false);
-  };
+
   const handleOpenCitations = () => {
     setIsCitationsOpen(true);
   };
@@ -201,14 +196,6 @@ const Lander = () => {
     }
   };
 
-  // useEffect(() => {
-  //   if (isLanderNotesOpen) {
-  //     const centerX =
-  //       (window.innerWidth - dimensions.width) / 2 + window.innerWidth * 0.365;
-  //     const centerY = (window.innerHeight - dimensions.height) / 1.2;
-  //     setPosition({ x: centerX, y: centerY });
-  //   }
-  // }, [isLanderNotesOpen]);
   useEffect(() => {
     if (isLanderNotesOpen) {
       const viewportWidth = window.innerWidth;
@@ -229,7 +216,7 @@ const Lander = () => {
       <div className="Landing-Header">
         <Header />
       </div>
-    
+
       <div className="Landing-Content">
         <div className="Landing-Content-Left">
           <img className="Right2" src={ReactLogo} alt="Right Graphic 2" />
