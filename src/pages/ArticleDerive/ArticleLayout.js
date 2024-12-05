@@ -475,11 +475,6 @@ const ArticleLayout = () => {
     setOpenNotes(false);
     localStorage.removeItem("unsavedChanges");
   };
-  // Dynamically render the nested content in order, removing numbers, and using keys as side headings
-  // Helper function to capitalize the first letter of each word
-  const capitalizeFirstLetter = (text) => {
-    return text.replace(/\b\w/g, (char) => char.toUpperCase());
-  };
 
   const handleNotesResize = (e) => {
     if (openAnnotate && openNotes) {

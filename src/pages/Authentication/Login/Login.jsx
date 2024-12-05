@@ -229,7 +229,6 @@ const Login = () => {
               Continue with Google
             </button>
             <button class="btn apple">
-              {/* <SiFacebook /> */}
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 height="800"
