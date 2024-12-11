@@ -18,7 +18,7 @@ import Loading from "../../components/Loading";
 import GenerateAnnotate from "../../components/DeriveAnnotations";
 import { faAnglesUp } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-
+import SearchBar from "../../components/SearchBar";
 const ArticleLayout = () => {
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
   const { user } = useSelector((state) => state.auth);
@@ -55,6 +55,7 @@ const ArticleLayout = () => {
   const [activeSessionId, setActiveSessionId] = useState(
     localStorage.getItem("session_id") || null
   );
+  
   const [isPromptEnabled, setIsPromptEnabled] = useState(false);
   const [editedTitle, setEditedTitle] = useState("");
   const [annotateData, setAnnotateData] = useState(
@@ -98,6 +99,7 @@ const ArticleLayout = () => {
   }, [user_id, token, refreshSessions]);
   const handleOpenChat = () => {
     localStorage.removeItem("session_id");
+    setAnnotateData("")
     setActiveSessionId(null);
     localStorage.setItem("chatHistory", JSON.stringify([]));
     dispatch(setDeriveInsights(true)); // Set deriveInsights state in Redux
@@ -516,6 +518,8 @@ const ArticleLayout = () => {
     <>
       <div className="container">
         <Header style={{ width: "100%" }} />
+        <SearchBar className="searchResults-Bar"></SearchBar>
+
         <div className="content" style={{ width: widthIfLoggedIn }}>
           <div
             className="history-pagination"
@@ -697,12 +701,28 @@ const ArticleLayout = () => {
               </div>
               <div
                 className={`notes-icon ${openNotes ? "open" : "closed"}`}
+                // style={{
+                //   borderRadius: !deriveInsights ? '0 0 8px 8px' : undefined, // Apply border-radius if deriveInsights is false
+                // }}
                 onClick={() => {
                   handleNotes();
                 }}
               >
                 <img src={notesicon} alt="notes-icon" />
               </div>
+              {/* {deriveInsights?<div
+                className={`search-citation-icon ${
+                  openAnnotate ? "open" : "closed"
+                }`}
+                onClick={() => {
+                  handleAnnotate();
+                }}
+                style={{
+                  opacity: annotateData && annotateData.length > 0 ? 1 : 1, // Adjust visibility when disabled
+                }}
+              >
+                <img src={annotate} alt="annotate-icon" />
+              </div>:""} */}
               {showConfirmIcon && (
                 <div className="Article-popup-overlay">
                   <div className="Article-popup-content">

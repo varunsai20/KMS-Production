@@ -75,7 +75,7 @@
   color: white;
 }
 .content {
-  width: 92.91%;
+  width: 70%;
   display: flex;
   justify-content: space-between;
   margin: 1% 1% 0.5% 1%;
@@ -83,10 +83,10 @@
   color: #333;
 }
 .history-pagination {
-  margin-left: 1%;
+  /* margin-left: 1%; */
   width: 20%;
   padding: 27px, 0px, 27px, 0px;
-  height: 70vh;
+  height: 63vh;
   /* max-height: 700px; */
   overflow-y: hidden;
   color: #333;
@@ -95,13 +95,13 @@
   /* background-color: rgba(249, 249, 249); */
 }
 .new-chat-button {
-  padding: 10px;
+  padding: 10px 0;
   margin-right: 12px;
 }
 
 .article-content {
   width: 43.61%;
-  height: 70vh;
+  height: 63vh;
   /* max-height: 300px; */
   /* overflow-y: auto; */
   overflow-y: hidden;
@@ -225,7 +225,7 @@
   /* margin: auto; */
   margin-top: 3%;
   margin-bottom: 2%;
-  padding: 0 15px;
+  padding: 10px 15px;
 }
 
 .history-pagination ul {
@@ -233,7 +233,7 @@
   padding: 0px 15px 0px 15px;
   justify-content: start;
   margin-top: 5%;
-  height: 63vh;
+  /* height: 56vh; */
   overflow: auto;
 }
 
@@ -299,7 +299,7 @@
 }
 .article-chat-query {
   position: absolute;
-  left: 24%;
+  /* left: 24%; */
   bottom: 1vh;
   width: 100%;
   width: 68%;
