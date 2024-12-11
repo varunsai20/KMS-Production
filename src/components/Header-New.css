@@ -41,8 +41,7 @@
 
 .Search-nav-logo {
   display: flex;
-  width: 9vw;
-  /* border-right: 1px solid rgba(0, 0, 0, 0.1); */
+  width: 12vw;
 }
 .line-between {
   height: 30px;
@@ -54,6 +53,19 @@
   height: 20px;
   width: 1px;
   color: rgba(0, 0, 0, 0.1);
+}
+.logo-descreption {
+  text-align: start;
+}
+.logo-descreption p {
+  color: rgba(48, 91, 165, 1);
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+  padding: 0;
+}
+.logo-descreption span {
+  font-size: 14px;
 }
 .Search-nav-login {
   display: flex;

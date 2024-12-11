@@ -13,7 +13,11 @@ const Footer = () => {
       }}
     >
       <p className="footer-trademark-content">
-        Copyright © 2024, Infer Solutions, Inc. All Rights Reserved.
+        Copyright © 2024,{" "}
+        <a href="https://www.infersol.com/" target="_blank" rel="noreferrer">
+          Infer Solutions, Inc.
+        </a>{" "}
+        All Rights Reserved.
       </p>
     </div>
   );

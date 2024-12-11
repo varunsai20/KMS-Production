@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import axios from "axios";
+import { apiService } from "../../assets/api/apiService";
 import { useSelector, useDispatch } from "react-redux";
 import { setDeriveInsights } from "../../redux/reducers/deriveInsights";
 import { useParams, useLocation } from "react-router-dom";
@@ -24,7 +24,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTelegram } from "@fortawesome/free-brands-svg-icons";
 import { LiaTelegramPlane } from "react-icons/lia";
 import Notes from "../NotesPage/Notes";
-import { toast } from "react-toastify";
+import { showErrorToast, showSuccessToast } from "../../utils/toastHelper";
 import { faTimes, faAnglesUp } from "@fortawesome/free-solid-svg-icons";
 import upload from "../../assets/images/upload-file.svg";
 import Header from "../../components/Header-New";
@@ -76,20 +76,18 @@ const ArticlePage = () => {
   }, []);
   useEffect(() => {
     if (annotateLoading) {
-      document.body.style.overflow = "hidden"; // Prevent scrolling
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = "auto"; // Enable scrolling
+      document.body.style.overflow = "auto";
     }
 
     return () => {
-      document.body.style.overflow = "auto"; // Cleanup on unmount
+      document.body.style.overflow = "auto";
     };
   }, [annotateLoading]);
   const [showStreamingSection, setShowStreamingSection] = useState(false);
-  // const [chatInput, setChatInput] = useState(true);
   const [openAnnotate, setOpenAnnotate] = useState(false);
   const [openNotes, setOpenNotes] = useState(false);
-  const [activeSection, setActiveSection] = useState("Title");
   const [activeSessionId, setActiveSessionId] = useState(
     sessionStorage.getItem("session_id") || null
   );
@@ -110,14 +108,7 @@ const ArticlePage = () => {
 
   const fetchCollections = async () => {
     try {
-      const response = await axios.get(
-        `https://inferai.ai/api/bookmarks/${user_id}/collections`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await apiService.fetchCollections(user_id, token);
       if (response.data) {
         setCollections(response.data.collections);
         if (response.data.collections.length > 0) {
@@ -154,7 +145,7 @@ const ArticlePage = () => {
   const maxHeight = 60;
   useEffect(() => {
     if (!openNotes) {
-      setSavedText(""); // Reset savedText when notes are closed
+      setSavedText("");
     }
   }, [openNotes]);
 
@@ -166,7 +157,7 @@ const ArticlePage = () => {
       setNotesHeight(70);
       setAnnotateHeight(0);
     } else {
-      setAnnotateHeight(35); // Reset to default when both are open
+      setAnnotateHeight(35);
       setNotesHeight(35);
     }
   }, [openAnnotate, openNotes]);
@@ -192,15 +183,7 @@ const ArticlePage = () => {
       setAnnotateLoading(true);
       const fetchArticleData = async () => {
         try {
-          const response = await axios.get(
-            `https://inferai.ai/api/view_article/get_article/${id}?source=${source}`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
-
+          const response = await apiService.fetchArticleData(id, source, token);
           const article = response.data;
           setArticleData(article);
           setAnnotateLoading(false);
@@ -313,21 +296,12 @@ const ArticlePage = () => {
     const [article_source, article_id] = uniqueId.split("_");
 
     try {
-      await axios.post(
-        "https://inferai.ai/api/rating/rate",
-        {
-          user_id, // Assuming `user_id` is available in the component's state or props
-          rating_data: {
-            article_id,
-            rating: newRating,
-            article_source,
-          },
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`, // Bearer token authorization
-          },
-        }
+      await apiService.ratingChange(
+        user_id,
+        article_source,
+        newRating,
+        article_id,
+        token
       );
     } catch (error) {
       console.error("Error saving rating:", error);
@@ -390,13 +364,12 @@ const ArticlePage = () => {
 
     if (isBookmarked) {
       try {
-        const response = await axios.delete(
-          `https://inferai.ai/api/bookmarks/users/${user_id}/collections/${collectionName}/${idType}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+        const response = await apiService.bookmarkClick(
+          user_id,
+          collectionName,
+          idType,
+          token
         );
-
         if (response.status === 200) {
           const updatedCollections = {
             ...collections,
@@ -410,19 +383,7 @@ const ArticlePage = () => {
             "collections",
             JSON.stringify(updatedCollections)
           );
-          toast.success("Bookmark unsaved successfully", {
-            position: "top-center",
-            autoClose: 2000,
-
-            style: {
-              backgroundColor: "rgba(237, 254, 235, 1)",
-              borderLeft: "5px solid rgba(15, 145, 4, 1)",
-              color: "rgba(15, 145, 4, 1)",
-            },
-            progressStyle: {
-              backgroundColor: "rgba(15, 145, 4, 1)",
-            },
-          });
+          showSuccessToast("Bookmark unsaved successfully");
 
           await fetchCollections();
         }
@@ -449,16 +410,7 @@ const ArticlePage = () => {
     };
 
     try {
-      const response = await axios.post(
-        "https://inferai.ai/api/bookmarks/users/collections",
-        bookmarkData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
+      const response = await apiService.saveToExisting(bookmarkData, token);
       if (response.status === 201) {
         const updatedCollections = {
           ...collections,
@@ -474,36 +426,14 @@ const ArticlePage = () => {
 
         setCollections(updatedCollections);
         localStorage.setItem("collections", JSON.stringify(updatedCollections));
-        toast.success("Added to Existing Collection", {
-          position: "top-center",
-          autoClose: 2000,
-          style: {
-            backgroundColor: "rgba(237, 254, 235, 1)",
-            borderLeft: "5px solid rgba(15, 145, 4, 1)",
-            color: "rgba(15, 145, 4, 1)",
-          },
-          progressStyle: {
-            backgroundColor: "rgba(15, 145, 4, 1)",
-          },
-        });
+        showSuccessToast("Added to Existing Collection");
 
         await fetchCollections();
 
         setIsModalOpen(false);
       }
     } catch (error) {
-      toast.error("Failed to Add to the collection", {
-        position: "top-center",
-        autoClose: 2000,
-        style: {
-          backgroundColor: "rgba(254, 235, 235, 1)",
-          borderLeft: "5px solid rgba(145, 4, 4, 1)",
-          color: "background: rgba(145, 4, 4, 1)",
-        },
-        progressStyle: {
-          backgroundColor: "rgba(145, 4, 4, 1)",
-        },
-      });
+      showErrorToast("Failed to Add to the collection");
       console.error("Error adding bookmark to existing collection:", error);
     }
   };
@@ -520,47 +450,18 @@ const ArticlePage = () => {
     };
 
     try {
-      const response = await axios.post(
-        "https://inferai.ai/api/bookmarks/users/collections",
+      const response = await apiService.createNewCollection(
         newCollection,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        token
       );
-
       if (response.status === 201) {
-        toast.success("Collection Created", {
-          position: "top-center",
-          autoClose: 1000,
-
-          style: {
-            backgroundColor: "rgba(237, 254, 235, 1)",
-            borderLeft: "5px solid rgba(15, 145, 4, 1)",
-            color: "rgba(15, 145, 4, 1)",
-          },
-          progressStyle: {
-            backgroundColor: "rgba(15, 145, 4, 1)",
-          },
-        });
+        showSuccessToast("Collection Created");
         await fetchCollections();
         setNewCollectionName("");
         setIsModalOpen(false);
       }
     } catch (error) {
-      toast.error("Failed to CreateCollection", {
-        position: "top-center",
-        autoClose: 2000,
-        style: {
-          backgroundColor: "rgba(254, 235, 235, 1)",
-          borderLeft: "5px solid rgba(145, 4, 4, 1)",
-          color: "background: rgba(145, 4, 4, 1)",
-        },
-        progressStyle: {
-          backgroundColor: "rgba(145, 4, 4, 1)",
-        },
-      });
+      showErrorToast("Failed to CreateCollection");
       console.error("Error creating new collection:", error);
     }
   };
@@ -637,7 +538,7 @@ const ArticlePage = () => {
 
   const handleAskClick = async () => {
     if (!query) {
-      toast.error("Please enter a query");
+      showErrorToast("Please enter a query");
       return;
     }
 
@@ -792,7 +693,7 @@ const ArticlePage = () => {
     sessionStorage.getItem("sessionId") || sessionStorage.getItem("session_id");
   const handleDeriveClick = async () => {
     if (!query && !uploadedFile) {
-      toast.error("Please enter a query or upload a file", {
+      showErrorToast("Please enter a query or upload a file", {
         position: "top-center",
         autoClose: 2000,
       });
@@ -996,16 +897,7 @@ const ArticlePage = () => {
 
     setAnnotateLoading(true);
     try {
-      const response = await axios.post(
-        "https://inferai.ai/api/core_search/annotate",
-        requestBody,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
+      const response = await apiService.annotateClick(requestBody, token);
       const data = response.data;
       setAnnotateData(data);
       setHasFetchedAnnotateData(true); // Set flag after successful fetch
@@ -1031,7 +923,6 @@ const ArticlePage = () => {
     } else {
       setOpenNotes((prevOpenNotes) => !prevOpenNotes);
     }
-    //localStorage.removeItem("unsavedChanges");
   };
   const handleCancelIcon = () => {
     setShowConfirmIcon(false);
@@ -1062,14 +953,9 @@ const ArticlePage = () => {
     const sortedKeys = Object.keys(content).sort(
       (a, b) => parseInt(a) - parseInt(b)
     );
-
     return sortedKeys.map((sectionKey) => {
       const sectionData = content[sectionKey];
-
-      // Remove numbers from the section key
       const cleanedSectionKey = sectionKey.replace(/^\d+[:.]?\s*/, "");
-
-      // Handle paragraphs
       if (cleanedSectionKey.toLowerCase() === "paragraph") {
         const textContent =
           typeof sectionData === "string"
@@ -1078,16 +964,11 @@ const ArticlePage = () => {
         const boldtextContent = boldTerm(textContent);
 
         return (
-          <div
-            key={sectionKey}
-            style={{ marginBottom: "10px" }}
-            //onMouseUp={handleMouseUp}
-          >
+          <div key={sectionKey} style={{ marginBottom: "10px" }}>
             <MyMarkdownComponent markdownContent={boldtextContent} />
           </div>
         );
       }
-
       // Handle keywords
       if (cleanedSectionKey.toLowerCase() === "keywords") {
         let keywords = Array.isArray(sectionData)
@@ -1138,19 +1019,10 @@ const ArticlePage = () => {
   useEffect(() => {
     const fetchSessions = async () => {
       try {
-        const response = await axios.get(
-          `https://inferai.ai/api/history/conversations/history/${user_id}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
+        const response = await apiService.fetchSessions(user_id, token);
         if (response.data?.sessions) {
-          const sessionsData = response.data.sessions.reverse(); // Reverse the array order
-          // console.log(sessionsData)
-          setSessions(sessionsData); // Set the reversed sessions array to state
+          const sessionsData = response.data.sessions.reverse();
+          setSessions(sessionsData);
         }
       } catch (error) {
         console.error("Error fetching chat history:", error);
@@ -1174,22 +1046,11 @@ const ArticlePage = () => {
 
   const handleSaveEdit = async (sessionId) => {
     try {
-      await axios.put(
-        "https://inferai.ai/api/history/conversations/edit",
-        {
-          user_id,
-          session_id: sessionId,
-          new_title: editedTitle,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      // console.log(sessionId);
-      // console.log(editedTitle);
-      // Update the local sessions state after a successful edit
+      await apiService.saveEdit(token, {
+        user_id,
+        session_id: sessionId,
+        new_title: editedTitle,
+      });
       setSessions((prevSessions) =>
         prevSessions.map((session) =>
           session.session_id === sessionId
@@ -1220,15 +1081,11 @@ const ArticlePage = () => {
   console.log(source);
   const handleSessionClick = async (session_id) => {
     try {
-      const conversationResponse = await axios.get(
-        `https://inferai.ai/api/history/conversations/history/${user_id}/${session_id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+      const conversationResponse = await apiService.sessionClick(
+        user_id,
+        session_id,
+        token
       );
-
       sessionStorage.setItem("session_id", session_id);
       setIsPromptEnabled(true);
 
@@ -1307,18 +1164,6 @@ const ArticlePage = () => {
       console.error("Error fetching article or conversation data:", error);
     }
   };
-  const getSourceFromType = (type) => {
-    switch (type) {
-      case "bioRxiv_id":
-        return "biorxiv";
-      case "pmid":
-        return "pubmed";
-      case "plos_id":
-        return "plos";
-      default:
-        return null;
-    }
-  };
 
   useEffect(() => {
     const storedSessionId = sessionStorage.getItem("session_id");
@@ -1344,7 +1189,7 @@ const ArticlePage = () => {
     const file = e.target.files[0];
     if (!file) return; // Exit if no file was selected
     if (file.size > 5 * 1024 * 1024) {
-      toast.error("try uploading files 5MB or less", {
+      showErrorToast("try uploading files 5MB or less", {
         position: "top-center",
       });
     }
@@ -1354,7 +1199,7 @@ const ArticlePage = () => {
 
     if (!allowedExtensions.includes(fileExtension)) {
       //alert("Please upload a PDF or DOCX file.");
-      toast.error("try uploading .pdf,.docx", {
+      showErrorToast("try uploading .pdf,.docx", {
         position: "top-center",
         autoClose: 2000,
       });

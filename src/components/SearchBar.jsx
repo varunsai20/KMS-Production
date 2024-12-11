@@ -5,12 +5,10 @@ import Search from "../assets/images/Search.svg";
 import { Autocomplete, InputAdornment, TextField } from "@mui/material";
 import terms from "../assets/Data/final_cleaned_terms_only.json";
 import { useNavigate, useLocation } from "react-router-dom";
-import axios from "axios";
-//import ErrorBoundry from "../utils/ErrorBoundry";
-//import Error500 from "../utils/Error500";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { setSearchResults, clearSearchResults } from "../redux/actions/actions";
+import { apiService } from "../assets/api/apiService";
 const SearchBar = ({ renderInputContainer, className }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [results, setResults] = useState([]);
@@ -74,12 +72,8 @@ const SearchBar = ({ renderInputContainer, className }) => {
         navigate("/search", { state: { data: [], searchTerm } });
       }, 60000); // 60 seconds
 
-      axios
-        .get(`https://inferai.ai/api/core_search/?term=${searchQuery}`, {
-          headers: {
-            Authorization: `Bearer ${token}`, // Add your Bearer token here
-          },
-        })
+      apiService
+        .searchTerm(searchQuery, token)
         .then((response) => {
           const data = response.data;
           setResults(data);

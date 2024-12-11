@@ -2,10 +2,11 @@ import React, { useState } from "react";
 import "./Login.css";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import axios from "axios";
+import { showSuccessToast, showErrorToast } from "../../../utils/toastHelper";
 import { login } from "../../../redux/reducers/LoginAuth"; // Import login action
 import { toast } from "react-toastify";
 import Logo from "../../../assets/images/InfersolD17aR04aP01ZL-Polk4a 1.svg";
+import { apiService } from "../../../assets/api/apiService";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -57,22 +58,12 @@ const Login = () => {
 
     if (!emailError && !passwordError && email && password) {
       try {
-        const response = await axios.post("https://inferai.ai/api/auth/login", {
-          email,
-          password,
-        });
+        const response = await apiService.login(email, password);
         if (response.status === 200) {
           const token = response.data.access_token;
           const userId = response.data.user_id;
           // Fetch user profile with token
-          const profileResponse = await axios.get(
-            `https://inferai.ai/api/user/profile/${userId}`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
+          const profileResponse = await apiService.loginProfile(userId, token);
 
           const userProfile = profileResponse.data.user_profile;
 
@@ -93,19 +84,7 @@ const Login = () => {
               profile_picture_url: userProfile.profile_picture_url,
             })
           );
-          toast.success("Loged in Successfully", {
-            position: "top-center",
-            autoClose: 2000,
-
-            style: {
-              backgroundColor: "rgba(237, 254, 235, 1)",
-              borderLeft: "5px solid rgba(15, 145, 4, 1)",
-              color: "rgba(15, 145, 4, 1)",
-            },
-            progressStyle: {
-              backgroundColor: "rgba(15, 145, 4, 1)",
-            },
-          });
+          showSuccessToast("Loged in Successfully");
 
           // Redirect based on role
           if (userProfile.role === "Admin") {
@@ -119,18 +98,7 @@ const Login = () => {
           const statusCode = error.response.status;
 
           if (statusCode === 401 || statusCode === 403) {
-            toast.error("Login failed. Please check your credentials.", {
-              position: "top-center",
-              autoClose: 2000,
-              style: {
-                backgroundColor: "rgba(254, 235, 235, 1)",
-                borderLeft: "5px solid rgba(145, 4, 4, 1)",
-                color: "rgba(145, 4, 4, 1)",
-              },
-              progressStyle: {
-                backgroundColor: "rgba(145, 4, 4, 1)",
-              },
-            });
+            showErrorToast("Login failed. Please check your credentials.");
           } else {
             navigate("/server-error");
           }
@@ -229,6 +197,7 @@ const Login = () => {
               Continue with Google
             </button>
             <button class="btn apple">
+              {/* <SiFacebook /> */}
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 height="800"

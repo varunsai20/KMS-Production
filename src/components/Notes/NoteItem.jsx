@@ -4,9 +4,9 @@ import { RxDotsHorizontal } from "react-icons/rx";
 import { RxOpenInNewWindow } from "react-icons/rx";
 import { RiDeleteBin6Line } from "react-icons/ri";
 import { GoMail } from "react-icons/go";
-import axios from "axios";
 import { useSelector } from "react-redux";
-import { toast } from "react-toastify";
+import { apiService } from "../../assets/api/apiService";
+import { showSuccessToast, showErrorToast } from "../../utils/toastHelper";
 
 const NoteItem = ({ note, onEdit, onDelete, isOpenNotes }) => {
   const [isHovered, setIsHovered] = useState(false);
@@ -38,61 +38,18 @@ const NoteItem = ({ note, onEdit, onDelete, isOpenNotes }) => {
     };
 
     try {
-      const response = await axios.post(
-        "https://inferai.ai/api/notes/sharenotes",
-        requestData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await apiService.sendEmail(requestData, token);
 
       if (response.status === 200) {
-        toast.success("Email sent successfully", {
-          position: "top-center",
-          autoClose: 2000,
-
-          theme: "colored",
-          style: {
-            backgroundColor: "rgba(237, 254, 235, 1)",
-            borderLeft: "5px solid rgba(15, 145, 4, 1)",
-            color: "rgba(15, 145, 4, 1)",
-          },
-          progressStyle: {
-            backgroundColor: "rgba(15, 145, 4, 1)",
-          },
-        });
+        showSuccessToast("Email sent successfully");
         console.log("Email sent successfully to:", email);
         handleCloseEmailModal();
       } else {
-        toast.error("Failed to send email:", {
-          position: "top-center",
-          autoClose: 2000,
-          style: {
-            backgroundColor: "rgba(254, 235, 235, 1)",
-            borderLeft: "5px solid rgba(145, 4, 4, 1)",
-            color: "background: rgba(145, 4, 4, 1)",
-          },
-          progressStyle: {
-            backgroundColor: "rgba(145, 4, 4, 1)",
-          },
-        });
+        showErrorToast("Failed to send email:");
         console.error("Failed to send email:", response);
       }
     } catch (error) {
-      toast.error("Error sending email:", {
-        position: "top-center",
-        autoClose: 2000,
-        style: {
-          backgroundColor: "rgba(254, 235, 235, 1)",
-          borderLeft: "5px solid rgba(145, 4, 4, 1)",
-          color: "background: rgba(145, 4, 4, 1)",
-        },
-        progressStyle: {
-          backgroundColor: "rgba(145, 4, 4, 1)",
-        },
-      });
+      showErrorToast("Error sending email:");
       console.error("Error sending email:", error);
     }
   };

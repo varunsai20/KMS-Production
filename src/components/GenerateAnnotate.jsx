@@ -8,6 +8,7 @@ import Loading from "./Loading";
 import pdfICon from "../assets/images/pdf.png";
 import docxIcon from "../assets/images/docx-file.png";
 import txtIcon from "../assets/images/txt-file.png";
+import { apiService } from "../assets/api/apiService";
 const GenerateAnnotate = ({ handleCloseAnnotate }) => {
   const token = useSelector((state) => state.auth.access_token);
   const [uploadedFile, setUploadedFile] = useState(null);
@@ -51,20 +52,13 @@ const GenerateAnnotate = ({ handleCloseAnnotate }) => {
     formData.append("file", uploadedFile);
 
     try {
-      const response = await fetch(
-        "https://inferai.ai/api/core_search/annotate_file",
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          body: formData,
-        }
-      );
+      const response = await apiService.annotateFile(formData, token);
 
-      if (response.ok) {
-        const result = await response.json();
+      if (response.status === 200) {
+        console.log(response);
+        const result = await response.data;
         setAnnotateData(result);
+        console.log(result);
         setAnnotateLoading(false);
       } else {
         setAnnotateLoading(false);

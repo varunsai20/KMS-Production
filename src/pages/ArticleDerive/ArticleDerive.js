@@ -16,11 +16,12 @@ import rehypeRaw from "rehype-raw";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTelegram } from "@fortawesome/free-brands-svg-icons";
 import { LiaTelegramPlane } from "react-icons/lia";
-import { toast } from "react-toastify";
+import { showErrorToast } from "../../utils/toastHelper";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import upload from "../../assets/images/upload-file.svg";
 
 import uploadDocx from "../../assets/images/uploadDocx.svg";
+import { apiService } from "../../assets/api/apiService";
 const ArticleDerive = ({
   setRefreshSessions,
   openAnnotate,
@@ -32,8 +33,7 @@ const ArticleDerive = ({
   setAnnotateLoading,
 }) => {
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
-  const deriveInsights = useSelector((state) => state.deriveInsights?.active); // assuming deriveInsights is in Redux state
-
+  const deriveInsights = useSelector((state) => state.deriveInsights?.active);
   const displayIfLoggedIn = isLoggedIn ? null : "none";
   const widthIfLoggedIn = isLoggedIn ? null : "80%";
   const heightIfLoggedIn = isLoggedIn ? null : "80vh";
@@ -41,13 +41,11 @@ const ArticleDerive = ({
   const { user } = useSelector((state) => state.auth);
 
   const token = useSelector((state) => state.auth.access_token);
-  const dispatch = useDispatch();
   const user_id = user?.user_id;
   const [type, id1] = pmid ? pmid.split(":") : "";
   const id = Number(id1);
   const [source, setSource] = useState();
   const location = useLocation();
-  // const { data } = location.state || { data: [] };
   const [searchTerm, setSearchTerm] = useState("");
   const [articleData, setArticleData] = useState(null);
   const navigate = useNavigate();
@@ -68,21 +66,17 @@ const ArticleDerive = ({
 
   useEffect(() => {
     if (resetArticleData) {
-      // Logic to reset article data
-      setArticleData(""); // Ensure you have this setter available
+      setArticleData("");
     }
 
     if (resetChatHistory) {
-      // Logic to reset chat history
-      setChatHistory([]); // Ensure you have this setter available
+      setChatHistory([]);
     }
   }, [resetArticleData, resetChatHistory]);
   useEffect(() => {
-    // Retrieve chat history from sessionStorage
     const storedChatHistory = localStorage.getItem("chatHistory");
 
     if (storedChatHistory) {
-      // Parse the chat history string back into an array
       setChatHistory(JSON.parse(storedChatHistory));
       setShowStreamingSection(true);
     }
@@ -102,29 +96,18 @@ const ArticleDerive = ({
   const [activeSessionId, setActiveSessionId] = useState(
     localStorage.getItem("session_id") || null
   );
-  //const isOnArticlePage = location.pathname === "/article";
   const contentRef = useRef(null); // Ref to target the content div
   const [contentWidth, setContentWidth] = useState(); // State for content width
 
   const [triggerAskClick, setTriggerAskClick] = useState(false);
   const [triggerDeriveClick, setTriggerDeriveClick] = useState(false);
-  const [editedTitle, setEditedTitle] = useState("");
-
   const [collections, setCollections] = useState([]);
   const [showConfirmPopup, setShowConfirmPopup] = useState(false);
-  const [showConfirmIcon, setShowConfirmIcon] = useState(false);
   const [isPromptEnabled, setIsPromptEnabled] = useState(false);
 
   const fetchCollections = async () => {
     try {
-      const response = await axios.get(
-        `https://inferai.ai/api/bookmarks/${user_id}/collections`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await apiService.fetchCollections(user_id, token);
       if (response.data) {
         setCollections(response.data.collections);
         if (response.data.collections.length > 0) {
@@ -149,12 +132,8 @@ const ArticleDerive = ({
 
   const [hasFetchedAnnotateData, setHasFetchedAnnotateData] = useState(false);
   const [sessions, setSessions] = useState([]);
-  const [editingSessionId, setEditingSessionId] = useState(null);
-
   const selectedTextRef = useRef("");
   const popupRef = useRef(null);
-
-  // Add this useEffect to reset savedText when openNotes becomes false
   useEffect(() => {
     if (!openNotes) {
       setSavedText(""); // Reset savedText when notes are closed
@@ -182,20 +161,10 @@ const ArticleDerive = ({
       setAnnotateLoading(true);
       const fetchArticleData = async () => {
         try {
-          const response = await axios.get(
-            `https://inferai.ai/api/view_article/get_article/${id}?source=${source}`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
-
+          const response = await apiService.fetchArticleData(id, source, token);
           const article = response.data;
           setArticleData(article);
           setAnnotateLoading(false);
-
-          // Retrieve and set saved search term from sessionStorage
           const savedTerm = sessionStorage.getItem("SearchTerm");
           setSearchTerm(savedTerm);
         } catch (error) {
@@ -299,13 +268,6 @@ const ArticleDerive = ({
       content.removeEventListener("mouseup", handleMouseUpInsideContent);
     };
   }, [contentRef]);
-
-  // const getid = () => {
-  //   return `${source}_${id}`;
-  // };
-
-  //const uniqueId = getid();
-
   useEffect(() => {
     const articleContent = document.querySelector(".meta");
     const handleScroll = () => {
@@ -338,7 +300,7 @@ const ArticleDerive = ({
 
   const handleAskClick = async () => {
     if (!query) {
-      toast.error("Please enter a query");
+      showErrorToast("Please enter a query");
       return;
     }
 
@@ -485,7 +447,7 @@ const ArticleDerive = ({
     localStorage.getItem("sessionId") || localStorage.getItem("session_id");
   const handleDeriveClick = async () => {
     if (!query && !uploadedFile) {
-      toast.error("Please enter a query or upload a file", {
+      showErrorToast("Please enter a query or upload a file", {
         position: "top-center",
         autoClose: 2000,
       });
@@ -752,7 +714,7 @@ const ArticleDerive = ({
     const file = e.target.files[0];
     if (!file) return; // Exit if no file was selected
     if (file.size > 5 * 1024 * 1024) {
-      toast.error("try uploading files 5MB or less", {
+      showErrorToast("try uploading files 5MB or less", {
         position: "top-center",
       });
     }
@@ -762,10 +724,7 @@ const ArticleDerive = ({
 
     if (!allowedExtensions.includes(fileExtension)) {
       //alert("Please upload a PDF or DOCX file.");
-      toast.error("try uploading .pdf,.docx", {
-        position: "top-center",
-        autoClose: 2000,
-      });
+      showErrorToast("try uploading .pdf,.docx");
       return;
     }
 

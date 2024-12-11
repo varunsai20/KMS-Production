@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import "./SearchResults.css";
+import { apiService } from "../../assets/api/apiService";
 import Footer from "../../components/Footer-New";
 import SearchBar from "../../components/SearchBar";
 import Loading from "../../components/Loading";
@@ -15,10 +16,11 @@ import uparrow from "../../assets/images/uparrow.svg";
 import { IoCloseOutline } from "react-icons/io5";
 import downarrow from "../../assets/images/downarrow.svg";
 import axios from "axios";
-import { toast } from "react-toastify";
+import { showSuccessToast, showErrorToast } from "../../utils/toastHelper";
 import Header from "../../components/Header-New";
-const ITEMS_PER_PAGE = 10;
+
 const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
+  const ITEMS_PER_PAGE = 10;
   const location = useLocation(); // Access the passed state
   const { data } = location.state || { data: [] };
   const { user } = useSelector((state) => state.auth);
@@ -45,14 +47,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
 
   const fetchCollections = async () => {
     try {
-      const response = await axios.get(
-        `https://inferai.ai/api/bookmarks/${user_id}/collections`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await apiService.fetchCollections(user_id, token);
       if (response.data) {
         setCollections(response.data.collections);
         if (response.data.collections.length > 0) {
@@ -77,7 +72,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
 
   const [email, setEmail] = useState();
 
-  // eslint-disable-next-line no-unused-vars
   const [emailSubject, setEmailSubject] = useState();
 
   const [newCollectionName, setNewCollectionName] = useState("");
@@ -86,7 +80,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   const [selectedDateRange, setSelectedDateRange] = useState("");
   const [customStartDate, setCustomStartDate] = useState("");
   const [customEndDate, setCustomEndDate] = useState("");
-  // eslint-disable-next-line no-unused-vars
+
   const [completePMID, setCompletePMID] = useState([]);
 
   const [ratingsList, setRatingsList] = useState([]);
@@ -119,17 +113,8 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   useEffect(() => {
     const fetchRatedArticles = async () => {
       try {
-        const response = await axios.get(
-          "https://inferai.ai/api/rating/rated-articles",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        const response = await apiService.fetchRatedArticles(token);
         const ratedArticles = response.data || [];
-
-        // Store ratings list in sessionStorage and state
         sessionStorage.setItem("ratingsList", JSON.stringify(ratedArticles));
         setRatingsList(ratedArticles);
       } catch (error) {
@@ -389,13 +374,12 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
 
     if (isBookmarked) {
       try {
-        const response = await axios.delete(
-          `https://inferai.ai/api/bookmarks/users/${user_id}/collections/${collectionName}/${idType}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+        const response = await apiService.bookmarkClick(
+          user_id,
+          collectionName,
+          idType,
+          token
         );
-
         if (response.status === 200) {
           // Remove the bookmark from local collections state
           const updatedCollections = {
@@ -436,16 +420,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
     };
 
     try {
-      const response = await axios.post(
-        "https://inferai.ai/api/bookmarks/users/collections",
-        bookmarkData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
+      const response = await apiService.saveToExisting(token, bookmarkData);
       if (response.status === 201) {
         const updatedCollections = {
           ...collections,
@@ -460,36 +435,14 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
         };
         setCollections(updatedCollections);
         localStorage.setItem("collections", JSON.stringify(updatedCollections));
-        toast.success("Added to Existing Collection", {
-          position: "top-center",
-          autoClose: 2000,
-          style: {
-            backgroundColor: "rgba(237, 254, 235, 1)",
-            borderLeft: "5px solid rgba(15, 145, 4, 1)",
-            color: "rgba(15, 145, 4, 1)",
-          },
-          progressStyle: {
-            backgroundColor: "rgba(15, 145, 4, 1)",
-          },
-        });
+        showSuccessToast("Added to Existing Collection");
 
         await fetchCollections(); // Refetch collections after successful addition
 
         setIsModalOpen(false);
       }
     } catch (error) {
-      toast.error("Failed to Add to the collection", {
-        position: "top-center",
-        autoClose: 2000,
-        style: {
-          backgroundColor: "rgba(254, 235, 235, 1)",
-          borderLeft: "5px solid rgba(145, 4, 4, 1)",
-          color: "background: rgba(145, 4, 4, 1)",
-        },
-        progressStyle: {
-          backgroundColor: "rgba(145, 4, 4, 1)",
-        },
-      });
+      showErrorToast("Failed to Add to the collection");
       console.error("Error adding bookmark to existing collection:", error);
     }
   };
@@ -506,14 +459,9 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
     };
 
     try {
-      const response = await axios.post(
-        "https://inferai.ai/api/bookmarks/users/collections",
-        newCollection,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+      const response = await apiService.createNewCollection(
+        token,
+        newCollection
       );
 
       if (response.status === 201) {
@@ -521,28 +469,9 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
         setNewCollectionName("");
         setIsModalOpen(false);
       }
-      toast.success("New Collection Created", {
-        position: "top-center",
-        autoClose: 1500,
-        style: {
-          backgroundColor: "rgba(237, 254, 235, 1)",
-          borderLeft: "5px solid rgba(15, 145, 4, 1)",
-          color: "rgba(15, 145, 4, 1)",
-        },
-        progressStyle: {
-          backgroundColor: "rgba(15, 145, 4, 1)",
-        },
-      });
+      showSuccessToast("New Collection Created");
     } catch (error) {
-      toast.error("Failed to CreateCollection", {
-        position: "top-center",
-        autoClose: 2000,
-        style: {
-          backgroundColor: "rgba(254, 235, 235, 1)",
-          borderLeft: "5px solid rgba(145, 4, 4, 1)",
-          color: "background: rgba(145, 4, 4, 1)",
-        },
-      });
+      showErrorToast("Failed to CreateCollection");
       console.error("Error creating new collection:", error);
     }
   };
@@ -727,13 +656,9 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   const capitalizeFirstLetter = (text) => {
     return text.replace(/\b\w/g, (char) => char.toUpperCase());
   };
-  // console.log(data)
-  // Function to italicize the search term in the text
   const italicizeTerm = (text) => {
     if (!text) return "";
     if (!searchTerm) return String(text);
-
-    // Escape special regex characters in the searchTerm
     const escapeRegex = (term) =>
       term.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
 
@@ -759,16 +684,15 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
     // Clear the filters from state
     setFilters({ articleType: [], sourceType: [] });
     setAnnotateData([]);
-    setBioRxivArticles([]); // Reset bioRxivArticles array
-    setPlosArticles([]); // Reset plosArticles array
-    setSelectedArticles([]); // Reset selectedArticles array
+    setBioRxivArticles([]);
+    setPlosArticles([]);
+    setSelectedArticles([]);
     setShareableLinks({});
     setOpenAnnotate(false);
     setSelectedSort("best_match");
-    setSelectedDateRange(""); // Reset selectedDateRange to its default value (none selected)
-    setCustomStartDate(""); // Clear custom start date
-    setCustomEndDate(""); // Clear custom end date
-    // Clear the filters from localStorage
+    setSelectedDateRange("");
+    setCustomStartDate("");
+    setCustomEndDate("");
     localStorage.removeItem("filters");
     localStorage.removeItem("publicationDate");
 
@@ -905,57 +829,22 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   };
   const handleSendEmail = async () => {
     if (!email) {
-      toast.error("Please enter an email address.", {
-        position: "top-center",
-        autoClose: 2000,
-        style: {
-          backgroundColor: "rgba(254, 235, 235, 1)",
-          borderLeft: "5px solid rgba(145, 4, 4, 1)",
-          color: "background: rgba(145, 4, 4, 1)",
-        },
-      });
+      showErrorToast("Please enter an email address.");
       return;
     }
 
     const links = Object.values(shareableLinks).join(" "); // Get all the URLs as a single space-separated string
 
     const emailData = {
-      email: email, // assuming `email` state holds the email input value
-      // subject: emailSubject || searchTerm,
+      email: email,
       subject: searchTerm,
-      content: links, // the concatenated URLs
+      content: links,
     };
     console.log(links);
     try {
-      const response = await axios.post(
-        "https://inferai.ai/api/core_search/sharearticle",
-        emailData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`, // Add Bearer token
-          },
-        }
-      );
-
+      const response = await apiService.shareArticle(emailData, token);
       if (response.status === 200) {
-        toast.success("Email sent successfully", {
-          position: "top-center",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "colored",
-          style: {
-            backgroundColor: "rgba(237, 254, 235, 1)",
-            borderLeft: "5px solid rgba(15, 145, 4, 1)",
-            color: "rgba(15, 145, 4, 1)",
-          },
-          progressStyle: {
-            backgroundColor: "rgba(15, 145, 4, 1)",
-          },
-        });
+        showSuccessToast("Email sent successfully");
         console.log("Email sent successfully");
         setEmail("");
         setEmailSubject("");
@@ -963,18 +852,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       }
     } catch (error) {
       console.error("Error sending email:", error);
-      toast.error("Failed to send email. Please try again.", {
-        position: "top-center",
-        autoClose: 2000,
-        style: {
-          backgroundColor: "rgba(254, 235, 235, 1)",
-          borderLeft: "5px solid rgba(145, 4, 4, 1)",
-          color: "background: rgba(145, 4, 4, 1)",
-        },
-        progressStyle: {
-          backgroundColor: "rgba(145, 4, 4, 1)",
-        },
-      });
+      showErrorToast("Failed to send email. Please try again.");
     }
   };
   const handleCloseEmailModal = () => {
@@ -1081,15 +959,12 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                     <input
                       type="checkbox"
                       value="Books and Documents"
-                      // disabled={checkBoxLoading}
                       checked={filters.articleType?.includes(
                         "Books and Documents"
                       )}
-                      onChange={handleArticleTypeFilter} //FiltersComments
-                      //checked={isChecked} // Controlled checkbox state
+                      onChange={handleArticleTypeFilter}
                     />{" "}
                     Books & Documents
-                    {/* {checkBoxLoading && <span>Loading...</span>} */}
                   </label>
                   <label>
                     <input
@@ -1372,13 +1247,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                       Share
                     </button>
                   </div>
-                  {/* <button
-                    style={{ display: displayIfLoggedIn }}
-                    className="SearchResult-Save"
-                    title="Save selected articles"
-                  >
-                    Save
-                  </button> */}
                 </div>
                 <div
                   style={{
@@ -1425,23 +1293,18 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
               </div>
               <div className="pagination">
                 <div className="pagination-controls">
-                  {/* Button to go to the first page */}
                   <button
                     onClick={() => handlePageChange(1)}
                     disabled={currentPage === 1}
                   >
                     {"<<"} {/* First page button */}
                   </button>
-
-                  {/* Button to go to the previous page */}
                   <button
                     onClick={() => handlePageChange(currentPage - 1)}
                     disabled={currentPage === 1}
                   >
                     {"<"} {/* Previous page button */}
                   </button>
-
-                  {/* Input for direct page number entry */}
                   <button
                     style={{
                       background: "none",
@@ -1458,8 +1321,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                       }
                       onChange={(e) => {
                         const value = e.target.value;
-
-                        // Only allow numeric input
                         if (/^\d*$/.test(value)) {
                           setPageInput(value); // Update only if it's a valid number or empty
                         }
@@ -1479,15 +1340,12 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                   </button>
 
                   <span> / {totalPages}</span>
-                  {/* Button to go to the next page */}
                   <button
                     onClick={() => handlePageChange(currentPage + 1)}
                     disabled={currentPage === totalPages}
                   >
                     {">"} {/* Next page button */}
                   </button>
-
-                  {/* Button to go to the last page */}
                   <button
                     onClick={() => handlePageChange(totalPages)}
                     disabled={currentPage === totalPages}
@@ -1622,7 +1480,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                                     : "Bookmark this article"
                                 }
                               />
-
                               {isModalOpen && (
                                 <div className="search-bookmark-modal-overlay">
                                   <button
@@ -1631,15 +1488,10 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                                   >
                                     <IoCloseOutline size={20} />
                                   </button>
-                                  <div
-                                    className="search-modal-content"
-                                    // ref={modalRef}
-                                  >
+                                  <div className="search-modal-content">
                                     <div className="bookmark-p">
                                       <p className="bookmark-para">Bookmarks</p>
                                     </div>
-
-                                    {/* Create New Collection */}
                                     <h4>Create a new collection:</h4>
                                     <input
                                       type="text"
@@ -1667,8 +1519,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                                     {Object.keys(collections).length > 0 && (
                                       <>
                                         <h4>Save to existing collection:</h4>
-
-                                        {/* Search bar for collections */}
                                         <input
                                           type="text"
                                           value={searchCollection}
@@ -1681,8 +1531,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                                             padding: "8px 0 8px 8px",
                                           }}
                                         />
-
-                                        {/* Filter collections based on search term */}
                                         <ul className="bookmark-existing-collections">
                                           {Object.keys(collections)
                                             .filter((collectionName) =>
@@ -1727,7 +1575,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                                   className="email-modal-overlay"
                                   style={{
                                     background: "rgba(0, 0, 0, 0.1)",
-                                    // background: "none",
                                   }}
                                   onClick={handleCloseEmailModal}
                                 >
@@ -1740,12 +1587,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                                   >
                                     <div className="email-modal-header">
                                       <h3>Share with</h3>
-                                      {/* <button
-                                        className="email-modal-close-button"
-                                        onClick={handleCloseEmailModal}
-                                      >
-                                        <IoCloseOutline size={20} />
-                                      </button> */}
                                     </div>
                                     <div
                                       className="email-modal-body"
@@ -1909,10 +1750,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                             </p>
                           </div>
                           <div className="Article-Options-Right">
-                            <div
-                              class="searchResult-rate"
-                              // style={{ display: displayIfLoggedIn }}
-                            >
+                            <div class="searchResult-rate">
                               {[5, 4, 3, 2, 1].map((value) => (
                                 <React.Fragment key={value}>
                                   <input
@@ -1945,23 +1783,18 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
 
               <div className="pagination">
                 <div className="pagination-controls">
-                  {/* Button to go to the first page */}
                   <button
                     onClick={() => handlePageChange(1)}
                     disabled={currentPage === 1}
                   >
-                    {"<<"} {/* First page button */}
+                    {"<<"}
                   </button>
-
-                  {/* Button to go to the previous page */}
                   <button
                     onClick={() => handlePageChange(currentPage - 1)}
                     disabled={currentPage === 1}
                   >
-                    {"<"} {/* Previous page button */}
+                    {"<"}
                   </button>
-
-                  {/* Input for direct page number entry */}
                   <button
                     style={{
                       background: "none",
@@ -1978,15 +1811,13 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                       }
                       onChange={(e) => {
                         const value = e.target.value;
-
-                        // Only allow numeric input
                         if (/^\d*$/.test(value)) {
-                          setPageInput(value); // Update only if it's a valid number or empty
+                          setPageInput(value);
                         }
                       }}
-                      onBlur={handlePageInputSubmit} // Validate when input loses focus
+                      onBlur={handlePageInputSubmit}
                       onKeyDown={(e) => {
-                        if (e.key === "Enter") handlePageInputSubmit(); // Validate when pressing Enter
+                        if (e.key === "Enter") handlePageInputSubmit();
                       }}
                       style={{
                         width: "35px",
@@ -1999,20 +1830,17 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                   </button>
 
                   <span> / {totalPages}</span>
-                  {/* Button to go to the next page */}
                   <button
                     onClick={() => handlePageChange(currentPage + 1)}
                     disabled={currentPage === totalPages}
                   >
-                    {">"} {/* Next page button */}
+                    {">"}
                   </button>
-
-                  {/* Button to go to the last page */}
                   <button
                     onClick={() => handlePageChange(totalPages)}
                     disabled={currentPage === totalPages}
                   >
-                    {">>"} {/* Last page button */}
+                    {">>"}
                   </button>
                 </div>
               </div>

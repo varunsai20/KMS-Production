@@ -3,24 +3,20 @@ import { useLocation, Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../redux/reducers/LoginAuth";
 import Button from "./Buttons";
+import { apiService } from "../assets/api/apiService";
 import "../styles/variables.css";
 import "./Header-New.css";
-//import Logo from "../assets/images/Logo_New.svg";
-import Logo from "../assets/images/InfersolD17aR04aP01ZL-Polk4a 1.svg";
+//import Logo from "../assets/images/InfersolD17aR04aP01ZL-Polk4a 1.svg";
+import Logo from "../assets/images/logo.svg";
 import ProfileIcon from "../assets/images/Profile-start.svg";
 import { toast } from "react-toastify";
-
-import axios from "axios";
 
 const Header = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
   const { user, profileUpdated } = useSelector((state) => state.auth);
-  //const [errorCode, setErrorCode] = useState();
-
   const [currentProfileImage, setCurrentProfileImage] = useState(ProfileIcon);
 
   useEffect(() => {
@@ -41,9 +37,7 @@ const Header = () => {
   // Handle logout click
   const handleLogout = async () => {
     try {
-      await axios.post(
-        `https://inferai.ai/api/auth/logout?user_id=${userId}`
-      );
+      await apiService.logout(userId);
       dispatch(logout());
       navigate("/");
     } catch (error) {
@@ -80,13 +74,17 @@ const Header = () => {
         <div className="line-between">
           <span className="line-in-between"></span>
         </div>
-        <Link
+        {/* <Link
           to="/"
           className={`Navbar-Header-Link ${isActive("/") ? "active-link" : ""}`}
           style={{ fontWeight: "bold" }}
         >
           Home
-        </Link>
+        </Link> */}
+        <div className="logo-descreption">
+          <p>Information For Excellence In Research</p>
+          <span>Using Artificial Intelligence</span>
+        </div>
       </div>
 
       <section className="Search-nav-login">

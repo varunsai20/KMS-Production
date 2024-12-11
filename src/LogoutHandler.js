@@ -3,15 +3,17 @@ import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { logout } from "./redux/reducers/LoginAuth";
-import axios from "axios";
+import { apiService } from "./assets/api/apiService";
 const LogoutHandler = ({ children }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { access_token, refresh_token, exp, } = useSelector((state) => state.auth);
-  const userId=useSelector((state) => state.auth.user.user_id)
+  const { access_token, refresh_token, exp } = useSelector(
+    (state) => state.auth
+  );
+  const userId = useSelector((state) => state.auth.user.user_id);
   const handleLogout = async () => {
     try {
-        await axios.post(`https://inferai.ai/api/auth/logout/?user_id=${userId}`);
+      await apiService.logout(userId);
       dispatch(logout());
       navigate("/");
     } catch (error) {

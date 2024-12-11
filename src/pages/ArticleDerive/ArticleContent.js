@@ -18,7 +18,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTelegram } from "@fortawesome/free-brands-svg-icons";
 import { LiaTelegramPlane } from "react-icons/lia";
 import { login, logout } from "../../redux/reducers/LoginAuth"; // Import login and logout actions
-import { toast } from "react-toastify";
+import { showErrorToast, showSuccessToast } from "../../utils/toastHelper";
 const ArticleContent = ({
   setRefreshSessions,
   openAnnotate,
@@ -473,19 +473,7 @@ const ArticleContent = ({
             "collections",
             JSON.stringify(updatedCollections)
           );
-          toast.success("Bookmark unsaved successfully", {
-            position: "top-center",
-            autoClose: 2000,
-
-            style: {
-              backgroundColor: "rgba(237, 254, 235, 1)",
-              borderLeft: "5px solid rgba(15, 145, 4, 1)",
-              color: "rgba(15, 145, 4, 1)",
-            },
-            progressStyle: {
-              backgroundColor: "rgba(15, 145, 4, 1)",
-            },
-          });
+          showSuccessToast("Bookmark unsaved successfully");
 
           await fetchCollections();
         }
@@ -537,36 +525,14 @@ const ArticleContent = ({
 
         setCollections(updatedCollections);
         localStorage.setItem("collections", JSON.stringify(updatedCollections));
-        toast.success("Added to Existing Collection", {
-          position: "top-center",
-          autoClose: 2000,
-          style: {
-            backgroundColor: "rgba(237, 254, 235, 1)",
-            borderLeft: "5px solid rgba(15, 145, 4, 1)",
-            color: "rgba(15, 145, 4, 1)",
-          },
-          progressStyle: {
-            backgroundColor: "rgba(15, 145, 4, 1)",
-          },
-        });
+        showSuccessToast("Added to Existing Collection");
 
         await fetchCollections();
 
         setIsModalOpen(false);
       }
     } catch (error) {
-      toast.error("Failed to Add to the collection", {
-        position: "top-center",
-        autoClose: 2000,
-        style: {
-          backgroundColor: "rgba(254, 235, 235, 1)",
-          borderLeft: "5px solid rgba(145, 4, 4, 1)",
-          color: "background: rgba(145, 4, 4, 1)",
-        },
-        progressStyle: {
-          backgroundColor: "rgba(145, 4, 4, 1)",
-        },
-      });
+      showErrorToast("Failed to Add to the collection");
       console.error("Error adding bookmark to existing collection:", error);
     }
   };
@@ -594,36 +560,13 @@ const ArticleContent = ({
       );
 
       if (response.status === 201) {
-        toast.success("Collection Created", {
-          position: "top-center",
-          autoClose: 1000,
-
-          style: {
-            backgroundColor: "rgba(237, 254, 235, 1)",
-            borderLeft: "5px solid rgba(15, 145, 4, 1)",
-            color: "rgba(15, 145, 4, 1)",
-          },
-          progressStyle: {
-            backgroundColor: "rgba(15, 145, 4, 1)",
-          },
-        });
+        showSuccessToast("Collection Created");
         await fetchCollections();
         setNewCollectionName("");
         setIsModalOpen(false);
       }
     } catch (error) {
-      toast.error("Failed to CreateCollection", {
-        position: "top-center",
-        autoClose: 2000,
-        style: {
-          backgroundColor: "rgba(254, 235, 235, 1)",
-          borderLeft: "5px solid rgba(145, 4, 4, 1)",
-          color: "background: rgba(145, 4, 4, 1)",
-        },
-        progressStyle: {
-          backgroundColor: "rgba(145, 4, 4, 1)",
-        },
-      });
+      showErrorToast("Failed to CreateCollection");
       console.error("Error creating new collection:", error);
     }
   };
@@ -683,7 +626,7 @@ const ArticleContent = ({
         document.getElementById("scrollTopBtn").style.display = "none"; // Hide the button
       }
     };
-    
+
     // Attach the scroll event listener to .article-content
     if (articleContent) {
       articleContent.addEventListener("scroll", handleScroll);
@@ -714,161 +657,165 @@ const ArticleContent = ({
     }
   }, [chatHistory]); // This will trigger when chatHistory changes
 
-    const handleAskClick = async () => {
-      if (!query) {
-        toast.error("Please enter a query");
-        return;
-      }
+  const handleAskClick = async () => {
+    if (!query) {
+      showErrorToast("Please enter a query");
+      return;
+    }
 
-      setShowStreamingSection(true);
-      setLoading(true);
+    setShowStreamingSection(true);
+    setLoading(true);
 
-      const newChatEntry = { query, response: "", showDot: true };
-      setChatHistory((prevChatHistory) => [...prevChatHistory, newChatEntry]);
+    const newChatEntry = { query, response: "", showDot: true };
+    setChatHistory((prevChatHistory) => [...prevChatHistory, newChatEntry]);
 
-      // Create a unique key for the session based on the source and article id
-      const sessionKey = `${source}_${id}`;
-      const storedSessionId =
-        JSON.parse(sessionStorage.getItem("articleSessions"))?.[sessionKey] || "";
+    // Create a unique key for the session based on the source and article id
+    const sessionKey = `${source}_${id}`;
+    const storedSessionId =
+      JSON.parse(sessionStorage.getItem("articleSessions"))?.[sessionKey] || "";
 
-      const bodyData = JSON.stringify({
-        question: query,
-        user_id: user_id,
-        session_id: storedSessionId || undefined, // Use stored session_id if available
-        source: source,
-        article_id: Number(id),
-      });
+    const bodyData = JSON.stringify({
+      question: query,
+      user_id: user_id,
+      session_id: storedSessionId || undefined, // Use stored session_id if available
+      source: source,
+      article_id: Number(id),
+    });
 
-      try {
-        const response = await fetch(
-          "https://inferai.ai/api/view_article/generateanswer",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`, // Add the Bearer token here
-            },
-            body: bodyData,
-          }
-        );
-        // console.log("API Response:", response);
+    try {
+      const response = await fetch(
+        "https://inferai.ai/api/view_article/generateanswer",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`, // Add the Bearer token here
+          },
+          body: bodyData,
+        }
+      );
+      // console.log("API Response:", response);
 
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let buffer = "";
-        setQuery("");
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      setQuery("");
 
-        const readStream = async () => {
-          try {
-            let done = false;
-            const delay = 100; // Delay between words
-        
-            while (!done) {
-              const { value, done: streamDone } = await reader.read();
-              done = streamDone;
-        
-              if (value) {
-                buffer += decoder.decode(value, { stream: true });
-        
-                while (buffer.indexOf("{") !== -1 && buffer.indexOf("}") !== -1) {
-                  let start = buffer.indexOf("{");
-                  let end = buffer.indexOf("}", start);
-                  if (start !== -1 && end !== -1) {
-                    const jsonChunk = buffer.slice(start, end + 1);
-                    buffer = buffer.slice(end + 1);
-        
-                    try {
-                      const parsedData = JSON.parse(jsonChunk);
-        
-                      if (parsedData.session_id) {
-                        const articleSessions =
-                          JSON.parse(sessionStorage.getItem("articleSessions")) || {};
-                        articleSessions[sessionKey] = parsedData.session_id;
-                        sessionStorage.setItem(
-                          "articleSessions",
-                          JSON.stringify(articleSessions)
-                        );
-                      }
-        
-                      const answer = parsedData.answer;
-                      const words = answer.split(" ");
-        
-                      for (const word of words) {
-                        await new Promise((resolve) => setTimeout(resolve, delay));
-        
-                        setChatHistory((chatHistory) => {
-                          const updatedChatHistory = [...chatHistory];
-                          const lastEntryIndex = updatedChatHistory.length - 1;
-        
-                          if (lastEntryIndex >= 0) {
-                            updatedChatHistory[lastEntryIndex] = {
-                              ...updatedChatHistory[lastEntryIndex],
-                              response:
-                                (updatedChatHistory[lastEntryIndex].response || "") +
-                                " " +
-                                word,
-                              showDot: true,
-                            };
-                          }
-        
-                          return updatedChatHistory;
-                        });
-        
-                        setResponse((prev) => prev + " " + word);
-        
-                        if (endOfMessagesRef.current) {
-                          endOfMessagesRef.current.scrollIntoView({
-                            behavior: "smooth",
-                          });
-                        }
-                      }
+      const readStream = async () => {
+        try {
+          let done = false;
+          const delay = 100; // Delay between words
+
+          while (!done) {
+            const { value, done: streamDone } = await reader.read();
+            done = streamDone;
+
+            if (value) {
+              buffer += decoder.decode(value, { stream: true });
+
+              while (buffer.indexOf("{") !== -1 && buffer.indexOf("}") !== -1) {
+                let start = buffer.indexOf("{");
+                let end = buffer.indexOf("}", start);
+                if (start !== -1 && end !== -1) {
+                  const jsonChunk = buffer.slice(start, end + 1);
+                  buffer = buffer.slice(end + 1);
+
+                  try {
+                    const parsedData = JSON.parse(jsonChunk);
+
+                    if (parsedData.session_id) {
+                      const articleSessions =
+                        JSON.parse(sessionStorage.getItem("articleSessions")) ||
+                        {};
+                      articleSessions[sessionKey] = parsedData.session_id;
+                      sessionStorage.setItem(
+                        "articleSessions",
+                        JSON.stringify(articleSessions)
+                      );
+                    }
+
+                    const answer = parsedData.answer;
+                    const words = answer.split(" ");
+
+                    for (const word of words) {
+                      await new Promise((resolve) =>
+                        setTimeout(resolve, delay)
+                      );
+
                       setChatHistory((chatHistory) => {
                         const updatedChatHistory = [...chatHistory];
                         const lastEntryIndex = updatedChatHistory.length - 1;
+
                         if (lastEntryIndex >= 0) {
-                          updatedChatHistory[lastEntryIndex].showDot = false;
+                          updatedChatHistory[lastEntryIndex] = {
+                            ...updatedChatHistory[lastEntryIndex],
+                            response:
+                              (updatedChatHistory[lastEntryIndex].response ||
+                                "") +
+                              " " +
+                              word,
+                            showDot: true,
+                          };
                         }
+
                         return updatedChatHistory;
                       });
-                    } catch (error) {
-                      console.error("Error parsing JSON chunk:", error);
+
+                      setResponse((prev) => prev + " " + word);
+
+                      if (endOfMessagesRef.current) {
+                        endOfMessagesRef.current.scrollIntoView({
+                          behavior: "smooth",
+                        });
+                      }
                     }
+                    setChatHistory((chatHistory) => {
+                      const updatedChatHistory = [...chatHistory];
+                      const lastEntryIndex = updatedChatHistory.length - 1;
+                      if (lastEntryIndex >= 0) {
+                        updatedChatHistory[lastEntryIndex].showDot = false;
+                      }
+                      return updatedChatHistory;
+                    });
+                  } catch (error) {
+                    console.error("Error parsing JSON chunk:", error);
                   }
                 }
               }
             }
-            setRefreshSessions((prev) => !prev);
-            setLoading(false);
-            localStorage.setItem("chatHistory", JSON.stringify(chatHistory));
-          } catch (error) {
-            console.error("Error fetching or reading stream:", error);
-        
-            setChatHistory((chatHistory) => {
-              const updatedChatHistory = [...chatHistory];
-              const lastEntryIndex = updatedChatHistory.length - 1;
-        
-              if (lastEntryIndex >= 0) {
-                updatedChatHistory[lastEntryIndex] = {
-                  ...updatedChatHistory[lastEntryIndex],
-                  response: "There is some error. Please try again after some time.",
-                  showDot: false,
-                };
-              }
-        
-              return updatedChatHistory;
-            });
-        
-            setLoading(false);
           }
-        };
-        
-        
-        readStream();
-      } catch (error) {
-        console.error("Error fetching or reading stream:", error);
-        setLoading(false);
-      }
-    };
+          setRefreshSessions((prev) => !prev);
+          setLoading(false);
+          localStorage.setItem("chatHistory", JSON.stringify(chatHistory));
+        } catch (error) {
+          console.error("Error fetching or reading stream:", error);
+
+          setChatHistory((chatHistory) => {
+            const updatedChatHistory = [...chatHistory];
+            const lastEntryIndex = updatedChatHistory.length - 1;
+
+            if (lastEntryIndex >= 0) {
+              updatedChatHistory[lastEntryIndex] = {
+                ...updatedChatHistory[lastEntryIndex],
+                response:
+                  "There is some error. Please try again after some time.",
+                showDot: false,
+              };
+            }
+
+            return updatedChatHistory;
+          });
+
+          setLoading(false);
+        }
+      };
+
+      readStream();
+    } catch (error) {
+      console.error("Error fetching or reading stream:", error);
+      setLoading(false);
+    }
+  };
 
   const handlePromptClick = (queryText) => {
     setQuery(queryText);
@@ -889,7 +836,7 @@ const ArticleContent = ({
     sessionStorage.getItem("sessionId") || sessionStorage.getItem("session_id");
   const handleDeriveClick = async () => {
     if (!query && !uploadedFile) {
-      toast.error("Please enter a query or upload a file", {
+      showErrorToast("Please enter a query or upload a file", {
         position: "top-center",
         autoClose: 2000,
       });
@@ -1497,9 +1444,7 @@ const ArticleContent = ({
     const file = e.target.files[0];
     if (!file) return; // Exit if no file was selected
     if (file.size > 5 * 1024 * 1024) {
-      toast.error("try uploading files 5MB or less", {
-        position: "top-center",
-      });
+      showErrorToast("try uploading files 5MB or less");
     }
 
     const allowedExtensions = ["pdf", "docx"];
@@ -1507,10 +1452,7 @@ const ArticleContent = ({
 
     if (!allowedExtensions.includes(fileExtension)) {
       //alert("Please upload a PDF or DOCX file.");
-      toast.error("try uploading .pdf,.docx", {
-        position: "top-center",
-        autoClose: 2000,
-      });
+      showErrorToast("try uploading .pdf,.docx");
       return;
     }
 
@@ -1522,47 +1464,7 @@ const ArticleContent = ({
     setUploadedFile(null);
     setIsPromptEnabled(false);
   };
-  const handleUploadClick = () => {
-    document.getElementById("file-upload").click();
-  };
 
-  const handleOpenChat = () => {
-    sessionStorage.removeItem("session_id");
-    //   localStorage.setItem("chatHistory", []);
-    setArticleData("");
-    setChatHistory([]);
-    dispatch(setDeriveInsights(true)); // Set deriveInsights state in Redux
-    // console.log("clicked");
-    navigate("/article", {
-      state: true, // Set state to null
-    });
-  };
-
-  const [isDragging, setIsDragging] = useState(false);
-
-  const handleDragOver = (event) => {
-    event.preventDefault();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = () => {
-    setIsDragging(false);
-  };
-
-  const handleDrop = (event) => {
-    event.preventDefault();
-    setIsDragging(false);
-    const file = event.dataTransfer.files[0];
-    if (
-      file &&
-      (file.type === "application/pdf" ||
-        file.type ===
-          "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
-        file.type === "text/plain")
-    ) {
-      handleFileUpload({ target: { files: [file] } });
-    }
-  };
   return (
     <>
       {articleData ? (

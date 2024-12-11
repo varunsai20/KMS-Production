@@ -10,6 +10,7 @@ import Download from "../assets/images/Download.svg";
 import pdfICon from "../assets/images/pdf.png";
 import docxIcon from "../assets/images/docx-file.png";
 import txtIcon from "../assets/images/txt-file.png";
+import { apiService } from "../assets/api/apiService";
 
 const Citations = ({ handleCloseCitations }) => {
   const [uploadedFile, setUploadedFile] = useState(null);
@@ -41,20 +42,26 @@ const Citations = ({ handleCloseCitations }) => {
     formData.append("file", uploadedFile);
 
     try {
-      const response = await fetch(
-        "https://inferai.ai/api/core_search/citations",
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`, // Replace YOUR_TOKEN_HERE with actual token
-          },
-          body: formData,
+      const response = await apiService.generateCitations(formData, token);
+      console.log(response);
+      //   if (response.ok) {
+      //     const result = await response.json();
+      //     setCitationData(result.citations); // Assuming the API returns { "citations": {...} }
+      //   } else {
+      //     console.error("Failed to generate citations:", response.statusText);
+      //   }
+      // } catch (error) {
+      //   console.error("Error generating citations:", error);
+      // } finally {
+      //   setCitationLoading(false);
+      // }
+      if (response.status === 200) {
+        const result = response.data;
+        if (result && result.citations) {
+          setCitationData(result.citations);
+        } else {
+          console.error("Citations not found in response");
         }
-      );
-
-      if (response.ok) {
-        const result = await response.json();
-        setCitationData(result.citations); // Assuming the API returns { "citations": {...} }
       } else {
         console.error("Failed to generate citations:", response.statusText);
       }
