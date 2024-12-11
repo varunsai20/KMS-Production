@@ -20,11 +20,14 @@ import Help from "../../assets/images/Lander-Help.svg";
 import Utilities from "../../assets/images/Lander-Utilities.svg";
 import Analytics from "../../assets/images/Lander-Analytics.svg";
 import "./Lander-Logedin.css";
-import axios from "axios";
-//import Draggable from "react-draggable";
+import { FaXTwitter } from "react-icons/fa6";
+import { FaFacebookF, FaLinkedinIn } from "react-icons/fa";
+import { FaInstagramSquare } from "react-icons/fa";
+import { apiService } from "../../assets/api/apiService";
 import Collection from "../../components/Collection";
 import Citations from "../../components/Citations";
 import GenerateAnnotate from "../../components/GenerateAnnotate";
+import Logo from "../../assets/images/InfersolD17aR04aP01ZL-Polk4a 1.svg";
 
 import Notes from "../NotesPage/Notes";
 import { toast } from "react-toastify";
@@ -79,23 +82,14 @@ const Lander = () => {
       },
     });
   };
-
-  // const handleCloseInsights = () => {};
   useEffect(() => {
     const fetchSessions = async () => {
       try {
-        const response = await axios.get(
-          `https://inferai.ai/api/history/conversations/history/${user_id}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        const response = await apiService.fetchSessions(user_id, token);
         if (response.data?.sessions) {
-          const sessionsData = response.data.sessions.reverse(); // Reverse the array order
+          const sessionsData = response.data.sessions.reverse();
           console.log(sessionsData);
-          setSessions(sessionsData); // Set the reversed sessions array to state
+          setSessions(sessionsData);
         }
       } catch (error) {
         console.error("Error fetching chat history:", error);
@@ -124,16 +118,12 @@ const Lander = () => {
     localStorage.setItem("session_id", session_id);
     console.log(sessions[0]);
     try {
-      const conversationResponse = await axios.get(
-        `https://inferai.ai/api/history/conversations/history/${user_id}/${session_id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+      const conversationResponse = await apiService.sessionClick(
+        user_id,
+        session_id,
+        token
       );
       console.log(conversationResponse);
-
       const formattedChatHistory = [];
       let currentEntry = {};
 
@@ -209,37 +199,27 @@ const Lander = () => {
   }, [isLanderNotesOpen]);
 
   return (
-    <div
-      className="Landing-Container"
-      // style={isLoggedIn ? { height: `${100}vh` } : {}}
-    >
+    <div className="Landing-Container">
       <div className="Landing-Header">
         <Header />
       </div>
 
       <div className="Landing-Content">
-        <div className="Landing-Content-Left">
-          <img className="Right2" src={ReactLogo} alt="Right Graphic 2" />
-          <img className="Left1" src={Bulb} alt="Left Graphic 1" />
-          <img className="Left2" src={circle} alt="Left Graphic 2" />
-          <img className="Right1" src={Molecules} alt="Right Graphic 1" />
-          <div className="welcome-search">
-            <h3 className="Landing-Welcome">
-              Welcome to <span className="Landing-Infer">Inferai!</span>
-            </h3>
-            <p className="Landing-Welcome-desc">
-              Inferai by Infer Solutions, Inc, a cutting-edge product leveraging
-              generative AI to revolutionize research in pharmaceuticals,
-              biotechnology, and healthcare. This innovative platform
-              streamlines research processes, enhances data analysis, and
-              uncovers new insights.
-            </p>
-            <SearchBar className={`Landing-Searchbar`} />
-          </div>
-          {/* </div> */}
+        {/* <img className="Right2" src={ReactLogo} alt="Right Graphic 2" />
+        <img className="Left1" src={Bulb} alt="Left Graphic 1" />
+        <img className="Left2" src={circle} alt="Left Graphic 2" />
+        <img className="Right1" src={Molecules} alt="Right Graphic 1" /> */}
+        {/* <div className="Landing-Content-Left"> */}
+        <div className="welcome-search">
+          <img src={Logo} alt="inferAI-logo" className="inferai-logo" />
+          <SearchBar />
+          <p className="Landing-Welcome-desc">
+            Lorem ipsum dolor, sit amet consectetur adipisicing elit.
+          </p>
         </div>
+        {/* </div> */}
 
-        <div className="Landing-Content-Right">
+        {/* <div className="Landing-Content-Right">
           <img
             className="Landing-Content-Right-Image"
             src={LandingImage}
@@ -251,7 +231,7 @@ const Lander = () => {
               mixBlendMode: "color-burn",
             }}
           />
-        </div>
+        </div> */}
       </div>
 
       <div className="Landing-Features">
@@ -268,10 +248,7 @@ const Lander = () => {
 
               <span onClick={handleOpenCollection}>Bookmarks</span>
               <span onClick={handleSessionClick}>Conversations</span>
-              <span onClick={handleOpenNotes}>
-                {/* <a href="#" onClick={handleOpenNotes}> */}
-                Notes
-              </span>
+              <span onClick={handleOpenNotes}>Notes</span>
             </div>
             <div className="Feature-Item">
               <img
@@ -457,6 +434,35 @@ const Lander = () => {
           </div>
         </>
       )}
+      <div className="socials">
+        <div className="social-icons">
+          <a href="https://x.com/IncInfer" target="_blank" rel="noreferrer">
+            <FaXTwitter size={30} color="black" />
+          </a>
+
+          <a
+            href="https://www.facebook.com/infersol"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <FaFacebookF size={30} color="black" />
+          </a>
+          <a
+            href="https://www.linkedin.com/company/infer-solutions/"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <FaLinkedinIn size={30} color="black" />
+          </a>
+          <a
+            href="https://www.facebook.com/infersol"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <FaInstagramSquare size={30} color="black" />
+          </a>
+        </div>
+      </div>
       <Footer />
     </div>
   );

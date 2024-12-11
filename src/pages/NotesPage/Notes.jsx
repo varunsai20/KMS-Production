@@ -2,11 +2,10 @@ import React, { useState, useEffect } from "react";
 import NotesList from "../../components/Notes/NotesList";
 import Createnotes from "../../components/Notes/CreateNotes";
 import Editnotes from "../../components/Notes/EditNotes";
+import { apiService } from "../../assets/api/apiService";
+import { showSuccessToast } from "../../utils/toastHelper";
 import "./Notes.css";
-
 import { useSelector } from "react-redux";
-import axios from "axios";
-import { toast } from "react-toastify";
 const NotesManager = ({
   selectedText: propSelectedText,
   notesHeight,
@@ -15,7 +14,7 @@ const NotesManager = ({
   oncloseNotes,
 }) => {
   console.log(propSelectedText);
-  console.log(notesHeight)
+  console.log(notesHeight);
   const { user } = useSelector((state) => state.auth);
   const user_id = user?.user_id;
   const token = useSelector((state) => state.auth.access_token);
@@ -26,17 +25,6 @@ const NotesManager = ({
   const [filterText, setFilterText] = useState("");
   const [selectedNote, setSelectedNote] = useState(null);
   const [lastOpenView, setLastOpenView] = useState("list");
-
-  // useEffect(() => {
-  //   if (propSelectedText) {
-  //     setTextToSave((prevText) => [...prevText, propSelectedText.trim()]);
-  //     if (currentView !== "edit") {
-  //       setCurrentView("create");
-  //     } else if (currentView === "edit") {
-  //       setEditTextToSave((prev) => [...prev, propSelectedText.trim()]);
-  //     }
-  //   }
-  // }, [propSelectedText]);
 
   useEffect(() => {
     if (propSelectedText) {
@@ -61,14 +49,7 @@ const NotesManager = ({
 
   const fetchNotes = async () => {
     try {
-      const response = await axios.get(
-        `https://inferai.ai/api/notes/getnotes/${user_id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await apiService.fetchNotes(user_id, token);
       const notesArray = Array.isArray(response.data.data)
         ? response.data.data
         : Object.values(response.data.data);
@@ -130,51 +111,14 @@ const NotesManager = ({
 
   const handleDeleteNote = async (noteId) => {
     try {
-      const response = await axios.delete(
-        `https://inferai.ai/api/notes/deletenote/${user_id}/${noteId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+      await apiService.deleteNote(user_id, noteId, token);
+      setNotes((prevNotes) =>
+        prevNotes.filter((note) => note.note_id !== noteId)
       );
-
-      if (response.status === 200) {
-        setNotes((prevNotes) =>
-          prevNotes.filter((note) => note.note_id !== noteId)
-        );
-        toast.success("Deleted Successfully", {
-          position: "top-center",
-          autoClose: 3000,
-    
-          style: {
-            backgroundColor: "rgba(237, 254, 235, 1)",
-            borderLeft: "5px solid rgba(15, 145, 4, 1)",
-            color: "rgba(15, 145, 4, 1)",
-          },
-          progressStyle: {
-            backgroundColor: "rgba(15, 145, 4, 1)",
-          },
-        });
-
-        console.log("Note deleted successfully");
-      } else {
-        toast.error("Failed to delete note:", {
-          position: "top-center",
-          autoClose: 2000,
-          style: {
-            backgroundColor: "rgba(254, 235, 235, 1)",
-            borderLeft: "5px solid rgba(145, 4, 4, 1)",
-            color: "background: rgba(145, 4, 4, 1)",
-          },
-          progressStyle: {
-            backgroundColor: "rgba(145, 4, 4, 1)",
-          },
-        });
-        console.error("Failed to delete note:", response);
-      }
+      showSuccessToast("Deleted Successfully");
     } catch (error) {
       console.error("Error deleting note:", error);
+      //showErrorToast("Failed to delete note. Please try again.");
     }
   };
 

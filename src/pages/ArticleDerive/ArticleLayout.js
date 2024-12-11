@@ -4,6 +4,7 @@ import Header from "../../components/Header-New";
 import { useNavigate } from "react-router-dom";
 import { setDeriveInsights } from "../../redux/reducers/deriveInsights";
 import newChat from "../../assets/images/20px@2x.svg";
+import { apiService } from "../../assets/api/apiService";
 import axios from "axios";
 import pen from "../../assets/images/16px.svg";
 import { useRef } from "react";
@@ -75,15 +76,7 @@ const ArticleLayout = () => {
   useEffect(() => {
     const fetchSessions = async () => {
       try {
-        const response = await axios.get(
-          `https://inferai.ai/api/history/conversations/history/${user_id}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
+        const response = await apiService.fetchSessions(user_id, token);
         if (response.data?.sessions) {
           const sessionsData = response.data.sessions.reverse(); // Reverse the array order
           // console.log(sessionsData)
@@ -127,13 +120,10 @@ const ArticleLayout = () => {
     console.log("called in session");
     localStorage.removeItem("session_id");
     try {
-      const conversationResponse = await axios.get(
-        `https://inferai.ai/api/history/conversations/history/${user_id}/${session_id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+      const conversationResponse = await apiService.fetchChatConversation(
+        user_id,
+        session_id,
+        token
       );
       localStorage.setItem("session_id", session_id);
       sessionStorage.setItem("session_id", session_id);
@@ -295,19 +285,11 @@ const ArticleLayout = () => {
 
   const handleSaveEdit = async (sessionId) => {
     try {
-      await axios.put(
-        "https://inferai.ai/api/history/conversations/edit",
-        {
-          user_id,
-          session_id: sessionId,
-          new_title: editedTitle,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      await apiService.saveEdit(token, {
+        user_id,
+        session_id: sessionId,
+        new_title: editedTitle,
+      });
       setSessions((prevSessions) =>
         prevSessions.map((session) =>
           session.session_id === sessionId
@@ -315,8 +297,6 @@ const ArticleLayout = () => {
             : session
         )
       );
-
-      // Reset editing state
       setEditingSessionId(null);
       setEditedTitle("");
     } catch (error) {
@@ -387,20 +367,13 @@ const ArticleLayout = () => {
   const handleAnnotateFile = async () => {
     setAnnotateLoading(true);
     try {
-      const response = await axios.post(
-        "https://inferai.ai/api/core_search/annotate_from_url",
+      const response = await apiService.annotateFileFromURL(token,
         { url: fileUrl },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
       );
-
       const data = response.data;
       setAnnotateData(data);
-      setHasFetchedAnnotateData(true); // Set flag after successful fetch
-      setOpenAnnotate(true); // Open annotation panel after data is received
+      setHasFetchedAnnotateData(true); 
+      setOpenAnnotate(true);
       setAnnotateFile(true);
     } catch (error) {
       console.error("Error fetching data from the API", error);
@@ -426,16 +399,7 @@ const ArticleLayout = () => {
 
     setAnnotateLoading(true);
     try {
-      const response = await axios.post(
-        "https://inferai.ai/api/core_search/annotate",
-        requestBody,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
+      const response = await apiService.annotateFile(requestBody,token);
       const data = response.data;
       setAnnotateData(data);
       setHasFetchedAnnotateData(true); // Set flag after successful fetch
@@ -446,8 +410,6 @@ const ArticleLayout = () => {
       setAnnotateLoading(false);
     }
   };
-
-  // Optional: useEffect for clearing flag if needed, such as when sources change
   useEffect(() => {
     if (!annotateData) {
       setHasFetchedAnnotateData(false);
@@ -467,7 +429,7 @@ const ArticleLayout = () => {
     } else {
       setOpenNotes((prevOpenNotes) => !prevOpenNotes);
     }
-    //localStorage.removeItem("unsavedChanges");
+    
   };
   const handleCancelIcon = () => {
     setShowConfirmIcon(false);
@@ -562,11 +524,7 @@ const ArticleLayout = () => {
                       }
                       onClick={() => {
                         handleSessionClick(
-                          // session.article_id,
-                          // session.source,
                           session.session_id
-                          // user_id,
-                          // session.session_type
                         );
                       }}
                     >

@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+
 import { logout, login,updateTokens } from "./redux/reducers/LoginAuth";
 import axios from "axios";
 
@@ -34,6 +35,7 @@ const LogoutHandler = ({ children }) => {
               refresh_token:response.data.refresh_token
             })
           );
+
     } catch (error) {
       console.error("Error during refresh process:", error.response ? error.response.data : error.message);
     }

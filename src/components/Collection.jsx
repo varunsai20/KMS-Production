@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import SearchIcon from "../assets/images/Search.svg";
 import "./Collection.css";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { IoCloseOutline } from "react-icons/io5";
+import { apiService } from "../assets/api/apiService";
 
 const Collection = ({ setIsCollectionOpen }) => {
   const [collections, setCollections] = useState([]);
@@ -19,14 +19,7 @@ const Collection = ({ setIsCollectionOpen }) => {
   useEffect(() => {
     const fetchCollections = async () => {
       try {
-        const response = await axios.get(
-          `https://inferai.ai/api/bookmarks/${user_id}/collections`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        const response = await apiService.fetchCollections(user_id, token);
         const fetchedCollections = response.data.collections || {};
         setCollections(fetchedCollections);
 
@@ -84,7 +77,7 @@ const Collection = ({ setIsCollectionOpen }) => {
         : source === "Public Library of Science (PLOS)"
         ? "plos_id"
         : "pmid";
-        navigate(`/article/content/${sourceType}:${article_id}`, {
+    navigate(`/article/content/${sourceType}:${article_id}`, {
       state: {
         annotateData: [],
       },

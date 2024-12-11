@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { apiService } from "../../assets/api/apiService";
 import { HiOutlineMenuAlt1 } from "react-icons/hi";
 import { IoCloseOutline } from "react-icons/io5";
 import { RxDotsHorizontal } from "react-icons/rx";
@@ -8,7 +9,7 @@ import { GoItalic, GoStrikethrough } from "react-icons/go";
 import { PiListBullets } from "react-icons/pi";
 import { BsListOl } from "react-icons/bs";
 import DOMPurify from "dompurify";
-import axios from "axios";
+import { showSuccessToast, showErrorToast } from "../../utils/toastHelper";
 import { useSelector } from "react-redux";
 import { MdEmail } from "react-icons/md";
 import "./CreateNote.css";
@@ -18,7 +19,6 @@ import { BiSave } from "react-icons/bi";
 const Createnotes = ({
   setNotes,
   onClose,
-  //selectedText,
   textToSave,
   notesHeight,
   onDelete,
@@ -30,7 +30,6 @@ const Createnotes = ({
   console.log(textToSave);
   const [title, setTitle] = useState("");
   const [isOpenDropdown, setIsOpenDropdown] = useState(false);
-  //const date = useCreateDate();
   const headerRef = useRef(null);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [unsavedChanges, setUnsavedChanges] = useState(false); // Track unsaved changes
@@ -45,7 +44,7 @@ const Createnotes = ({
     unorderedList: false,
   });
   const editorRef = useRef(null);
-  
+
   const [noteContent, setNoteContent] = useState("");
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const { user } = useSelector((state) => state.auth);
@@ -212,34 +211,15 @@ const Createnotes = ({
     };
 
     try {
-      const response = await axios.post(
-        "https://inferai.ai/api/notes/createnote",
-        {
-          user_id,
-          title: note.title,
-          content: note.content,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+      const response = await apiService.saveNote(
+        user_id,
+        note.title,
+        note.content,
+        token
       );
       if (response.status === 201) {
         setNotes((prevNotes) => [note, ...prevNotes]);
-        toast.success("Notes Saved Successfully", {
-          position: "top-center",
-          autoClose: 1000,
-
-          style: {
-            backgroundColor: "rgba(237, 254, 235, 1)",
-            borderLeft: "5px solid rgba(15, 145, 4, 1)",
-            color: "rgba(15, 145, 4, 1)",
-          },
-          progressStyle: {
-            backgroundColor: "rgba(15, 145, 4, 1)",
-          },
-        });
+        showSuccessToast("Notes Saved Successfully");
         setUnsavedChanges(false);
         fetchNotes();
       }
@@ -252,21 +232,9 @@ const Createnotes = ({
       setUnsavedChanges(false);
       localStorage.removeItem("unsavedChanges");
     } catch (error) {
-      toast.error("Error saving note:", {
-        position: "top-center",
-        autoClose: 2000,
-        style: {
-          backgroundColor: "rgba(254, 235, 235, 1)",
-          borderLeft: "5px solid rgba(145, 4, 4, 1)",
-          color: "background: rgba(145, 4, 4, 1)",
-        },
-        progressStyle: {
-          backgroundColor: "rgba(145, 4, 4, 1)",
-        },
-      });
+      showErrorToast("Error saving note:");
       console.error("Error saving note:", error);
     }
-    //}
   };
   console.log("text is saved", textToSave);
   const handleCloseClick = () => {
