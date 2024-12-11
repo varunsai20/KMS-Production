@@ -104,7 +104,7 @@ button {
   display: flex;
 
   top: 45%;
-  width: 90%;
+  width: 70%;
 
   border-radius: 20px;
   background-size: cover;
@@ -913,6 +913,11 @@ button {
   border-radius: 8px 8px 0px 0px;
   padding: 10px;
 }
+.search-citation-icon{
+  border: 1px solid rgba(235, 235, 243, 1);
+  border-radius: 0px 0px 8px 8px;
+  padding: 10px;
+}
 
 /* Add custom border-bottom for each row */
 .search-table-row td {
@@ -1097,7 +1102,7 @@ td {
 .search-notes-icon {
   border: 1px solid rgba(235, 235, 243, 1);
   /* background-color: rgba(235, 244, 255, 1); */
-  border-radius: 8px;
+  /* border-radius: 8px; */
   padding: 10px;
 }
 .search-tables p {

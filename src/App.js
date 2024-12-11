@@ -8,7 +8,7 @@ import {
 } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { setDeriveInsights } from "./redux/reducers/deriveInsights";
-
+import LogoutHandler from "./LogoutHandler";
 import Lander from "./pages/LandingPage/Lander-Logedin";
 import Login from "./pages/Authentication/Login/Login";
 import SignUpForm from "./pages/Authentication/SignUp/Signup";
@@ -95,7 +95,9 @@ function AppRoutes() {
 function App() {
   return (
     <Router>
-      <AppRoutes />
+      <LogoutHandler>
+        <AppRoutes />
+      </LogoutHandler>
     </Router>
   );
 }

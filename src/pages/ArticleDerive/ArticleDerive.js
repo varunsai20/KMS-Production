@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef,useCallback } from "react";
 import axios from "axios";
 import { useSelector, useDispatch } from "react-redux";
 import { setDeriveInsights } from "../../redux/reducers/deriveInsights";
@@ -445,134 +445,127 @@ const ArticleDerive = ({
 
   const storedSessionId =
     localStorage.getItem("sessionId") || localStorage.getItem("session_id");
-  const handleDeriveClick = async () => {
-    if (!query && !uploadedFile) {
-      showErrorToast("Please enter a query or upload a file", {
-        position: "top-center",
-        autoClose: 2000,
-      });
-      return;
-    }
-    removeUploadedFile();
-    setQuery("");
-    setLoading(true);
-    const newChatEntry = {
-      query,
-      file: uploadedFile,
-      response: "",
-      showDot: true,
-    };
-    setChatHistory((prevChatHistory) => [...prevChatHistory, newChatEntry]);
+    const handleDeriveClick = useCallback(async () => {
+      if (!query && !uploadedFile) {
+        toast.error("Please enter a query or upload a file", {
+          position: "top-center",
+          autoClose: 2000,
+        });
+        return;
 
-    try {
-      let url = "https://inferai.ai/api/insights/upload";
-      const headers = {
-        Authorization: `Bearer ${token}`,
-        "ngrok-skip-browser-warning": true,
+      }
+      removeUploadedFile();
+      setQuery("");
+      setLoading(true);
+      const newChatEntry = {
+        query,
+        file: uploadedFile,
+        response: "",
+        showDot: true,
       };
-      console.log(storedSessionId);
-      // Initialize FormData
-      const formData = new FormData();
-      formData.append("question", query);
-
-      // Conditionally set user_id or userid based on session_id existence
-      if (storedSessionId) {
-        formData.append("user_id", user.user_id);
-        formData.append("session_id", storedSessionId);
-      } else {
-        formData.append("userid", user.user_id);
-      }
-
-      if (uploadedFile) {
-        formData.append("file", uploadedFile);
-      }
-
-      if (storedSessionId) {
-        url = "https://inferai.ai/api/insights/ask";
-      }
-      console.log(storedSessionId);
-      // Use fetch instead of axios to handle streaming response
-      const response = await fetch(url, {
-        method: "POST",
-        headers: headers,
-        body: formData,
-      });
-
-      if (!response.ok) throw new Error("Network response was not ok");
-
-      // Stream response and update chat history
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = "";
-      let apiResponse = ""; // To accumulate the full response
-
-      const readStream = async () => {
-        let done = false;
-        const delay = 100;
-
-        while (!done) {
-          const { value, done: streamDone } = await reader.read();
-          done = streamDone;
-
-          if (value) {
-            buffer += decoder.decode(value, { stream: true });
-
-            // Process chunks of JSON-like data
-            while (buffer.indexOf("{") !== -1 && buffer.indexOf("}") !== -1) {
-              let start = buffer.indexOf("{");
-              let end = buffer.indexOf("}", start);
-              if (start !== -1 && end !== -1) {
-                const jsonChunk = buffer.slice(start, end + 1);
-                buffer = buffer.slice(end + 1);
-
-                try {
-                  const parsedData = JSON.parse(jsonChunk);
-                  const answer = parsedData.answer;
-                  apiResponse += answer + " "; // Accumulate the full response
-
-                  // Store session_id if not already stored
-                  if (!storedSessionId && parsedData.session_id) {
-                    // setSessionId(parsedData.session_id);
-                    localStorage.setItem("session_id", parsedData.session_id);
-                  }
-
-                  setChatHistory((chatHistory) => {
-                    const updatedChatHistory = [...chatHistory];
-                    const lastEntryIndex = updatedChatHistory.length - 1;
-                    if (lastEntryIndex >= 0) {
-                      updatedChatHistory[lastEntryIndex] = {
-                        ...updatedChatHistory[lastEntryIndex],
-                        response: apiResponse.trim(),
-                        showDot: false,
-                      };
+      setChatHistory((prevChatHistory) => [...prevChatHistory, newChatEntry]);
+    
+      try {
+        let url = "https://inferai.ai/api/insights/upload";
+        const headers = {
+          Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": true,
+        };
+    
+        // Initialize FormData
+        const formData = new FormData();
+        formData.append("question", query);
+    
+        if (storedSessionId) {
+          formData.append("user_id", user.user_id);
+          formData.append("session_id", storedSessionId);
+        } else {
+          formData.append("userid", user.user_id);
+        }
+    
+        if (uploadedFile) {
+          formData.append("file", uploadedFile);
+        }
+    
+        if (storedSessionId) {
+          url = "https://inferai.ai/api/insights/ask";
+        }
+    
+        const response = await fetch(url, {
+          method: "POST",
+          headers: headers,
+          body: formData,
+        });
+    
+        if (!response.ok) throw new Error("Network response was not ok");
+    
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+        let apiResponse = ""; 
+    
+        const readStream = async () => {
+          let done = false;
+    
+          while (!done) {
+            const { value, done: streamDone } = await reader.read();
+            done = streamDone;
+    
+            if (value) {
+              buffer += decoder.decode(value, { stream: true });
+    
+              while (buffer.indexOf("{") !== -1 && buffer.indexOf("}") !== -1) {
+                let start = buffer.indexOf("{");
+                let end = buffer.indexOf("}", start);
+                if (start !== -1 && end !== -1) {
+                  const jsonChunk = buffer.slice(start, end + 1);
+                  buffer = buffer.slice(end + 1);
+    
+                  try {
+                    const parsedData = JSON.parse(jsonChunk);
+                    const answer = parsedData.answer;
+                    apiResponse += answer + " ";
+    
+                    if (!storedSessionId && parsedData.session_id) {
+                      localStorage.setItem("session_id", parsedData.session_id);
                     }
-                    return updatedChatHistory;
-                  });
-
-                  if (endOfMessagesRef.current) {
-                    endOfMessagesRef.current.scrollIntoView({
-                      behavior: "smooth",
-                      // block: "end",
+    
+                    setChatHistory((chatHistory) => {
+                      const updatedChatHistory = [...chatHistory];
+                      const lastEntryIndex = updatedChatHistory.length - 1;
+                      if (lastEntryIndex >= 0) {
+                        updatedChatHistory[lastEntryIndex] = {
+                          ...updatedChatHistory[lastEntryIndex],
+                          response: apiResponse.trim(),
+                          showDot: false,
+                        };
+                      }
+                      return updatedChatHistory;
                     });
+    
+                    if (endOfMessagesRef.current) {
+                      endOfMessagesRef.current.scrollIntoView({
+                        behavior: "smooth",
+                      });
+                    }
+                  } catch (error) {
+                    console.error("Error parsing JSON chunk:", error);
                   }
-                } catch (error) {
-                  console.error("Error parsing JSON chunk:", error);
                 }
               }
             }
           }
-        }
-        setRefreshSessions((prev) => !prev);
+          setRefreshSessions((prev) => !prev);
+          setLoading(false);
+          localStorage.setItem("chatHistory", JSON.stringify(chatHistory));
+        };
+    
+        readStream();
+      } catch (error) {
+        console.error("Error fetching or reading stream:", error);
         setLoading(false);
-        localStorage.setItem("chatHistory", JSON.stringify(chatHistory));
-      };
-
-      readStream();
-    } catch (error) {
-      console.error("Error fetching or reading stream:", error);
-      setLoading(false);
-    }
-  };
+      }
+    }, [query, token, storedSessionId, user.user_id]);
 
   const handlePromptWithFile = (prompt) => {
     if (!uploadedFile && !storedSessionId) return; // Ensure either a file is selected or a session exists
@@ -704,9 +697,9 @@ const ArticleDerive = ({
     const storedSessionId =
       localStorage.getItem("sessionId") || localStorage.getItem("session_id");
     if (storedSessionId || uploadedFile) {
-      setIsPromptEnabled(true); // Enable prompts if session_id exists or a file is uploaded
+      setIsPromptEnabled(true);
     } else {
-      setIsPromptEnabled(false); // Disable prompts if neither session_id nor file is present
+      setIsPromptEnabled(false);
     }
   }, [handleDeriveClick, uploadedFile]);
 
@@ -953,7 +946,7 @@ const ArticleDerive = ({
       <div
         className="derive-chat-query"
         style={{
-          width: openAnnotate || openNotes ? contentWidth : "69%",
+          width: openAnnotate || openNotes ? contentWidth : "70%",
           display: displayIfLoggedIn,
         }}
       >

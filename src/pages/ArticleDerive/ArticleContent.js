@@ -1801,7 +1801,7 @@ const ArticleContent = ({
         <div
           className="article-chat-query"
           style={{
-            width: openAnnotate || openNotes ? contentWidth : "69%",
+            width: openAnnotate || openNotes ? contentWidth : "70%",
             display: displayIfLoggedIn,
           }}
         >
