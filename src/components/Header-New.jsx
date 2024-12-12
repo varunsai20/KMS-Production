@@ -68,9 +68,9 @@ const Header = () => {
       }} // Set width conditionally
     >
       <div className="Navbar-Header-Items">
-        <Link to="/">
-          <img className="Search-nav-logo" src={Logo} alt="Infer logo" />
-        </Link>
+      <a href="https://www.infersol.com/" target="_blank" rel="noreferrer">
+                <img className="Search-nav-logo" src={Logo} alt="Infer logo" />
+        </a>
         <div className="line-between">
           <span className="line-in-between"></span>
         </div>
@@ -82,8 +82,8 @@ const Header = () => {
           Home
         </Link> */}
         <div className="logo-descreption">
-          <p>Information For Excellence In Research</p>
-          <span>Using Artificial Intelligence</span>
+          <p>Information For Excellence in Research</p>
+          <span>using Artificial Intelligence</span>
         </div>
       </div>
 

@@ -6,7 +6,7 @@ import SearchBar from "../../components/SearchBar";
 import Loading from "../../components/Loading";
 import { useSelector } from "react-redux";
 import Annotation from "../../components/Annotaions";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate,Link } from "react-router-dom";
 import annotate from "../../assets/images/task-square.svg";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBookmark as regularBookmark } from "@fortawesome/free-regular-svg-icons";
@@ -18,6 +18,7 @@ import downarrow from "../../assets/images/downarrow.svg";
 import axios from "axios";
 import { showSuccessToast, showErrorToast } from "../../utils/toastHelper";
 import Header from "../../components/Header-New";
+import Logo from "../../assets/images/InfersolD17aR04aP01ZL-Polk4a 1.svg";
 
 const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   const ITEMS_PER_PAGE = 10;
@@ -186,27 +187,26 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
     }
   };
 
-  // Scroll event listener to show or hide the scroll-to-top button
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollTop = window.scrollY;
-      const windowHeight = window.innerHeight;
-      const documentHeight = document.documentElement.scrollHeight;
+// Scroll event listener to show or hide the scroll-to-top button
+useEffect(() => {
+  const handleScroll = () => {
+    const scrollTop = window.scrollY;
 
-      // Check if the user is near the bottom of the page
-      if (scrollTop + windowHeight >= documentHeight - 50) {
-        document.getElementById("scrollTopBtn").style.display = "block"; // Show button at bottom
-      } else {
-        document.getElementById("scrollTopBtn").style.display = "none"; // Hide button
-      }
-    };
+    // Show button if scrolled down more than 100 pixels
+    if (scrollTop > 100) {
+      document.getElementById("scrollTopBtn").style.display = "block"; // Show button
+    } else {
+      document.getElementById("scrollTopBtn").style.display = "none"; // Hide button
+    }
+  };
 
-    // Add event listener for window scroll
-    window.addEventListener("scroll", handleScroll);
+  // Add event listener for window scroll
+  window.addEventListener("scroll", handleScroll);
 
-    // Clean up event listener
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  // Clean up event listener
+  return () => window.removeEventListener("scroll", handleScroll);
+}, []);
+
 
   const sortedPublicationData =
     data && data.articles
@@ -930,8 +930,16 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
     <div className="Container" ref={contentRightRef}>
       <div className="search-container-content">
         <Header />
+        <div className="SearchHeader-Logo">
+          <Link to="/">
+
+        <img src={Logo} alt="inferAI-logo" className="inferai-logo" />
+        </Link>
+        <SearchBar className="searchResults-Bar" landingWidth="90%" ></SearchBar>
       </div>
-      <SearchBar className="searchResults-Bar"></SearchBar>
+      </div>
+      
+      
 
       <div id="Search-Content-Container">
         <div className="searchContent-left">

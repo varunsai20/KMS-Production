@@ -19,7 +19,7 @@ import { LiaTelegramPlane } from "react-icons/lia";
 import { showErrorToast } from "../../utils/toastHelper";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import upload from "../../assets/images/upload-file.svg";
-
+import { toast } from "react-toastify";
 import uploadDocx from "../../assets/images/uploadDocx.svg";
 import { apiService } from "../../assets/api/apiService";
 const ArticleDerive = ({
@@ -452,7 +452,6 @@ const ArticleDerive = ({
           autoClose: 2000,
         });
         return;
-
       }
       removeUploadedFile();
       setQuery("");
@@ -566,7 +565,6 @@ const ArticleDerive = ({
         setLoading(false);
       }
     }, [query, token, storedSessionId, user.user_id]);
-
   const handlePromptWithFile = (prompt) => {
     if (!uploadedFile && !storedSessionId) return; // Ensure either a file is selected or a session exists
 

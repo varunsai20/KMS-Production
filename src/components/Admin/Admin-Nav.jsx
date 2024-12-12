@@ -23,10 +23,17 @@
         <div className='sidebar-components'>
           
           <ul className="sidebar-nav">
-                    
+          <Link to="/" >
+              <li className={`nav-item ${activeItem === '' ? 'active' : ''}`}>
+              <img src={Researcher} alt="Researchers" className="nav-icon" />
+                
+                <span>Home</span>
+                </li>
+              </Link>      
               <Link to="/admin/users" >
               <li className={`nav-item ${activeItem === 'Researchers' ? 'active' : ''}`} onClick={() => setActiveItem('Researchers')}>
               <img src={Researcher} alt="Researchers" className="nav-icon" />
+                
                 <span>Users</span>
                 </li>
               </Link>

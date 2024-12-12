@@ -211,10 +211,11 @@ const Lander = () => {
         <img className="Right1" src={Molecules} alt="Right Graphic 1" /> */}
         {/* <div className="Landing-Content-Left"> */}
         <div className="welcome-search">
+          
           <img src={Logo} alt="inferAI-logo" className="inferai-logo" />
-          <SearchBar />
+          <SearchBar className="Landingpage-SearchBar" landingWidth="80%" zIndex="0"></SearchBar>
           <p className="Landing-Welcome-desc">
-            Lorem ipsum dolor, sit amet consectetur adipisicing elit.
+          Inferai by Infer Solutions, Inc, a cutting-edge product leveraging generative AI to revolutionize research in pharmaceuticals, biotechnology, and healthcare. This innovative platform streamlines research processes, enhances data analysis, and uncovers new insights.
           </p>
         </div>
         {/* </div> */}
