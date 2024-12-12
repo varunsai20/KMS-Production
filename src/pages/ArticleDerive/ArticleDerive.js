@@ -16,6 +16,10 @@ import { faTelegram } from "@fortawesome/free-brands-svg-icons";
 import { showErrorToast } from "../../utils/toastHelper";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import upload from "../../assets/images/upload-file.svg";
+
+import { toast } from "react-toastify";
+import uploadDocx from "../../assets/images/uploadDocx.svg";
+
 import { apiService } from "../../assets/api/apiService";
 import { Document, Page, pdfjs } from "react-pdf";
 import { renderAsync } from "docx-preview";
@@ -437,6 +441,7 @@ const ArticleDerive = ({
 
   const storedSessionId =
     localStorage.getItem("sessionId") || localStorage.getItem("session_id");
+
   const handleDeriveClick = useCallback(async () => {
     if (!query && !uploadedFile) {
       showErrorToast("Please enter a query or upload a file");
@@ -457,7 +462,6 @@ const ArticleDerive = ({
       let url = "https://inferai.ai/api/insights/upload";
       const headers = {
         Authorization: `Bearer ${token}`,
-        "ngrok-skip-browser-warning": true,
       };
 
       // Initialize FormData
@@ -545,6 +549,7 @@ const ArticleDerive = ({
         }
         setRefreshSessions((prev) => !prev);
         setLoading(false);
+
         localStorage.setItem("chatHistory", JSON.stringify(chatHistory));
       };
 
@@ -554,6 +559,7 @@ const ArticleDerive = ({
       setLoading(false);
     }
   }, [query, token, storedSessionId, user.user_id]);
+
 
   const handlePromptWithFile = (prompt) => {
     if (!uploadedFile && !storedSessionId) return; // Ensure either a file is selected or a session exists

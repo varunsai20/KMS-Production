@@ -80,14 +80,26 @@ button {
   z-index: 1000;
 }
 .searchResults-Bar {
-  width: 60%;
+  margin: 1%  0;
+  width: 100%;
   height: 50px;
   box-shadow: none;
   position: -webkit-sticky;
   position: sticky;
   top: 1.5%;
-  margin-top: 1%;
+  /* margin-top: 1%; */
   z-index: 1000;
+}
+.SearchHeader-Logo{
+  display: flex;
+  /* align-items: center; */
+  /* justify-content: center; */
+  gap: 5px;
+  width:70%;
+  margin: 1% auto 0.5%;
+  padding: 1%;
+  border: 1px solid #e0e0e0;
+  border-radius: 24px;
 }
 .searchResults-Bar .input-container {
   width: 90%;
