@@ -124,7 +124,6 @@ const NoteItem = ({ note, onEdit, onDelete, isOpenNotes }) => {
             ? note.title.substring(0, 20) + "..."
             : note.title}
         </p>
-        {/* Display date or "..." button based on hover state */}
         {isHovered ? (
           <button
             className="menu-button"

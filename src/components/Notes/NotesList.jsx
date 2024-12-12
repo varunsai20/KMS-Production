@@ -3,7 +3,6 @@ import NoteItem from "./NoteItem";
 import SearchIcon from "../../assets/images/Search.svg";
 import { IoCloseOutline } from "react-icons/io5";
 import PlusSqaue from "../../assets/images/PlusSquare.svg";
-
 import "./NotesList.css";
 
 const NotesList = ({
@@ -96,12 +95,11 @@ const NotesList = ({
         )}
         {filteredNotes.map((note) => (
           <NoteItem
-            key={note.note_id} // Use note_id instead of id
-            note={note} // Ensure `note` contains `note_id`, `content`, etc.
+            key={note.note_id}
+            note={note}
             onEdit={onEditNote}
             onDelete={onDeleteNote}
             isOpenNotes={isOpenNotes}
-            //onCloseNotes={onCloseNotes}
           />
         ))}
       </div>

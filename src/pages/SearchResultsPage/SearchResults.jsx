@@ -1597,56 +1597,68 @@ useEffect(() => {
                                       <h3>Share with</h3>
                                     </div>
                                     <div
-                                      className="email-modal-body"
-                                      style={{
-                                        display: "flex",
-                                        // gap: "20px",
-                                        flexDirection: "column",
-                                      }}
+                                      className="share-notes-modal"
+                                      style={{ display: "flex" }}
                                     >
-                                      <label
-                                        htmlFor="email"
-                                        aria-required="true"
+                                      <div
+                                        className="notes-radio"
+                                        style={{ display: "grid" }}
                                       >
-                                        To*
-                                      </label>
-                                      <input
-                                        type="email"
-                                        value={email}
-                                        onChange={(e) =>
-                                          setEmail(e.target.value)
-                                        }
-                                        required
-                                        placeholder="Email ID"
-                                        className="email-input"
-                                        onKeyDown={handleKeyDown}
-                                      />
-
-                                      <div className="confirm-buttons">
-                                        <button
-                                          onClick={handleCloseEmailModal}
-                                          style={{
-                                            borderRadius: "30px",
-                                            backgroundColor:
-                                              "rgba(234, 234, 236, 1)",
-                                            color: "rgba(78, 78, 86, 1)",
-                                          }}
-                                          className="cancel-button"
-                                        >
-                                          cancel
-                                        </button>
-                                        <button
-                                          onClick={handleSendEmail}
-                                          style={{
-                                            borderRadius: "30px",
-                                            width: "20%",
-                                            // margin: "auto",
-                                          }}
-                                          className="send-button"
-                                        >
-                                          Send
-                                        </button>
+                                        <input type="radio" />
+                                        <input type="radio" />
+                                        <input type="radio" />
                                       </div>
+                                      <div
+                                        className="email-modal-body"
+                                        style={{
+                                          display: "flex",
+                                          // gap: "20px",
+                                          flexDirection: "column",
+                                        }}
+                                      >
+                                        <label
+                                          htmlFor="email"
+                                          aria-required="true"
+                                        >
+                                          To*
+                                        </label>
+                                        <input
+                                          type="email"
+                                          value={email}
+                                          onChange={(e) =>
+                                            setEmail(e.target.value)
+                                          }
+                                          required
+                                          placeholder="Email ID"
+                                          className="email-input"
+                                          onKeyDown={handleKeyDown}
+                                        />
+                                      </div>
+                                    </div>
+                                    <div className="confirm-buttons">
+                                      <button
+                                        onClick={handleCloseEmailModal}
+                                        style={{
+                                          borderRadius: "30px",
+                                          backgroundColor:
+                                            "rgba(234, 234, 236, 1)",
+                                          color: "rgba(78, 78, 86, 1)",
+                                        }}
+                                        className="cancel-button"
+                                      >
+                                        cancel
+                                      </button>
+                                      <button
+                                        onClick={handleSendEmail}
+                                        style={{
+                                          borderRadius: "30px",
+                                          width: "20%",
+                                          // margin: "auto",
+                                        }}
+                                        className="send-button"
+                                      >
+                                        Send
+                                      </button>
                                     </div>
                                   </div>
                                 </div>

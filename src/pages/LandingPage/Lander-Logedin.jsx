@@ -23,6 +23,7 @@ import "./Lander-Logedin.css";
 import { FaXTwitter } from "react-icons/fa6";
 import { FaFacebookF, FaLinkedinIn } from "react-icons/fa";
 import { FaInstagramSquare } from "react-icons/fa";
+import { SlGlobe } from "react-icons/sl";
 import { apiService } from "../../assets/api/apiService";
 import Collection from "../../components/Collection";
 import Citations from "../../components/Citations";
@@ -460,7 +461,10 @@ const Lander = () => {
             target="_blank"
             rel="noreferrer"
           >
-            <FaInstagramSquare size={30} color="black" />
+            <FaInstagramSquare size={32} color="black" />
+          </a>
+          <a href="https://www.infersol.com/" target="_blank" rel="noreferrer">
+            <SlGlobe size={27} color="black" />
           </a>
         </div>
       </div>
