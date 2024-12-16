@@ -1,11 +1,13 @@
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import "./SearchResults.css";
+import { apiService } from "../../assets/api/apiService";
 import Footer from "../../components/Footer-New";
 import SearchBar from "../../components/SearchBar";
+import SearchIcon from "../../assets/images/Search.svg";
 import Loading from "../../components/Loading";
 import { useSelector } from "react-redux";
 import Annotation from "../../components/Annotaions";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, Link } from "react-router-dom";
 import annotate from "../../assets/images/task-square.svg";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBookmark as regularBookmark } from "@fortawesome/free-regular-svg-icons";
@@ -15,10 +17,13 @@ import uparrow from "../../assets/images/uparrow.svg";
 import { IoCloseOutline } from "react-icons/io5";
 import downarrow from "../../assets/images/downarrow.svg";
 import axios from "axios";
-import { toast } from "react-toastify";
+import { showSuccessToast, showErrorToast } from "../../utils/toastHelper";
 import Header from "../../components/Header-New";
-const ITEMS_PER_PAGE = 10;
+import Logo from "../../assets/images/InfersolD17aR04aP01ZL-Polk4a 1.svg";
+import NoteItem from "../../components/Notes/NoteItem";
+
 const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
+  const ITEMS_PER_PAGE = 10;
   const location = useLocation(); // Access the passed state
   const { data } = location.state || { data: [] };
   const { user } = useSelector((state) => state.auth);
@@ -28,13 +33,14 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   const token = useSelector((state) => state.auth.access_token);
   const searchTerm = sessionStorage.getItem("SearchTerm");
   const navigate = useNavigate();
-  const contentRightRef = useRef(null); // Ref for searchContent-right
+  const contentRightRef = useRef(null);
   const [result, setResults] = useState();
   const [loading, setLoading] = useState(false);
   const [searchCollection, setSearchCollection] = useState("");
   const [selectedArticles, setSelectedArticles] = useState([]);
   const [bioRxivArticles, setBioRxivArticles] = useState([]);
   const [plosArticles, setPlosArticles] = useState([]);
+  const [handleAnnotateCall,setHandleAnnotateCall]=useState(false)
   const totalArticles = useMemo(() => {
     return [...bioRxivArticles, ...plosArticles, ...selectedArticles];
   }, [bioRxivArticles, plosArticles, selectedArticles]);
@@ -43,16 +49,64 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [collections, setCollections] = useState([]);
 
+  const [selectedNote, setSelectedNote] = useState([]);
+  const [notes, setNotes] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredNotes = notes.filter(
+    (note) =>
+      note.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      note.content.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const fetchNotes = async () => {
+    try {
+      const response = await apiService.fetchNotes(user_id, token);
+      const notesArray = Array.isArray(response.data.data)
+        ? response.data.data
+        : Object.values(response.data.data);
+
+      setNotes(notesArray);
+      localStorage.setItem("notes", JSON.stringify(notesArray));
+    } catch (error) {
+      console.error("Error fetching notes:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (user_id && token) {
+      fetchNotes();
+    }
+  }, [user_id, token]);
+
+  const prevTotalArticlesRef = useRef(totalArticles);
+
+  useEffect(() => {
+    if (handleAnnotateCall) {
+      if(totalArticles.length>1){
+      // Check if the previous totalArticles length or values are different
+      const prevTotalArticles = prevTotalArticlesRef.current;
+      const isDifferent =
+        prevTotalArticles.length !== totalArticles.length ||
+        JSON.stringify(prevTotalArticles) !== JSON.stringify(totalArticles);
+  
+      if (isDifferent) {
+        console.log("totalArticles have changed");
+        handleAnnotateClick();
+      }
+  
+      // Update the ref to the current totalArticles
+      prevTotalArticlesRef.current = totalArticles;
+      setHandleAnnotateCall(false)
+    }
+    }
+  }, [handleAnnotateCall,totalArticles]); // Re-run when totalArticles or handleAnnotateCall changes
+  
+
+
   const fetchCollections = async () => {
     try {
-      const response = await axios.get(
-        `https://inferai.ai/api/bookmarks/${user_id}/collections`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await apiService.fetchCollections(user_id, token);
       if (response.data) {
         setCollections(response.data.collections);
         if (response.data.collections.length > 0) {
@@ -77,18 +131,16 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
 
   const [email, setEmail] = useState();
 
-  // eslint-disable-next-line no-unused-vars
   const [emailSubject, setEmailSubject] = useState();
+  const [description, setDecription] = useState();
 
   const [newCollectionName, setNewCollectionName] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageInput, setPageInput] = useState(1); // Separate state for the page input
+  const [pageInput, setPageInput] = useState(1);
   const [selectedDateRange, setSelectedDateRange] = useState("");
   const [customStartDate, setCustomStartDate] = useState("");
   const [customEndDate, setCustomEndDate] = useState("");
-  // eslint-disable-next-line no-unused-vars
   const [completePMID, setCompletePMID] = useState([]);
-
   const [ratingsList, setRatingsList] = useState([]);
 
   // Function to get the rating for a specific article by pmid
@@ -119,17 +171,8 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   useEffect(() => {
     const fetchRatedArticles = async () => {
       try {
-        const response = await axios.get(
-          "https://inferai.ai/api/rating/rated-articles",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        const response = await apiService.fetchRatedArticles(token);
         const ratedArticles = response.data || [];
-
-        // Store ratings list in sessionStorage and state
         sessionStorage.setItem("ratingsList", JSON.stringify(ratedArticles));
         setRatingsList(ratedArticles);
       } catch (error) {
@@ -143,7 +186,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
     } else {
       setRatingsList(storedRatings);
     }
-  }, [location]); // Depend on `location` changes
+  }, [location]);
 
   useEffect(() => {
     const storedDateInfo = localStorage.getItem("publicationDate");
@@ -155,7 +198,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
         setSelectedDateRange(selectedDateRange);
       }
       if (selectedDateRange === "custom") {
-        // Only set custom start/end dates if the range is custom
         setCustomStartDate(customStartDate || "");
         setCustomEndDate(customEndDate || "");
       }
@@ -205,12 +247,10 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   useEffect(() => {
     const handleScroll = () => {
       const scrollTop = window.scrollY;
-      const windowHeight = window.innerHeight;
-      const documentHeight = document.documentElement.scrollHeight;
 
-      // Check if the user is near the bottom of the page
-      if (scrollTop + windowHeight >= documentHeight - 50) {
-        document.getElementById("scrollTopBtn").style.display = "block"; // Show button at bottom
+      // Show button if scrolled down more than 100 pixels
+      if (scrollTop > 100) {
+        document.getElementById("scrollTopBtn").style.display = "block"; // Show button
       } else {
         document.getElementById("scrollTopBtn").style.display = "none"; // Hide button
       }
@@ -341,8 +381,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   };
 
   const handleAnnotate = () => {
-    console.log("clicked");
-    console.log(annotateData);
 
     if (openAnnotate) {
       setOpenAnnotate(false);
@@ -389,13 +427,12 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
 
     if (isBookmarked) {
       try {
-        const response = await axios.delete(
-          `https://inferai.ai/api/bookmarks/users/${user_id}/collections/${collectionName}/${idType}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+        const response = await apiService.bookmarkClick(
+          user_id,
+          collectionName,
+          idType,
+          token
         );
-
         if (response.status === 200) {
           // Remove the bookmark from local collections state
           const updatedCollections = {
@@ -436,16 +473,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
     };
 
     try {
-      const response = await axios.post(
-        "https://inferai.ai/api/bookmarks/users/collections",
-        bookmarkData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
+      const response = await apiService.saveToExisting(token, bookmarkData);
       if (response.status === 201) {
         const updatedCollections = {
           ...collections,
@@ -460,36 +488,14 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
         };
         setCollections(updatedCollections);
         localStorage.setItem("collections", JSON.stringify(updatedCollections));
-        toast.success("Added to Existing Collection", {
-          position: "top-center",
-          autoClose: 2000,
-          style: {
-            backgroundColor: "rgba(237, 254, 235, 1)",
-            borderLeft: "5px solid rgba(15, 145, 4, 1)",
-            color: "rgba(15, 145, 4, 1)",
-          },
-          progressStyle: {
-            backgroundColor: "rgba(15, 145, 4, 1)",
-          },
-        });
+        showSuccessToast("Added to Existing Collection");
 
         await fetchCollections(); // Refetch collections after successful addition
 
         setIsModalOpen(false);
       }
     } catch (error) {
-      toast.error("Failed to Add to the collection", {
-        position: "top-center",
-        autoClose: 2000,
-        style: {
-          backgroundColor: "rgba(254, 235, 235, 1)",
-          borderLeft: "5px solid rgba(145, 4, 4, 1)",
-          color: "background: rgba(145, 4, 4, 1)",
-        },
-        progressStyle: {
-          backgroundColor: "rgba(145, 4, 4, 1)",
-        },
-      });
+      showErrorToast("Failed to Add to the collection");
       console.error("Error adding bookmark to existing collection:", error);
     }
   };
@@ -506,14 +512,9 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
     };
 
     try {
-      const response = await axios.post(
-        "https://inferai.ai/api/bookmarks/users/collections",
-        newCollection,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+      const response = await apiService.createNewCollection(
+        token,
+        newCollection
       );
 
       if (response.status === 201) {
@@ -521,28 +522,9 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
         setNewCollectionName("");
         setIsModalOpen(false);
       }
-      toast.success("New Collection Created", {
-        position: "top-center",
-        autoClose: 1500,
-        style: {
-          backgroundColor: "rgba(237, 254, 235, 1)",
-          borderLeft: "5px solid rgba(15, 145, 4, 1)",
-          color: "rgba(15, 145, 4, 1)",
-        },
-        progressStyle: {
-          backgroundColor: "rgba(15, 145, 4, 1)",
-        },
-      });
+      showSuccessToast("New Collection Created");
     } catch (error) {
-      toast.error("Failed to CreateCollection", {
-        position: "top-center",
-        autoClose: 2000,
-        style: {
-          backgroundColor: "rgba(254, 235, 235, 1)",
-          borderLeft: "5px solid rgba(145, 4, 4, 1)",
-          color: "background: rgba(145, 4, 4, 1)",
-        },
-      });
+      showErrorToast("Failed to CreateCollection");
       console.error("Error creating new collection:", error);
     }
   };
@@ -675,7 +657,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       endDate: customEndDate,
     });
   };
-  console.log(location.state);
   useEffect(() => {
     const storedData = sessionStorage.getItem("AnnotateData");
 
@@ -727,13 +708,9 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   const capitalizeFirstLetter = (text) => {
     return text.replace(/\b\w/g, (char) => char.toUpperCase());
   };
-  // console.log(data)
-  // Function to italicize the search term in the text
   const italicizeTerm = (text) => {
     if (!text) return "";
     if (!searchTerm) return String(text);
-
-    // Escape special regex characters in the searchTerm
     const escapeRegex = (term) =>
       term.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
 
@@ -759,16 +736,15 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
     // Clear the filters from state
     setFilters({ articleType: [], sourceType: [] });
     setAnnotateData([]);
-    setBioRxivArticles([]); // Reset bioRxivArticles array
-    setPlosArticles([]); // Reset plosArticles array
-    setSelectedArticles([]); // Reset selectedArticles array
+    setBioRxivArticles([]);
+    setPlosArticles([]);
+    setSelectedArticles([]);
     setShareableLinks({});
     setOpenAnnotate(false);
     setSelectedSort("best_match");
-    setSelectedDateRange(""); // Reset selectedDateRange to its default value (none selected)
-    setCustomStartDate(""); // Clear custom start date
-    setCustomEndDate(""); // Clear custom end date
-    // Clear the filters from localStorage
+    setSelectedDateRange("");
+    setCustomStartDate("");
+    setCustomEndDate("");
     localStorage.removeItem("filters");
     localStorage.removeItem("publicationDate");
 
@@ -829,9 +805,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
           : [...prevSelected, pmid] // Add checked article
     );
   };
-  console.log(selectedArticles);
-  console.log(bioRxivArticles);
-  console.log(plosArticles);
+
 
   const handleBioRxivBoxChange = (pmid) => {
     setBioRxivArticles(
@@ -852,10 +826,8 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   const handleSourceCheckboxChange = (source, idType, doi) => {
     const sourceType = source; // Set to "PubMed" if source is null or undefined
     const uniqueId = `${sourceType}_${idType}`;
-    console.log(sourceType);
     let shareableLink;
     if (sourceType === "pubmed") {
-      console.log("entered");
       shareableLink = `https://pubmed.ncbi.nlm.nih.gov/${idType}`;
     } else if (sourceType === "Public Library of Science (PLOS)") {
       shareableLink = `https://journals.plos.org/plosone/article?id=${doi}`;
@@ -890,7 +862,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   };
 
   const isArticleSelected = (source, idType) => {
-    console.log("soucr from selected", source, ":", idType);
     const uniqueId = `${source}_${idType}`; // Create unique ID for checking selection state
     if (source === "BioRxiv") {
       return bioRxivArticles.includes(uniqueId);
@@ -905,82 +876,49 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   };
   const handleSendEmail = async () => {
     if (!email) {
-      toast.error("Please enter an email address.", {
-        position: "top-center",
-        autoClose: 2000,
-        style: {
-          backgroundColor: "rgba(254, 235, 235, 1)",
-          borderLeft: "5px solid rgba(145, 4, 4, 1)",
-          color: "background: rgba(145, 4, 4, 1)",
-        },
-      });
+      showErrorToast("Please enter an email address.");
       return;
     }
 
     const links = Object.values(shareableLinks).join(" "); // Get all the URLs as a single space-separated string
 
     const emailData = {
-      email: email, // assuming `email` state holds the email input value
-      // subject: emailSubject || searchTerm,
-      subject: searchTerm,
-      content: links, // the concatenated URLs
+      email: email,
+      subject: emailSubject,
+      content: description,
+      noteids: selectedNote,
+      urls: [links],
     };
-    console.log(links);
     try {
+      //const response = await apiService.shareArticle(emailData, token);
       const response = await axios.post(
-        "https://inferai.ai/api/core_search/sharearticle",
+        // "https://inferai.ai/api/core_search/sharearticle",
+        "https://cdc9-103-169-178-9.ngrok-free.app/api/core_search/sharearticle",
         emailData,
         {
           headers: {
             Authorization: `Bearer ${token}`, // Add Bearer token
+            "ngrok-skip-browser-warning": true,
           },
         }
       );
-
       if (response.status === 200) {
-        toast.success("Email sent successfully", {
-          position: "top-center",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "colored",
-          style: {
-            backgroundColor: "rgba(237, 254, 235, 1)",
-            borderLeft: "5px solid rgba(15, 145, 4, 1)",
-            color: "rgba(15, 145, 4, 1)",
-          },
-          progressStyle: {
-            backgroundColor: "rgba(15, 145, 4, 1)",
-          },
-        });
-        console.log("Email sent successfully");
+        showSuccessToast("Email sent successfully");
         setEmail("");
         setEmailSubject("");
+        setDecription("");
         handleCloseEmailModal(); // Close modal after successful email send
       }
     } catch (error) {
       console.error("Error sending email:", error);
-      toast.error("Failed to send email. Please try again.", {
-        position: "top-center",
-        autoClose: 2000,
-        style: {
-          backgroundColor: "rgba(254, 235, 235, 1)",
-          borderLeft: "5px solid rgba(145, 4, 4, 1)",
-          color: "background: rgba(145, 4, 4, 1)",
-        },
-        progressStyle: {
-          backgroundColor: "rgba(145, 4, 4, 1)",
-        },
-      });
+      showErrorToast("Failed to send email. Please try again.");
     }
   };
   const handleCloseEmailModal = () => {
     setIsEmailModalOpen(false);
     setEmail("");
     setEmailSubject("");
+    setDecription("");
   };
   const handleAnnotateClick = async () => {
     if (totalArticles.length > 0) {
@@ -1047,16 +985,43 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       handleSendEmail();
     }
   };
+  const [containerHeight, setContainerHeight] = useState("auto");
+  const containerRef = useRef(null);
 
+  useEffect(() => {
+    const updateHeight = () => {
+      if (containerRef.current) {
+        const height = containerRef.current.offsetHeight;
+        setContainerHeight(`${height}px`);
+      }
+    };
+
+    // Update height on mount
+    updateHeight();
+
+    // Update height on window resize
+    window.addEventListener("resize", updateHeight);
+
+    return () => {
+      window.removeEventListener("resize", updateHeight);
+    };
+  }, []);
   return (
     <div className="Container" ref={contentRightRef}>
-      <div className="search-container-content">
+      <div className="search-container-content" ref={containerRef}>
         <Header />
+        <div className="SearchHeader-Logo">
+          <Link to="/">
+
+        <img src={Logo} alt="inferAI-logo" className="inferai-logo" />
+        </Link>
+        <SearchBar className="searchResults-Bar" searchWidth="90%" ></SearchBar>
       </div>
-      <SearchBar className="searchResults-Bar"></SearchBar>
+
+      </div>
 
       <div id="Search-Content-Container">
-        <div className="searchContent-left">
+        <div className="searchContent-left"  style={{ top: containerHeight }}>
           <div className="searchContent-left-header">
             <p className="title">Filters</p>
             <p className="Filters-ResetAll" onClick={handleResetAll}>
@@ -1081,15 +1046,12 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                     <input
                       type="checkbox"
                       value="Books and Documents"
-                      // disabled={checkBoxLoading}
                       checked={filters.articleType?.includes(
                         "Books and Documents"
                       )}
-                      onChange={handleArticleTypeFilter} //FiltersComments
-                      //checked={isChecked} // Controlled checkbox state
+                      onChange={handleArticleTypeFilter}
                     />{" "}
                     Books & Documents
-                    {/* {checkBoxLoading && <span>Loading...</span>} */}
                   </label>
                   <label>
                     <input
@@ -1288,56 +1250,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
             <>
               <div className="SearchResult-Count-Filters">
                 <div className="SearchResult-Option-Buttons">
-                  <div
-                    className="SearchResult-Option-Left"
-                    style={{
-                      cursor: selectedArticles.length > 0 ? "pointer" : "",
-                      opacity: selectedArticles.length > 0 ? 1 : "", // Change opacity for a disabled effect
-                      display: displayIfLoggedIn,
-                    }}
-                    title={
-                      selectedArticles.length === 0
-                        ? "Select at least one article to annotate"
-                        : "Annotate selected articles"
-                    }
-                  >
-                    <div style={{ position: "relative" }}>
-                      {" "}
-                      {/* Wrapper for the button to position loading spinner */}
-                      <button
-                        className={`SearchResult-Annotate ${
-                          totalArticles.length > 0 ? "active" : "disabled"
-                        }`}
-                        onClick={
-                          totalArticles.length > 0 ? handleAnnotateClick : null
-                        }
-                        style={{
-                          cursor: totalArticles.length > 0 ? "pointer" : "",
-                          opacity: annotateLoading ? 0.5 : 1, // Gray out the button when loading
-                          position: "relative", // Make the button position relative to the wrapper for loader positioning
-                        }}
-                        title={
-                          totalArticles.length === 0
-                            ? "Select an article"
-                            : "Annotate selected articles"
-                        }
-                        disabled={annotateLoading} // Disable the button while loading
-                      >
-                        Annotate
-                      </button>
-                      {/* Show loading spinner */}
-                      {annotateLoading && (
-                        <div
-                          className="loader" // Applying your loader CSS
-                          style={{
-                            position: "absolute",
-                            top: "12.5%",
-                            left: "25%",
-                          }}
-                        ></div>
-                      )}
-                    </div>
-                  </div>
+                 
                   <div
                     className="SearchResult-Option-Left"
                     style={{
@@ -1372,13 +1285,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                       Share
                     </button>
                   </div>
-                  {/* <button
-                    style={{ display: displayIfLoggedIn }}
-                    className="SearchResult-Save"
-                    title="Save selected articles"
-                  >
-                    Save
-                  </button> */}
                 </div>
                 <div
                   style={{
@@ -1425,23 +1331,18 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
               </div>
               <div className="pagination">
                 <div className="pagination-controls">
-                  {/* Button to go to the first page */}
                   <button
                     onClick={() => handlePageChange(1)}
                     disabled={currentPage === 1}
                   >
                     {"<<"} {/* First page button */}
                   </button>
-
-                  {/* Button to go to the previous page */}
                   <button
                     onClick={() => handlePageChange(currentPage - 1)}
                     disabled={currentPage === 1}
                   >
                     {"<"} {/* Previous page button */}
                   </button>
-
-                  {/* Input for direct page number entry */}
                   <button
                     style={{
                       background: "none",
@@ -1458,8 +1359,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                       }
                       onChange={(e) => {
                         const value = e.target.value;
-
-                        // Only allow numeric input
                         if (/^\d*$/.test(value)) {
                           setPageInput(value); // Update only if it's a valid number or empty
                         }
@@ -1479,15 +1378,12 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                   </button>
 
                   <span> / {totalPages}</span>
-                  {/* Button to go to the next page */}
                   <button
                     onClick={() => handlePageChange(currentPage + 1)}
                     disabled={currentPage === totalPages}
                   >
                     {">"} {/* Next page button */}
                   </button>
-
-                  {/* Button to go to the last page */}
                   <button
                     onClick={() => handlePageChange(totalPages)}
                     disabled={currentPage === totalPages}
@@ -1622,7 +1518,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                                     : "Bookmark this article"
                                 }
                               />
-
                               {isModalOpen && (
                                 <div className="search-bookmark-modal-overlay">
                                   <button
@@ -1631,15 +1526,10 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                                   >
                                     <IoCloseOutline size={20} />
                                   </button>
-                                  <div
-                                    className="search-modal-content"
-                                    // ref={modalRef}
-                                  >
+                                  <div className="search-modal-content">
                                     <div className="bookmark-p">
                                       <p className="bookmark-para">Bookmarks</p>
                                     </div>
-
-                                    {/* Create New Collection */}
                                     <h4>Create a new collection:</h4>
                                     <input
                                       type="text"
@@ -1667,8 +1557,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                                     {Object.keys(collections).length > 0 && (
                                       <>
                                         <h4>Save to existing collection:</h4>
-
-                                        {/* Search bar for collections */}
                                         <input
                                           type="text"
                                           value={searchCollection}
@@ -1681,8 +1569,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                                             padding: "8px 0 8px 8px",
                                           }}
                                         />
-
-                                        {/* Filter collections based on search term */}
                                         <ul className="bookmark-existing-collections">
                                           {Object.keys(collections)
                                             .filter((collectionName) =>
@@ -1727,7 +1613,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                                   className="email-modal-overlay"
                                   style={{
                                     background: "rgba(0, 0, 0, 0.1)",
-                                    // background: "none",
                                   }}
                                   onClick={handleCloseEmailModal}
                                 >
@@ -1736,68 +1621,199 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                                     onClick={(e) => e.stopPropagation()}
                                     style={{
                                       background: "rgba(255, 255, 255, 1)",
+                                      width: "65%",
                                     }}
                                   >
                                     <div className="email-modal-header">
                                       <h3>Share with</h3>
-                                      {/* <button
-                                        className="email-modal-close-button"
-                                        onClick={handleCloseEmailModal}
-                                      >
-                                        <IoCloseOutline size={20} />
-                                      </button> */}
+                                      <div className="search-wrapper-notes">
+                                        <img
+                                          src={SearchIcon}
+                                          alt="search"
+                                          className="search-icon-notes"
+                                        />
+                                        <input
+                                          type="text"
+                                          value={searchQuery}
+                                          onChange={(e) =>
+                                            setSearchQuery(e.target.value)
+                                          }
+                                          placeholder="Search notes..."
+                                          className="note-search-input"
+                                          style={{
+                                            width: "100%",
+                                            padding: "8px 8px 8px 20px",
+                                            border: "1px solid #ccc",
+                                            borderRadius: "4px",
+                                          }}
+                                        />
+                                      </div>
                                     </div>
                                     <div
-                                      className="email-modal-body"
+                                      className="share-notes-modal"
                                       style={{
                                         display: "flex",
-                                        // gap: "20px",
-                                        flexDirection: "column",
+                                        justifyContent: "space-between",
+                                        gap: "20px",
                                       }}
                                     >
-                                      <label
-                                        htmlFor="email"
-                                        aria-required="true"
+                                      <div
+                                        className="notes-radio"
+                                        style={{
+                                          display: "grid",
+                                          width: "50%",
+                                          height: "40vh",
+                                          overflow: "auto",
+                                        }}
                                       >
-                                        To*
-                                      </label>
-                                      <input
-                                        type="email"
-                                        value={email}
-                                        onChange={(e) =>
-                                          setEmail(e.target.value)
-                                        }
-                                        required
-                                        placeholder="Email ID"
-                                        className="email-input"
-                                        onKeyDown={handleKeyDown}
-                                      />
-
-                                      <div className="confirm-buttons">
-                                        <button
-                                          onClick={handleCloseEmailModal}
-                                          style={{
-                                            borderRadius: "30px",
-                                            backgroundColor:
-                                              "rgba(234, 234, 236, 1)",
-                                            color: "rgba(78, 78, 86, 1)",
-                                          }}
-                                          className="cancel-button"
-                                        >
-                                          cancel
-                                        </button>
-                                        <button
-                                          onClick={handleSendEmail}
-                                          style={{
-                                            borderRadius: "30px",
-                                            width: "20%",
-                                            // margin: "auto",
-                                          }}
-                                          className="send-button"
-                                        >
-                                          Send
-                                        </button>
+                                        {filteredNotes?.length > 0 ? (
+                                          filteredNotes.map((note) => (
+                                            <div
+                                              key={note.note_id}
+                                              className="note-item-selection"
+                                              style={{
+                                                display: "flex",
+                                                alignItems: "center",
+                                              }}
+                                            >
+                                              <input
+                                                type="checkbox"
+                                                value={note.note_id}
+                                                checked={
+                                                  note.id &&
+                                                  selectedNote.includes(note.id)
+                                                }
+                                                onChange={() => {
+                                                  if (note.note_id) {
+                                                    console.log(note.note_id);
+                                                    setSelectedNote(
+                                                      (prevSelected) =>
+                                                        prevSelected.includes(
+                                                          note.note_id
+                                                        )
+                                                          ? prevSelected.filter(
+                                                              (id) =>
+                                                                id !==
+                                                                note.note_id
+                                                            )
+                                                          : [
+                                                              ...prevSelected,
+                                                              note.note_id,
+                                                            ]
+                                                    );
+                                                  } else {
+                                                    console.warn(
+                                                      "Note ID is undefined:",
+                                                      note
+                                                    );
+                                                  }
+                                                }}
+                                              />
+                                              <NoteItem
+                                                note={note}
+                                                onEdit={() => {}}
+                                                onDelete={() => {}}
+                                                isOpenNotes={false}
+                                                minimalView={true}
+                                                customStyles={{
+                                                  height: "4vh",
+                                                  width: "100%",
+                                                }}
+                                              />
+                                            </div>
+                                          ))
+                                        ) : (
+                                          <p>No notes available</p>
+                                        )}
                                       </div>
+                                      <div
+                                        className="email-modal-body"
+                                        style={{
+                                          display: "flex",
+                                          flexDirection: "column",
+                                          width: "50%",
+                                        }}
+                                      >
+                                        <label
+                                          htmlFor="email"
+                                          aria-required="true"
+                                          id="label-text"
+                                        >
+                                          Email ID
+                                        </label>
+                                        <input
+                                          type="email"
+                                          value={email}
+                                          onChange={(e) =>
+                                            setEmail(e.target.value)
+                                          }
+                                          required
+                                          placeholder="Email ID"
+                                          id="email-input"
+                                          onKeyDown={handleKeyDown}
+                                        />
+                                        <label
+                                          htmlFor="subject"
+                                          aria-required="true"
+                                          id="label-text"
+                                        >
+                                          Subject
+                                        </label>
+                                        <input
+                                          type="text"
+                                          value={emailSubject}
+                                          onChange={(e) =>
+                                            setEmailSubject(e.target.value)
+                                          }
+                                          required
+                                          placeholder="Subject"
+                                          id="email-input"
+                                          onKeyDown={handleKeyDown}
+                                        />
+                                        <label
+                                          htmlFor="subject"
+                                          aria-required="true"
+                                          id="label-text"
+                                        >
+                                          Description(optional)
+                                        </label>
+                                        <textarea
+                                          type="text"
+                                          value={description}
+                                          onChange={(e) =>
+                                            setDecription(e.target.value)
+                                          }
+                                          required
+                                          placeholder="Enter Description"
+                                          id="description-input"
+                                          onKeyDown={handleKeyDown}
+                                        />
+                                      </div>
+                                    </div>
+                                    <div className="confirm-buttons">
+                                      <button
+                                        onClick={handleCloseEmailModal}
+                                        style={{
+                                          borderRadius: "30px",
+                                          backgroundColor:
+                                            "rgba(234, 234, 236, 1)",
+                                          color: "rgba(78, 78, 86, 1)",
+                                        }}
+                                        className="cancel-button"
+                                      >
+                                        cancel
+                                      </button>
+                                      <button
+                                        onClick={handleSendEmail}
+                                        style={{
+                                          borderRadius: "30px",
+                                          width: "10%",
+                                          // margin: "auto",
+                                        }}
+                                        className="send-button"
+                                      >
+                                        Send
+                                      </button>
                                     </div>
                                   </div>
                                 </div>
@@ -1909,10 +1925,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                             </p>
                           </div>
                           <div className="Article-Options-Right">
-                            <div
-                              class="searchResult-rate"
-                              // style={{ display: displayIfLoggedIn }}
-                            >
+                            <div class="searchResult-rate">
                               {[5, 4, 3, 2, 1].map((value) => (
                                 <React.Fragment key={value}>
                                   <input
@@ -1945,23 +1958,18 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
 
               <div className="pagination">
                 <div className="pagination-controls">
-                  {/* Button to go to the first page */}
                   <button
                     onClick={() => handlePageChange(1)}
                     disabled={currentPage === 1}
                   >
-                    {"<<"} {/* First page button */}
+                    {"<<"}
                   </button>
-
-                  {/* Button to go to the previous page */}
                   <button
                     onClick={() => handlePageChange(currentPage - 1)}
                     disabled={currentPage === 1}
                   >
-                    {"<"} {/* Previous page button */}
+                    {"<"}
                   </button>
-
-                  {/* Input for direct page number entry */}
                   <button
                     style={{
                       background: "none",
@@ -1978,15 +1986,13 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                       }
                       onChange={(e) => {
                         const value = e.target.value;
-
-                        // Only allow numeric input
                         if (/^\d*$/.test(value)) {
-                          setPageInput(value); // Update only if it's a valid number or empty
+                          setPageInput(value);
                         }
                       }}
-                      onBlur={handlePageInputSubmit} // Validate when input loses focus
+                      onBlur={handlePageInputSubmit}
                       onKeyDown={(e) => {
-                        if (e.key === "Enter") handlePageInputSubmit(); // Validate when pressing Enter
+                        if (e.key === "Enter") handlePageInputSubmit();
                       }}
                       style={{
                         width: "35px",
@@ -1999,20 +2005,17 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                   </button>
 
                   <span> / {totalPages}</span>
-                  {/* Button to go to the next page */}
                   <button
                     onClick={() => handlePageChange(currentPage + 1)}
                     disabled={currentPage === totalPages}
                   >
-                    {">"} {/* Next page button */}
+                    {">"}
                   </button>
-
-                  {/* Button to go to the last page */}
                   <button
                     onClick={() => handlePageChange(totalPages)}
                     disabled={currentPage === totalPages}
                   >
-                    {">>"} {/* Last page button */}
+                    {">>"}
                   </button>
                 </div>
               </div>
@@ -2033,7 +2036,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
         <>
           <div
             className="search-right-aside"
-            style={{ display: displayIfLoggedIn }}
+            style={{ display: displayIfLoggedIn,top: containerHeight }}
           >
             {openAnnotate && (
               <div className="search-annotate">
@@ -2045,24 +2048,40 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
               </div>
             )}
             <div className="search-icons-group">
-              <>
-                <div
-                  className={`search-annotate-icon ${
-                    openAnnotate ? "open" : "closed"
-                  } ${
-                    annotateData && annotateData.length > 0 ? "" : "disabled"
-                  }`}
-                  onClick={annotateData ? handleAnnotate : null}
-                  style={{
-                    cursor:
-                      annotateData && annotateData.length > 0 ? "pointer" : "",
-                    opacity: annotateData && annotateData.length > 0 ? 1 : 1, // Adjust visibility when disabled
-                  }}
-                >
-                  <img src={annotate} alt="annotate-icon" />
-                </div>
-              </>
-            </div>
+  <>
+    <div
+      className={`search-annotate-icon ${
+        openAnnotate ? "open" : "closed"
+      } ${
+        annotateData && Object.keys(annotateData).length > 0 ? "" : "disabled"
+      } ${
+        totalArticles.length > 0 ? "active" : "disabled"
+      }`}
+       onClick={() => {
+       setHandleAnnotateCall(true)
+      if (annotateData && Object.keys(annotateData).length > 0) {
+        console.log("data");
+        handleAnnotate();
+      } else if (totalArticles.length > 0) {
+        console.log("api");
+        handleAnnotateClick();
+      }
+    }}
+      style={{
+        cursor:
+          annotateData && Object.keys(annotateData).length > 0
+            ? "pointer"
+            : totalArticles.length > 0
+            ? "pointer"
+            : "default",
+        opacity: annotateData && Object.keys(annotateData).length > 0 ? 1 : 1,
+      }}
+    >
+      <img src={annotate} alt="annotate-icon" />
+    </div>
+  </>
+</div>
+
           </div>
         </>
       </div>

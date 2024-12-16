@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import axios from "axios";
-import { useSelector, useDispatch } from "react-redux";
-import { setDeriveInsights } from "../../redux/reducers/deriveInsights";
+import { useSelector } from "react-redux";
 import { useParams, useLocation } from "react-router-dom";
 import "../ArticlePage/ArticlePage.css";
-import { Typography } from "@mui/material";
+import "../ArticlePage/DeriveInsights.css";
 import Arrow from "../../assets/images/back-arrow.svg";
 import { useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
@@ -12,15 +11,19 @@ import { CircularProgress } from "@mui/material";
 import pdfICon from "../../assets/images/pdf (1).png";
 import docxIcon from "../../assets/images/docx-file.png";
 import txtIcon from "../../assets/images/txt-file.png";
-import rehypeRaw from "rehype-raw";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTelegram } from "@fortawesome/free-brands-svg-icons";
-import { LiaTelegramPlane } from "react-icons/lia";
-import { toast } from "react-toastify";
+import { showErrorToast } from "../../utils/toastHelper";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import upload from "../../assets/images/upload-file.svg";
+import { apiService } from "../../assets/api/apiService";
+import { Document, Page, pdfjs } from "react-pdf";
+import { renderAsync } from "docx-preview";
 
-import uploadDocx from "../../assets/images/uploadDocx.svg";
+//import mammoth from "mammoth"; // For DOCX Preview
+// Disable worker usage
+pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+
 const ArticleDerive = ({
   setRefreshSessions,
   openAnnotate,
@@ -32,24 +35,24 @@ const ArticleDerive = ({
   setAnnotateLoading,
 }) => {
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
-  const deriveInsights = useSelector((state) => state.deriveInsights?.active); // assuming deriveInsights is in Redux state
-
+  const deriveInsights = useSelector((state) => state.deriveInsights?.active);
   const displayIfLoggedIn = isLoggedIn ? null : "none";
   const widthIfLoggedIn = isLoggedIn ? null : "80%";
   const heightIfLoggedIn = isLoggedIn ? null : "80vh";
   const { pmid } = useParams();
   const { user } = useSelector((state) => state.auth);
-
   const token = useSelector((state) => state.auth.access_token);
-  const dispatch = useDispatch();
   const user_id = user?.user_id;
   const [type, id1] = pmid ? pmid.split(":") : "";
   const id = Number(id1);
   const [source, setSource] = useState();
   const location = useLocation();
-  // const { data } = location.state || { data: [] };
   const [searchTerm, setSearchTerm] = useState("");
   const [articleData, setArticleData] = useState(null);
+  const [numPages, setNumPages] = useState(null);
+  const [pageNumber, setPageNumber] = useState(1);
+  const [docxContent, setDocxContent] = useState("");
+
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
 
@@ -68,21 +71,17 @@ const ArticleDerive = ({
 
   useEffect(() => {
     if (resetArticleData) {
-      // Logic to reset article data
-      setArticleData(""); // Ensure you have this setter available
+      setArticleData("");
     }
 
     if (resetChatHistory) {
-      // Logic to reset chat history
-      setChatHistory([]); // Ensure you have this setter available
+      setChatHistory([]);
     }
   }, [resetArticleData, resetChatHistory]);
   useEffect(() => {
-    // Retrieve chat history from sessionStorage
     const storedChatHistory = localStorage.getItem("chatHistory");
 
     if (storedChatHistory) {
-      // Parse the chat history string back into an array
       setChatHistory(JSON.parse(storedChatHistory));
       setShowStreamingSection(true);
     }
@@ -102,29 +101,18 @@ const ArticleDerive = ({
   const [activeSessionId, setActiveSessionId] = useState(
     localStorage.getItem("session_id") || null
   );
-  //const isOnArticlePage = location.pathname === "/article";
   const contentRef = useRef(null); // Ref to target the content div
   const [contentWidth, setContentWidth] = useState(); // State for content width
 
   const [triggerAskClick, setTriggerAskClick] = useState(false);
   const [triggerDeriveClick, setTriggerDeriveClick] = useState(false);
-  const [editedTitle, setEditedTitle] = useState("");
-
   const [collections, setCollections] = useState([]);
   const [showConfirmPopup, setShowConfirmPopup] = useState(false);
-  const [showConfirmIcon, setShowConfirmIcon] = useState(false);
   const [isPromptEnabled, setIsPromptEnabled] = useState(false);
 
   const fetchCollections = async () => {
     try {
-      const response = await axios.get(
-        `https://inferai.ai/api/bookmarks/${user_id}/collections`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await apiService.fetchCollections(user_id, token);
       if (response.data) {
         setCollections(response.data.collections);
         if (response.data.collections.length > 0) {
@@ -149,12 +137,9 @@ const ArticleDerive = ({
 
   const [hasFetchedAnnotateData, setHasFetchedAnnotateData] = useState(false);
   const [sessions, setSessions] = useState([]);
-  const [editingSessionId, setEditingSessionId] = useState(null);
-
   const selectedTextRef = useRef("");
   const popupRef = useRef(null);
-
-  // Add this useEffect to reset savedText when openNotes becomes false
+  const popupPositionRef = useRef({ x: 0, y: 0 });
   useEffect(() => {
     if (!openNotes) {
       setSavedText(""); // Reset savedText when notes are closed
@@ -182,20 +167,10 @@ const ArticleDerive = ({
       setAnnotateLoading(true);
       const fetchArticleData = async () => {
         try {
-          const response = await axios.get(
-            `https://inferai.ai/api/view_article/get_article/${id}?source=${source}`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
-
+          const response = await apiService.fetchArticleData(id, source, token);
           const article = response.data;
           setArticleData(article);
           setAnnotateLoading(false);
-
-          // Retrieve and set saved search term from sessionStorage
           const savedTerm = sessionStorage.getItem("SearchTerm");
           setSearchTerm(savedTerm);
         } catch (error) {
@@ -226,14 +201,18 @@ const ArticleDerive = ({
   const handleMouseUpInsideContent = (e) => {
     if (!isLoggedIn) return;
     const content = contentRef.current;
+    console.log("content", content);
     const popup = popupRef.current;
+    console.log("popup ref", popup);
 
     if (!content || !popup) return;
 
     const selection = window.getSelection();
+    console.log("selection", selection);
     if (selection.rangeCount > 0) {
       const range = selection.getRangeAt(0);
       const selectedText = selection.toString().trim();
+      console.log("selected", selectedText);
 
       if (selectedText && content.contains(range.commonAncestorContainer)) {
         const rects = range.getClientRects();
@@ -278,17 +257,6 @@ const ArticleDerive = ({
     };
   }, [isModalOpen]);
 
-  const handleSendToNotes = () => {
-    if (selectedTextRef.current) {
-      setSavedText(selectedTextRef.current); // Update savedText
-      selectedTextRef.current = ""; // Clear the selected text
-    }
-    if (!openNotes) {
-      setOpenNotes(true); // Open Notes if not already open
-    }
-    popupRef.current.style.display = "none"; // Hide popup
-  };
-
   useEffect(() => {
     const content = contentRef.current;
     if (!content) return;
@@ -299,13 +267,6 @@ const ArticleDerive = ({
       content.removeEventListener("mouseup", handleMouseUpInsideContent);
     };
   }, [contentRef]);
-
-  // const getid = () => {
-  //   return `${source}_${id}`;
-  // };
-
-  //const uniqueId = getid();
-
   useEffect(() => {
     const articleContent = document.querySelector(".meta");
     const handleScroll = () => {
@@ -338,7 +299,7 @@ const ArticleDerive = ({
 
   const handleAskClick = async () => {
     if (!query) {
-      toast.error("Please enter a query");
+      showErrorToast("Please enter a query");
       return;
     }
 
@@ -400,9 +361,6 @@ const ArticleDerive = ({
 
                 try {
                   const parsedData = JSON.parse(jsonChunk);
-                  // console.log("Received Data Chunk:", parsedData); // Log each parsed data chunk
-
-                  // Store session_id for the specific article and source in sessionStorage if it exists
                   if (parsedData.session_id) {
                     const articleSessions =
                       JSON.parse(sessionStorage.getItem("articleSessions")) ||
@@ -483,12 +441,10 @@ const ArticleDerive = ({
 
   const storedSessionId =
     localStorage.getItem("sessionId") || localStorage.getItem("session_id");
-  const handleDeriveClick = async () => {
+
+  const handleDeriveClick = useCallback(async () => {
     if (!query && !uploadedFile) {
-      toast.error("Please enter a query or upload a file", {
-        position: "top-center",
-        autoClose: 2000,
-      });
+      showErrorToast("Please enter a query or upload a file");
       return;
     }
     removeUploadedFile();
@@ -506,14 +462,12 @@ const ArticleDerive = ({
       let url = "https://inferai.ai/api/insights/upload";
       const headers = {
         Authorization: `Bearer ${token}`,
-        "ngrok-skip-browser-warning": true,
       };
-      console.log(storedSessionId);
+
       // Initialize FormData
       const formData = new FormData();
       formData.append("question", query);
 
-      // Conditionally set user_id or userid based on session_id existence
       if (storedSessionId) {
         formData.append("user_id", user.user_id);
         formData.append("session_id", storedSessionId);
@@ -528,8 +482,7 @@ const ArticleDerive = ({
       if (storedSessionId) {
         url = "https://inferai.ai/api/insights/ask";
       }
-      console.log(storedSessionId);
-      // Use fetch instead of axios to handle streaming response
+
       const response = await fetch(url, {
         method: "POST",
         headers: headers,
@@ -538,15 +491,13 @@ const ArticleDerive = ({
 
       if (!response.ok) throw new Error("Network response was not ok");
 
-      // Stream response and update chat history
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let buffer = "";
-      let apiResponse = ""; // To accumulate the full response
+      let apiResponse = "";
 
       const readStream = async () => {
         let done = false;
-        const delay = 100;
 
         while (!done) {
           const { value, done: streamDone } = await reader.read();
@@ -555,7 +506,6 @@ const ArticleDerive = ({
           if (value) {
             buffer += decoder.decode(value, { stream: true });
 
-            // Process chunks of JSON-like data
             while (buffer.indexOf("{") !== -1 && buffer.indexOf("}") !== -1) {
               let start = buffer.indexOf("{");
               let end = buffer.indexOf("}", start);
@@ -566,11 +516,9 @@ const ArticleDerive = ({
                 try {
                   const parsedData = JSON.parse(jsonChunk);
                   const answer = parsedData.answer;
-                  apiResponse += answer + " "; // Accumulate the full response
+                  apiResponse += answer + " ";
 
-                  // Store session_id if not already stored
                   if (!storedSessionId && parsedData.session_id) {
-                    // setSessionId(parsedData.session_id);
                     localStorage.setItem("session_id", parsedData.session_id);
                   }
 
@@ -590,7 +538,6 @@ const ArticleDerive = ({
                   if (endOfMessagesRef.current) {
                     endOfMessagesRef.current.scrollIntoView({
                       behavior: "smooth",
-                      // block: "end",
                     });
                   }
                 } catch (error) {
@@ -602,6 +549,7 @@ const ArticleDerive = ({
         }
         setRefreshSessions((prev) => !prev);
         setLoading(false);
+
         localStorage.setItem("chatHistory", JSON.stringify(chatHistory));
       };
 
@@ -610,7 +558,7 @@ const ArticleDerive = ({
       console.error("Error fetching or reading stream:", error);
       setLoading(false);
     }
-  };
+  }, [query, token, storedSessionId, user.user_id]);
 
   const handlePromptWithFile = (prompt) => {
     if (!uploadedFile && !storedSessionId) return; // Ensure either a file is selected or a session exists
@@ -643,20 +591,6 @@ const ArticleDerive = ({
     setActiveSessionId(null);
   }, []);
 
-  const boldTerm = (text) => {
-    if (typeof text !== "string") {
-      return JSON.stringify(text);
-    }
-
-    if (!searchTerm) return text;
-
-    // Create a regex to find the search term
-    const regex = new RegExp(`(${searchTerm})`, "gi");
-
-    // Replace the search term in the text with markdown bold syntax
-    return text.replace(regex, "**$1**");
-  };
-
   // Optional: useEffect for clearing flag if needed, such as when sources change
   useEffect(() => {
     if (!annotateData) {
@@ -664,21 +598,6 @@ const ArticleDerive = ({
     }
   }, [annotateData, source, id]);
 
-  const capitalizeFirstLetter = (text) => {
-    return text.replace(/\b\w/g, (char) => char.toUpperCase());
-  };
-
-  const MyMarkdownComponent = ({ markdownContent, handleMouseUp }) => {
-    return (
-      <div onMouseUp={handleMouseUp}>
-        <ReactMarkdown
-          rehypePlugins={[rehypeRaw]} // Enables HTML parsing
-        >
-          {markdownContent}
-        </ReactMarkdown>
-      </div>
-    );
-  };
   useEffect(() => {
     const fetchSessions = async () => {
       try {
@@ -718,18 +637,7 @@ const ArticleDerive = ({
     }
   }, [location.state]); // Add location.state as a dependency to re-run on navigation
   console.log(source);
-  const getSourceFromType = (type) => {
-    switch (type) {
-      case "bioRxiv_id":
-        return "biorxiv";
-      case "pmid":
-        return "pubmed";
-      case "plos_id":
-        return "plos";
-      default:
-        return null;
-    }
-  };
+
   useEffect(() => {
     const storedSessionId = localStorage.getItem("session_id");
     if (storedSessionId) {
@@ -742,9 +650,9 @@ const ArticleDerive = ({
     const storedSessionId =
       localStorage.getItem("sessionId") || localStorage.getItem("session_id");
     if (storedSessionId || uploadedFile) {
-      setIsPromptEnabled(true); // Enable prompts if session_id exists or a file is uploaded
+      setIsPromptEnabled(true);
     } else {
-      setIsPromptEnabled(false); // Disable prompts if neither session_id nor file is present
+      setIsPromptEnabled(false);
     }
   }, [handleDeriveClick, uploadedFile]);
 
@@ -752,7 +660,7 @@ const ArticleDerive = ({
     const file = e.target.files[0];
     if (!file) return; // Exit if no file was selected
     if (file.size > 5 * 1024 * 1024) {
-      toast.error("try uploading files 5MB or less", {
+      showErrorToast("try uploading files 5MB or less", {
         position: "top-center",
       });
     }
@@ -762,35 +670,41 @@ const ArticleDerive = ({
 
     if (!allowedExtensions.includes(fileExtension)) {
       //alert("Please upload a PDF or DOCX file.");
-      toast.error("try uploading .pdf,.docx", {
-        position: "top-center",
-        autoClose: 2000,
-      });
+      showErrorToast("try uploading .pdf,.docx");
       return;
     }
 
     setUploadedFile(file); // Proceed if the file type is valid
     setIsPromptEnabled(true);
+    if (fileExtension === "pdf") {
+      setNumPages(null);
+      setPageNumber(1);
+    } else if (fileExtension === "docx") {
+      handleDocxPreview(file);
+    }
   };
-
+  const handleDocxPreview = async (file) => {
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const container = document.createElement("div"); // Create a container dynamically
+      const buffer = e.target.result;
+      try {
+        await renderAsync(new Uint8Array(buffer), container);
+        document.getElementById("docx-container").appendChild(container); // Append the rendered DOCX content
+      } catch (error) {
+        console.error("Error rendering DOCX:", error);
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  };
   const removeUploadedFile = () => {
     setUploadedFile(null);
     setIsPromptEnabled(false);
-  };
-  const handleUploadClick = () => {
-    document.getElementById("file-upload").click();
-  };
-
-  const [isDragging, setIsDragging] = useState(false);
-
-  const handleDragOver = (event) => {
-    event.preventDefault();
-    setIsDragging(true);
+    setDocxContent("");
+    setNumPages(null);
+    setPageNumber(1);
   };
 
-  const handleDragLeave = () => {
-    setIsDragging(false);
-  };
   const getFileIcon = (filename) => {
     const fileExtension = filename.split(".").pop().toLowerCase();
     switch (fileExtension) {
@@ -822,19 +736,16 @@ const ArticleDerive = ({
         return <span style={{ fontSize: "20px" }}>📄</span>;
     }
   };
-  const handleDrop = (event) => {
-    event.preventDefault();
-    setIsDragging(false);
-    const file = event.dataTransfer.files[0];
-    if (
-      file &&
-      (file.type === "application/pdf" ||
-        file.type ===
-          "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
-        file.type === "text/plain")
-    ) {
-      handleFileUpload({ target: { files: [file] } });
-    }
+  const onDocumentLoadSuccess = ({ numPages }) => {
+    setNumPages(numPages);
+  };
+
+  const goToNextPage = () => {
+    if (pageNumber < numPages) setPageNumber(pageNumber + 1);
+  };
+
+  const goToPreviousPage = () => {
+    if (pageNumber > 1) setPageNumber(pageNumber - 1);
   };
 
   return (
@@ -845,34 +756,157 @@ const ArticleDerive = ({
         ref={contentRef}
         onMouseUp={handleMouseUpInsideContent}
       >
-        {" "}
-        {/* Conditionally render file upload if chatHistory is empty */}
-        {chatHistory.length === 0 && (
-          <div
-            className={`derive-insights-file-upload ${
-              isDragging ? "dragging" : ""
-            }`}
-            onClick={handleUploadClick}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-            style={{ cursor: "pointer" }}
-          >
-            <img src={uploadDocx} style={{ width: "40%" }} alt="upload-img" />
-            <div className="choosing-file">
-              <input
-                id="file-upload"
-                type="file"
-                accept=".pdf,.docx,.txt"
-                onChange={handleFileUpload}
-                style={{ display: "none" }}
-              />
+        {/* File Preview */}
+        {uploadedFile && uploadedFile.name.endsWith(".pdf") && (
+          <div className="pdf-preview">
+            <Document
+              file={uploadedFile}
+              loading="Loading PDF..."
+              onLoadSuccess={({ numPages }) => setNumPages(numPages)}
+              options={{ renderTextLayer: false }}
+            >
+              <Page pageNumber={pageNumber} />
+            </Document>
+            <div className="pagination">
+              <button onClick={goToPreviousPage} disabled={pageNumber <= 1}>
+                Previous
+              </button>
               <span>
-                Drag & drop files here or <a href="#file">Upload</a>
+                Page {pageNumber} of {numPages}
               </span>
+              <button onClick={goToNextPage} disabled={pageNumber >= numPages}>
+                Next
+              </button>
             </div>
           </div>
         )}
+
+        {uploadedFile && uploadedFile.name.endsWith(".docx") && (
+          <div className="docx-preview">
+            <h3>Preview</h3>
+            <div
+              id="docx-container"
+              style={{
+                maxHeight: "400px",
+                overflow: "auto",
+                border: "1px solid #ccc",
+              }}
+            ></div>
+          </div>
+        )}
+        {/* Adjust derive-chat-query placement dynamically */}
+        <div
+          className="derive-chat-query"
+          style={{
+            position: "absolute",
+            top: !uploadedFile && chatHistory.length === 0 ? "50%" : "auto",
+            bottom: uploadedFile || chatHistory.length > 0 ? "0px" : "auto",
+            left: openAnnotate || openNotes ? "33%" : "40%",
+            transform:
+              !uploadedFile && chatHistory.length === 0
+                ? "translate(-25%, -50%)"
+                : "translate(-25%,0%)",
+            width: openAnnotate || openNotes ? contentWidth : "70%",
+            display: displayIfLoggedIn,
+          }}
+        >
+          <div className="derive-predefined-prompts">
+            <button
+              onClick={() => handlePromptWithFile("Summarize this article")}
+              disabled={!isPromptEnabled}
+              style={{
+                backgroundColor: isPromptEnabled ? "#c4dad2" : "#cccccc",
+                color: isPromptEnabled ? "#000000" : "#666666",
+              }}
+            >
+              Summarize
+            </button>
+            <button
+              onClick={() =>
+                handlePromptWithFile("What can we conclude from this article")
+              }
+              disabled={!isPromptEnabled}
+              style={{
+                backgroundColor: isPromptEnabled ? "#c4dad2" : "#cccccc",
+                color: isPromptEnabled ? "#000000" : "#666666",
+              }}
+            >
+              Conclusion
+            </button>
+            <button
+              onClick={() =>
+                handlePromptWithFile(
+                  "What are the key highlights from this article"
+                )
+              }
+              disabled={!isPromptEnabled}
+              style={{
+                backgroundColor: isPromptEnabled ? "#c4dad2" : "#cccccc",
+                color: isPromptEnabled ? "#000000" : "#666666",
+              }}
+            >
+              Key Highlights
+            </button>
+          </div>
+          <div className="file-palcement">
+            {uploadedFile && (
+              <div className="file-showing">
+                <span className="uploaded-file-indicator">
+                  {getFileIcon(uploadedFile.name)}
+                  <span style={{ width: "max-content" }}>
+                    {uploadedFile.name}
+                  </span>
+                  <FontAwesomeIcon
+                    icon={faTimes}
+                    onClick={removeUploadedFile}
+                    className="cancel-file"
+                    color="black"
+                  />
+                </span>
+              </div>
+            )}
+          </div>
+          <div className="derive-stream-input">
+            <label htmlFor="file-upload" className="custom-file-upload">
+              <img
+                src={upload}
+                alt="upload-icon"
+                style={{ paddingLeft: "10px", cursor: "pointer" }}
+              />
+            </label>
+            <input
+              id="file-upload"
+              type="file"
+              accept=".pdf,.docx,.txt"
+              onChange={handleFileUpload}
+              style={{ display: "none" }}
+            />
+            <div className="query-file-input">
+              <input
+                type="text"
+                placeholder="Ask anything..."
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={handleDeriveKeyDown}
+              />
+            </div>
+            {loading ? (
+              <CircularProgress
+                className="button"
+                size={24}
+                style={{ marginLeft: "1.5%" }}
+                color="white"
+              />
+            ) : (
+              <FontAwesomeIcon
+                className="button"
+                onClick={handleDeriveClick}
+                icon={faTelegram}
+                size={"xl"}
+              />
+            )}
+          </div>
+        </div>
         {/* Display File, Query, and Response */}
         {chatHistory.length > 0 ? (
           <div className="streaming-section">
@@ -887,25 +921,15 @@ const ArticleDerive = ({
               </div>
               {chatHistory.map((chat, index) => (
                 <div key={index}>
-                  {/* Display file_url if it exists */}
                   {chat.file_url ? (
                     <div className="chat-file">
                       <div>{getFileIcon(chat.file_url)}</div>
-                      <div
-                        style={{
-                          display: "flex",
-                          flexDirection: "column",
-                        }}
-                      >
-                        {/* Display the file name and extension from file_url */}
+                      <div style={{ display: "flex", flexDirection: "column" }}>
                         <span>
                           <strong>
                             {decodeURIComponent(chat.file_url.split("/").pop())}
                           </strong>
                         </span>
-                        {/* <span>
-                          {chat.file_url.split(".").pop().toUpperCase()}
-                        </span> */}
                       </div>
                     </div>
                   ) : (
@@ -913,12 +937,8 @@ const ArticleDerive = ({
                       <div className="chat-file">
                         <div>{getFileIcon(chat.file.name)}</div>
                         <div
-                          style={{
-                            display: "flex",
-                            flexDirection: "column",
-                          }}
+                          style={{ display: "flex", flexDirection: "column" }}
                         >
-                          {/* Display the file name and extension from chat.file.name */}
                           <span>
                             <strong>{chat.file.name}</strong>
                           </span>
@@ -929,27 +949,13 @@ const ArticleDerive = ({
                       </div>
                     )
                   )}
-
-                  {/* Display the query */}
                   {chat.query ? (
                     <div className="derive-query-asked">
-                      <span>
-                        {chat.query === "Summarize this article"
-                          ? "Summarize"
-                          : chat.query ===
-                            "What can we conclude from this article"
-                          ? "Conclusion"
-                          : chat.query ===
-                            "What are the key highlights from this article"
-                          ? "Key Highlights"
-                          : chat.query}
-                      </span>
+                      <span>{chat.query}</span>
                     </div>
                   ) : (
                     ""
                   )}
-
-                  {/* Display the response */}
                   <div className="response" style={{ textAlign: "left" }}>
                     {chat.response ? (
                       <span ref={endOfMessagesRef}>
@@ -963,137 +969,11 @@ const ArticleDerive = ({
                   </div>
                 </div>
               ))}
-              {/* <div ref={endOfMessagesRef} /> */}
             </div>
           </div>
         ) : (
           ""
         )}
-      </div>
-      <div
-        ref={popupRef}
-        className="popup-button"
-        style={{
-          position: "absolute",
-          display: "none",
-          backgroundColor: "#afa7a7",
-          color: "white",
-          borderRadius: "5px",
-          cursor: "pointer",
-        }}
-      >
-        <button
-          onClick={handleSendToNotes}
-          className="Popup-buttons"
-          title="Send to Notes"
-        >
-          <span className="send-to-notes">Send to notes</span>
-          <LiaTelegramPlane size={20} color="black" />
-        </button>
-      </div>
-      <div
-        className="derive-chat-query"
-        style={{
-          width: openAnnotate || openNotes ? contentWidth : "69%",
-          display: displayIfLoggedIn,
-        }}
-      >
-        <div className="derive-predefined-prompts">
-          <button
-            onClick={() => handlePromptWithFile("Summarize this article")}
-            disabled={!isPromptEnabled}
-            style={{
-              backgroundColor: isPromptEnabled ? "#c4dad2" : "#cccccc",
-              color: isPromptEnabled ? "#000000" : "#666666",
-            }}
-          >
-            Summarize
-          </button>
-          <button
-            onClick={() =>
-              handlePromptWithFile("What can we conclude from this article")
-            }
-            disabled={!isPromptEnabled}
-            style={{
-              backgroundColor: isPromptEnabled ? "#c4dad2" : "#cccccc",
-              color: isPromptEnabled ? "#000000" : "#666666",
-            }}
-          >
-            Conclusion
-          </button>
-          <button
-            onClick={() =>
-              handlePromptWithFile(
-                "What are the key highlights from this article"
-              )
-            }
-            disabled={!isPromptEnabled}
-            style={{
-              backgroundColor: isPromptEnabled ? "#c4dad2" : "#cccccc",
-              color: isPromptEnabled ? "#000000" : "#666666",
-            }}
-          >
-            Key Highlights
-          </button>
-        </div>
-        <div className="file-palcement">
-          {uploadedFile && (
-            <div className="file-showing">
-              <span className="uploaded-file-indicator">
-                {getFileIcon(uploadedFile.name)}
-                <span style={{ width: "max-content" }}>
-                  {uploadedFile.name}
-                </span>
-                <FontAwesomeIcon
-                  icon={faTimes}
-                  onClick={removeUploadedFile}
-                  className="cancel-file"
-                  color="black"
-                />
-              </span>
-            </div>
-          )}
-        </div>
-        <div className="derive-stream-input">
-          <label htmlFor="file-upload" className="custom-file-upload">
-            <img
-              src={upload}
-              alt="upload-icon"
-              style={{ paddingLeft: "10px", cursor: "pointer" }}
-            />
-          </label>
-          <input
-            id="file-upload"
-            type="file"
-            accept=".pdf,.docx,.txt"
-            onChange={handleFileUpload}
-            style={{ display: "none" }}
-          />
-          <div className="query-file-input">
-            <input
-              type="text"
-              placeholder="Ask anything..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              onKeyDown={handleDeriveKeyDown}
-            />
-          </div>
-          {loading ? (
-            <CircularProgress
-              className="button"
-              size={24}
-              style={{ marginLeft: "1.5%" }}
-              color="white"
-            />
-          ) : (
-            <FontAwesomeIcon
-              className="button"
-              onClick={handleDeriveClick}
-              icon={faTelegram}
-              size={"xl"}
-            />
-          )}
-        </div>
       </div>
     </>
   );

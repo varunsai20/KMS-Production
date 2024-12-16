@@ -7,7 +7,6 @@
   min-height: 100vh;
   box-sizing: border-box;
   transform: scale(1);
-  /* transition: transform 0.3s ease-in-out; */
 }
 .Landing-Header {
   width: 100%;
@@ -16,14 +15,21 @@
 .Landing-Content {
   display: flex;
   width: 80%;
+  padding: 5% 0;
   grid-template-columns: 1fr 1fr;
   flex-grow: 1;
 }
 .Landing-Content-Left {
   position: relative;
-  /* height: 40vh; */
   display: grid;
   align-content: space-evenly;
+}
+.welcome-search {
+  display: flex;
+  flex-direction: column;
+  gap: 8%;
+  width: 90%;
+  margin: 0 auto;
 }
 .Left1,
 .Left2,
@@ -54,14 +60,8 @@
   margin: auto;
 }
 
-.Landing-Welcome {
-  width: fit-content;
-  font-family: Manrope;
-  font-size: 4vw;
-  font-weight: 700;
-  line-height: 73px;
-  text-align: center;
-  margin: 0;
+.inferai-logo {
+  width: 10vw;
 }
 
 .Landing-Infer {
@@ -73,8 +73,8 @@
   );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  background-clip: text; /* For non-WebKit browsers */
-  text-fill-color: transparent; /* For other browsers if supported */
+  background-clip: text;
+  text-fill-color: transparent;
 }
 
 .Landing-Welcome-desc {
@@ -86,10 +86,7 @@
   font-size: 1vw;
   font-weight: 500;
   line-height: 23.36px;
-  letter-spacing: 0.02em;
-  text-align: left;
   color: #454545;
-  /* padding: 10px 0px 0px 0px; */
 }
 
 .Landing-Searchbar {
@@ -110,7 +107,6 @@
   backdrop-filter: none;
 }
 .Landing-Searchbar .input-container {
-  /* position: static; */
   width: 100%;
 }
 
@@ -142,9 +138,18 @@
 }
 .Feature-Item {
   text-align: center;
-  margin: 4% 0;
+  margin: 2% 0;
 }
-
+.Landingpage-SearchBar {
+  width: 60%;
+  height: 50px;
+  box-shadow: none;
+  position: -webkit-sticky;
+  position: sticky;
+  top: 1.5%;
+  /* margin-top: 1%; */
+  z-index: 1000;
+}
 .Feature-Item h4 {
   font-family: Manrope;
   font-size: 1rem;
@@ -176,10 +181,8 @@
   width: 100%;
   grid-template-columns: repeat(2, 1fr);
   gap: 20px;
-  /* margin: 2%; */
 }
 .LoggedinFeatures {
-  /* position: relative; */
   width: 95%;
   display: flex;
   justify-content: space-between;
@@ -197,13 +200,11 @@
 }
 
 .Landing-Features-card:hover {
-  /* transform: translateY(-5px); */
   transform: scale(1.05);
   box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
 }
 
 .Landing-Features-card-Inner {
-  /* text-align: center; */
   flex-grow: 1;
   display: flex;
   flex-direction: column;
@@ -965,5 +966,18 @@
     justify-content: space-between;
     margin: 0 auto;
     align-items: center;
+    padding: 3% 0%;
   }
+  .card-title {
+    margin: 0;
+  }
+}
+.socials {
+  width: 100%;
+  background-color: rgba(244, 249, 255, 1);
+}
+.social-icons {
+  display: flex;
+  justify-content: space-evenly;
+  margin: 0.5% 0%;
 }

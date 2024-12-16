@@ -1,26 +1,21 @@
 import React, { useEffect, useState } from "react";
-import { useLocation, Link, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../redux/reducers/LoginAuth";
 import Button from "./Buttons";
+import { apiService } from "../assets/api/apiService";
 import "../styles/variables.css";
 import "./Header-New.css";
-//import Logo from "../assets/images/Logo_New.svg";
-import Logo from "../assets/images/InfersolD17aR04aP01ZL-Polk4a 1.svg";
+import Logo from "../assets/images/logo.svg";
 import ProfileIcon from "../assets/images/Profile-start.svg";
 import { toast } from "react-toastify";
-
-import axios from "axios";
 
 const Header = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
   const { user, profileUpdated } = useSelector((state) => state.auth);
-  //const [errorCode, setErrorCode] = useState();
-
   const [currentProfileImage, setCurrentProfileImage] = useState(ProfileIcon);
 
   useEffect(() => {
@@ -30,20 +25,13 @@ const Header = () => {
   const userId = user?.user_id;
   const userRole = user?.role;
 
-  // Function to check if the current path matches the link's href
-  const isActive = (path) => location.pathname === path;
-
-  // Handle login click
   const handleLogin = () => {
     navigate("/Login");
   };
 
-  // Handle logout click
   const handleLogout = async () => {
     try {
-      await axios.post(
-        `https://inferai.ai/api/auth/logout?user_id=${userId}`
-      );
+      await apiService.logout(userId);
       dispatch(logout());
       navigate("/");
     } catch (error) {
@@ -53,7 +41,6 @@ const Header = () => {
     }
   };
 
-  // Handle profile click
   const handleProfileClick = () => {
     if (userId) {
       if (userRole === "Admin") {
@@ -74,19 +61,16 @@ const Header = () => {
       }} // Set width conditionally
     >
       <div className="Navbar-Header-Items">
-        <Link to="/">
+        <a href="https://www.infersol.com/" target="_blank" rel="noreferrer">
           <img className="Search-nav-logo" src={Logo} alt="Infer logo" />
-        </Link>
+        </a>
         <div className="line-between">
           <span className="line-in-between"></span>
         </div>
-        <Link
-          to="/"
-          className={`Navbar-Header-Link ${isActive("/") ? "active-link" : ""}`}
-          style={{ fontWeight: "bold" }}
-        >
-          Home
-        </Link>
+        <div className="logo-descreption">
+          <p>Information For Excellence in Research</p>
+          <span>using Artificial Intelligence</span>
+        </div>
       </div>
 
       <section className="Search-nav-login">

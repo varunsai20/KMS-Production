@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { IoIosArrowBack } from "react-icons/io";
-import axios from "axios";
+
 import { FiBold } from "react-icons/fi";
 import { GoItalic } from "react-icons/go";
 import { FiUnderline } from "react-icons/fi";
@@ -15,6 +15,8 @@ import DOMPurify from "dompurify";
 import "./EditNotes.css"; // Import CSS for styling
 import ConfirmSave from "../../utils/ConfirmSave";
 import { toast } from "react-toastify";
+import { apiService } from "../../assets/api/apiService";
+import { showSuccessToast, showErrorToast } from "../../utils/toastHelper";
 
 import { useSelector } from "react-redux";
 const Editnotes = ({
@@ -147,62 +149,21 @@ const Editnotes = ({
       user_id: user_id,
       note_id: note_id,
       email: email,
-      // recipient_name: recipient_name,
-      //subject: subject,
     };
 
     try {
-      const response = await axios.post(
-        "https://inferai.ai/api/notes/sharenotes",
-        requestData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`, // make sure token is available in component's state
-          },
-        }
-      );
+      const response = await apiService.sendEmail(requestData, token);
 
       if (response.status === 200) {
-        toast.success("Email sent successfully", {
-          position: "top-center",
-          autoClose: 2000,
-
-          style: {
-            backgroundColor: "rgba(237, 254, 235, 1)",
-            borderLeft: "5px solid rgba(15, 145, 4, 1)",
-            color: "rgba(15, 145, 4, 1)",
-          },
-          progressStyle: {
-            backgroundColor: "rgba(15, 145, 4, 1)",
-          },
-        });
+        showSuccessToast("Email sent successfully");
         console.log("Email sent successfully to:", email);
         handleCloseEmailModal(); // Close the modal after sending
       } else {
-        toast.error("Failed to send email:", {
-          position: "top-center",
-          autoClose: 2000,
-          style: {
-            backgroundColor: "rgba(254, 235, 235, 1)",
-            borderLeft: "5px solid rgba(145, 4, 4, 1)",
-            color: "background: rgba(145, 4, 4, 1)",
-          },
-        });
+        showErrorToast("Failed to send email:");
         console.error("Failed to send email:", response);
       }
     } catch (error) {
-      toast.error("Error sending email:", {
-        position: "top-center",
-        autoClose: 2000,
-        style: {
-          backgroundColor: "rgba(254, 235, 235, 1)",
-          borderLeft: "5px solid rgba(145, 4, 4, 1)",
-          color: "background: rgba(145, 4, 4, 1)",
-        },
-        progressStyle: {
-          backgroundColor: "rgba(145, 4, 4, 1)",
-        },
-      });
+      showErrorToast("Error sending email:");
       console.error("Error sending email:", error);
     }
   };
@@ -266,19 +227,12 @@ const Editnotes = ({
 
       try {
         // Post the note to the server
-        const response = await axios.put(
-          "https://inferai.ai/api/notes/updatenote",
-          {
-            user_id, // Ensure `user_id` is defined and available in your component
-            title: updatedNote.title,
-            content: updatedNote.content,
-            note_id: updatedNote.note_id,
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
+        const response = await apiService.updateNote(
+          user_id,
+          updatedNote.title,
+          updatedNote.content,
+          updatedNote.note_id,
+          token
         );
 
         if (response.status === 200) {
@@ -288,35 +242,12 @@ const Editnotes = ({
               n.note_id === updatedNote.note_id ? updatedNote : n
             )
           );
-          toast.success("Notes Saved Successfully", {
-            position: "top-center",
-            autoClose: 1000,
-
-            style: {
-              backgroundColor: "rgba(237, 254, 235, 1)",
-              borderLeft: "5px solid rgba(15, 145, 4, 1)",
-              color: "rgba(15, 145, 4, 1)",
-            },
-            progressStyle: {
-              backgroundColor: "rgba(15, 145, 4, 1)",
-            },
-          });
+          showSuccessToast("Notes Saved Successfully");
           setUnsavedChanges(false); // Reset unsaved changes after saving
           initialText.current = updatedNote.content;
           console.log("Note updated:", updatedNote);
         } else {
-          toast.error("Failed to update note:", {
-            position: "top-center",
-            autoClose: 2000,
-            style: {
-              backgroundColor: "rgba(254, 235, 235, 1)",
-              borderLeft: "5px solid rgba(145, 4, 4, 1)",
-              color: "background: rgba(145, 4, 4, 1)",
-            },
-            progressStyle: {
-              backgroundColor: "rgba(145, 4, 4, 1)",
-            },
-          });
+          toast.error("Failed to update note:");
           console.error("Failed to update note:", response);
         }
         onClose();
@@ -450,11 +381,8 @@ const Editnotes = ({
           contentEditable={true}
           suppressContentEditableWarning={true}
           onClick={handleEditorClick}
-        
           onInput={handleInput}
-        >
-          
-        </div>
+        ></div>
       </form>
       {/* Feedback Message */}
       {shareMessage && <div className="share-message">{shareMessage}</div>}
@@ -623,9 +551,6 @@ const Editnotes = ({
                   To *
                 </label>
               </div>
-              {/* <label htmlFor="email" aria-required="true">
-                To*
-              </label> */}
               <input
                 type="email"
                 value={email}
@@ -635,7 +560,6 @@ const Editnotes = ({
                 required
                 onKeyDown={handleKeyDown}
               />
-              
 
               <div className="email-button-group">
                 <button

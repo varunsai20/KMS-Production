@@ -1,23 +1,15 @@
 .Navbar-Header {
+  /* margin: 4px 0; */
   height: 70px;
   display: flex;
   justify-content: space-between;
   color: black;
-  /* margin-bottom: 1%; */
-  background: linear-gradient(
-    90deg,
-    rgba(254, 118, 117, 0.08) 0%,
-    rgba(204, 129, 185, 0.08) 34.2%,
-    rgba(26, 168, 210, 0.08) 68.81%,
-    rgba(76, 210, 217, 0.08) 100%
-  );
-  box-shadow: 0px 4px 28.8px 0px rgba(0, 0, 0, 0.08);
   min-width: 100%;
 }
 
 .Navbar-Header-Items {
   display: flex;
-  gap: 20px;
+  gap: 15px;
   justify-content: space-between;
   align-items: center;
   padding: 0 58px;
@@ -40,9 +32,8 @@
 }
 
 .Search-nav-logo {
+  height: 60px;
   display: flex;
-  width: 9vw;
-  /* border-right: 1px solid rgba(0, 0, 0, 0.1); */
 }
 .line-between {
   height: 30px;
@@ -55,10 +46,46 @@
   width: 1px;
   color: rgba(0, 0, 0, 0.1);
 }
+.logo-descreption {
+  height: 45px;
+  text-align: start;
+}
+.logo-descreption p {
+  color: rgba(48, 91, 165, 1);
+  font-size: 19px;
+  font-weight: 600;
+  margin: 0;
+  background: -webkit-linear-gradient(180deg, #fe7675 0%, #19a8d2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  padding: 0;
+}
+.logo-descreption span {
+  font-size: 18px;
+  font-weight: 600;
+  background: -webkit-linear-gradient(180deg, #fe7675 0%, #19a8d2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
 .Search-nav-login {
   display: flex;
   align-items: center;
   justify-content: flex-end;
   gap: 10px;
   padding: 20px 32px;
+}
+@media (min-width: 1080px) and (max-width: 1366px) {
+  .Navbar-Header {
+    margin: 0px;
+  }
+  .Search-nav-logo {
+    height: 50px;
+    display: flex;
+  }
+  .logo-descreption p {
+    font-size: 16px;
+  }
+  .logo-descreption span {
+    font-size: 16px;
+  }
 }

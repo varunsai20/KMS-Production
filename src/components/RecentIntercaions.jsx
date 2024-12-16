@@ -1,16 +1,14 @@
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
 import pen from "../assets/images/16px.svg";
 const RecentIntercaions = (displayIfLoggedIn) => {
-    const navigate = useNavigate();
+    
     const { user } = useSelector((state) => state.auth);
-    const profilePictureUrl = user?.profile_picture_url;
     const token = useSelector((state) => state.auth.access_token);
-    const dispatch = useDispatch();
     const user_id = user?.user_id;
     const [sessions, setSessions] = useState([]);
     const [editingSessionId, setEditingSessionId] = useState(null);

@@ -22,7 +22,8 @@
   border-bottom: 1px solid;
 }
 .search-annotate-icon,
-.search-notes-icon {
+.search-notes-icon,
+.search-citation-icon {
   cursor: pointer;
   transition: color 0.3s ease;
 }

@@ -4,10 +4,11 @@ import Header from "../../components/Header-New";
 import { useNavigate } from "react-router-dom";
 import { setDeriveInsights } from "../../redux/reducers/deriveInsights";
 import newChat from "../../assets/images/20px@2x.svg";
+import { apiService } from "../../assets/api/apiService";
 import axios from "axios";
 import pen from "../../assets/images/16px.svg";
 import { useRef } from "react";
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation, useParams,Link } from "react-router-dom";
 import Annotation from "../../components/Annotaions";
 import Notes from "../NotesPage/Notes";
 import notesicon from "../../assets/images/note-2.svg";
@@ -18,6 +19,8 @@ import Loading from "../../components/Loading";
 import GenerateAnnotate from "../../components/DeriveAnnotations";
 import { faAnglesUp } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import SearchBar from "../../components/SearchBar";
+import Logo from "../../assets/images/InfersolD17aR04aP01ZL-Polk4a 1.svg";
 
 const ArticleLayout = () => {
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
@@ -55,6 +58,7 @@ const ArticleLayout = () => {
   const [activeSessionId, setActiveSessionId] = useState(
     localStorage.getItem("session_id") || null
   );
+  
   const [isPromptEnabled, setIsPromptEnabled] = useState(false);
   const [editedTitle, setEditedTitle] = useState("");
   const [annotateData, setAnnotateData] = useState(
@@ -74,15 +78,7 @@ const ArticleLayout = () => {
   useEffect(() => {
     const fetchSessions = async () => {
       try {
-        const response = await axios.get(
-          `https://inferai.ai/api/history/conversations/history/${user_id}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
+        const response = await apiService.fetchSessions(user_id, token);
         if (response.data?.sessions) {
           const sessionsData = response.data.sessions.reverse(); // Reverse the array order
           // console.log(sessionsData)
@@ -98,6 +94,7 @@ const ArticleLayout = () => {
   }, [user_id, token, refreshSessions]);
   const handleOpenChat = () => {
     localStorage.removeItem("session_id");
+    setAnnotateData("")
     setActiveSessionId(null);
     localStorage.setItem("chatHistory", JSON.stringify([]));
     dispatch(setDeriveInsights(true)); // Set deriveInsights state in Redux
@@ -125,13 +122,10 @@ const ArticleLayout = () => {
     console.log("called in session");
     localStorage.removeItem("session_id");
     try {
-      const conversationResponse = await axios.get(
-        `https://inferai.ai/api/history/conversations/history/${user_id}/${session_id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+      const conversationResponse = await apiService.fetchChatConversation(
+        user_id,
+        session_id,
+        token
       );
       localStorage.setItem("session_id", session_id);
       sessionStorage.setItem("session_id", session_id);
@@ -293,19 +287,11 @@ const ArticleLayout = () => {
 
   const handleSaveEdit = async (sessionId) => {
     try {
-      await axios.put(
-        "https://inferai.ai/api/history/conversations/edit",
-        {
-          user_id,
-          session_id: sessionId,
-          new_title: editedTitle,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      await apiService.saveEdit(token, {
+        user_id,
+        session_id: sessionId,
+        new_title: editedTitle,
+      });
       setSessions((prevSessions) =>
         prevSessions.map((session) =>
           session.session_id === sessionId
@@ -313,8 +299,6 @@ const ArticleLayout = () => {
             : session
         )
       );
-
-      // Reset editing state
       setEditingSessionId(null);
       setEditedTitle("");
     } catch (error) {
@@ -385,20 +369,13 @@ const ArticleLayout = () => {
   const handleAnnotateFile = async () => {
     setAnnotateLoading(true);
     try {
-      const response = await axios.post(
-        "https://inferai.ai/api/core_search/annotate_from_url",
+      const response = await apiService.annotateFileFromURL(token,
         { url: fileUrl },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
       );
-
       const data = response.data;
       setAnnotateData(data);
-      setHasFetchedAnnotateData(true); // Set flag after successful fetch
-      setOpenAnnotate(true); // Open annotation panel after data is received
+      setHasFetchedAnnotateData(true); 
+      setOpenAnnotate(true);
       setAnnotateFile(true);
     } catch (error) {
       console.error("Error fetching data from the API", error);
@@ -424,16 +401,8 @@ const ArticleLayout = () => {
 
     setAnnotateLoading(true);
     try {
-      const response = await axios.post(
-        "https://inferai.ai/api/core_search/annotate",
-        requestBody,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
+      const response = await apiService.annotateArticle
+        (requestBody,token);
       const data = response.data;
       setAnnotateData(data);
       setHasFetchedAnnotateData(true); // Set flag after successful fetch
@@ -444,8 +413,6 @@ const ArticleLayout = () => {
       setAnnotateLoading(false);
     }
   };
-
-  // Optional: useEffect for clearing flag if needed, such as when sources change
   useEffect(() => {
     if (!annotateData) {
       setHasFetchedAnnotateData(false);
@@ -465,7 +432,7 @@ const ArticleLayout = () => {
     } else {
       setOpenNotes((prevOpenNotes) => !prevOpenNotes);
     }
-    //localStorage.removeItem("unsavedChanges");
+    
   };
   const handleCancelIcon = () => {
     setShowConfirmIcon(false);
@@ -515,7 +482,17 @@ const ArticleLayout = () => {
   return (
     <>
       <div className="container">
-        <Header style={{ width: "100%" }} />
+      <div className="search-container-content">
+        <Header />
+        <div className="SearchHeader-Logo">
+          <Link to="/">
+
+        <img src={Logo} alt="inferAI-logo" className="inferai-logo" />
+        </Link>
+        <SearchBar className="searchResults-Bar" searchWidth="90%" ></SearchBar>
+      </div>
+      </div>
+
         <div className="content" style={{ width: widthIfLoggedIn }}>
           <div
             className="history-pagination"
@@ -558,11 +535,7 @@ const ArticleLayout = () => {
                       }
                       onClick={() => {
                         handleSessionClick(
-                          // session.article_id,
-                          // session.source,
                           session.session_id
-                          // user_id,
-                          // session.session_type
                         );
                       }}
                     >
@@ -641,9 +614,9 @@ const ArticleLayout = () => {
               {openAnnotate && (
                 <div
                   className="annotate-height"
-                  style={{
-                    height: `${annotateHeight}vh`,
-                  }}
+                  // style={{
+                  //   height: `${annotateHeight}vh`,
+                  // }}
                 >
                   {annotateFile ? (
                     <GenerateAnnotate
@@ -697,12 +670,28 @@ const ArticleLayout = () => {
               </div>
               <div
                 className={`notes-icon ${openNotes ? "open" : "closed"}`}
+                // style={{
+                //   borderRadius: !deriveInsights ? '0 0 8px 8px' : undefined, // Apply border-radius if deriveInsights is false
+                // }}
                 onClick={() => {
                   handleNotes();
                 }}
               >
                 <img src={notesicon} alt="notes-icon" />
               </div>
+              {/* {deriveInsights?<div
+                className={`search-citation-icon ${
+                  openAnnotate ? "open" : "closed"
+                }`}
+                onClick={() => {
+                  handleAnnotate();
+                }}
+                style={{
+                  opacity: annotateData && annotateData.length > 0 ? 1 : 1, // Adjust visibility when disabled
+                }}
+              >
+                <img src={annotate} alt="annotate-icon" />
+              </div>:""} */}
               {showConfirmIcon && (
                 <div className="Article-popup-overlay">
                   <div className="Article-popup-content">

@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from "react";
 import NoteItem from "./NoteItem";
 import SearchIcon from "../../assets/images/Search.svg";
-import { LuPlus } from "react-icons/lu";
 import { IoCloseOutline } from "react-icons/io5";
 import PlusSqaue from "../../assets/images/PlusSquare.svg";
-
 import "./NotesList.css";
 
 const NotesList = ({
@@ -55,8 +53,6 @@ const NotesList = ({
             className={isOpenNotes ? "lander-button-plus" : "button-plus"}
             onClick={onAddNewNote}
           >
-            {/* <LuPlus size={20} />
-             */}
             <img
               src={PlusSqaue}
               alt="plus"
@@ -99,12 +95,11 @@ const NotesList = ({
         )}
         {filteredNotes.map((note) => (
           <NoteItem
-            key={note.note_id} // Use note_id instead of id
-            note={note} // Ensure `note` contains `note_id`, `content`, etc.
+            key={note.note_id}
+            note={note}
             onEdit={onEditNote}
             onDelete={onDeleteNote}
             isOpenNotes={isOpenNotes}
-            //onCloseNotes={onCloseNotes}
           />
         ))}
       </div>

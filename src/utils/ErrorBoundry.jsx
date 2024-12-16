@@ -1,64 +1,20 @@
-import React, { useState, useEffect } from "react";
-import { Offline, Online } from "react-detect-offline";
+import React from "react";
 import { MdOutlineWifiOff } from "react-icons/md";
-import { IoWifiSharp } from "react-icons/io5";
 
-const ErrorBoundary = () => {
-  const [showOnlineMessage, setShowOnlineMessage] = useState(false);
-
-  useEffect(() => {
-    const handleOnline = () => {
-      setShowOnlineMessage(true);
-      setTimeout(() => setShowOnlineMessage(false), 3000);
-    };
-
-    // Listen for the 'online' event
-    window.addEventListener("online", handleOnline);
-
-    return () => {
-      window.removeEventListener("online", handleOnline);
-    };
-  }, []);
+const ErrorBoundary = ({ showError, onClose }) => {
+  if (!showError) return null;
 
   return (
-    <>
-      <Online>
-        {showOnlineMessage && (
-          <div style={styles.onlineBanner}>
-            <IoWifiSharp style={styles.icon} />
-            <span style={styles.text}>You're back online!</span>
-          </div>
-        )}
-      </Online>
-      <Offline>
-        <div style={styles.offlineBanner}>
-          <MdOutlineWifiOff style={styles.icon} />
-          <span style={styles.text}>
-            Internet connection lost. Please check your connection.
-          </span>
-        </div>
-      </Offline>
-    </>
+    <div style={styles.offlineBanner} onClick={onClose}>
+      <MdOutlineWifiOff style={styles.icon} />
+      <span style={styles.text}>
+        Network connection lost. Please check your connection.
+      </span>
+    </div>
   );
 };
 
 const styles = {
-  onlineBanner: {
-    position: "fixed",
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 1000,
-    backgroundColor: "#4caf50",
-    color: "white",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: "10px 0",
-    boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
-    fontFamily: "manrope",
-    transition: "opacity 0.5s ease-in-out",
-  },
   offlineBanner: {
     position: "fixed",
     top: 0,
@@ -73,7 +29,7 @@ const styles = {
     padding: "10px 0",
     boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
     fontFamily: "manrope",
-    transition: "opacity 0.5s ease-in-out",
+    cursor: "pointer",
   },
   icon: {
     marginRight: "10px",
