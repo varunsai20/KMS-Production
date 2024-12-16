@@ -9,7 +9,7 @@ import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { setSearchResults, clearSearchResults } from "../redux/actions/actions";
 import { apiService } from "../assets/api/apiService";
-const SearchBar = ({ renderInputContainer, className,landingWidth,zIndex }) => {
+const SearchBar = ({ renderInputContainer, className,landingWidth,zIndex,searchWidth }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -20,21 +20,26 @@ const SearchBar = ({ renderInputContainer, className,landingWidth,zIndex }) => {
   const { user } = useSelector((state) => state.auth);
   const token = useSelector((state) => state.auth.access_token);
   useEffect(() => {
-    if (location.pathname === "/search") {
+    // if (location.pathname === "/search" || location.pathname === "/article/content/:articleId") {
       // Check if searchTerm is present in sessionStorage
       const storedSearchTerm = sessionStorage.getItem("SearchTerm");
       if (storedSearchTerm) {
         setSearchTerm(storedSearchTerm);
         handleInputChange(null, storedSearchTerm); // Populate suggestions based on the stored term
       }
-    } else {
-      // Clear session storage when not on the search page
-      sessionStorage.removeItem("SearchTerm");
-    }
+      if(location.pathname === "/"){
+        sessionStorage.removeItem("SearchTerm");
+        setSearchTerm("")
+      }
+    // } else {
+    //   // Clear session storage when not on the search page
+      //sessionStorage.removeItem("SearchTerm");
+    // }
   }, [location.pathname]);
 
   useEffect(() => {
     localStorage.removeItem("filters");
+    
   }, []);
 
   const handleInputChange = (event, value) => {
@@ -210,7 +215,7 @@ const SearchBar = ({ renderInputContainer, className,landingWidth,zIndex }) => {
         </div>
       ) : (
         <div className={`Search-Bar ${className}`}  style={{width:`${landingWidth}`,zIndex:`${zIndex}`}}>
-          <div className="input-container" style={{width:landingWidth?`${landingWidth}`:"100%"}}>
+          <div className="input-container" style={{width:searchWidth?`${searchWidth}`:"100%"}}>
             <img src={Search} alt="search-icon" className="search-icon" />
             <Autocomplete
               freeSolo
