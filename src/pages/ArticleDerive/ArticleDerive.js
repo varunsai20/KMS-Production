@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import { useParams, useLocation } from "react-router-dom";
-//import "../ArticlePage/ArticlePage.css";
+import "../ArticlePage/ArticlePage.css";
 import "../ArticlePage/DeriveInsights.css";
 import Arrow from "../../assets/images/back-arrow.svg";
 import { useNavigate } from "react-router-dom";
@@ -16,10 +16,6 @@ import { faTelegram } from "@fortawesome/free-brands-svg-icons";
 import { showErrorToast } from "../../utils/toastHelper";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import upload from "../../assets/images/upload-file.svg";
-
-import { toast } from "react-toastify";
-import uploadDocx from "../../assets/images/uploadDocx.svg";
-
 import { apiService } from "../../assets/api/apiService";
 import { Document, Page, pdfjs } from "react-pdf";
 import { renderAsync } from "docx-preview";
@@ -45,7 +41,6 @@ const ArticleDerive = ({
   const heightIfLoggedIn = isLoggedIn ? null : "80vh";
   const { pmid } = useParams();
   const { user } = useSelector((state) => state.auth);
-
   const token = useSelector((state) => state.auth.access_token);
   const user_id = user?.user_id;
   const [type, id1] = pmid ? pmid.split(":") : "";
@@ -144,6 +139,7 @@ const ArticleDerive = ({
   const [sessions, setSessions] = useState([]);
   const selectedTextRef = useRef("");
   const popupRef = useRef(null);
+  const popupPositionRef = useRef({ x: 0, y: 0 });
   useEffect(() => {
     if (!openNotes) {
       setSavedText(""); // Reset savedText when notes are closed
@@ -205,14 +201,18 @@ const ArticleDerive = ({
   const handleMouseUpInsideContent = (e) => {
     if (!isLoggedIn) return;
     const content = contentRef.current;
+    console.log("content", content);
     const popup = popupRef.current;
+    console.log("popup ref", popup);
 
     if (!content || !popup) return;
 
     const selection = window.getSelection();
+    console.log("selection", selection);
     if (selection.rangeCount > 0) {
       const range = selection.getRangeAt(0);
       const selectedText = selection.toString().trim();
+      console.log("selected", selectedText);
 
       if (selectedText && content.contains(range.commonAncestorContainer)) {
         const rects = range.getClientRects();
@@ -560,7 +560,6 @@ const ArticleDerive = ({
     }
   }, [query, token, storedSessionId, user.user_id]);
 
-
   const handlePromptWithFile = (prompt) => {
     if (!uploadedFile && !storedSessionId) return; // Ensure either a file is selected or a session exists
 
@@ -798,18 +797,6 @@ const ArticleDerive = ({
         {/* Adjust derive-chat-query placement dynamically */}
         <div
           className="derive-chat-query"
-          // style={{
-          //   position: "absolute",
-          //   top: chatHistory.length === 0 || uploadedFile ? "50%" : "auto",
-          //   bottom: chatHistory.length > 0 ? "0px" : "auto",
-          //   left: openAnnotate || openNotes ? "33%" : "40%",
-          //   transform:
-          //     chatHistory.length === 0 || uploadedFile
-          //       ? "translate(-25%, -50%)"
-          //       : "translate(-25%,0%)",
-          //   width: openAnnotate || openNotes ? contentWidth : "70%",
-          //   display: displayIfLoggedIn,
-          // }}
           style={{
             position: "absolute",
             top: !uploadedFile && chatHistory.length === 0 ? "50%" : "auto",

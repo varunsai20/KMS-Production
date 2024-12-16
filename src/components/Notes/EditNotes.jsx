@@ -551,9 +551,6 @@ const Editnotes = ({
                   To *
                 </label>
               </div>
-              {/* <label htmlFor="email" aria-required="true">
-                To*
-              </label> */}
               <input
                 type="email"
                 value={email}
