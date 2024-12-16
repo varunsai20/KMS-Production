@@ -13,14 +13,8 @@
   position: relative;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   margin-bottom: 10px;
-  /* background-color: #fff; */
   transition: background-color 0.3s ease;
 }
-
-/* .NoteItem:hover {
-  box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.5);
-} */
-
 #title {
   font-family: Manrope;
   margin: 0;

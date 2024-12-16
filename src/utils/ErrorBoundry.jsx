@@ -1,6 +1,5 @@
 import React from "react";
 import { MdOutlineWifiOff } from "react-icons/md";
-//import { IoWifiSharp } from "react-icons/io5";
 
 const ErrorBoundary = ({ showError, onClose }) => {
   if (!showError) return null;

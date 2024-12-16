@@ -3,10 +3,11 @@ import "./SearchResults.css";
 import { apiService } from "../../assets/api/apiService";
 import Footer from "../../components/Footer-New";
 import SearchBar from "../../components/SearchBar";
+import SearchIcon from "../../assets/images/Search.svg";
 import Loading from "../../components/Loading";
 import { useSelector } from "react-redux";
 import Annotation from "../../components/Annotaions";
-import { useLocation, useNavigate,Link } from "react-router-dom";
+import { useLocation, useNavigate, Link } from "react-router-dom";
 import annotate from "../../assets/images/task-square.svg";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBookmark as regularBookmark } from "@fortawesome/free-regular-svg-icons";
@@ -19,6 +20,7 @@ import axios from "axios";
 import { showSuccessToast, showErrorToast } from "../../utils/toastHelper";
 import Header from "../../components/Header-New";
 import Logo from "../../assets/images/InfersolD17aR04aP01ZL-Polk4a 1.svg";
+import NoteItem from "../../components/Notes/NoteItem";
 
 const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   const ITEMS_PER_PAGE = 10;
@@ -31,7 +33,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   const token = useSelector((state) => state.auth.access_token);
   const searchTerm = sessionStorage.getItem("SearchTerm");
   const navigate = useNavigate();
-  const contentRightRef = useRef(null); // Ref for searchContent-right
+  const contentRightRef = useRef(null);
   const [result, setResults] = useState();
   const [loading, setLoading] = useState(false);
   const [searchCollection, setSearchCollection] = useState("");
@@ -45,6 +47,35 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   const [currentIdType, setCurrentIdType] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [collections, setCollections] = useState([]);
+  const [selectedNote, setSelectedNote] = useState([]);
+  const [notes, setNotes] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredNotes = notes.filter(
+    (note) =>
+      note.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      note.content.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const fetchNotes = async () => {
+    try {
+      const response = await apiService.fetchNotes(user_id, token);
+      const notesArray = Array.isArray(response.data.data)
+        ? response.data.data
+        : Object.values(response.data.data);
+
+      setNotes(notesArray);
+      localStorage.setItem("notes", JSON.stringify(notesArray));
+    } catch (error) {
+      console.error("Error fetching notes:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (user_id && token) {
+      fetchNotes();
+    }
+  }, [user_id, token]);
 
   const fetchCollections = async () => {
     try {
@@ -74,16 +105,15 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   const [email, setEmail] = useState();
 
   const [emailSubject, setEmailSubject] = useState();
+  const [description, setDecription] = useState();
 
   const [newCollectionName, setNewCollectionName] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageInput, setPageInput] = useState(1); // Separate state for the page input
+  const [pageInput, setPageInput] = useState(1);
   const [selectedDateRange, setSelectedDateRange] = useState("");
   const [customStartDate, setCustomStartDate] = useState("");
   const [customEndDate, setCustomEndDate] = useState("");
-
   const [completePMID, setCompletePMID] = useState([]);
-
   const [ratingsList, setRatingsList] = useState([]);
 
   // Function to get the rating for a specific article by pmid
@@ -129,7 +159,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
     } else {
       setRatingsList(storedRatings);
     }
-  }, [location]); // Depend on `location` changes
+  }, [location]);
 
   useEffect(() => {
     const storedDateInfo = localStorage.getItem("publicationDate");
@@ -141,7 +171,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
         setSelectedDateRange(selectedDateRange);
       }
       if (selectedDateRange === "custom") {
-        // Only set custom start/end dates if the range is custom
         setCustomStartDate(customStartDate || "");
         setCustomEndDate(customEndDate || "");
       }
@@ -187,26 +216,25 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
     }
   };
 
-// Scroll event listener to show or hide the scroll-to-top button
-useEffect(() => {
-  const handleScroll = () => {
-    const scrollTop = window.scrollY;
+  // Scroll event listener to show or hide the scroll-to-top button
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = window.scrollY;
 
-    // Show button if scrolled down more than 100 pixels
-    if (scrollTop > 100) {
-      document.getElementById("scrollTopBtn").style.display = "block"; // Show button
-    } else {
-      document.getElementById("scrollTopBtn").style.display = "none"; // Hide button
-    }
-  };
+      // Show button if scrolled down more than 100 pixels
+      if (scrollTop > 100) {
+        document.getElementById("scrollTopBtn").style.display = "block"; // Show button
+      } else {
+        document.getElementById("scrollTopBtn").style.display = "none"; // Hide button
+      }
+    };
 
-  // Add event listener for window scroll
-  window.addEventListener("scroll", handleScroll);
+    // Add event listener for window scroll
+    window.addEventListener("scroll", handleScroll);
 
-  // Clean up event listener
-  return () => window.removeEventListener("scroll", handleScroll);
-}, []);
-
+    // Clean up event listener
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const sortedPublicationData =
     data && data.articles
@@ -837,17 +865,31 @@ useEffect(() => {
 
     const emailData = {
       email: email,
-      subject: searchTerm,
-      content: links,
+      subject: emailSubject,
+      content: description,
+      noteids: selectedNote,
+      urls: [links],
     };
     console.log(links);
     try {
-      const response = await apiService.shareArticle(emailData, token);
+      //const response = await apiService.shareArticle(emailData, token);
+      const response = await axios.post(
+        // "https://inferai.ai/api/core_search/sharearticle",
+        "https://cdc9-103-169-178-9.ngrok-free.app/api/core_search/sharearticle",
+        emailData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, // Add Bearer token
+            "ngrok-skip-browser-warning": true,
+          },
+        }
+      );
       if (response.status === 200) {
         showSuccessToast("Email sent successfully");
         console.log("Email sent successfully");
         setEmail("");
         setEmailSubject("");
+        setDecription("");
         handleCloseEmailModal(); // Close modal after successful email send
       }
     } catch (error) {
@@ -859,6 +901,7 @@ useEffect(() => {
     setIsEmailModalOpen(false);
     setEmail("");
     setEmailSubject("");
+    setDecription("");
   };
   const handleAnnotateClick = async () => {
     if (totalArticles.length > 0) {
@@ -932,14 +975,14 @@ useEffect(() => {
         <Header />
         <div className="SearchHeader-Logo">
           <Link to="/">
-
-        <img src={Logo} alt="inferAI-logo" className="inferai-logo" />
-        </Link>
-        <SearchBar className="searchResults-Bar" landingWidth="90%" ></SearchBar>
+            <img src={Logo} alt="inferAI-logo" className="inferai-logo" />
+          </Link>
+          <SearchBar
+            className="searchResults-Bar"
+            searchWidth="90%"
+          ></SearchBar>
+        </div>
       </div>
-      </div>
-      
-      
 
       <div id="Search-Content-Container">
         <div className="searchContent-left">
@@ -1591,36 +1634,125 @@ useEffect(() => {
                                     onClick={(e) => e.stopPropagation()}
                                     style={{
                                       background: "rgba(255, 255, 255, 1)",
+                                      width: "65%",
                                     }}
                                   >
                                     <div className="email-modal-header">
                                       <h3>Share with</h3>
+                                      <div className="search-wrapper-notes">
+                                        <img
+                                          src={SearchIcon}
+                                          alt="search"
+                                          className="search-icon-notes"
+                                        />
+                                        <input
+                                          type="text"
+                                          value={searchQuery}
+                                          onChange={(e) =>
+                                            setSearchQuery(e.target.value)
+                                          }
+                                          placeholder="Search notes..."
+                                          className="note-search-input"
+                                          style={{
+                                            width: "100%",
+                                            padding: "8px 8px 8px 20px",
+                                            border: "1px solid #ccc",
+                                            borderRadius: "4px",
+                                          }}
+                                        />
+                                      </div>
                                     </div>
                                     <div
                                       className="share-notes-modal"
-                                      style={{ display: "flex" }}
+                                      style={{
+                                        display: "flex",
+                                        justifyContent: "space-between",
+                                        gap: "20px",
+                                      }}
                                     >
                                       <div
                                         className="notes-radio"
-                                        style={{ display: "grid" }}
+                                        style={{
+                                          display: "grid",
+                                          width: "50%",
+                                          height: "40vh",
+                                          overflow: "auto",
+                                        }}
                                       >
-                                        <input type="radio" />
-                                        <input type="radio" />
-                                        <input type="radio" />
+                                        {filteredNotes?.length > 0 ? (
+                                          filteredNotes.map((note) => (
+                                            <div
+                                              key={note.note_id}
+                                              className="note-item-selection"
+                                              style={{
+                                                display: "flex",
+                                                alignItems: "center",
+                                              }}
+                                            >
+                                              <input
+                                                type="checkbox"
+                                                value={note.note_id}
+                                                checked={
+                                                  note.id &&
+                                                  selectedNote.includes(note.id)
+                                                }
+                                                onChange={() => {
+                                                  if (note.note_id) {
+                                                    console.log(note.note_id);
+                                                    setSelectedNote(
+                                                      (prevSelected) =>
+                                                        prevSelected.includes(
+                                                          note.note_id
+                                                        )
+                                                          ? prevSelected.filter(
+                                                              (id) =>
+                                                                id !==
+                                                                note.note_id
+                                                            )
+                                                          : [
+                                                              ...prevSelected,
+                                                              note.note_id,
+                                                            ]
+                                                    );
+                                                  } else {
+                                                    console.warn(
+                                                      "Note ID is undefined:",
+                                                      note
+                                                    );
+                                                  }
+                                                }}
+                                              />
+                                              <NoteItem
+                                                note={note}
+                                                onEdit={() => {}}
+                                                onDelete={() => {}}
+                                                isOpenNotes={false}
+                                                minimalView={true}
+                                                customStyles={{
+                                                  height: "4vh",
+                                                  width: "100%",
+                                                }}
+                                              />
+                                            </div>
+                                          ))
+                                        ) : (
+                                          <p>No notes available</p>
+                                        )}
                                       </div>
                                       <div
                                         className="email-modal-body"
                                         style={{
                                           display: "flex",
-                                          // gap: "20px",
                                           flexDirection: "column",
+                                          width: "50%",
                                         }}
                                       >
                                         <label
                                           htmlFor="email"
                                           aria-required="true"
+                                          id="label-text"
                                         >
-                                          To*
+                                          Email ID
                                         </label>
                                         <input
                                           type="email"
@@ -1630,7 +1762,43 @@ useEffect(() => {
                                           }
                                           required
                                           placeholder="Email ID"
-                                          className="email-input"
+                                          id="email-input"
+                                          onKeyDown={handleKeyDown}
+                                        />
+                                        <label
+                                          htmlFor="subject"
+                                          aria-required="true"
+                                          id="label-text"
+                                        >
+                                          Subject
+                                        </label>
+                                        <input
+                                          type="text"
+                                          value={emailSubject}
+                                          onChange={(e) =>
+                                            setEmailSubject(e.target.value)
+                                          }
+                                          required
+                                          placeholder="Subject"
+                                          id="email-input"
+                                          onKeyDown={handleKeyDown}
+                                        />
+                                        <label
+                                          htmlFor="subject"
+                                          aria-required="true"
+                                          id="label-text"
+                                        >
+                                          Description(optional)
+                                        </label>
+                                        <textarea
+                                          type="text"
+                                          value={description}
+                                          onChange={(e) =>
+                                            setDecription(e.target.value)
+                                          }
+                                          required
+                                          placeholder="Enter Description"
+                                          id="description-input"
                                           onKeyDown={handleKeyDown}
                                         />
                                       </div>
@@ -1652,7 +1820,7 @@ useEffect(() => {
                                         onClick={handleSendEmail}
                                         style={{
                                           borderRadius: "30px",
-                                          width: "20%",
+                                          width: "10%",
                                           // margin: "auto",
                                         }}
                                         className="send-button"

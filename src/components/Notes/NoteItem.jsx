@@ -8,7 +8,16 @@ import { useSelector } from "react-redux";
 import { apiService } from "../../assets/api/apiService";
 import { showSuccessToast, showErrorToast } from "../../utils/toastHelper";
 
-const NoteItem = ({ note, onEdit, onDelete, isOpenNotes }) => {
+const NoteItem = ({
+  note,
+  onEdit,
+  onDelete,
+  isOpenNotes,
+  minimalView,
+  customStyles,
+  fiterText,
+  setFilterText,
+}) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false); // Track confirmation popup visibility
@@ -109,7 +118,8 @@ const NoteItem = ({ note, onEdit, onDelete, isOpenNotes }) => {
       className="NoteItem"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      onClick={() => onEdit(note)} // Open note on click
+      onClick={() => !minimalView && onEdit(note)}
+      style={{ ...customStyles }}
     >
       <div
         className="title-header"
@@ -147,24 +157,27 @@ const NoteItem = ({ note, onEdit, onDelete, isOpenNotes }) => {
           </p>
         )}
       </div>
-      <div
-        className="detail-box"
-        style={{ overflow: "hidden", marginTop: "0px" }}
-      >
-        <p
-          id="details"
-          dangerouslySetInnerHTML={{
-            __html:
-              note.content && note.content.length > 40
-                ? note.content.substring(0, 100) + "..."
-                : note.content || "",
-          }}
-          style={{ color: "#333", margin: 0 }}
-        />
-      </div>
+      {!minimalView && (
+        <div
+          className="detail-box"
+          style={{ overflow: "hidden", marginTop: "0px" }}
+        >
+          <p
+            id="details"
+            dangerouslySetInnerHTML={{
+              __html:
+                note.content && note.content.length > 40
+                  ? note.content.substring(0, 100) + "..."
+                  : note.content || "",
+            }}
+            style={{ color: "#333", margin: 0 }}
+          />
+        </div>
+      )}
 
       {/* Popup Menu */}
-      {isMenuOpen && (
+
+      {isMenuOpen && !minimalView && (
         <div
           className="popup-menu"
           ref={menuRef}
