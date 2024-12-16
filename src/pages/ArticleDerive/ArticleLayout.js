@@ -8,7 +8,7 @@ import { apiService } from "../../assets/api/apiService";
 import axios from "axios";
 import pen from "../../assets/images/16px.svg";
 import { useRef } from "react";
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation, useParams,Link } from "react-router-dom";
 import Annotation from "../../components/Annotaions";
 import Notes from "../NotesPage/Notes";
 import notesicon from "../../assets/images/note-2.svg";
@@ -20,6 +20,8 @@ import GenerateAnnotate from "../../components/DeriveAnnotations";
 import { faAnglesUp } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import SearchBar from "../../components/SearchBar";
+import Logo from "../../assets/images/InfersolD17aR04aP01ZL-Polk4a 1.svg";
+
 const ArticleLayout = () => {
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
   const { user } = useSelector((state) => state.auth);
@@ -399,7 +401,8 @@ const ArticleLayout = () => {
 
     setAnnotateLoading(true);
     try {
-      const response = await apiService.annotateFile(requestBody,token);
+      const response = await apiService.annotateArticle
+        (requestBody,token);
       const data = response.data;
       setAnnotateData(data);
       setHasFetchedAnnotateData(true); // Set flag after successful fetch
@@ -479,8 +482,16 @@ const ArticleLayout = () => {
   return (
     <>
       <div className="container">
-        <Header style={{ width: "100%" }} />
-        <SearchBar className="searchResults-Bar"></SearchBar>
+      <div className="search-container-content">
+        <Header />
+        <div className="SearchHeader-Logo">
+          <Link to="/">
+
+        <img src={Logo} alt="inferAI-logo" className="inferai-logo" />
+        </Link>
+        <SearchBar className="searchResults-Bar" searchWidth="90%" ></SearchBar>
+      </div>
+      </div>
 
         <div className="content" style={{ width: widthIfLoggedIn }}>
           <div
@@ -603,9 +614,9 @@ const ArticleLayout = () => {
               {openAnnotate && (
                 <div
                   className="annotate-height"
-                  style={{
-                    height: `${annotateHeight}vh`,
-                  }}
+                  // style={{
+                  //   height: `${annotateHeight}vh`,
+                  // }}
                 >
                   {annotateFile ? (
                     <GenerateAnnotate

@@ -107,7 +107,7 @@ button {
 }
 .searchResults-Bar .search-icon {
   top: 25%;
-  left: 0;
+  /* left: 0; */
 }
 .searchResults-Bar .search-button {
   top: 7%;
@@ -134,7 +134,7 @@ button {
   ); /* Adjust height based on header and search bar */
   position: -webkit-sticky; /* For Safari */
   position: sticky;
-  top: 90px; /* Stick under the header */
+  /* top: 90px; Stick under the header */
   border: 1px solid #e0e0e0;
   border-radius: 8px;
   padding: 16px;
@@ -164,7 +164,7 @@ button {
 .searchfilter-options {
   width: 100%;
   display: flex;
-  margin: 15px 0;
+  /* margin: 15px 0; */
   flex-direction: column;
   align-items: flex-start;
   color: black;
@@ -177,6 +177,7 @@ button {
 }
 .searchfilter-section h5 {
   margin-bottom: 5px;
+  margin-top: 15px;
   display: flex;
   justify-content: space-between;
   width: 100%;
@@ -272,6 +273,7 @@ button {
   padding: 0 16px 32px 16px;
   width: 75%;
   background-color: #fff;
+  /* flex-shrink: 0; */
 }
 .searchContent-right::-webkit-scrollbar {
   width: 3px; /* Width of the scrollbar */
@@ -863,15 +865,16 @@ button {
   ); /* Adjust height based on header and search bar */
   position: -webkit-sticky; /* For Safari */
   position: sticky;
-  top: 90px; /* Stick under the header */
+  /* top: 90px; Stick under the header */
   display: flex;
   gap: 0px;
   opacity: 0px;
   height: fit-content;
   /* border: 1px solid rgba(235, 235, 243, 1); */
+  flex-shrink: 0;
 }
 .search-annotate {
-  width: 26vw;
+  width: 20vw;
   /* height: 514px; */
   /* max-height: 532px; */
   overflow-y: auto;
@@ -906,7 +909,7 @@ button {
 
 .search-annotate-icon {
   border: 1px solid rgba(235, 235, 243, 1);
-  border-radius: 8px 8px 0px 0px;
+  border-radius: 8px ;
   padding: 10px;
 }
 .search-citation-icon {
@@ -1114,6 +1117,12 @@ td {
 
 .search-annotate-icon.closed {
   background-color: white;
+}
+.search-annotate-icon.disabled{
+  display: none;
+}
+.search-annotate-icon.active{
+  display: block;
 }
 
 .search-notes-icon.open {

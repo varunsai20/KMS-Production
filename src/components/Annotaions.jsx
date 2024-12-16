@@ -191,7 +191,7 @@ const Annotation = ({
   };
 
   return (
-    <div className="search-tables" style={{ height: `${annotateHeight}vh` }}>
+    <div className="search-tables" >
       <div
         style={{
           // background: "rgba(251, 251, 253, 1)",

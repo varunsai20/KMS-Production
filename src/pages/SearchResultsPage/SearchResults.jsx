@@ -40,6 +40,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   const [selectedArticles, setSelectedArticles] = useState([]);
   const [bioRxivArticles, setBioRxivArticles] = useState([]);
   const [plosArticles, setPlosArticles] = useState([]);
+  const [handleAnnotateCall,setHandleAnnotateCall]=useState(false)
   const totalArticles = useMemo(() => {
     return [...bioRxivArticles, ...plosArticles, ...selectedArticles];
   }, [bioRxivArticles, plosArticles, selectedArticles]);
@@ -47,6 +48,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   const [currentIdType, setCurrentIdType] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [collections, setCollections] = useState([]);
+
   const [selectedNote, setSelectedNote] = useState([]);
   const [notes, setNotes] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -76,6 +78,31 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       fetchNotes();
     }
   }, [user_id, token]);
+
+  const prevTotalArticlesRef = useRef(totalArticles);
+
+  useEffect(() => {
+    if (handleAnnotateCall) {
+      if(totalArticles.length>1){
+      // Check if the previous totalArticles length or values are different
+      const prevTotalArticles = prevTotalArticlesRef.current;
+      const isDifferent =
+        prevTotalArticles.length !== totalArticles.length ||
+        JSON.stringify(prevTotalArticles) !== JSON.stringify(totalArticles);
+  
+      if (isDifferent) {
+        console.log("totalArticles have changed");
+        handleAnnotateClick();
+      }
+  
+      // Update the ref to the current totalArticles
+      prevTotalArticlesRef.current = totalArticles;
+      setHandleAnnotateCall(false)
+    }
+    }
+  }, [handleAnnotateCall,totalArticles]); // Re-run when totalArticles or handleAnnotateCall changes
+  
+
 
   const fetchCollections = async () => {
     try {
@@ -354,8 +381,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   };
 
   const handleAnnotate = () => {
-    console.log("clicked");
-    console.log(annotateData);
 
     if (openAnnotate) {
       setOpenAnnotate(false);
@@ -632,7 +657,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       endDate: customEndDate,
     });
   };
-  console.log(location.state);
   useEffect(() => {
     const storedData = sessionStorage.getItem("AnnotateData");
 
@@ -781,9 +805,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
           : [...prevSelected, pmid] // Add checked article
     );
   };
-  console.log(selectedArticles);
-  console.log(bioRxivArticles);
-  console.log(plosArticles);
+
 
   const handleBioRxivBoxChange = (pmid) => {
     setBioRxivArticles(
@@ -804,10 +826,8 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   const handleSourceCheckboxChange = (source, idType, doi) => {
     const sourceType = source; // Set to "PubMed" if source is null or undefined
     const uniqueId = `${sourceType}_${idType}`;
-    console.log(sourceType);
     let shareableLink;
     if (sourceType === "pubmed") {
-      console.log("entered");
       shareableLink = `https://pubmed.ncbi.nlm.nih.gov/${idType}`;
     } else if (sourceType === "Public Library of Science (PLOS)") {
       shareableLink = `https://journals.plos.org/plosone/article?id=${doi}`;
@@ -842,7 +862,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   };
 
   const isArticleSelected = (source, idType) => {
-    console.log("soucr from selected", source, ":", idType);
     const uniqueId = `${source}_${idType}`; // Create unique ID for checking selection state
     if (source === "BioRxiv") {
       return bioRxivArticles.includes(uniqueId);
@@ -870,7 +889,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       noteids: selectedNote,
       urls: [links],
     };
-    console.log(links);
     try {
       //const response = await apiService.shareArticle(emailData, token);
       const response = await axios.post(
@@ -886,7 +904,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       );
       if (response.status === 200) {
         showSuccessToast("Email sent successfully");
-        console.log("Email sent successfully");
         setEmail("");
         setEmailSubject("");
         setDecription("");
@@ -968,24 +985,43 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       handleSendEmail();
     }
   };
+  const [containerHeight, setContainerHeight] = useState("auto");
+  const containerRef = useRef(null);
 
+  useEffect(() => {
+    const updateHeight = () => {
+      if (containerRef.current) {
+        const height = containerRef.current.offsetHeight;
+        setContainerHeight(`${height}px`);
+      }
+    };
+
+    // Update height on mount
+    updateHeight();
+
+    // Update height on window resize
+    window.addEventListener("resize", updateHeight);
+
+    return () => {
+      window.removeEventListener("resize", updateHeight);
+    };
+  }, []);
   return (
     <div className="Container" ref={contentRightRef}>
-      <div className="search-container-content">
+      <div className="search-container-content" ref={containerRef}>
         <Header />
         <div className="SearchHeader-Logo">
           <Link to="/">
-            <img src={Logo} alt="inferAI-logo" className="inferai-logo" />
-          </Link>
-          <SearchBar
-            className="searchResults-Bar"
-            searchWidth="90%"
-          ></SearchBar>
-        </div>
+
+        <img src={Logo} alt="inferAI-logo" className="inferai-logo" />
+        </Link>
+        <SearchBar className="searchResults-Bar" searchWidth="90%" ></SearchBar>
+      </div>
+
       </div>
 
       <div id="Search-Content-Container">
-        <div className="searchContent-left">
+        <div className="searchContent-left"  style={{ top: containerHeight }}>
           <div className="searchContent-left-header">
             <p className="title">Filters</p>
             <p className="Filters-ResetAll" onClick={handleResetAll}>
@@ -1214,56 +1250,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
             <>
               <div className="SearchResult-Count-Filters">
                 <div className="SearchResult-Option-Buttons">
-                  <div
-                    className="SearchResult-Option-Left"
-                    style={{
-                      cursor: selectedArticles.length > 0 ? "pointer" : "",
-                      opacity: selectedArticles.length > 0 ? 1 : "", // Change opacity for a disabled effect
-                      display: displayIfLoggedIn,
-                    }}
-                    title={
-                      selectedArticles.length === 0
-                        ? "Select at least one article to annotate"
-                        : "Annotate selected articles"
-                    }
-                  >
-                    <div style={{ position: "relative" }}>
-                      {" "}
-                      {/* Wrapper for the button to position loading spinner */}
-                      <button
-                        className={`SearchResult-Annotate ${
-                          totalArticles.length > 0 ? "active" : "disabled"
-                        }`}
-                        onClick={
-                          totalArticles.length > 0 ? handleAnnotateClick : null
-                        }
-                        style={{
-                          cursor: totalArticles.length > 0 ? "pointer" : "",
-                          opacity: annotateLoading ? 0.5 : 1, // Gray out the button when loading
-                          position: "relative", // Make the button position relative to the wrapper for loader positioning
-                        }}
-                        title={
-                          totalArticles.length === 0
-                            ? "Select an article"
-                            : "Annotate selected articles"
-                        }
-                        disabled={annotateLoading} // Disable the button while loading
-                      >
-                        Annotate
-                      </button>
-                      {/* Show loading spinner */}
-                      {annotateLoading && (
-                        <div
-                          className="loader" // Applying your loader CSS
-                          style={{
-                            position: "absolute",
-                            top: "12.5%",
-                            left: "25%",
-                          }}
-                        ></div>
-                      )}
-                    </div>
-                  </div>
+                 
                   <div
                     className="SearchResult-Option-Left"
                     style={{
@@ -2049,7 +2036,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
         <>
           <div
             className="search-right-aside"
-            style={{ display: displayIfLoggedIn }}
+            style={{ display: displayIfLoggedIn,top: containerHeight }}
           >
             {openAnnotate && (
               <div className="search-annotate">
@@ -2061,24 +2048,40 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
               </div>
             )}
             <div className="search-icons-group">
-              <>
-                <div
-                  className={`search-annotate-icon ${
-                    openAnnotate ? "open" : "closed"
-                  } ${
-                    annotateData && annotateData.length > 0 ? "" : "disabled"
-                  }`}
-                  onClick={annotateData ? handleAnnotate : null}
-                  style={{
-                    cursor:
-                      annotateData && annotateData.length > 0 ? "pointer" : "",
-                    opacity: annotateData && annotateData.length > 0 ? 1 : 1, // Adjust visibility when disabled
-                  }}
-                >
-                  <img src={annotate} alt="annotate-icon" />
-                </div>
-              </>
-            </div>
+  <>
+    <div
+      className={`search-annotate-icon ${
+        openAnnotate ? "open" : "closed"
+      } ${
+        annotateData && Object.keys(annotateData).length > 0 ? "" : "disabled"
+      } ${
+        totalArticles.length > 0 ? "active" : "disabled"
+      }`}
+       onClick={() => {
+       setHandleAnnotateCall(true)
+      if (annotateData && Object.keys(annotateData).length > 0) {
+        console.log("data");
+        handleAnnotate();
+      } else if (totalArticles.length > 0) {
+        console.log("api");
+        handleAnnotateClick();
+      }
+    }}
+      style={{
+        cursor:
+          annotateData && Object.keys(annotateData).length > 0
+            ? "pointer"
+            : totalArticles.length > 0
+            ? "pointer"
+            : "default",
+        opacity: annotateData && Object.keys(annotateData).length > 0 ? 1 : 1,
+      }}
+    >
+      <img src={annotate} alt="annotate-icon" />
+    </div>
+  </>
+</div>
+
           </div>
         </>
       </div>

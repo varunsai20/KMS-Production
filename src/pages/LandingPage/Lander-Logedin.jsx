@@ -457,7 +457,7 @@ const Lander = () => {
             <FaLinkedinIn size={30} color="black" />
           </a>
           <a
-            href="https://www.facebook.com/infersol"
+            href="https://www.instagram.com/infersol/"
             target="_blank"
             rel="noreferrer"
           >
