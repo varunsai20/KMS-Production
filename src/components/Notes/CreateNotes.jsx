@@ -362,11 +362,7 @@ const Createnotes = ({
       <form
         className="create-note__form"
         onSubmit={handleSubmit}
-        style={
-          isOpenNotes
-            ? { height: `${height - 86}px` }
-            : { height: `${notesHeight - 13.5}vh` }
-        }
+        style={isOpenNotes ? { height: `${height - 86}px` } : {}}
       >
         <input
           className="note-input"

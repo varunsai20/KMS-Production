@@ -8,7 +8,7 @@ import { apiService } from "../../assets/api/apiService";
 import axios from "axios";
 import pen from "../../assets/images/16px.svg";
 import { useRef } from "react";
-import { useLocation, useParams,Link } from "react-router-dom";
+import { useLocation, useParams, Link } from "react-router-dom";
 import Annotation from "../../components/Annotaions";
 import Notes from "../NotesPage/Notes";
 import notesicon from "../../assets/images/note-2.svg";
@@ -35,8 +35,8 @@ const ArticleLayout = () => {
   const { pmid } = useParams();
   const prevPathRef = useRef(location.pathname);
   const [openAnnotate, setOpenAnnotate] = useState(false);
-  const [annotateHeight, setAnnotateHeight] = useState(35);
-  const [notesHeight, setNotesHeight] = useState(35);
+  const [annotateHeight, setAnnotateHeight] = useState(0);
+  const [notesHeight, setNotesHeight] = useState(0);
   const [hasFetchedAnnotateData, setHasFetchedAnnotateData] = useState(false);
   const [unsavedChanges, setUnsavedChanges] = useState(false);
   const [annotateLoading, setAnnotateLoading] = useState(false);
@@ -58,12 +58,15 @@ const ArticleLayout = () => {
   const [activeSessionId, setActiveSessionId] = useState(
     localStorage.getItem("session_id") || null
   );
-  
+
   const [isPromptEnabled, setIsPromptEnabled] = useState(false);
   const [editedTitle, setEditedTitle] = useState("");
   const [annotateData, setAnnotateData] = useState(
     location.state?.annotateData || ""
   );
+  const annotateRef = useRef(null);
+  const notesRef = useRef(null);
+
   useEffect(() => {
     localStorage.removeItem("session_id");
     setActiveSessionId(null);
@@ -94,7 +97,7 @@ const ArticleLayout = () => {
   }, [user_id, token, refreshSessions]);
   const handleOpenChat = () => {
     localStorage.removeItem("session_id");
-    setAnnotateData("")
+    setAnnotateData("");
     setActiveSessionId(null);
     localStorage.setItem("chatHistory", JSON.stringify([]));
     dispatch(setDeriveInsights(true)); // Set deriveInsights state in Redux
@@ -105,16 +108,51 @@ const ArticleLayout = () => {
       },
     });
   };
+  const calculateContentHeight = (ref) => {
+    if (ref.current) {
+      const contentHeight = ref.current.scrollHeight; // Actual content height in pixels
+      const vhHeight = (contentHeight / window.innerHeight) * 100; // Convert to vh
+      return Math.min(vhHeight, maxHeight); // Cap at maxHeight
+    }
+    return minHeight; // Default minimum height
+  };
+
+  // useEffect(() => {
+  //   if (openAnnotate && !openNotes) {
+  //     setAnnotateHeight(42);
+  //     setNotesHeight(0);
+  //   } else if (openNotes && !openAnnotate) {
+  //     setNotesHeight(42);
+  //     setAnnotateHeight(0);
+  //   } else {
+  //     setAnnotateHeight(0); // Reset to default when both are open
+  //     setNotesHeight(0);
+  //   }
+  // }, [openAnnotate, openNotes]);
+
   useEffect(() => {
     if (openAnnotate && !openNotes) {
-      setAnnotateHeight(70);
+      setAnnotateHeight(calculateContentHeight(annotateRef));
       setNotesHeight(0);
     } else if (openNotes && !openAnnotate) {
-      setNotesHeight(70);
+      setNotesHeight(calculateContentHeight(notesRef));
       setAnnotateHeight(0);
-    } else {
-      setAnnotateHeight(35); // Reset to default when both are open
-      setNotesHeight(35);
+    } else if (openAnnotate && openNotes) {
+      const annotateHeight = calculateContentHeight(annotateRef);
+      const notesHeight = calculateContentHeight(notesRef);
+
+      // Ensure combined height doesn't exceed maxHeight
+      const totalHeight = annotateHeight + notesHeight;
+      if (totalHeight > maxHeight) {
+        const ratio = annotateHeight / totalHeight;
+        setAnnotateHeight(Math.max(minHeight, Math.round(maxHeight * ratio)));
+        setNotesHeight(
+          Math.max(minHeight, Math.round(maxHeight * (1 - ratio)))
+        );
+      } else {
+        setAnnotateHeight(annotateHeight);
+        setNotesHeight(notesHeight);
+      }
     }
   }, [openAnnotate, openNotes]);
 
@@ -317,7 +355,7 @@ const ArticleLayout = () => {
           minHeight,
           Math.min(maxHeight, startHeight + delta)
         );
-        const newNotesHeight = 70 - newAnnotateHeight;
+        const newNotesHeight = 60 - newAnnotateHeight;
 
         setAnnotateHeight(newAnnotateHeight);
         setNotesHeight(newNotesHeight);
@@ -369,12 +407,18 @@ const ArticleLayout = () => {
   const handleAnnotateFile = async () => {
     setAnnotateLoading(true);
     try {
-      const response = await apiService.annotateFileFromURL(token,
+      const response = await axios.post(
+        "https://inferai.ai/api/core_search/annotate_from_url",
         { url: fileUrl },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
       const data = response.data;
       setAnnotateData(data);
-      setHasFetchedAnnotateData(true); 
+      setHasFetchedAnnotateData(true);
       setOpenAnnotate(true);
       setAnnotateFile(true);
     } catch (error) {
@@ -401,8 +445,7 @@ const ArticleLayout = () => {
 
     setAnnotateLoading(true);
     try {
-      const response = await apiService.annotateArticle
-        (requestBody,token);
+      const response = await apiService.annotateArticle(requestBody, token);
       const data = response.data;
       setAnnotateData(data);
       setHasFetchedAnnotateData(true); // Set flag after successful fetch
@@ -432,7 +475,6 @@ const ArticleLayout = () => {
     } else {
       setOpenNotes((prevOpenNotes) => !prevOpenNotes);
     }
-    
   };
   const handleCancelIcon = () => {
     setShowConfirmIcon(false);
@@ -455,7 +497,7 @@ const ArticleLayout = () => {
           minHeight,
           Math.min(maxHeight, startHeight + delta)
         );
-        const newAnnotateHeight = Math.max(minHeight, 70 - newNotesHeight);
+        const newAnnotateHeight = Math.max(minHeight, 60 - newNotesHeight);
 
         setNotesHeight(newNotesHeight);
         setAnnotateHeight(newAnnotateHeight);
@@ -482,16 +524,18 @@ const ArticleLayout = () => {
   return (
     <>
       <div className="container">
-      <div className="search-container-content">
-        <Header />
-        <div className="SearchHeader-Logo">
-          <Link to="/">
-
-        <img src={Logo} alt="inferAI-logo" className="inferai-logo" />
-        </Link>
-        <SearchBar className="searchResults-Bar" searchWidth="90%" ></SearchBar>
-      </div>
-      </div>
+        <div className="search-container-content">
+          <Header />
+          <div className="SearchHeader-Logo">
+            <Link to="/">
+              <img src={Logo} alt="inferAI-logo" className="inferai-logo" />
+            </Link>
+            <SearchBar
+              className="searchResults-Bar"
+              searchWidth="90%"
+            ></SearchBar>
+          </div>
+        </div>
 
         <div className="content" style={{ width: widthIfLoggedIn }}>
           <div
@@ -534,9 +578,7 @@ const ArticleLayout = () => {
                         session.session_id === activeSessionId ? "active" : ""
                       }
                       onClick={() => {
-                        handleSessionClick(
-                          session.session_id
-                        );
+                        handleSessionClick(session.session_id);
                       }}
                     >
                       {editingSessionId === session.session_id ? (
@@ -610,13 +652,21 @@ const ArticleLayout = () => {
             />
           )}
           <div className="right-aside" style={{ display: displayIfLoggedIn }}>
-            <div className="annotate-note">
+            <div
+              className="annotate-note"
+              style={{
+                height: "55vh",
+                // height: `${annotateHeight + notesHeight}vh`,
+                overflowY: "hidden",
+              }}
+            >
               {openAnnotate && (
                 <div
+                  ref={annotateRef}
                   className="annotate-height"
-                  // style={{
-                  //   height: `${annotateHeight}vh`,
-                  // }}
+                  style={{
+                    height: `${annotateHeight}vh`,
+                  }}
                 >
                   {annotateFile ? (
                     <GenerateAnnotate
@@ -639,6 +689,7 @@ const ArticleLayout = () => {
               )}
               {openNotes && (
                 <div
+                  ref={notesRef}
                   className="notes-height"
                   style={{ height: `${notesHeight}vh` }}
                 >

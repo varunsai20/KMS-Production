@@ -909,7 +909,7 @@ button {
 
 .search-annotate-icon {
   border: 1px solid rgba(235, 235, 243, 1);
-  border-radius: 8px ;
+  border-radius: 8px;
   padding: 10px;
 }
 .search-citation-icon {
@@ -1118,10 +1118,10 @@ td {
 .search-annotate-icon.closed {
   background-color: white;
 }
-.search-annotate-icon.disabled{
+.search-annotate-icon.disabled {
   display: none;
 }
-.search-annotate-icon.active{
+.search-annotate-icon.active {
   display: block;
 }
 
@@ -1224,15 +1224,31 @@ button input {
   font-size: 14px;
 }
 #email-input {
-  padding: 5px 5px 5px 5px;
+  padding: 6px 5px 6px 5px;
   font-size: 12px;
   margin-bottom: 10px;
+  border: 1px solid #00000012;
+  border-radius: 8px;
 }
 #description-input {
   height: 20vh;
   resize: none;
+  border: 1px solid #00000012;
+  border-radius: 8px;
 }
 @media (min-width: 768px) and (max-width: 1042px) {
+  .SearchResult-Option-Left {
+    height: 4vh;
+  }
+  .searchfilter-options {
+    font-size: 15px;
+  }
+  .searchfilter-section label {
+    font-size: 10px;
+  }
+  .pagination-controls button {
+    margin: 0;
+  }
   .searchContent-left {
     width: 16%;
     font-size: 14px;
@@ -1261,10 +1277,16 @@ button input {
   }
   .SearchResult-Count-Filters {
     padding: 20px 0 10px 0;
-    display: flex;
+    display: inline;
     gap: 10px;
     background-color: #ffffff;
     flex-wrap: wrap;
+  }
+  .searchresult-title {
+    font-size: 14px;
+  }
+  .search-table-body td {
+    font-size: 10px;
   }
 }
 /* Surface Devices */
@@ -1294,7 +1316,7 @@ button input {
     width: 70%;
   }
   .search-annotate {
-    width: 400px;
+    width: 20vw;
   }
   .searchContent-left {
     width: 17%;
@@ -1302,5 +1324,14 @@ button input {
   }
   .pagination {
     margin-top: 10px;
+  }
+  .searchResults-Bar {
+    margin: 0%;
+  }
+  .search-table-body td {
+    font-size: 10px;
+  }
+  .search-tables p {
+    font-size: 16px;
   }
 }

@@ -84,11 +84,11 @@
 }
 .history-pagination {
   /* margin-left: 1%; */
-  width: 20%;
+  width: 23%;
   padding: 27px, 0px, 27px, 0px;
   height: 55vh;
   /* max-height: 700px; */
-  overflow-y: hidden;
+  overflow-y: auto;
   color: #333;
   border-radius: 20px;
   border: 1px solid #ebebf3;
@@ -156,15 +156,16 @@
 }
 .streaming-section {
   width: 100%;
-
+  overflow-y: auto;
   display: flex;
-
   margin: 2% 0% 2% 0%;
 }
 .streaming-content {
   width: 100%;
-
   flex: 1;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
 }
 .typographyRow-articles {
   text-align: justify;
@@ -302,7 +303,7 @@
   /* left: 24%; */
   bottom: 1vh;
   width: 100%;
-  width: 68%;
+  /* width: 68%; */
   display: flex;
 
   flex-direction: column;
@@ -417,14 +418,14 @@
   height: fit-content;
 }
 .annotate-note {
-  display: grid;
+  /* display: grid; */
   /* height: 70vh; */
 }
 .annotate-height {
   position: relative;
   border: 1px solid rgb(235, 235, 245);
   border-radius: 16px 16px 0px 0px;
-  width: 20vw;
+  width: 22vw;
 }
 .annotate-line2 {
   position: absolute;
@@ -441,7 +442,7 @@
   /* overflow-y: auto; */
   border: 1px solid rgb(235, 235, 245);
   border-radius: 0px 0px 16px 16px;
-  width: 20vw;
+  width: 22vw;
 }
 .notes-line1 {
   display: none;
@@ -909,6 +910,27 @@ td {
   .article-content {
     width: 50%;
   }
+  .history-pagination p {
+    font-size: 12px;
+  }
+  .history-pagination ul li {
+    font-size: 10px;
+  }
+  .content p {
+    font-size: 10px;
+  }
+  .rate {
+    width: 13vw;
+  }
+  .article-content .meta p:last-child {
+    font-size: 10px;
+  }
+  strong {
+    font-size: 12px;
+  }
+  .notes-height {
+    width: 28vw;
+  }
   @media (min-width: 1024px) {
     .container {
       width: 95%;
@@ -933,6 +955,9 @@ td {
 
   .content p {
     font-size: 1rem;
+  }
+  .article-content .meta p {
+    font-size: 10px;
   }
 }
 
@@ -961,23 +986,47 @@ td {
 
 @media (min-width: 900px) and (max-width: 1366px) {
   .content {
-    width: 98%;
+    width: 80%;
   }
   .article-chat-query {
     padding: 5px;
-    left: 22%;
-    width: 72%;
+    left: 28%;
+    width: 55%;
   }
   .predefined-prompts {
-    padding: 5px 10px 5px 10px;
+    padding: 2px 10px 5px 10px;
   }
   .stream-input input {
     padding: 10px 0px;
   }
   .rate {
-    width: 20vh;
+    width: 18vh;
   }
   .file-showing {
-    height: 7vh;
+    height: 6vh;
+  }
+  .history-pagination p {
+    font-size: 12px;
+  }
+  .history-pagination ul li {
+    font-size: 12px;
+  }
+  .article-content .meta p {
+    font-size: 10px;
+  }
+  .back-button {
+    font-size: 13px;
+  }
+  .back-arrow-icon {
+    font-size: 13px;
+  }
+  .article-title {
+    font-size: 15px;
+  }
+  .meta {
+    font-size: 14px;
+  }
+  .article-content .meta p:last-child {
+    font-size: 13px;
   }
 }

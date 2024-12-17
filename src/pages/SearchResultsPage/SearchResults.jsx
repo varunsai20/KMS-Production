@@ -40,7 +40,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   const [selectedArticles, setSelectedArticles] = useState([]);
   const [bioRxivArticles, setBioRxivArticles] = useState([]);
   const [plosArticles, setPlosArticles] = useState([]);
-  const [handleAnnotateCall,setHandleAnnotateCall]=useState(false)
+  const [handleAnnotateCall, setHandleAnnotateCall] = useState(false);
   const totalArticles = useMemo(() => {
     return [...bioRxivArticles, ...plosArticles, ...selectedArticles];
   }, [bioRxivArticles, plosArticles, selectedArticles]);
@@ -83,26 +83,24 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
 
   useEffect(() => {
     if (handleAnnotateCall) {
-      if(totalArticles.length>1){
-      // Check if the previous totalArticles length or values are different
-      const prevTotalArticles = prevTotalArticlesRef.current;
-      const isDifferent =
-        prevTotalArticles.length !== totalArticles.length ||
-        JSON.stringify(prevTotalArticles) !== JSON.stringify(totalArticles);
-  
-      if (isDifferent) {
-        console.log("totalArticles have changed");
-        handleAnnotateClick();
-      }
-  
-      // Update the ref to the current totalArticles
-      prevTotalArticlesRef.current = totalArticles;
-      setHandleAnnotateCall(false)
-    }
-    }
-  }, [handleAnnotateCall,totalArticles]); // Re-run when totalArticles or handleAnnotateCall changes
-  
+      if (totalArticles.length > 1) {
+        // Check if the previous totalArticles length or values are different
+        const prevTotalArticles = prevTotalArticlesRef.current;
+        const isDifferent =
+          prevTotalArticles.length !== totalArticles.length ||
+          JSON.stringify(prevTotalArticles) !== JSON.stringify(totalArticles);
 
+        if (isDifferent) {
+          console.log("totalArticles have changed");
+          handleAnnotateClick();
+        }
+
+        // Update the ref to the current totalArticles
+        prevTotalArticlesRef.current = totalArticles;
+        setHandleAnnotateCall(false);
+      }
+    }
+  }, [handleAnnotateCall, totalArticles]); // Re-run when totalArticles or handleAnnotateCall changes
 
   const fetchCollections = async () => {
     try {
@@ -381,7 +379,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   };
 
   const handleAnnotate = () => {
-
     if (openAnnotate) {
       setOpenAnnotate(false);
     } else if (annotateData && Object.keys(annotateData).length > 0) {
@@ -806,7 +803,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
     );
   };
 
-
   const handleBioRxivBoxChange = (pmid) => {
     setBioRxivArticles(
       (prevBioRxiv) =>
@@ -893,7 +889,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       //const response = await apiService.shareArticle(emailData, token);
       const response = await axios.post(
         // "https://inferai.ai/api/core_search/sharearticle",
-        "https://cdc9-103-169-178-9.ngrok-free.app/api/core_search/sharearticle",
+        "https://b899-103-169-178-9.ngrok-free.app/api/core_search/sharearticle",
         emailData,
         {
           headers: {
@@ -1012,16 +1008,17 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
         <Header />
         <div className="SearchHeader-Logo">
           <Link to="/">
-
-        <img src={Logo} alt="inferAI-logo" className="inferai-logo" />
-        </Link>
-        <SearchBar className="searchResults-Bar" searchWidth="90%" ></SearchBar>
-      </div>
-
+            <img src={Logo} alt="inferAI-logo" className="inferai-logo" />
+          </Link>
+          <SearchBar
+            className="searchResults-Bar"
+            searchWidth="90%"
+          ></SearchBar>
+        </div>
       </div>
 
       <div id="Search-Content-Container">
-        <div className="searchContent-left"  style={{ top: containerHeight }}>
+        <div className="searchContent-left" style={{ top: containerHeight }}>
           <div className="searchContent-left-header">
             <p className="title">Filters</p>
             <p className="Filters-ResetAll" onClick={handleResetAll}>
@@ -1250,7 +1247,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
             <>
               <div className="SearchResult-Count-Filters">
                 <div className="SearchResult-Option-Buttons">
-                 
                   <div
                     className="SearchResult-Option-Left"
                     style={{
@@ -1660,7 +1656,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                                       <div
                                         className="notes-radio"
                                         style={{
-                                          display: "grid",
+                                          // display: "grid",
                                           width: "50%",
                                           height: "40vh",
                                           overflow: "auto",
@@ -2036,7 +2032,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
         <>
           <div
             className="search-right-aside"
-            style={{ display: displayIfLoggedIn,top: containerHeight }}
+            style={{ display: displayIfLoggedIn, top: containerHeight }}
           >
             {openAnnotate && (
               <div className="search-annotate">
@@ -2048,40 +2044,42 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
               </div>
             )}
             <div className="search-icons-group">
-  <>
-    <div
-      className={`search-annotate-icon ${
-        openAnnotate ? "open" : "closed"
-      } ${
-        annotateData && Object.keys(annotateData).length > 0 ? "" : "disabled"
-      } ${
-        totalArticles.length > 0 ? "active" : "disabled"
-      }`}
-       onClick={() => {
-       setHandleAnnotateCall(true)
-      if (annotateData && Object.keys(annotateData).length > 0) {
-        console.log("data");
-        handleAnnotate();
-      } else if (totalArticles.length > 0) {
-        console.log("api");
-        handleAnnotateClick();
-      }
-    }}
-      style={{
-        cursor:
-          annotateData && Object.keys(annotateData).length > 0
-            ? "pointer"
-            : totalArticles.length > 0
-            ? "pointer"
-            : "default",
-        opacity: annotateData && Object.keys(annotateData).length > 0 ? 1 : 1,
-      }}
-    >
-      <img src={annotate} alt="annotate-icon" />
-    </div>
-  </>
-</div>
-
+              <>
+                <div
+                  className={`search-annotate-icon ${
+                    openAnnotate ? "open" : "closed"
+                  } ${
+                    annotateData && Object.keys(annotateData).length > 0
+                      ? ""
+                      : "disabled"
+                  } ${totalArticles.length > 0 ? "active" : "disabled"}`}
+                  onClick={() => {
+                    setHandleAnnotateCall(true);
+                    if (annotateData && Object.keys(annotateData).length > 0) {
+                      console.log("data");
+                      handleAnnotate();
+                    } else if (totalArticles.length > 0) {
+                      console.log("api");
+                      handleAnnotateClick();
+                    }
+                  }}
+                  style={{
+                    cursor:
+                      annotateData && Object.keys(annotateData).length > 0
+                        ? "pointer"
+                        : totalArticles.length > 0
+                        ? "pointer"
+                        : "default",
+                    opacity:
+                      annotateData && Object.keys(annotateData).length > 0
+                        ? 1
+                        : 1,
+                  }}
+                >
+                  <img src={annotate} alt="annotate-icon" />
+                </div>
+              </>
+            </div>
           </div>
         </>
       </div>

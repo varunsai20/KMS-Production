@@ -14,7 +14,7 @@
 }
 .search-Annotate-tables {
   /* margin: 3%; */
-  max-height: 532px;
+  max-height: 48vh;
   overflow-y: auto;
   background: rgba(251, 251, 253, 1);
 }
@@ -120,4 +120,9 @@ td {
 
 .search-table-body:last-child td:last-child {
   border-radius: 0 0 16px 0; /* Apply border-radius to the last td in the last row */
+}
+@media (min-width: 900px) and (max-width: 1366px) {
+  .search-table-head th {
+    font-size: 12px;
+  }
 }

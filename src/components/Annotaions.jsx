@@ -8,7 +8,7 @@ const Annotation = ({
   annotateData,
   searchTerm,
   source: passedSource,
-  annotateHeight,
+  // annotateHeight,
 }) => {
   console.log(annotateData);
   const location = useLocation();
@@ -191,7 +191,7 @@ const Annotation = ({
   };
 
   return (
-    <div className="search-tables" >
+    <div className="search-tables">
       <div
         style={{
           // background: "rgba(251, 251, 253, 1)",
@@ -212,7 +212,7 @@ const Annotation = ({
         <div
           className="search-Annotate-tables"
           style={{
-            maxHeight: `${annotateHeight - 10}vh`,
+            // height: `${annotateHeight}vh`,
             overflowY: "auto",
             overflowX: "hidden",
           }}

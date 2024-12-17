@@ -87,7 +87,7 @@ const NotesList = ({
         style={
           isOpenNotes
             ? { height: `${height - 110}px`, overflowY: "auto" }
-            : { height: `${notesHeight - 13}vh`, overflowY: "auto" }
+            : { maxHeight: "42vh", overflowY: "auto" }
         }
       >
         {filteredNotes.length === 0 && (
