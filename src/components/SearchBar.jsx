@@ -9,7 +9,9 @@ import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { setSearchResults, clearSearchResults } from "../redux/actions/actions";
 import { apiService } from "../assets/api/apiService";
+
 const SearchBar = ({ renderInputContainer, className,landingWidth,zIndex,searchWidth }) => {
+
   const [searchTerm, setSearchTerm] = useState("");
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -214,8 +216,10 @@ const SearchBar = ({ renderInputContainer, className,landingWidth,zIndex,searchW
           />
         </div>
       ) : (
+
         <div className={`Search-Bar ${className}`}  style={{width:`${landingWidth}`,zIndex:`${zIndex}`}}>
           <div className="input-container" style={{width:searchWidth?`${searchWidth}`:"100%"}}>
+
             <img src={Search} alt="search-icon" className="search-icon" />
             <Autocomplete
               freeSolo

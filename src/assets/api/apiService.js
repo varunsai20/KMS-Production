@@ -263,8 +263,8 @@ export const apiService = {
       },
     }),
 
-  shareArticle: (token) =>
-    apiClient.post(`core_search/sharearticle`, {
+  shareArticle: (token, emailData) =>
+    apiClient.post(`core_search/sharearticle`, emailData, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
