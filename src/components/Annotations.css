@@ -117,7 +117,11 @@ td {
 .search-table-body:last-child td:first-child {
   border-radius: 0 0 0 16px; /* Apply border-radius to the first td in the last row */
 }
-
+.search-table-body:last-child{
+  padding-left: 0;
+  display:none;
+}
 .search-table-body:last-child td:last-child {
+  
   border-radius: 0 0 16px 0; /* Apply border-radius to the last td in the last row */
 }

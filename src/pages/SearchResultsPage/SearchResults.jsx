@@ -27,6 +27,9 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   const { user } = useSelector((state) => state.auth);
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
   const displayIfLoggedIn = isLoggedIn ? null : "none";
+  const displayMessage = isLoggedIn
+  ? ""
+  : "This feature is available for subscribed users.";
   const user_id = user?.user_id;
   const token = useSelector((state) => state.auth.access_token);
   const searchTerm = sessionStorage.getItem("SearchTerm");
@@ -1206,40 +1209,48 @@ useEffect(() => {
               <div className="SearchResult-Count-Filters">
                 <div className="SearchResult-Option-Buttons">
                  
-                  <div
-                    className="SearchResult-Option-Left"
-                    style={{
-                      cursor: selectedArticles.length > 0 ? "pointer" : "",
-                      opacity: selectedArticles.length > 0 ? 1 : "", // Change opacity for a disabled effect
-                      display: displayIfLoggedIn,
-                    }}
-                    title={
-                      selectedArticles.length === 0
-                        ? "Select an article to share"
-                        : "Share selected articles"
-                    }
-                  >
-                    <button
-                      style={{ display: displayIfLoggedIn }}
-                      onClick={
-                        Object.keys(shareableLinks).length > 0
-                          ? handleShare
-                          : null
-                      }
-                      className={`SearchResult-Share ${
-                        Object.keys(shareableLinks).length > 0
-                          ? "active"
-                          : "disabled"
-                      }`}
-                      title={
-                        Object.keys(shareableLinks).length === 0
-                          ? "Select an article to share"
-                          : "Share selected articles"
-                      }
-                    >
-                      Share
-                    </button>
-                  </div>
+                <div
+  className="SearchResult-Option-Left"
+  style={{
+    cursor: isLoggedIn && selectedArticles.length > 0 ? "pointer" : "not-allowed",
+    opacity: isLoggedIn ? (selectedArticles.length > 0 ? 1 : 1) : 0.5, // Grayed out if not logged in1
+  }}
+  title={
+    isLoggedIn
+      ? selectedArticles.length === 0
+        ? "Select an article to share"
+        : "Share selected articles"
+      : displayMessage
+  }
+>
+  <button
+    onClick={
+      isLoggedIn && Object.keys(shareableLinks).length > 0
+        ? handleShare
+        : null
+    }
+    disabled={!isLoggedIn || Object.keys(shareableLinks).length === 0}
+    className={`SearchResult-Share ${
+      isLoggedIn && Object.keys(shareableLinks).length > 0
+        ? "active"
+        : "disabled"
+    }`}
+    title={
+      isLoggedIn
+        ? Object.keys(shareableLinks).length === 0
+          ? "Select an article to share"
+          : "Share selected articles"
+        : displayMessage
+    }
+  >
+    Share
+  </button>
+  {/* {!isLoggedIn && (
+    <p style={{ color: "gray", fontSize: "0.9rem", marginTop: "5px" }}>
+      {displayMessage}
+    </p>
+  )} */}
+</div>
                 </div>
                 <div
                   style={{
@@ -1457,21 +1468,27 @@ useEffect(() => {
                                     .isBookmarked
                                     ? "#0071bc"
                                     : "black",
-                                  cursor: "pointer",
-                                  display: displayIfLoggedIn,
+                                    cursor: isLoggedIn ? "pointer" : "not-allowed",
+                                    opacity: isLoggedIn ? 1 : 0.5,
                                 }}
                                 onClick={() =>
+                                  isLoggedIn?
                                   handleBookmarkClick(
                                     idType,
                                     result.article_title,
                                     result.source || "PubMed"
-                                  )
+                                  ):""
                                 }
+                                
                                 title={
+                                  isLoggedIn
+                                  ?
                                   isArticleBookmarked(idType).isBookmarked
                                     ? "Bookmarked"
                                     : "Bookmark this article"
+                                    : displayMessage
                                 }
+                                
                               />
                               {isModalOpen && (
                                 <div className="search-bookmark-modal-overlay">
@@ -1866,7 +1883,7 @@ useEffect(() => {
         <>
           <div
             className="search-right-aside"
-            style={{ display: displayIfLoggedIn,top: containerHeight }}
+            style={{top: containerHeight }}
           >
             {openAnnotate && (
               <div className="search-annotate">
@@ -1879,36 +1896,55 @@ useEffect(() => {
             )}
             <div className="search-icons-group">
   <>
-    <div
-      className={`search-annotate-icon ${
-        openAnnotate ? "open" : "closed"
-      } ${
-        annotateData && Object.keys(annotateData).length > 0 ? "" : "disabled"
-      } ${
-        totalArticles.length > 0 ? "active" : "disabled"
-      }`}
-       onClick={() => {
-       setHandleAnnotateCall(true)
-      if (annotateData && Object.keys(annotateData).length > 0) {
-        console.log("data");
-        handleAnnotate();
-      } else if (totalArticles.length > 0) {
-        console.log("api");
-        handleAnnotateClick();
-      }
-    }}
-      style={{
-        cursor:
-          annotateData && Object.keys(annotateData).length > 0
-            ? "pointer"
-            : totalArticles.length > 0
-            ? "pointer"
-            : "default",
-        opacity: annotateData && Object.keys(annotateData).length > 0 ? 1 : 1,
-      }}
-    >
-      <img src={annotate} alt="annotate-icon" />
-    </div>
+  <div
+  className={`search-annotate-icon ${
+    openAnnotate ? "open" : "closed"
+  }${
+    isLoggedIn && (!annotateData || Object.keys(annotateData).length === 0)
+      ? "disabled"
+      : ""
+  }  ${
+    isLoggedIn
+      ? totalArticles.length > 0
+        ? "active"
+        : "disabled"
+      : "" // No class if not logged in
+  }`}
+  
+  onClick={() => {
+    if (!isLoggedIn) {
+      return; // Prevent action if not logged in
+    }
+    setHandleAnnotateCall(true);
+    if (annotateData && Object.keys(annotateData).length > 0) {
+      console.log("data");
+      handleAnnotate();
+    } else if (totalArticles.length > 0) {
+      console.log("api");
+      handleAnnotateClick();
+    }
+  }}
+  title={ isLoggedIn?"":displayMessage}
+  style={{
+    cursor: isLoggedIn
+      ? annotateData && Object.keys(annotateData).length > 0
+        ? "pointer"
+        : totalArticles.length > 0
+        ? "pointer"
+        : "default"
+      : "not-allowed", // Disable interaction if not logged in
+    opacity: isLoggedIn
+      ? annotateData && Object.keys(annotateData).length > 0
+        ? 1
+        : totalArticles.length > 0
+        ? 1
+        : 0.5
+      : 0.5, // Grayed out if not logged in
+  }}
+>
+  <img src={annotate} alt="annotate-icon" />
+</div>
+
   </>
 </div>
 

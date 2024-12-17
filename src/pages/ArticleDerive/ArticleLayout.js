@@ -48,6 +48,9 @@ const ArticleLayout = () => {
   const id = Number(id1);
   const [source, setSource] = useState();
   const displayIfLoggedIn = isLoggedIn ? null : "none";
+  const displayMessage = isLoggedIn
+  ? ""
+  : "This feature is available for subscribed users.";
   const widthIfLoggedIn = isLoggedIn ? null : "80%";
   //const heightIfLoggedIn = isLoggedIn ? null : "80vh";
   const minHeight = 15;
@@ -493,10 +496,11 @@ const ArticleLayout = () => {
       </div>
       </div>
 
-        <div className="content" style={{ width: widthIfLoggedIn }}>
+        <div className="content">
           <div
             className="history-pagination"
-            style={{ display: displayIfLoggedIn }}
+            style={{ cursor: isLoggedIn ? "pointer" : "not-allowed",
+              opacity: isLoggedIn ? 1 : 0.5, }}
           >
             <div
               className="history-pagination-header"
@@ -609,7 +613,8 @@ const ArticleLayout = () => {
               setAnnotateLoading={setAnnotateLoading}
             />
           )}
-          <div className="right-aside" style={{ display: displayIfLoggedIn }}>
+          <div className="right-aside" style={{ cursor: isLoggedIn ? "pointer" : "not-allowed",
+      opacity: isLoggedIn ? 1 : 0.5, }}>
             <div className="annotate-note">
               {openAnnotate && (
                 <div
@@ -663,9 +668,13 @@ const ArticleLayout = () => {
                   handleAnnotate();
                 }}
                 style={{
+                  cursor:isLoggedIn?"pointer":"not-allowed",
                   opacity: annotateData && annotateData.length > 0 ? 1 : 1, // Adjust visibility when disabled
                 }}
+                title= 
+                {isLoggedIn ? "annotate the article": displayMessage}
               >
+                
                 <img src={annotate} alt="annotate-icon" />
               </div>
               <div
@@ -673,6 +682,11 @@ const ArticleLayout = () => {
                 // style={{
                 //   borderRadius: !deriveInsights ? '0 0 8px 8px' : undefined, // Apply border-radius if deriveInsights is false
                 // }}
+                style={{
+                  cursor:isLoggedIn?"pointer":"not-allowed",
+                }}
+                title= 
+                {isLoggedIn ? "Open notes": displayMessage}
                 onClick={() => {
                   handleNotes();
                 }}

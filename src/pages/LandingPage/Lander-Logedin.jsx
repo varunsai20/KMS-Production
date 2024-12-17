@@ -260,10 +260,9 @@ const Lander = () => {
               />
               <h4>Analytics</h4>
 
-              <span>Dashboard</span>
+              <span style={{}} title="This feature will ">Dashboard</span>
               <span>Reports</span>
 
-              <span onClick={handleOpenInsights}>Derive Insights</span>
             </div>
 
             <div className="Feature-Item">
@@ -273,9 +272,9 @@ const Lander = () => {
                 alt="Landing-Utilities-Icon"
               />
               <h4>Utilities</h4>
-
-              <span onClick={handleOpenAnnotate}>Annotations</span>
-              <span onClick={handleOpenCitations}>Citation</span>
+              <span onClick={handleOpenInsights}>Derive Insights</span>
+              {/* <span onClick={handleOpenAnnotate}>Annotations</span> */}
+              {/* <span onClick={handleOpenCitations}>Citation</span> */}
               <span>Protocol</span>
             </div>
             <div className="Feature-Item">
@@ -285,7 +284,7 @@ const Lander = () => {
                 alt="Landing-Help-Icon"
               />
               <h4>Help</h4>
-
+              <span>User Guide</span>
               <span>About Infer</span>
               <span>FAQs</span>
             </div>
