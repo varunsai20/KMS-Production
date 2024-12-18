@@ -154,7 +154,7 @@ const ArticlePage = () => {
       setAnnotateHeight(70);
       setNotesHeight(0);
     } else if (openNotes && !openAnnotate) {
-      setNotesHeight(70);
+      setNotesHeight(55);
       setAnnotateHeight(0);
     } else {
       setAnnotateHeight(35);
@@ -213,7 +213,7 @@ const ArticlePage = () => {
           minHeight,
           Math.min(maxHeight, startHeight + delta)
         );
-        const newNotesHeight = 70 - newAnnotateHeight;
+        const newNotesHeight = 60 - newAnnotateHeight;
 
         setAnnotateHeight(newAnnotateHeight);
         setNotesHeight(newNotesHeight);
@@ -241,7 +241,7 @@ const ArticlePage = () => {
           minHeight,
           Math.min(maxHeight, startHeight + delta)
         );
-        const newAnnotateHeight = Math.max(minHeight, 70 - newNotesHeight);
+        const newAnnotateHeight = Math.max(minHeight, 60 - newNotesHeight);
 
         setNotesHeight(newNotesHeight);
         setAnnotateHeight(newAnnotateHeight);
@@ -1381,6 +1381,7 @@ const ArticlePage = () => {
                       src={Arrow}
                       style={{ width: "14px" }}
                       alt="arrow-icon"
+                      className="back-arrow-icon"
                     ></img>
                     <button className="back-button">Back</button>
                   </div>
@@ -1856,7 +1857,7 @@ const ArticlePage = () => {
               {openNotes && (
                 <div
                   className="notes-height"
-                  style={{ height: `${notesHeight - 5}vh` }}
+                  // style={{ height: `${notesHeight - 15}vh` }}
                 >
                   <Notes selectedText={savedText} notesHeight={notesHeight} />
                   <div
@@ -1970,7 +1971,7 @@ const ArticlePage = () => {
         <div
           className="derive-chat-query"
           style={{
-            width: openAnnotate || openNotes ? contentWidth : "69%",
+            width: openAnnotate || openNotes ? contentWidth : contentWidth,
             display: displayIfLoggedIn,
           }}
         >

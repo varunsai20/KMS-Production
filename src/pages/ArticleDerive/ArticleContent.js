@@ -1815,10 +1815,12 @@ const ArticleContent = ({
         <div
           className="article-chat-query"
           style={{
+
             width: openAnnotate || openNotes ? contentWidth : "70%",
             cursor:isLoggedIn?"":"not-allowed",
             opacity: isLoggedIn ? 1 : 0.5, }}
             title={isLoggedIn?"":displayMessage}
+
         >
           <div className="predefined-prompts" >
             <button style={{cursor:isLoggedIn?"pointer":"not-allowed",}}onClick={() => isLoggedIn?handlePromptClick("Summarize this article"):""}>

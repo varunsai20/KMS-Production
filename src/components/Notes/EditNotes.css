@@ -39,7 +39,8 @@
 .edit-note__form {
   display: flex;
   flex-direction: column;
-  min-height: 15vh;
+  /* min-height: 15vh; */
+  max-height: 41vh;
 }
 
 .edit-note__title {

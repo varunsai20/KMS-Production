@@ -5,7 +5,8 @@ import { RxOpenInNewWindow } from "react-icons/rx";
 import { RiDeleteBin6Line } from "react-icons/ri";
 import { GoMail } from "react-icons/go";
 import { useSelector } from "react-redux";
-import { apiService } from "../../assets/api/apiService";
+import axios from "axios";
+//import { apiService } from "../../assets/api/apiService";
 import { showSuccessToast, showErrorToast } from "../../utils/toastHelper";
 
 const NoteItem = ({
@@ -47,7 +48,17 @@ const NoteItem = ({
     };
 
     try {
-      const response = await apiService.sendEmail(requestData, token);
+      const response = await axios.post(
+        "https://b899-103-169-178-9.ngrok-free.app/api/notes/sharenotes",
+        requestData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "ngrok-skip-browser-warning": true,
+          },
+        }
+      );
+      // apiService.sendEmail(requestData, token);
 
       if (response.status === 200) {
         showSuccessToast("Email sent successfully");
