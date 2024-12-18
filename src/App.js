@@ -50,22 +50,34 @@ function AppRoutes() {
         <Route path="/" element={<Lander />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUpForm />} />
-        <Route path="/deriveinsights" element={<DeriveInsights />} />
         <Route path="/search" element={<SearchResults />} />
         <Route path="/server-error" element={<Error500 />} />
 
-        {/* Article Routes */}
-        <Route path="/article" element={<ArticleLayout />}>
+        {/* Restricted Routes */}
+        <Route
+          path="/deriveinsights"
+          element={
+            <ProtectedRoute>
+              <DeriveInsights />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/article"
+          element={
+              <ArticleLayout />
+          }
+        >
           <Route path="derive" element={<ArticleDerive />} />
           <Route path="content/:pmid" element={<ArticleContent />} />
         </Route>
-
-        {/* Protected Admin Routes */}
         <Route
           path="/admin"
           element={
             <ProtectedRoute>
-              <Admin />
+              <ProtectedRoute>
+                <Admin />
+              </ProtectedRoute>
             </ProtectedRoute>
           }
         >
@@ -80,7 +92,9 @@ function AppRoutes() {
           path="/users/profile/:user_id"
           element={
             <ProtectedRoute>
-              <Profile />
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
             </ProtectedRoute>
           }
         />
@@ -91,6 +105,7 @@ function AppRoutes() {
     </div>
   );
 }
+
 
 function App() {
   return (

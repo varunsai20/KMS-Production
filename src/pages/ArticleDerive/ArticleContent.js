@@ -33,6 +33,9 @@ const ArticleContent = ({
   const deriveInsights = useSelector((state) => state.deriveInsights?.active); // assuming deriveInsights is in Redux state
 
   const displayIfLoggedIn = isLoggedIn ? null : "none";
+  const displayMessage = isLoggedIn
+  ? ""
+  : "This feature is available for subscribed users.";
   const widthIfLoggedIn = isLoggedIn ? null : "80%";
   const heightIfLoggedIn = isLoggedIn ? null : "80vh";
   const { pmid } = useParams();
@@ -1472,7 +1475,7 @@ const ArticleContent = ({
           className="article-content"
           onMouseUp={handleMouseUp}
           ref={contentRef}
-          style={{ height: heightIfLoggedIn }}
+          // style={{ height: heightIfLoggedIn }}
         >
           <div className="article-title">
             <div
@@ -1512,12 +1515,14 @@ const ArticleContent = ({
               )}
               <div
                 className="Rate-Article"
-                style={{ display: displayIfLoggedIn }}
+                // style={{ display: displayIfLoggedIn }}
+                
               >
-                <div>
+                <div
+                >
                   <span>Rate the article </span>
                 </div>
-                <div className="rate">
+                <div className="rate" >
                   {[5, 4, 3, 2, 1].map((value) => {
                     const existingRating =
                       Array.isArray(ratingsList) &&
@@ -1527,17 +1532,24 @@ const ArticleContent = ({
                     return (
                       <React.Fragment key={value}>
                         <input
+                        
                           type="radio"
                           id={`star${value}-${uniqueId}`}
                           name={`rate_${uniqueId}`}
-                          value={value}
-                          checked={existingRating === value}
-                          onChange={() => handleRatingChange(uniqueId, value)}
+                          value={isLoggedIn?value:""}
+                          checked={isLoggedIn?(existingRating === value):""}  
+                          onChange={() => !isLoggedIn?"":handleRatingChange(uniqueId, value)}
                           // disabled={!!existingRating} // Disable if a rating already exists
                         />
                         <label
+                        style={{
+                  cursor:isLoggedIn?"pointer":"not-allowed",
+                  opacity: annotateData && annotateData.length > 0 ? 1 : 1, // Adjust visibility when disabled
+                }}
+                title= 
+                {isLoggedIn ? "Rate the article": displayMessage}
                           htmlFor={`star${value}-${uniqueId}`}
-                          title={`${value} star`}
+                          // title={`${value} star`}
                         />
                       </React.Fragment>
                     );
@@ -1568,20 +1580,22 @@ const ArticleContent = ({
                   color: isArticleBookmarked(id).isBookmarked
                     ? "#0071bc"
                     : "black",
-                  cursor: "pointer",
-                  display: displayIfLoggedIn,
-                }}
-                onClick={() =>
+                    cursor:isLoggedIn?"pointer":"not-allowed",
+                    opacity: isLoggedIn ? 1 : 0.5,                }}
+                onClick={() =>isLoggedIn?
                   handleBookmarkClick(
                     id,
                     articleData.article.article_title,
                     source || "PubMed"
                   )
+                  :""
                 }
                 title={
+                  isLoggedIn?
                   isArticleBookmarked(id).isBookmarked
                     ? "Bookmarked"
                     : "Bookmark this article"
+                    :displayMessage
                 }
               />
 
@@ -1801,58 +1815,64 @@ const ArticleContent = ({
         <div
           className="article-chat-query"
           style={{
-            width: openAnnotate || openNotes ? contentWidth : "55%",
-            display: displayIfLoggedIn,
-          }}
+
+            width: openAnnotate || openNotes ? contentWidth : "70%",
+            cursor:isLoggedIn?"":"not-allowed",
+            opacity: isLoggedIn ? 1 : 0.5, }}
+            title={isLoggedIn?"":displayMessage}
+
         >
-          <div className="predefined-prompts">
-            <button onClick={() => handlePromptClick("Summarize this article")}>
+          <div className="predefined-prompts" >
+            <button style={{cursor:isLoggedIn?"pointer":"not-allowed",}}onClick={() => isLoggedIn?handlePromptClick("Summarize this article"):""}>
               Summarize
             </button>
-            <button
-              onClick={() =>
+            <button style={{cursor:isLoggedIn?"pointer":"not-allowed",}}
+              onClick={() =>isLoggedIn?
                 handlePromptClick("what can we conclude form this article")
-              }
+              :""}
             >
               Conclusion
             </button>
-            <button
-              onClick={() =>
+            <button style={{cursor:isLoggedIn?"pointer":"not-allowed",}}
+              onClick={() => isLoggedIn?
                 handlePromptClick(
                   "what are the key highlights from this article"
-                )
+                ):""
               }
             >
               Key Highlights
             </button>
           </div>
-          <div className="stream-input">
-            <img src={flag} alt="flag-logo" className="stream-flag-logo" />
-            <input
-              type="text"
-              placeholder="Ask anything..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              onKeyDown={handleKeyDown}
-            />
-            {/* <button onClick={handleAskClick} > */}
-            {loading ? (
-              <CircularProgress
-                className="button"
-                size={24}
-                style={{ marginLeft: "1.5%" }}
-                color="white"
-              />
-            ) : (
-              <FontAwesomeIcon
-                className="button"
-                onClick={handleAskClick}
-                icon={faTelegram}
-                size={"xl"}
-              />
-            )}
-            {/* </button> */}
-          </div>
+          <div className="stream-input" style={{cursor:isLoggedIn?"":"not-allowed"}}>
+  <img src={flag} alt="flag-logo" className="stream-flag-logo" />
+  <input
+    style={{cursor:isLoggedIn?"":"not-allowed"}}
+    type="text"
+    placeholder="Ask anything..."
+    value={query}
+    onChange={(e) => setQuery(e.target.value)}
+    onKeyDown={isLoggedIn ? handleKeyDown : null} // Pass null when not logged in
+  />
+  {loading ? (
+    <CircularProgress
+      className="button"
+      size={24}
+      style={{ marginLeft: "1.5%" }}
+      color="white"
+    />
+  ) : (
+    <FontAwesomeIcon
+      className="button"
+      onClick={isLoggedIn ? handleAskClick : null} // Pass null when not logged in
+      icon={faTelegram}
+      size={"xl"}
+      style={{
+        cursor: isLoggedIn ? "pointer" : "not-allowed",
+      }}
+    />
+  )}
+</div>
+
         </div>
       ) : (
         ""
