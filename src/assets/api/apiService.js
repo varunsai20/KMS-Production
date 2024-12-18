@@ -2,9 +2,10 @@ import axios from "axios";
 import { showErrorToast } from "../../utils/toastHelper";
 
 const apiClient = axios.create({
-  baseURL: "https://inferai.ai/api",
+  baseURL: "https://b899-103-169-178-9.ngrok-free.app/api",
   headers: {
     "Content-Type": "application/json",
+    "ngrok-skip-browser-warning": true,
   },
 });
 

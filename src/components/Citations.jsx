@@ -1,66 +1,34 @@
-import React, { useState, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import "./Citations.css";
-import uploadLogo from "../assets/images/uploadDocx.svg";
 import { IoCloseOutline } from "react-icons/io5";
 import { useSelector } from "react-redux";
 import Loading from "./Loading";
-import ReactMarkdown from "react-markdown";
 import Copy from "../assets/images/Copy.svg";
 import Download from "../assets/images/Download.svg";
-import pdfICon from "../assets/images/pdf.png";
-import docxIcon from "../assets/images/docx-file.png";
-import txtIcon from "../assets/images/txt-file.png";
 import { apiService } from "../assets/api/apiService";
 
-const Citations = ({ handleCloseCitations }) => {
-  const [uploadedFile, setUploadedFile] = useState(null);
-  const [citationData, setCitationData] = useState([]);
+const Citations = ({ handleCloseCitations, uploadedFile, handleCitations }) => {
+  const [citationData, setCitationData] = useState({});
   const token = useSelector((state) => state.auth.access_token);
   const [citationLoading, setCitationLoading] = useState(false);
 
-  // Ref for the file input element
-  const fileInputRef = useRef(null);
-
-  const handleFileUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setUploadedFile(file);
-    }
-  };
-
-  const triggerFileUpload = () => {
-    fileInputRef.current.click(); // Trigger file input click
-  };
+  const hasGenerated = useRef(false);
 
   const handleGenerate = async () => {
-    if (!uploadedFile) {
-      alert("Please upload a file before generating citations.");
-      return;
-    }
+    if (!uploadedFile || !handleCitations || hasGenerated.current) return;
+
     setCitationLoading(true);
     const formData = new FormData();
     formData.append("file", uploadedFile);
 
     try {
       const response = await apiService.generateCitations(formData, token);
-      console.log(response);
-      //   if (response.ok) {
-      //     const result = await response.json();
-      //     setCitationData(result.citations); // Assuming the API returns { "citations": {...} }
-      //   } else {
-      //     console.error("Failed to generate citations:", response.statusText);
-      //   }
-      // } catch (error) {
-      //   console.error("Error generating citations:", error);
-      // } finally {
-      //   setCitationLoading(false);
-      // }
       if (response.status === 200) {
         const result = response.data;
-        if (result && result.citations) {
-          setCitationData(result.citations);
+        if (result && typeof result === "object") {
+          setCitationData(result); // Directly store the returned object
         } else {
-          console.error("Citations not found in response");
+          console.error("Invalid response format");
         }
       } else {
         console.error("Failed to generate citations:", response.statusText);
@@ -69,98 +37,25 @@ const Citations = ({ handleCloseCitations }) => {
       console.error("Error generating citations:", error);
     } finally {
       setCitationLoading(false);
+      hasGenerated.current = true;
     }
   };
-  const getFileIcon = (filename) => {
-    const fileExtension = filename.split(".").pop().toLowerCase();
-    switch (fileExtension) {
-      case "pdf":
-        return (
-          <img
-            src={pdfICon}
-            alt="pdf-icon"
-            style={{ width: "25px", height: "25px" }}
-          />
-        );
-      case "docx":
-        return (
-          <img
-            src={docxIcon}
-            alt="pdf-icon"
-            style={{ width: "25px", height: "25px" }}
-          />
-        );
-      case "txt":
-        return (
-          <img
-            src={txtIcon}
-            alt="pdf-icon"
-            style={{ width: "25px", height: "25px" }}
-          />
-        );
-      default:
-        return <span style={{ fontSize: "20px" }}>📄</span>;
+
+  useEffect(() => {
+    if (uploadedFile && handleCitations) {
+      handleGenerate();
     }
-  };
+  }, [uploadedFile, handleCitations]);
+
   return (
     <>
       <div className="citation-container">
-        {citationLoading ? <Loading /> : ""}
-        <div className="citation-file-upload">
-          <h3>Generate Citation</h3>
-          <div className="upload-file" onClick={triggerFileUpload}>
-            {uploadedFile ? (
-              <div className="uploaded-file-info">
-                {getFileIcon(uploadedFile.name)}
-                <p>{uploadedFile.name}</p> {/* Display uploaded file name */}
-              </div>
-            ) : (
-              <>
-                <img src={uploadLogo} alt="upload-logo" />
-                <span>Upload File</span>
-              </>
-            )}
-            <input
-              id="file-upload"
-              type="file"
-              accept=".pdf,.docx,.txt"
-              onChange={handleFileUpload}
-              ref={fileInputRef} // Attach ref to input
-              style={{ display: "none" }} // Hide the input
-            />
-          </div>
-          <div className="citations-buttons">
-            <button
-              className="start-new"
-              onClick={() => {
-                setUploadedFile(null);
-                setCitationData([]);
-                if (fileInputRef.current) {
-                  fileInputRef.current.value = ""; // Reset input value
-                }
-              }}
-            >
-              Start New
-            </button>
-            <button
-              className="generate-button"
-              disabled={!uploadedFile}
-              style={{
-                background: !uploadedFile ? "rgba(234, 234, 236, 1)" : "",
-                color: !uploadedFile ? "rgba(78, 78, 86, 1)" : "",
-                cursor: !uploadedFile ? "not-allowed" : "pointer",
-              }}
-              onClick={handleGenerate}
-            >
-              Generate
-            </button>
-          </div>
-        </div>
+        {citationLoading && <Loading />}
         <div className="citation-annotations">
-          {Object.entries(citationData).map(([type, value]) => (
-            <div key={type} className="citation-section">
+          {Object.entries(citationData).map(([style, citation]) => (
+            <div key={style} className="citation-section">
               <div className="citations-head-buttons">
-                <h3>{type}:</h3>
+                <h3>{style}:</h3>
                 <div className="action-icons">
                   <img
                     src={Copy}
@@ -168,30 +63,30 @@ const Citations = ({ handleCloseCitations }) => {
                     alt="Copy-icon"
                     style={{ width: "20px", cursor: "pointer" }}
                     className="copy-button"
-                    onClick={() => navigator.clipboard.writeText(value)}
-                  ></img>
+                    onClick={() => navigator.clipboard.writeText(citation)}
+                  />
                   <img
                     src={Download}
                     alt="DownloadIcon"
-                    title="Download Citation"
+                    title={`Download ${style} Citation`}
                     className="download-button"
                     style={{ width: "20px", cursor: "pointer" }}
                     onClick={() => {
-                      const blob = new Blob([value], { type: "text/plain" });
+                      const blob = new Blob([citation], { type: "text/plain" });
                       const url = URL.createObjectURL(blob);
                       const a = document.createElement("a");
                       a.href = url;
-                      a.download = `${type}-citation.txt`;
+                      a.download = `${style}-citation.txt`;
                       a.click();
                       URL.revokeObjectURL(url);
                     }}
-                  ></img>
+                  />
                 </div>
               </div>
-              <ReactMarkdown>{value}</ReactMarkdown>
+              <p>{citation}</p>
             </div>
           ))}
-        </div>{" "}
+        </div>
       </div>
 
       <button

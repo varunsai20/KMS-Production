@@ -83,61 +83,43 @@ const Annotation = ({
   };
   console.log(annotateData);
   const renderAnnotations = () => {
-    const annotationEntries =
-      annotateData && typeof annotateData === "object"
-        ? Object.entries(annotateData)
-        : [];
+  const annotationEntries =
+    annotateData && typeof annotateData === "object"
+      ? Object.entries(annotateData)
+      : [];
 
-    // Sort entries by annotation_score in descending order
-    const sortedAnnotationEntries = annotationEntries.sort(
-      ([, aValues], [, bValues]) =>
-        (bValues.annotation_score || 0) - (aValues.annotation_score || 0)
+  // Sort entries by annotation_score in descending order
+  const sortedAnnotationEntries = annotationEntries.sort(
+    ([, aValues], [, bValues]) =>
+      (bValues.annotation_score || 0) - (aValues.annotation_score || 0)
+  );
+
+  return sortedAnnotationEntries.flatMap(([type, values]) => {
+    const rows = [];
+    const annotationScore = values.annotation_score
+      ? `${values.annotation_score.toFixed(2)}%`
+      : "N/A";
+
+    // Extract other keys except `annotation_score`
+    const otherKeys = Object.entries(values)
+      .filter(([key]) => key !== "annotation_score")
+      .map(([key, value]) => `${key}: ${value}`)
+      .join(", ");
+
+    rows.push(
+      <tr className="search-table-body" key={type}>
+        <td style={{ fontSize: "14px", width: "25%" }}>
+          {capitalizeFirstLetter(type)}
+        </td>
+        <td style={{ fontSize: "14px", width: "20%" }}>{annotationScore}</td>
+        <td style={{ fontSize: "14px", width: "65%" }}>{otherKeys}</td>
+      </tr>
     );
 
-    return sortedAnnotationEntries.flatMap(([type, values]) => {
-      const rows = [];
-      const isExpanded = expandedPmids[type] || false; // Track expansion state for each type
+    return rows;
+  });
+};
 
-      const annotationScore = values.annotation_score
-        ? `${values.annotation_score.toFixed(2)}%`
-        : "N/A";
-
-      // Remove `annotation_score` from the entries and get other value keys
-      const valueTexts = Object.keys(values)
-        .filter((key) => key !== "annotation_score")
-        .join(", ");
-
-      // Control expansion for the text content
-      const typeKey = `${type}`;
-      const isTextExpanded = expandedTexts[typeKey];
-      const displayText = valueTexts;
-
-      rows.push(
-        <tr className="search-table-body" key={type}>
-          <td style={{ fontSize: "14px", width: "25%" }}>
-            {/* <button onClick={() => toggleExpandPmid(type)}>
-              {isExpanded ? "▼" : "▶"}
-            </button> */}
-            {capitalizeFirstLetter(type)}
-          </td>
-          <td style={{ fontSize: "14px", width: "20%" }}>{annotationScore}</td>
-          <td style={{ fontSize: "14px", width: "65%" }}>
-            {displayText}
-            {/* {valueTexts.length > 30 && (
-              <span
-                style={{ color: "blue", cursor: "pointer", marginLeft: "5px" }}
-                onClick={() => toggleExpandText(typeKey)}
-              >
-                {isTextExpanded ? "" : "..."}
-              </span>
-            )} */}
-          </td>
-        </tr>
-      );
-
-      return rows;
-    });
-  };
 
   return (
     <div

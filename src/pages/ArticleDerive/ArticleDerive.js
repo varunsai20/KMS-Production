@@ -20,6 +20,7 @@ import { apiService } from "../../assets/api/apiService";
 import { Document, Page } from "react-pdf";
 import { renderAsync } from "docx-preview";
 import { LiaTelegramPlane } from "react-icons/lia";
+import Citations from "../../components/Citations";
 
 const ArticleDerive = ({
   setRefreshSessions,
@@ -30,6 +31,8 @@ const ArticleDerive = ({
   setSavedText,
   annotateLoading,
   setAnnotateLoading,
+  uploadedFile,setUploadedFile,
+  isCitationsOpen,setIsCitationsOpen
 }) => {
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
   const deriveInsights = useSelector((state) => state.deriveInsights?.active);
@@ -192,7 +195,13 @@ const ArticleDerive = ({
       setContentWidth(`${width}px`);
     }
   }, [openNotes]);
-
+  const handleCloseCitations = () => {
+    setIsCitationsOpen(false);
+  };
+  const handleOpenCitations = () => {
+    setIsCitationsOpen(true);
+  };
+  const [isCollectionOpen, setIsCollectionOpen] = useState(false);
   const handleMouseUpInsideContent = (e) => {
     if (!isLoggedIn) return;
     const content = contentRef.current;
@@ -465,9 +474,10 @@ const ArticleDerive = ({
     setChatHistory((prevChatHistory) => [...prevChatHistory, newChatEntry]);
 
     try {
-      let url = "https://inferai.ai/api/insights/upload";
+      let url = "https://b899-103-169-178-9.ngrok-free.app/api/insights/upload";
       const headers = {
         Authorization: `Bearer ${token}`,
+        "ngrok-skip-browser-warning": true,
       };
 
       // Initialize FormData
@@ -651,7 +661,7 @@ const ArticleDerive = ({
     }
   }, [sessions]);
 
-  const [uploadedFile, setUploadedFile] = useState(null);
+
   useEffect(() => {
     const storedSessionId =
       localStorage.getItem("sessionId") || localStorage.getItem("session_id");
@@ -767,8 +777,9 @@ const ArticleDerive = ({
           style={{
             bottom: uploadedFile || chatHistory.length > 0 ? "0px" : "auto",
             position: uploadedFile || chatHistory.length > 0 ? "absolute" : "",
-            width: uploadedFile || chatHistory.length > 0 ? contentWidth : "",
+            width: uploadedFile || chatHistory.length > 0 ? contentWidth : "95%",
             display: displayIfLoggedIn,
+            margin:"auto",
           }}
         >
           <div className="derive-predefined-prompts">
@@ -957,7 +968,7 @@ const ArticleDerive = ({
                   <div
                     id="docx-container"
                     style={{
-                      maxHeight: "400px",
+                      maxHeight: "300px",
                       overflow: "auto",
                       border: "1px solid #ccc",
                     }}
@@ -966,40 +977,12 @@ const ArticleDerive = ({
               )}
               {/* File Preview */}
               {uploadedFile && uploadedFile.name.endsWith(".pdf") && (
-                // <div className="pdf-preview">
-                //   <Document
-                //     file={uploadedFile}
-                //     loading="Loading PDF..."
-                //     onLoadSuccess={({ numPages }) => setNumPages(numPages)}
-                //     onLoadError={(error) =>
-                //       console.error("Failed to load PDF:", error)
-                //     }
-                //     //options={{ renderTextLayer: false }}
-                //     // options={{
-                //     //   workerSrc: pdfjs.GlobalWorkerOptions.workerSrc,
-                //     //   renderTextLayer: false,
-                //     // }}
-                //   >
-                //     <Page pageNumber={pageNumber} />
-                //   </Document>
-
-                //   <div className="pagination">
-                //     <button onClick={goToPreviousPage} disabled={pageNumber <= 1}>
-                //       Previous
-                //     </button>
-                //     <span>
-                //       Page {pageNumber} of {numPages}
-                //     </span>
-                //     <button onClick={goToNextPage} disabled={pageNumber >= numPages}>
-                //       Next
-                //     </button>
-                //   </div>
-                // </div>
+                
                 <div className="iframe-preview">
                   <iframe
                     src={URL.createObjectURL(uploadedFile)}
                     width="100%"
-                    height="600px"
+                    height="350px"
                     title="PDF Preview"
                   ></iframe>
                 </div>
@@ -1007,9 +990,50 @@ const ArticleDerive = ({
             </div>
           </div>
         ) : (
-          ""
+
+          
+          <>
+             {uploadedFile && uploadedFile.name.endsWith(".docx") && (
+                <div className="docx-preview">
+                  <h3>Preview</h3>
+                  <div ref={endOfMessagesRef}
+                    id="docx-container"
+                    style={{
+                      maxHeight: "300px",
+                      overflow: "auto",
+                      border: "1px solid #ccc",
+                    }}
+                  ></div>
+                </div>
+              )}
+              {/* File Preview */}
+              {uploadedFile && uploadedFile.name.endsWith(".pdf") && (
+                
+                <div className="iframe-preview" ref={endOfMessagesRef}>
+                  <iframe
+                    src={URL.createObjectURL(uploadedFile)}
+                    width="100%"
+                    height="350px"
+                    title="PDF Preview"
+                  ></iframe>
+                </div>
+              )}
+
+            </>
+
+
+
         )}
       </div>
+      {isCitationsOpen && (
+        <>
+          <div className="citation-overlay">
+            <div className="citation-modal">
+              <Citations handleCloseCitations={handleCloseCitations} uploadedFile={uploadedFile} handleCitations={true} />
+            </div>
+          </div>
+        </>
+      )}
     </>
   );
 };

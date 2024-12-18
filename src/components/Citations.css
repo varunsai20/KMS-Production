@@ -20,7 +20,7 @@
   left: 10px;
 }
 .citation-section{
-  font-size: 14px;
+  font-size: 16px;
 }
 .citation-close-collection{
   padding: 0;
@@ -36,7 +36,7 @@
   gap: 10px;
 }
 .citation-annotations{
-  width: 50%;
+  /* width: 50%; */
     /* margin: auto; */
     padding: 0 30px;
     /* margin-top: 10px; */

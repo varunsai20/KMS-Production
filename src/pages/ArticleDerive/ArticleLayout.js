@@ -13,6 +13,7 @@ import Annotation from "../../components/Annotaions";
 import Notes from "../NotesPage/Notes";
 import notesicon from "../../assets/images/note-2.svg";
 import annotate from "../../assets/images/task-square.svg";
+import citation_icon from "../../assets/images/Citations-Icon.svg"
 import ArticleContent from "./ArticleContent";
 import ArticleDerive from "./ArticleDerive";
 import Loading from "../../components/Loading";
@@ -23,6 +24,7 @@ import SearchBar from "../../components/SearchBar";
 import Logo from "../../assets/images/InfersolD17aR04aP01ZL-Polk4a 1.svg";
 
 const ArticleLayout = () => {
+  const [uploadedFile, setUploadedFile] = useState(null);
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
   const { user } = useSelector((state) => state.auth);
   const deriveInsights = useSelector((state) => state.deriveInsights?.active); // assuming deriveInsights is in Redux state
@@ -248,50 +250,58 @@ const ArticleLayout = () => {
   };
   const fetchSessionData = async (session_id) => {
     try {
-      const conversationResponse = await axios.get(
-        `https://inferai.ai/api/history/conversations/history/${user_id}/${session_id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+        const conversationResponse = await axios.get(
+            `https://inferai.ai/api/history/conversations/history/${user_id}/${session_id}`,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            }
+        );
 
-      localStorage.setItem("session_id", session_id);
-      sessionStorage.setItem("session_id", session_id);
+        localStorage.setItem("session_id", session_id);
+        sessionStorage.setItem("session_id", session_id);
 
-      const formattedChatHistory = [];
-      let currentEntry = {};
+        const formattedChatHistory = [];
+        let currentEntry = {};
 
-      conversationResponse.data.conversation.forEach((entry) => {
-        if (entry.role === "user") {
-          if (entry.file_url) {
-            currentEntry.file_url = entry.file_url;
-          }
+        conversationResponse.data.conversation.forEach((entry) => {
+            if (entry.role === "user") {
+                currentEntry.query = entry.content || entry.parts?.join(" ") || "";
+                if (entry.file_url) currentEntry.file_url = entry.file_url;
 
-          if (currentEntry.query) {
+                if (currentEntry.response) {
+                    formattedChatHistory.push({ ...currentEntry });
+                    currentEntry = {};
+                }
+            } else if (entry.role === "model") {
+                currentEntry.response = entry.content || entry.parts?.join(" ") || "";
+
+                if (currentEntry.query) {
+                    formattedChatHistory.push({ ...currentEntry });
+                    currentEntry = {};
+                }
+            }
+        });
+
+        if (currentEntry.query || currentEntry.response) {
             formattedChatHistory.push(currentEntry);
-            currentEntry = {};
-          }
-          currentEntry.query = entry.parts ? entry.parts.join(" ") : "";
-        } else if (entry.role === "model") {
-          currentEntry.response = entry.parts ? entry.parts.join(" ") : "";
-          formattedChatHistory.push(currentEntry);
-          currentEntry = {};
         }
-      });
 
-      if (currentEntry.query) {
-        formattedChatHistory.push(currentEntry);
-      }
+        localStorage.setItem("chatHistory", JSON.stringify(formattedChatHistory));
 
-      localStorage.setItem("chatHistory", JSON.stringify(formattedChatHistory));
-      return conversationResponse.data;
+        return {
+            session_id: conversationResponse.data.session_id,
+            session_title: conversationResponse.data.session_title,
+            session_type: conversationResponse.data.session_type,
+            chatHistory: formattedChatHistory,
+        };
     } catch (error) {
-      console.error("Error fetching session data:", error);
-      throw error;
+        console.error("Error fetching session data:", error);
+        throw error;
     }
-  };
+};
+
 
   useEffect(() => {
     sessionStorage.removeItem("AnnotateData");
@@ -375,39 +385,44 @@ const ArticleLayout = () => {
   };
   const [fileUrl, setFileUrl] = useState("");
   const [annotateFile, setAnnotateFile] = useState(false);
-  const handleAnnotate = () => {
-    const matchingIdExists =
-      annotateData && Object.prototype.hasOwnProperty.call(annotateData, id);
-    let chatHistory = [];
-    // Check for chatHistory in localStorage
-    const chatHistoryRaw = localStorage.getItem("chatHistory");
-    chatHistory = chatHistoryRaw ? JSON.parse(chatHistoryRaw) : [];
-    // Find the latest entry with a file_url
-    const latestFileEntry = chatHistory
-      .filter((entry) => entry.file_url) // Filter entries with file_url
-      .pop(); // Get the last entry with file_url (highest index)
-
-    if (latestFileEntry && !annotateData) {
-      setFileUrl(latestFileEntry.file_url);
-      handleAnnotateFile(latestFileEntry.file_url); // Pass the latest file_url to handleAnnotateFile
-      return;
-    }
-
-    if (annotateData && annotateData.length > 0) {
-      setOpenAnnotate(true); // Set openAnnotate to true if annotateData has items
-    } else if (
-      (!annotateData || !matchingIdExists) &&
-      !hasFetchedAnnotateData
-    ) {
-      handleAnnotateClick();
-    } else {
-      setOpenAnnotate((prevOpenAnnotate) => !prevOpenAnnotate); // Toggle if matching ID is present
-    }
+    const [isCitationsOpen, setIsCitationsOpen] = useState(false);
+  
+  const handleOpenCitations = () => {
+    setIsCitationsOpen(true);
   };
+  const handleAnnotate = () => {
+  const matchingIdExists =
+    annotateData && Object.prototype.hasOwnProperty.call(annotateData, id);
+  let chatHistory = [];
+  const chatHistoryRaw = localStorage.getItem("chatHistory");
+  chatHistory = chatHistoryRaw ? JSON.parse(chatHistoryRaw) : [];
+  const latestFileEntry = chatHistory
+    .filter((entry) => entry.file_url)
+    .pop();
 
-  console.log(fileUrl);
+  if (uploadedFile) {
+    handleAnnotateUploadedFile(); // Handle uploaded file annotation
+    return;
+  }
 
-  const handleAnnotateFile = async () => {
+  if (latestFileEntry && !annotateData) {
+    setFileUrl(latestFileEntry.file_url);
+    handleAnnotateFile(latestFileEntry.file_url);
+    return;
+  }
+
+  if (annotateData && annotateData.length > 0) {
+    setOpenAnnotate(true);
+  } else if (
+    (!annotateData || !matchingIdExists) &&
+    !hasFetchedAnnotateData
+  ) {
+    handleAnnotateClick();
+  } else {
+    setOpenAnnotate((prevOpenAnnotate) => !prevOpenAnnotate);
+  }
+};
+   const handleAnnotateFile = async () => {
     setAnnotateLoading(true);
     try {
       const response = await axios.post(
@@ -430,11 +445,6 @@ const ArticleLayout = () => {
       setAnnotateLoading(false);
     }
   };
-
-  console.log("source", type);
-
-  console.log("id", id);
-
   const handleAnnotateClick = async () => {
     // Define the request body according to source and id
     let requestBody = {};
@@ -459,6 +469,38 @@ const ArticleLayout = () => {
       setAnnotateLoading(false);
     }
   };
+  const handleAnnotateUploadedFile = async () => {
+    if (!uploadedFile) return; // Ensure uploadedFile exists before proceeding
+  
+    setAnnotateLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", uploadedFile); // Append the uploaded file to FormData
+  
+      const response = await axios.post(
+        "https://b899-103-169-178-9.ngrok-free.app/api/core_search/annotate_file",
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data", // Required for file upload
+            "ngrok-skip-browser-warning": true,
+          },
+        }
+      );
+  
+      const data = response.data;
+      setAnnotateData(data);
+      setHasFetchedAnnotateData(true); // Set flag after successful fetch
+      setOpenAnnotate(true); // Open annotation panel after data is received
+      setAnnotateFile(true); // Set annotate file flag
+    } catch (error) {
+      console.error("Error annotating the uploaded file", error);
+    } finally {
+      setAnnotateLoading(false);
+    }
+  };
+  
   useEffect(() => {
     if (!annotateData) {
       setHasFetchedAnnotateData(false);
@@ -642,6 +684,10 @@ const ArticleLayout = () => {
               setSavedText={setSavedText}
               annotateLoading={annotateLoading}
               setAnnotateLoading={setAnnotateLoading}
+              uploadedFile={uploadedFile}
+              setUploadedFile={setUploadedFile}
+              isCitationsOpen={isCitationsOpen}
+              setIsCitationsOpen={setIsCitationsOpen}
             />
           ) : (
             <ArticleContent
@@ -656,15 +702,15 @@ const ArticleLayout = () => {
             />
           )}
 
-//           <div className="right-aside" style={{ display: displayIfLoggedIn }}>
-//             <div
-//               className="annotate-note"
-//               style={{
-//                 height: "55vh",
-//                 // height: `${annotateHeight + notesHeight}vh`,
-//                 overflowY: "hidden",
-//               }}
-            >
+          {/* <div className="right-aside" style={{ display: displayIfLoggedIn }}>
+             <div
+               className="annotate-note"
+               style={{
+                 height: "55vh",
+                 // height: `${annotateHeight + notesHeight}vh`,
+                 overflowY: "hidden",
+              }}
+            > */}
 
           <div className="right-aside" style={{ cursor: isLoggedIn ? "pointer" : "not-allowed",
       opacity: isLoggedIn ? 1 : 0.5, }}>
@@ -725,7 +771,8 @@ const ArticleLayout = () => {
                 }}
                 style={{
                   cursor:isLoggedIn?"pointer":"not-allowed",
-                  opacity: annotateData && annotateData.length > 0 ? 1 : 1, // Adjust visibility when disabled
+                  opacity: (uploadedFile && deriveInsights) || (annotateData && annotateData.length > 0) ? 1 : 0.5,
+                  borderRadius: !deriveInsights ? '8px 8px 0 0' : '8px 8px 0 0',
                 }}
                 title= 
                 {isLoggedIn ? "annotate the article": displayMessage}
@@ -735,12 +782,10 @@ const ArticleLayout = () => {
               </div>
               <div
                 className={`notes-icon ${openNotes ? "open" : "closed"}`}
-                // style={{
-                //   borderRadius: !deriveInsights ? '0 0 8px 8px' : undefined, // Apply border-radius if deriveInsights is false
-                // }}
                 style={{
-                  cursor:isLoggedIn?"pointer":"not-allowed",
+                  borderRadius: !deriveInsights ? '0 0 8px 8px' : 0, cursor:isLoggedIn?"pointer":"not-allowed", // Apply border-radius if deriveInsights is false
                 }}
+                
                 title= 
                 {isLoggedIn ? "Open notes": displayMessage}
                 onClick={() => {
@@ -749,19 +794,18 @@ const ArticleLayout = () => {
               >
                 <img src={notesicon} alt="notes-icon" />
               </div>
-              {/* {deriveInsights?<div
+              {deriveInsights?
+              <div
                 className={`search-citation-icon ${
                   openAnnotate ? "open" : "closed"
                 }`}
-                onClick={() => {
-                  handleAnnotate();
-                }}
+                onClick={handleOpenCitations}
                 style={{
-                  opacity: annotateData && annotateData.length > 0 ? 1 : 1, // Adjust visibility when disabled
+                  opacity: uploadedFile ? 1 :0.5 // Adjust visibility when disabled
                 }}
               >
-                <img src={annotate} alt="annotate-icon" />
-              </div>:""} */}
+                <img src={citation_icon} alt="citation-icon" />
+              </div>:""}
               {showConfirmIcon && (
                 <div className="Article-popup-overlay">
                   <div className="Article-popup-content">
