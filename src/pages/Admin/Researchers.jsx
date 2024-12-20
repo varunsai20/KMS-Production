@@ -145,14 +145,11 @@ const Researchers = () => {
 
   const handleDeleteClick = async (userId) => {
     try {
-      await axios.delete(
-        `https://inferai.ai/api/admin/delete_user/${userId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      await axios.delete(`https://inferai.ai/api/admin/delete_user/${userId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       toast.success("User Deleted successfully", {
         position: "top-center",
         autoClose: 2000,
@@ -285,7 +282,7 @@ const Researchers = () => {
             {showConfirmDelete && (
               <div className="confirm-overlay">
                 <div className="confirm-popup">
-                  <p>Are you sure to delete this note?</p>
+                  <p>Are you sure to delete this user?</p>
                   <div className="confirm-buttons">
                     <button
                       className="confirm-keep-button"

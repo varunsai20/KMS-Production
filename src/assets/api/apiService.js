@@ -1,11 +1,23 @@
 import axios from "axios";
 import { showErrorToast } from "../../utils/toastHelper";
+import { hideNetworkErrorToast } from "../../utils/toastHelper";
+import { showNetworkErrorToast } from "../../utils/toastHelper";
+
+let isNetworkErrorDisplayed = false;
+
+const debounce = (func, delay) => {
+  let timeoutId;
+  return (...args) => {
+    if (timeoutId) clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => func(...args), delay);
+  };
+};
 
 const apiClient = axios.create({
-  baseURL: "https://b899-103-169-178-9.ngrok-free.app/api",
+  baseURL: "https://inferai.ai/api",
   headers: {
     "Content-Type": "application/json",
-    "ngrok-skip-browser-warning": true,
+    // "ngrok-skip-browser-warning": true,
   },
 });
 
@@ -17,7 +29,10 @@ apiClient.interceptors.request.use(
 );
 
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    hideNetworkErrorToast();
+    return response;
+  },
   (error) => {
     if (error.response) {
       const { status, data } = error.response;
@@ -29,7 +44,14 @@ apiClient.interceptors.response.use(
         showErrorToast(data?.message || "An error occurred.");
       }
     } else if (error.request) {
-      showErrorToast("Network error. Please check your connection.");
+      if (!isNetworkErrorDisplayed) {
+        isNetworkErrorDisplayed = true;
+        debounce(() => {
+          showNetworkErrorToast("Network error. Please check your connection.");
+
+          isNetworkErrorDisplayed = false;
+        }, 2000)();
+      }
     } else {
       showErrorToast(error.message);
     }
@@ -37,7 +59,6 @@ apiClient.interceptors.response.use(
   }
 );
 
-// API service methods
 export const apiService = {
   login: (email, password) =>
     apiClient.post(`auth/login`, {
@@ -180,8 +201,8 @@ export const apiService = {
         },
       }
     ),
-  saveToExisting: (token) =>
-    apiClient.post(`bookmarks/users/collections`, {
+  saveToExisting: (token, bookmarkData) =>
+    apiClient.post(`bookmarks/users/collections`, bookmarkData, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -222,8 +243,8 @@ export const apiService = {
       headers: { Authorization: `Bearer ${token}` },
     });
   },
-  createNewCollection: (token) =>
-    apiClient.post(`bookmarks/users/collections`, {
+  createNewCollection: (token, newCollection) =>
+    apiClient.post(`bookmarks/users/collections`, newCollection, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

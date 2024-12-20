@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import NotesList from "../../components/Notes/NotesList";
 import Createnotes from "../../components/Notes/CreateNotes";
 import Editnotes from "../../components/Notes/EditNotes";
@@ -25,6 +25,7 @@ const NotesManager = ({
   const [filterText, setFilterText] = useState("");
   const [selectedNote, setSelectedNote] = useState(null);
   const [lastOpenView, setLastOpenView] = useState("list");
+  const hasFetchedNotes = useRef(false);
 
   useEffect(() => {
     if (propSelectedText) {
@@ -62,11 +63,11 @@ const NotesManager = ({
   };
 
   useEffect(() => {
-    if (user_id && token) {
+    if (user_id && token && !hasFetchedNotes.current) {
       fetchNotes();
+      hasFetchedNotes.current = true;
     }
   }, [user_id, token]);
-
   console.log(notes);
 
   useEffect(() => {

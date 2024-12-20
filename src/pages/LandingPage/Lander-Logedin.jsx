@@ -140,7 +140,7 @@ const Lander = () => {
           if (Array.isArray(entry.parts)) {
             currentEntry.query = entry.parts.join(" ");
           }
-        } else if (entry.role === "model") {
+        } else if (entry.role === "assistant") {
           if (Array.isArray(entry.parts)) {
             currentEntry.response = entry.parts.join(" ");
           }
@@ -212,11 +212,18 @@ const Lander = () => {
         <img className="Right1" src={Molecules} alt="Right Graphic 1" /> */}
         {/* <div className="Landing-Content-Left"> */}
         <div className="welcome-search">
-          
           <img src={Logo} alt="inferAI-logo" className="inferai-logo" />
-          <SearchBar className="Landingpage-SearchBar" landingWidth="80%" zIndex="0"></SearchBar>
+          <SearchBar
+            className="Landingpage-SearchBar"
+            landingWidth="80%"
+            zIndex="0"
+          ></SearchBar>
           <p className="Landing-Welcome-desc">
-          Inferai by Infer Solutions, Inc, a cutting-edge product leveraging generative AI to revolutionize research in pharmaceuticals, biotechnology, and healthcare. This innovative platform streamlines research processes, enhances data analysis, and uncovers new insights.
+            Inferai by Infer Solutions, Inc, a cutting-edge product leveraging
+            generative AI to revolutionize research in pharmaceuticals,
+            biotechnology, and healthcare. This innovative platform streamlines
+            research processes, enhances data analysis, and uncovers new
+            insights.
           </p>
         </div>
         {/* </div> */}
@@ -260,9 +267,10 @@ const Lander = () => {
               />
               <h4>Analytics</h4>
 
-              <span style={{}} title="This feature will ">Dashboard</span>
+              <span style={{}} title="This feature will ">
+                Dashboard
+              </span>
               <span>Reports</span>
-
             </div>
 
             <div className="Feature-Item">

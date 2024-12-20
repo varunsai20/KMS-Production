@@ -31,8 +31,10 @@ const ArticleDerive = ({
   setSavedText,
   annotateLoading,
   setAnnotateLoading,
-  uploadedFile,setUploadedFile,
-  isCitationsOpen,setIsCitationsOpen
+  uploadedFile,
+  setUploadedFile,
+  isCitationsOpen,
+  setIsCitationsOpen,
 }) => {
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
   const deriveInsights = useSelector((state) => state.deriveInsights?.active);
@@ -474,10 +476,10 @@ const ArticleDerive = ({
     setChatHistory((prevChatHistory) => [...prevChatHistory, newChatEntry]);
 
     try {
-      let url = "https://b899-103-169-178-9.ngrok-free.app/api/insights/upload";
+      let url = "https://inferai.ai/api/insights/upload";
       const headers = {
         Authorization: `Bearer ${token}`,
-        "ngrok-skip-browser-warning": true,
+        // "ngrok-skip-browser-warning": true,
       };
 
       // Initialize FormData
@@ -661,7 +663,6 @@ const ArticleDerive = ({
     }
   }, [sessions]);
 
-
   useEffect(() => {
     const storedSessionId =
       localStorage.getItem("sessionId") || localStorage.getItem("session_id");
@@ -777,9 +778,10 @@ const ArticleDerive = ({
           style={{
             bottom: uploadedFile || chatHistory.length > 0 ? "0px" : "auto",
             position: uploadedFile || chatHistory.length > 0 ? "absolute" : "",
-            width: uploadedFile || chatHistory.length > 0 ? contentWidth : "95%",
+            width:
+              uploadedFile || chatHistory.length > 0 ? contentWidth : "95%",
             display: displayIfLoggedIn,
-            margin:"auto",
+            margin: "auto",
           }}
         >
           <div className="derive-predefined-prompts">
@@ -935,7 +937,7 @@ const ArticleDerive = ({
                       </span>
                     ) : (
                       <div className="loading-dots">
-                        <span>•••</span>
+                        <span>•••..</span>
                       </div>
                     )}
                   </div>
@@ -977,7 +979,6 @@ const ArticleDerive = ({
               )}
               {/* File Preview */}
               {uploadedFile && uploadedFile.name.endsWith(".pdf") && (
-                
                 <div className="iframe-preview">
                   <iframe
                     src={URL.createObjectURL(uploadedFile)}
@@ -990,46 +991,44 @@ const ArticleDerive = ({
             </div>
           </div>
         ) : (
-
-          
           <>
-             {uploadedFile && uploadedFile.name.endsWith(".docx") && (
-                <div className="docx-preview">
-                  <h3>Preview</h3>
-                  <div ref={endOfMessagesRef}
-                    id="docx-container"
-                    style={{
-                      maxHeight: "300px",
-                      overflow: "auto",
-                      border: "1px solid #ccc",
-                    }}
-                  ></div>
-                </div>
-              )}
-              {/* File Preview */}
-              {uploadedFile && uploadedFile.name.endsWith(".pdf") && (
-                
-                <div className="iframe-preview" ref={endOfMessagesRef}>
-                  <iframe
-                    src={URL.createObjectURL(uploadedFile)}
-                    width="100%"
-                    height="350px"
-                    title="PDF Preview"
-                  ></iframe>
-                </div>
-              )}
-
-            </>
-
-
-
+            {uploadedFile && uploadedFile.name.endsWith(".docx") && (
+              <div className="docx-preview">
+                <h3>Preview</h3>
+                <div
+                  ref={endOfMessagesRef}
+                  id="docx-container"
+                  style={{
+                    maxHeight: "300px",
+                    overflow: "auto",
+                    border: "1px solid #ccc",
+                  }}
+                ></div>
+              </div>
+            )}
+            {/* File Preview */}
+            {uploadedFile && uploadedFile.name.endsWith(".pdf") && (
+              <div className="iframe-preview" ref={endOfMessagesRef}>
+                <iframe
+                  src={URL.createObjectURL(uploadedFile)}
+                  width="100%"
+                  height="350px"
+                  title="PDF Preview"
+                ></iframe>
+              </div>
+            )}
+          </>
         )}
       </div>
       {isCitationsOpen && (
         <>
           <div className="citation-overlay">
             <div className="citation-modal">
-              <Citations handleCloseCitations={handleCloseCitations} uploadedFile={uploadedFile} handleCitations={true} />
+              <Citations
+                handleCloseCitations={handleCloseCitations}
+                uploadedFile={uploadedFile}
+                handleCitations={true}
+              />
             </div>
           </div>
         </>

@@ -587,10 +587,36 @@ button {
   background-color: white;
   padding: 20px;
   border-radius: 8px;
-  max-width: 500px;
+  font-weight: 100;
+  max-width: 400px;
   width: 100%;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   z-index: 1001;
+  display: grid;
+  gap: 20px;
+}
+.radio-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.radio-buttons label {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+#collectionAction {
+  width: 4%;
+  margin-bottom: 0px;
+}
+.choose-collection {
+  display: flex;
+  justify-content: space-between;
+}
+.select-dropdown {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 .bookmark-p {
   display: flex;
@@ -613,20 +639,34 @@ button {
 }
 #close-collection-modal {
   position: absolute;
-  top: 8%;
-  left: 68%;
+  top: 33%;
+  left: 64%;
   color: #000;
   z-index: 10001;
 }
+.radio1 {
+  display: flex;
+  gap: 20px;
+}
+.radio2 {
+  display: flex;
+  gap: 20px;
+}
 .search-modal-content button {
-  padding: 10px 20px;
+  padding: 7px 20px;
   border: none;
   background-color: #007bff;
   color: white;
   border-radius: 5px;
   cursor: pointer;
+  width: 25%;
 }
-
+.select-tag {
+  width: 35%;
+  height: 4vh;
+  border: 1px solid #00000012;
+  border-radius: 8px;
+}
 .search-modal-content button:disabled {
   background-color: #ccc;
   cursor: not-allowed;
@@ -635,7 +675,7 @@ button {
 .search-modal-content input {
   width: 97%;
   padding: 8px 0 8px 8px;
-  margin-top: 10px;
+  /* margin-top: 10px; */
   margin-bottom: 15px;
   border-radius: 5px;
   border: 1px solid #ddd;
@@ -716,7 +756,7 @@ button {
   width: 1em;
   overflow: hidden;
   white-space: nowrap;
-  cursor: pointer;
+  cursor: default;
   font-size: 30px;
   color: rgb(205 205 205);
 }

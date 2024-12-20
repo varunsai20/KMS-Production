@@ -13,7 +13,7 @@ import Annotation from "../../components/Annotaions";
 import Notes from "../NotesPage/Notes";
 import notesicon from "../../assets/images/note-2.svg";
 import annotate from "../../assets/images/task-square.svg";
-import citation_icon from "../../assets/images/Citations-Icon.svg"
+import citation_icon from "../../assets/images/Citations-Icon.svg";
 import ArticleContent from "./ArticleContent";
 import ArticleDerive from "./ArticleDerive";
 import Loading from "../../components/Loading";
@@ -49,14 +49,11 @@ const ArticleLayout = () => {
   const [type, id1] = pmid ? pmid.split(":") : "";
   const id = Number(id1);
   const [source, setSource] = useState();
-  const displayIfLoggedIn = isLoggedIn ? null : "none";
   const displayMessage = isLoggedIn
-  ? ""
-  : "This feature is available for subscribed users.";
-  const widthIfLoggedIn = isLoggedIn ? null : "80%";
-  //const heightIfLoggedIn = isLoggedIn ? null : "80vh";
-  const minHeight = 15;
-  const maxHeight = 55;
+    ? ""
+    : "This feature is available for subscribed users.";
+  const minHeight = 10;
+  const maxHeight = 30;
   const [sessions, setSessions] = useState([]);
   const [refreshSessions, setRefreshSessions] = useState(false);
   const [editingSessionId, setEditingSessionId] = useState(null);
@@ -122,19 +119,6 @@ const ArticleLayout = () => {
     return minHeight; // Default minimum height
   };
 
-  // useEffect(() => {
-  //   if (openAnnotate && !openNotes) {
-  //     setAnnotateHeight(42);
-  //     setNotesHeight(0);
-  //   } else if (openNotes && !openAnnotate) {
-  //     setNotesHeight(42);
-  //     setAnnotateHeight(0);
-  //   } else {
-  //     setAnnotateHeight(0); // Reset to default when both are open
-  //     setNotesHeight(0);
-  //   }
-  // }, [openAnnotate, openNotes]);
-
   useEffect(() => {
     if (openAnnotate && !openNotes) {
       setAnnotateHeight(calculateContentHeight(annotateRef));
@@ -165,61 +149,45 @@ const ArticleLayout = () => {
     console.log("called in session");
     localStorage.removeItem("session_id");
     try {
+      // Fetch the conversation data
       const conversationResponse = await apiService.fetchChatConversation(
         user_id,
         session_id,
         token
       );
+
+      // Save session ID in local and session storage
       localStorage.setItem("session_id", session_id);
       sessionStorage.setItem("session_id", session_id);
       setIsPromptEnabled(true);
       setActiveSessionId(session_id);
 
-      const formattedChatHistory = [];
-      let currentEntry = {};
+      // Format the chat history
+      const formattedChatHistory = conversationResponse.data.conversation.map(
+        (entry) => ({
+          query: entry.role === "user" ? entry.content : null,
+          response: entry.role === "assistant" ? entry.content : null,
+          file_url: entry.file_url || null,
+        })
+      );
 
-      // Process the conversation data into a usable format for the chat history
-      conversationResponse.data.conversation.forEach((entry) => {
-        if (entry.role === "user") {
-          if (entry.file_url) {
-            currentEntry.file_url = entry.file_url;
-          }
-
-          if (currentEntry.query) {
-            formattedChatHistory.push(currentEntry);
-            currentEntry = {};
-          }
-          currentEntry.query = entry.parts ? entry.parts.join(" ") : "";
-        } else if (entry.role === "model") {
-          currentEntry.response = entry.parts ? entry.parts.join(" ") : "";
-          formattedChatHistory.push(currentEntry);
-          currentEntry = {};
-        }
-      });
-
-      // Push any remaining entries
-      if (currentEntry.query) {
-        formattedChatHistory.push(currentEntry);
-      }
-
+      // Save the formatted chat history in localStorage
       localStorage.setItem("chatHistory", JSON.stringify(formattedChatHistory));
 
-      const { source, session_type, article_id } = conversationResponse.data;
-      const sourceType =
-        source === "biorxiv"
-          ? "bioRxiv_id"
-          : source === "plos"
-          ? "plos_id"
-          : "pmid";
+      // Extract other session details
+      const { source, session_type, session_title } = conversationResponse.data;
 
-      // Define the navigation path based on session type
+      // Define navigation path based on session type
       const navigatePath =
         session_type === "file_type"
           ? "/article/derive"
-          : `/article/content/${sourceType}:${article_id}`;
+          : `/article/content/${source}:${conversationResponse.data.article_id}`;
+
+      // Clear annotation data and update state
       setOpenAnnotate(false);
       setAnnotateData("");
-      // Dispatch state and navigate accordingly
+
+      // Navigate based on session type
       if (session_type === "file_type") {
         dispatch(setDeriveInsights(true));
         navigate(navigatePath, {
@@ -229,14 +197,14 @@ const ArticleLayout = () => {
             token,
             user: { access_token: token, user_id },
             chatHistory: formattedChatHistory,
-            sessionTitle: conversationResponse.data.session_title,
+            sessionTitle: session_title,
           },
         });
       } else {
         dispatch(setDeriveInsights(false));
         navigate(navigatePath, {
           state: {
-            id: article_id,
+            id: conversationResponse.data.article_id,
             source,
             token,
             user: { access_token: token, user_id },
@@ -248,60 +216,46 @@ const ArticleLayout = () => {
       console.error("Error fetching article or conversation data:", error);
     }
   };
+
   const fetchSessionData = async (session_id) => {
     try {
-        const conversationResponse = await axios.get(
-            `https://inferai.ai/api/history/conversations/history/${user_id}/${session_id}`,
-            {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            }
-        );
-
-        localStorage.setItem("session_id", session_id);
-        sessionStorage.setItem("session_id", session_id);
-
-        const formattedChatHistory = [];
-        let currentEntry = {};
-
-        conversationResponse.data.conversation.forEach((entry) => {
-            if (entry.role === "user") {
-                currentEntry.query = entry.content || entry.parts?.join(" ") || "";
-                if (entry.file_url) currentEntry.file_url = entry.file_url;
-
-                if (currentEntry.response) {
-                    formattedChatHistory.push({ ...currentEntry });
-                    currentEntry = {};
-                }
-            } else if (entry.role === "model") {
-                currentEntry.response = entry.content || entry.parts?.join(" ") || "";
-
-                if (currentEntry.query) {
-                    formattedChatHistory.push({ ...currentEntry });
-                    currentEntry = {};
-                }
-            }
-        });
-
-        if (currentEntry.query || currentEntry.response) {
-            formattedChatHistory.push(currentEntry);
+      // Fetch the session data
+      const conversationResponse = await axios.get(
+        `https://inferai.ai/api/history/conversations/history/${user_id}/${session_id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
+      );
 
-        localStorage.setItem("chatHistory", JSON.stringify(formattedChatHistory));
+      // Save session ID in local and session storage
+      localStorage.setItem("session_id", session_id);
+      sessionStorage.setItem("session_id", session_id);
 
-        return {
-            session_id: conversationResponse.data.session_id,
-            session_title: conversationResponse.data.session_title,
-            session_type: conversationResponse.data.session_type,
-            chatHistory: formattedChatHistory,
-        };
+      // Format the chat history
+      const formattedChatHistory = conversationResponse.data.conversation.map(
+        (entry) => ({
+          query: entry.role === "user" ? entry.content : null,
+          response: entry.role === "assistant" ? entry.content : null,
+          file_url: entry.file_url || null,
+        })
+      );
+
+      // Save the formatted chat history in localStorage
+      localStorage.setItem("chatHistory", JSON.stringify(formattedChatHistory));
+
+      return {
+        session_id: conversationResponse.data.session_id,
+        session_title: conversationResponse.data.session_title,
+        session_type: conversationResponse.data.session_type,
+        chatHistory: formattedChatHistory,
+      };
     } catch (error) {
-        console.error("Error fetching session data:", error);
-        throw error;
+      console.error("Error fetching session data:", error);
+      throw error;
     }
-};
-
+  };
 
   useEffect(() => {
     sessionStorage.removeItem("AnnotateData");
@@ -385,44 +339,42 @@ const ArticleLayout = () => {
   };
   const [fileUrl, setFileUrl] = useState("");
   const [annotateFile, setAnnotateFile] = useState(false);
-    const [isCitationsOpen, setIsCitationsOpen] = useState(false);
-  
+  const [isCitationsOpen, setIsCitationsOpen] = useState(false);
+
   const handleOpenCitations = () => {
     setIsCitationsOpen(true);
   };
   const handleAnnotate = () => {
-  const matchingIdExists =
-    annotateData && Object.prototype.hasOwnProperty.call(annotateData, id);
-  let chatHistory = [];
-  const chatHistoryRaw = localStorage.getItem("chatHistory");
-  chatHistory = chatHistoryRaw ? JSON.parse(chatHistoryRaw) : [];
-  const latestFileEntry = chatHistory
-    .filter((entry) => entry.file_url)
-    .pop();
+    const matchingIdExists =
+      annotateData && Object.prototype.hasOwnProperty.call(annotateData, id);
+    let chatHistory = [];
+    const chatHistoryRaw = localStorage.getItem("chatHistory");
+    chatHistory = chatHistoryRaw ? JSON.parse(chatHistoryRaw) : [];
+    const latestFileEntry = chatHistory.filter((entry) => entry.file_url).pop();
 
-  if (uploadedFile) {
-    handleAnnotateUploadedFile(); // Handle uploaded file annotation
-    return;
-  }
+    if (uploadedFile) {
+      handleAnnotateUploadedFile(); // Handle uploaded file annotation
+      return;
+    }
 
-  if (latestFileEntry && !annotateData) {
-    setFileUrl(latestFileEntry.file_url);
-    handleAnnotateFile(latestFileEntry.file_url);
-    return;
-  }
+    if (latestFileEntry && !annotateData) {
+      setFileUrl(latestFileEntry.file_url);
+      handleAnnotateFile(latestFileEntry.file_url);
+      return;
+    }
 
-  if (annotateData && annotateData.length > 0) {
-    setOpenAnnotate(true);
-  } else if (
-    (!annotateData || !matchingIdExists) &&
-    !hasFetchedAnnotateData
-  ) {
-    handleAnnotateClick();
-  } else {
-    setOpenAnnotate((prevOpenAnnotate) => !prevOpenAnnotate);
-  }
-};
-   const handleAnnotateFile = async () => {
+    if (annotateData && annotateData.length > 0) {
+      setOpenAnnotate(true);
+    } else if (
+      (!annotateData || !matchingIdExists) &&
+      !hasFetchedAnnotateData
+    ) {
+      handleAnnotateClick();
+    } else {
+      setOpenAnnotate((prevOpenAnnotate) => !prevOpenAnnotate);
+    }
+  };
+  const handleAnnotateFile = async () => {
     setAnnotateLoading(true);
     try {
       const response = await axios.post(
@@ -471,24 +423,24 @@ const ArticleLayout = () => {
   };
   const handleAnnotateUploadedFile = async () => {
     if (!uploadedFile) return; // Ensure uploadedFile exists before proceeding
-  
+
     setAnnotateLoading(true);
     try {
       const formData = new FormData();
       formData.append("file", uploadedFile); // Append the uploaded file to FormData
-  
+
       const response = await axios.post(
-        "https://b899-103-169-178-9.ngrok-free.app/api/core_search/annotate_file",
+        "https://inferai.ai/api/core_search/annotate_file",
         formData,
         {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "multipart/form-data", // Required for file upload
-            "ngrok-skip-browser-warning": true,
+            // "ngrok-skip-browser-warning": true,
           },
         }
       );
-  
+
       const data = response.data;
       setAnnotateData(data);
       setHasFetchedAnnotateData(true); // Set flag after successful fetch
@@ -500,7 +452,7 @@ const ArticleLayout = () => {
       setAnnotateLoading(false);
     }
   };
-  
+
   useEffect(() => {
     if (!annotateData) {
       setHasFetchedAnnotateData(false);
@@ -585,8 +537,10 @@ const ArticleLayout = () => {
         <div className="content">
           <div
             className="history-pagination"
-            style={{ cursor: isLoggedIn ? "pointer" : "not-allowed",
-              opacity: isLoggedIn ? 1 : 0.5, }}
+            style={{
+              cursor: isLoggedIn ? "pointer" : "not-allowed",
+              opacity: isLoggedIn ? 1 : 0.5,
+            }}
           >
             <div
               className="history-pagination-header"
@@ -702,20 +656,14 @@ const ArticleLayout = () => {
             />
           )}
 
-          {/* <div className="right-aside" style={{ display: displayIfLoggedIn }}>
-             <div
-               className="annotate-note"
-               style={{
-                 height: "55vh",
-                 // height: `${annotateHeight + notesHeight}vh`,
-                 overflowY: "hidden",
-              }}
-            > */}
-
-          <div className="right-aside" style={{ cursor: isLoggedIn ? "pointer" : "not-allowed",
-      opacity: isLoggedIn ? 1 : 0.5, }}>
+          <div
+            className="right-aside"
+            style={{
+              cursor: isLoggedIn ? "" : "not-allowed",
+              opacity: isLoggedIn ? 1 : 0.5,
+            }}
+          >
             <div className="annotate-note">
-
               {openAnnotate && (
                 <div
                   ref={annotateRef}
@@ -770,42 +718,46 @@ const ArticleLayout = () => {
                   handleAnnotate();
                 }}
                 style={{
-                  cursor:isLoggedIn?"pointer":"not-allowed",
-                  opacity: (uploadedFile && deriveInsights) || (annotateData && annotateData.length > 0) ? 1 : 0.5,
-                  borderRadius: !deriveInsights ? '8px 8px 0 0' : '8px 8px 0 0',
+                  cursor: isLoggedIn ? "pointer" : "not-allowed",
+                  opacity:
+                    (uploadedFile && deriveInsights) ||
+                    (annotateData && annotateData.length > 0)
+                      ? 1
+                      : 0.5,
+                  borderRadius: !deriveInsights ? "8px 8px 0 0" : "8px 8px 0 0",
                 }}
-                title= 
-                {isLoggedIn ? "annotate the article": displayMessage}
+                title={isLoggedIn ? "annotate the article" : displayMessage}
               >
-                
                 <img src={annotate} alt="annotate-icon" />
               </div>
               <div
                 className={`notes-icon ${openNotes ? "open" : "closed"}`}
                 style={{
-                  borderRadius: !deriveInsights ? '0 0 8px 8px' : 0, cursor:isLoggedIn?"pointer":"not-allowed", // Apply border-radius if deriveInsights is false
+                  borderRadius: !deriveInsights ? "0 0 8px 8px" : 0,
+                  cursor: isLoggedIn ? "pointer" : "not-allowed", // Apply border-radius if deriveInsights is false
                 }}
-                
-                title= 
-                {isLoggedIn ? "Open notes": displayMessage}
+                title={isLoggedIn ? "Open notes" : displayMessage}
                 onClick={() => {
                   handleNotes();
                 }}
               >
                 <img src={notesicon} alt="notes-icon" />
               </div>
-              {deriveInsights?
-              <div
-                className={`search-citation-icon ${
-                  openAnnotate ? "open" : "closed"
-                }`}
-                onClick={handleOpenCitations}
-                style={{
-                  opacity: uploadedFile ? 1 :0.5 // Adjust visibility when disabled
-                }}
-              >
-                <img src={citation_icon} alt="citation-icon" />
-              </div>:""}
+              {deriveInsights ? (
+                <div
+                  className={`search-citation-icon ${
+                    openAnnotate ? "open" : "closed"
+                  }`}
+                  onClick={handleOpenCitations}
+                  style={{
+                    opacity: uploadedFile ? 1 : 0.5, // Adjust visibility when disabled
+                  }}
+                >
+                  <img src={citation_icon} alt="citation-icon" />
+                </div>
+              ) : (
+                ""
+              )}
               {showConfirmIcon && (
                 <div className="Article-popup-overlay">
                   <div className="Article-popup-content">

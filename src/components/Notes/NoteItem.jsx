@@ -49,12 +49,12 @@ const NoteItem = ({
 
     try {
       const response = await axios.post(
-        "https://b899-103-169-178-9.ngrok-free.app/api/notes/sharenotes",
+        "https://inferai.ai/api/notes/sharenotes",
         requestData,
         {
           headers: {
             Authorization: `Bearer ${token}`,
-            "ngrok-skip-browser-warning": true,
+            // "ngrok-skip-browser-warning": true,
           },
         }
       );
