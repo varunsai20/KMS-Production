@@ -79,20 +79,15 @@
   display: flex;
   justify-content: space-between;
   margin: 1% auto;
-  /* margin-top: 0; */
   color: #333;
 }
 .history-pagination {
-  /* margin-left: 1%; */
   width: 23%;
   padding: 27px, 0px, 27px, 0px;
   height: 55vh;
-  /* max-height: 700px; */
-  overflow-y: auto;
   color: #333;
   border-radius: 20px;
   border: 1px solid #ebebf3;
-  /* background-color: rgba(249, 249, 249); */
 }
 .new-chat-button {
   padding: 10px 0;
@@ -132,7 +127,7 @@
   margin-bottom: 2%;
 }
 .meta {
-  height: 40vh;
+  height: 42vh;
   overflow-y: auto;
   padding-left: 20px;
 }
@@ -234,7 +229,7 @@
   padding: 0px 15px 0px 15px;
   justify-content: start;
   margin-top: 5%;
-  /* height: 56vh; */
+  height: 44vh;
   overflow: auto;
 }
 
@@ -399,16 +394,11 @@
 }
 
 ::-webkit-scrollbar {
-  width: 5px;
+  width: 7px;
 }
 
-::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 10px;
-}
 ::-webkit-scrollbar-thumb {
-  background: #888;
-  border-radius: 20px;
+  background: rgba(237, 237, 237, 1);
 }
 
 .right-aside {
@@ -416,10 +406,6 @@
   gap: 5px;
   opacity: 0px;
   height: fit-content;
-}
-.annotate-note {
-  /* display: grid; */
-  /* height: 70vh; */
 }
 .annotate-height {
   position: relative;

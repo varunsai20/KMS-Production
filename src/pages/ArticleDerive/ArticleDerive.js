@@ -930,17 +930,14 @@ const ArticleDerive = ({
                   ) : (
                     ""
                   )}
-                  <div className="response" style={{ textAlign: "left" }}>
-                    {chat.response ? (
+                  {chat.response && (
+                    <div className="response" style={{ textAlign: "left" }}>
                       <span ref={endOfMessagesRef}>
-                        <ReactMarkdown>{chat.response}</ReactMarkdown>
+                        <ReactMarkdown>{chat.response.trim()}</ReactMarkdown>
                       </span>
-                    ) : (
-                      <div className="loading-dots">
-                        <span>•••..</span>
-                      </div>
-                    )}
-                  </div>
+                    </div>
+                  )}
+
                   <div
                     ref={popupRef}
                     className="popup-button"

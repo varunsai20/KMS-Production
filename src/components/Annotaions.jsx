@@ -80,77 +80,83 @@ const Annotation = ({ openAnnotate, annotateData, source: passedSource }) => {
         ? Object.entries(annotateData)
         : [];
 
-    return annotationEntries.map(([pmid, categories]) => {
+    return annotationEntries.flatMap(([pmid, categories]) => {
       const isExpanded = expandedPmids[pmid] || false; // Track expanded state for each PMID
 
-      const rows = [
-        // Header Row for the PMID
-        <tr key={`${pmid}-header`} className="search-table-header">
-          <td colSpan={4} style={{ backgroundColor: "#f5f5f5" }}>
-            <div style={{ display: "flex", alignItems: "center" }}>
-              <button onClick={() => toggleExpandPmid(pmid)}>
-                {isExpanded ? (
-                  <FontAwesomeIcon
-                    icon={faCaretDown}
-                    style={{ color: "grey", width: "16px" }}
-                  />
-                ) : (
-                  <FontAwesomeIcon
-                    icon={faCaretRight}
-                    style={{ color: "grey", fontSize: "16px" }}
-                  />
-                )}
-              </button>
-              <span
-                style={{
-                  color: "#1a82ff",
-                  fontWeight: 600,
-                  cursor: "pointer",
-                  marginLeft: "10px",
-                }}
-                onClick={() => handleNavigate(pmid)}
-              >
-                {pmid}
-              </span>
-            </div>
-          </td>
-        </tr>,
-      ];
+      const rows = [];
 
-      if (isExpanded) {
-        // Display data rows for the expanded PMID
-        const sortedCategories = Object.entries(categories).sort(
-          ([, a], [, b]) =>
-            (b.annotation_score || 0) - (a.annotation_score || 0)
-        );
+      // Render the first row before expanding
+      const sortedCategories = Object.entries(categories).sort(
+        ([, a], [, b]) => (b.annotation_score || 0) - (a.annotation_score || 0)
+      );
 
-        sortedCategories.forEach(([category, values]) => {
-          if (category === "annotation_score") return; // Skip annotation score field
+      sortedCategories.forEach(([category, values], index) => {
+        if (category === "annotation_score") return;
 
-          const categoryKey = `${pmid}-${category}`;
-          const isTextExpanded = expandedTexts[categoryKey];
+        const categoryKey = `${pmid}-${category}`;
+        const annotationScore = values.annotation_score
+          ? `${values.annotation_score.toFixed(2)}%`
+          : "";
+        const categoryTexts = Object.entries(values)
+          .filter(([key]) => key !== "annotation_score")
+          .map(([key]) => key)
+          .join(", ");
 
-          const annotationScore = values.annotation_score
-            ? `${values.annotation_score.toFixed(2)}%`
-            : "N/A";
+        const isTextExpanded = expandedTexts[categoryKey];
+        const displayText = isTextExpanded
+          ? categoryTexts
+          : categoryTexts.slice(0, 50); // Show up to 50 characters when collapsed
 
-          const categoryTexts = Object.entries(values)
-            .filter(([key]) => key !== "annotation_score")
-            .map(([key]) => key)
-            .join(", ");
-
-          const displayText = isTextExpanded
-            ? categoryTexts
-            : categoryTexts.slice(0, 50);
-
+        // Show the first row before expanding or all rows when expanded
+        if (index === 0 || isExpanded) {
           rows.push(
-            <tr key={categoryKey} className="search-table-body">
-              <td style={{ paddingLeft: "30px" }}>
-                {capitalizeFirstLetter(category)}
+            <tr
+              className="search-table-body"
+              key={categoryKey}
+              style={{
+                display: index === 0 || isExpanded ? "table-row" : "none",
+              }}
+            >
+              <td
+                style={{
+                  paddingLeft: index === 0 ? 0 : 30,
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center" }}>
+                  {index === 0 && (
+                    <button onClick={() => toggleExpandPmid(pmid)}>
+                      {isExpanded ? (
+                        <FontAwesomeIcon
+                          icon={faCaretDown}
+                          style={{ color: "grey", width: "16px" }}
+                        />
+                      ) : (
+                        <FontAwesomeIcon
+                          icon={faCaretRight}
+                          style={{ color: "grey", fontSize: "16px" }}
+                        />
+                      )}
+                    </button>
+                  )}
+                  {index === 0 && (
+                    <a
+                      style={{
+                        color: "#1a82ff",
+                        fontWeight: 600,
+                        cursor: "pointer",
+                        marginLeft: "10px",
+                      }}
+                      onClick={() => handleNavigate(pmid)}
+                    >
+                      {pmid}
+                    </a>
+                  )}
+                </div>
               </td>
               <td>{annotationScore}</td>
-              <td>{displayText}</td>
+              <td>{capitalizeFirstLetter(category)}</td>
               <td>
+                {displayText}
                 {categoryTexts.length > 50 && (
                   <span
                     style={{
@@ -160,14 +166,14 @@ const Annotation = ({ openAnnotate, annotateData, source: passedSource }) => {
                     }}
                     onClick={() => toggleExpandText(categoryKey)}
                   >
-                    {isTextExpanded ? "Less" : "... More"}
+                    {isTextExpanded ? " Less" : "... More"}
                   </span>
                 )}
               </td>
             </tr>
           );
-        });
-      }
+        }
+      });
 
       return rows;
     });

@@ -218,6 +218,7 @@ const ArticleLayout = () => {
   };
 
   const fetchSessionData = async (session_id) => {
+    console.log("session Data func");
     try {
       // Fetch the session data
       const conversationResponse = await axios.get(
@@ -228,7 +229,7 @@ const ArticleLayout = () => {
           },
         }
       );
-
+      console.log(conversationResponse);
       // Save session ID in local and session storage
       localStorage.setItem("session_id", session_id);
       sessionStorage.setItem("session_id", session_id);
