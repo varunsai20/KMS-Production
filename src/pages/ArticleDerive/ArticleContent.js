@@ -46,7 +46,6 @@ const ArticleContent = ({
   const [articleData, setArticleData] = useState(null);
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
-  const [searchCollection, setSearchCollection] = useState("");
   const [response, setResponse] = useState("");
   const [loading, setLoading] = useState(false);
   const [annotateData, setAnnotateData] = useState(

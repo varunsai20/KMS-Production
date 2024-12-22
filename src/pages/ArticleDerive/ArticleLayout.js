@@ -52,8 +52,8 @@ const ArticleLayout = () => {
   const displayMessage = isLoggedIn
     ? ""
     : "This feature is available for subscribed users.";
-  const minHeight = 10;
-  const maxHeight = 30;
+  const minHeight = 15;
+  const maxHeight = 55;
   const [sessions, setSessions] = useState([]);
   const [refreshSessions, setRefreshSessions] = useState(false);
   const [editingSessionId, setEditingSessionId] = useState(null);
