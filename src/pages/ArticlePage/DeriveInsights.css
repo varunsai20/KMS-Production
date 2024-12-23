@@ -109,6 +109,9 @@
 .iframe-preview {
   width: 100%;
 }
+iframe{
+  height: 100%;
+}
 .derive-query-asked {
   background-color: rgba(237, 237, 237, 1);
   /* text-align: right; */
