@@ -1356,7 +1356,7 @@ button input {
     width: 70%;
   }
   .search-annotate {
-    width: 20vw;
+    width: 22vw;
   }
   .searchContent-left {
     width: 17%;
@@ -1370,6 +1370,7 @@ button input {
   }
   .search-table-body td {
     font-size: 10px;
+    padding: 5px;
   }
   .search-tables p {
     font-size: 16px;

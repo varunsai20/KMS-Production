@@ -4,7 +4,12 @@ import { faCaretDown, faCaretRight } from "@fortawesome/free-solid-svg-icons";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./Annotations.css";
 
-const Annotation = ({ openAnnotate, annotateData, source: passedSource }) => {
+const Annotation = ({
+  openAnnotate,
+  annotateData,
+  source: passedSource,
+  annotateHeight,
+}) => {
   const [expandedPmids, setExpandedPmids] = useState({});
   const [expandedTexts, setExpandedTexts] = useState({});
   const [source, setSource] = useState(passedSource || []);
@@ -144,7 +149,6 @@ const Annotation = ({ openAnnotate, annotateData, source: passedSource }) => {
                         color: "#1a82ff",
                         fontWeight: 600,
                         cursor: "pointer",
-                        marginLeft: "10px",
                       }}
                       onClick={() => handleNavigate(pmid)}
                     >
@@ -198,6 +202,7 @@ const Annotation = ({ openAnnotate, annotateData, source: passedSource }) => {
         <div
           className="search-Annotate-tables"
           style={{
+            height: `${annotateHeight}vh`,
             overflowY: "auto",
             overflowX: "hidden",
           }}

@@ -154,6 +154,9 @@ const ArticleContent = ({
     } else if (type === "plos_id") {
       setSource("plos");
     }
+    if (type === "biorxiv" || type === "pubmed" || type === "plos") {
+      setSource(type);
+    }
   }, [type]);
 
   useEffect(() => {
@@ -1277,7 +1280,7 @@ const ArticleContent = ({
 
           <div
             className="meta"
-            style={{ height: !isLoggedIn ? "68vh" : undefined }}
+            style={{ height: !isLoggedIn ? "42" : undefined }}
           >
             <div
               style={{
@@ -1299,9 +1302,9 @@ const ArticleContent = ({
                 ""
               )}
               <span style={{ color: "#2b9247" }}>
-                {type === "bioRxiv_id" && "BioRxiv ID"}
-                {type === "pmid" && "PMID"}
-                {type === "plos_id" && "PLOS ID"} : {id}
+                {(type === "bioRxiv_id" || type === "biorxiv") && "BioRxiv ID"}
+                {(type === "pmid" || type === "pubmed") && "PMID"}
+                {(type === "plos_id" || type === "plos") && "PLOS ID"} : {id}
               </span>{" "}
             </div>
 
@@ -1335,36 +1338,32 @@ const ArticleContent = ({
                 <div className="streaming-content">
                   {chatHistory.map((chat, index) => (
                     <div key={index}>
-                      <div className="query-asked">
-                        <span>
-                          {chat.query === "Summarize this article"
-                            ? "Summarize"
-                            : chat.query ===
-                              "what can we conclude form this article"
-                            ? "Conclusion"
-                            : chat.query ===
-                              "what are the key highlights from this article"
-                            ? "Key Highlights"
-                            : chat.query}
-                        </span>
-                      </div>
+                      {chat.query && (
+                        <div className="query-asked">
+                          <span>
+                            {chat.query === "Summarize this article"
+                              ? "Summarize"
+                              : chat.query ===
+                                "what can we conclude form this article"
+                              ? "Conclusion"
+                              : chat.query ===
+                                "what are the key highlights from this article"
+                              ? "Key Highlights"
+                              : chat.query}
+                          </span>
+                        </div>
+                      )}
 
-                      <div className="response" style={{ textAlign: "left" }}>
-                        {/* Check if there's a response, otherwise show loading dots */}
-                        {chat.response ? (
+                      {chat.response && (
+                        <div className="response" style={{ textAlign: "left" }}>
                           <>
                             <span>
                               <ReactMarkdown>{chat.response}</ReactMarkdown>
                             </span>
+                            <div ref={endOfMessagesRef} />
                           </>
-                        ) : (
-                          <div className="loading-dots">
-                            <span>•••.....</span>
-                          </div>
-                        )}
-
-                        <div ref={endOfMessagesRef} />
-                      </div>
+                        </div>
+                      )}
                     </div>
                   ))}
                   {/* This div will act as the reference for scrolling */}
@@ -1404,7 +1403,7 @@ const ArticleContent = ({
         <div
           className="article-chat-query"
           style={{
-            width: openAnnotate || openNotes ? contentWidth : "58%",
+            width: openAnnotate || openNotes ? contentWidth : "56%",
             cursor: isLoggedIn ? "" : "not-allowed",
             opacity: isLoggedIn ? 1 : 0.5,
           }}
