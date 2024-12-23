@@ -51,6 +51,8 @@ const ArticleContent = ({
   const [annotateData, setAnnotateData] = useState(
     location.state?.annotateData || ""
   );
+  console.log(type)
+  console.log(id)
   const endOfMessagesRef = useRef(null);
   const [chatHistory, setChatHistory] = useState(() => {
     const storedHistory = localStorage.getItem("chatHistory");
@@ -153,6 +155,9 @@ const ArticleContent = ({
       setSource("pubmed");
     } else if (type === "plos_id") {
       setSource("plos");
+    }
+    if (type === "biorxiv" || type === "pubmed" || type === "plos") {
+      setSource(type);
     }
   }, [type]);
 
@@ -1299,10 +1304,10 @@ const ArticleContent = ({
                 ""
               )}
               <span style={{ color: "#2b9247" }}>
-                {type === "bioRxiv_id" && "BioRxiv ID"}
-                {type === "pmid" && "PMID"}
-                {type === "plos_id" && "PLOS ID"} : {id}
-              </span>{" "}
+              {(type === "bioRxiv_id" || type === "biorxiv") && "BioRxiv ID"}
+              {(type === "pmid" || type==="pubmed") && "PMID"}
+                {(type === "plos_id" || type==="plos") && "PLOS ID"} : {id}
+              </span>{" "}              
             </div>
 
             {articleData.article.abstract_content && (
