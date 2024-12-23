@@ -51,6 +51,8 @@ const ArticleContent = ({
   const [annotateData, setAnnotateData] = useState(
     location.state?.annotateData || ""
   );
+  console.log(type);
+  console.log(id);
   const endOfMessagesRef = useRef(null);
   const [chatHistory, setChatHistory] = useState(() => {
     const storedHistory = localStorage.getItem("chatHistory");
@@ -153,6 +155,9 @@ const ArticleContent = ({
       setSource("pubmed");
     } else if (type === "plos_id") {
       setSource("plos");
+    }
+    if (type === "biorxiv" || type === "pubmed" || type === "plos") {
+      setSource(type);
     }
     if (type === "biorxiv" || type === "pubmed" || type === "plos") {
       setSource(type);
