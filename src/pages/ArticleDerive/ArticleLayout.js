@@ -387,24 +387,30 @@ const ArticleLayout = () => {
     setIsCitationsOpen(true);
   };
   const handleAnnotate = () => {
+    // If annotateData is present, set openAnnotate to false and return
+    if (annotateData) {
+      setOpenAnnotate((prevOpenAnnotate) => !prevOpenAnnotate);
+      return;
+    }
+  
     const matchingIdExists =
       annotateData && Object.prototype.hasOwnProperty.call(annotateData, id);
     let chatHistory = [];
     const chatHistoryRaw = localStorage.getItem("chatHistory");
     chatHistory = chatHistoryRaw ? JSON.parse(chatHistoryRaw) : [];
     const latestFileEntry = chatHistory.filter((entry) => entry.file_url).pop();
-
+  
     if (uploadedFile) {
       handleAnnotateUploadedFile(); // Handle uploaded file annotation
       return;
     }
-
+  
     if (latestFileEntry && !annotateData) {
       setFileUrl(latestFileEntry.file_url);
       handleAnnotateFile(latestFileEntry.file_url);
       return;
     }
-
+  
     if (annotateData && annotateData.length > 0) {
       setOpenAnnotate(true);
     } else if (
@@ -416,6 +422,7 @@ const ArticleLayout = () => {
       setOpenAnnotate((prevOpenAnnotate) => !prevOpenAnnotate);
     }
   };
+  
   const handleAnnotateFile = async () => {
     setAnnotateLoading(true);
     try {

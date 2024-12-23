@@ -977,13 +977,14 @@ const ArticleDerive = ({
               {/* File Preview */}
               {uploadedFile && uploadedFile.name.endsWith(".pdf") && (
                 <div className="iframe-preview">
-                  <iframe
-                    src={URL.createObjectURL(uploadedFile)}
-                    width="100%"
-                    height="350px"
-                    title="PDF Preview"
-                  ></iframe>
-                </div>
+                <iframe
+                  src={URL.createObjectURL(uploadedFile)}
+                  width="100%"
+                  height="350px"
+                  title="PDF Preview"
+                ></iframe>
+              </div>
+              
               )}
             </div>
           </div>
