@@ -101,10 +101,13 @@
   /* padding: 0 10px 0 10px; */
   border: 1px solid rgba(235, 235, 243, 1);
   display: flex;
-  flex-direction: column-reverse;
+  /* flex-direction: column-reverse; */
 
   justify-content:center;
 
+}
+.iframe-preview {
+  width: 100%;
 }
 .derive-query-asked {
   background-color: rgba(237, 237, 237, 1);
