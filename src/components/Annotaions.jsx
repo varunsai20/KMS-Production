@@ -6,6 +6,7 @@ import "./Annotations.css";
 
 const Annotation = ({
   openAnnotate,
+  openNotes,
   annotateData,
   source: passedSource,
   annotateHeight,
@@ -202,7 +203,8 @@ const Annotation = ({
         <div
           className="search-Annotate-tables"
           style={{
-            height: `${annotateHeight}vh`,
+            height: openNotes && openAnnotate ? `${annotateHeight - 7}vh` : "",
+            maxHeight: openAnnotate && openNotes ? "33vh" : "48vh",
             overflowY: "auto",
             overflowX: "hidden",
           }}

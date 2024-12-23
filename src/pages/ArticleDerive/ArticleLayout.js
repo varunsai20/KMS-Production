@@ -54,7 +54,6 @@ const ArticleLayout = () => {
     : "This feature is available for subscribed users.";
   const minHeight = 15;
   const maxHeight = 55;
-  const combinedMaxHeight = 55;
   const [sessions, setSessions] = useState([]);
   const [refreshSessions, setRefreshSessions] = useState(false);
   const [editingSessionId, setEditingSessionId] = useState(null);
@@ -119,6 +118,7 @@ const ArticleLayout = () => {
     }
     return minHeight; // Default minimum height
   };
+
   useEffect(() => {
     if (openAnnotate && !openNotes) {
       setAnnotateHeight(calculateContentHeight(annotateRef));
@@ -130,15 +130,13 @@ const ArticleLayout = () => {
       const annotateHeight = calculateContentHeight(annotateRef);
       const notesHeight = calculateContentHeight(notesRef);
 
-      // Ensure combined height doesn't exceed the combinedMaxHeight
+      // Ensure combined height doesn't exceed maxHeight
       const totalHeight = annotateHeight + notesHeight;
-      if (totalHeight > combinedMaxHeight) {
+      if (totalHeight > maxHeight) {
         const ratio = annotateHeight / totalHeight;
-        setAnnotateHeight(
-          Math.max(minHeight, Math.round(combinedMaxHeight * ratio))
-        );
+        setAnnotateHeight(Math.max(minHeight, Math.round(maxHeight * ratio)));
         setNotesHeight(
-          Math.max(minHeight, Math.round(combinedMaxHeight * (1 - ratio)))
+          Math.max(minHeight, Math.round(maxHeight * (1 - ratio)))
         );
       } else {
         setAnnotateHeight(annotateHeight);
@@ -147,61 +145,59 @@ const ArticleLayout = () => {
     }
   }, [openAnnotate, openNotes]);
 
-  console.log("notesRef", notesRef);
-  console.log("annotateRef", annotateRef);
-  console.log("CombinedHeight", combinedMaxHeight);
+  const handleAnnotateResize = (e) => {
+    if (openAnnotate && openNotes) {
+      e.preventDefault();
+      const startY = e.clientY;
+      const startHeight = annotateHeight;
 
-  useEffect(() => {
-    if (openAnnotate && !openNotes) {
-      setAnnotateHeight(calculateContentHeight(annotateRef));
-      setNotesHeight(0);
-    } else if (openNotes && !openAnnotate) {
-      setNotesHeight(calculateContentHeight(notesRef));
-      setAnnotateHeight(0);
-    } else if (openAnnotate && openNotes) {
-      // Reduce Annotate height to 32vh if both are open
-      const reducedAnnotateHeight = 32; // Fixed height for annotate when both are open
-      const availableNotesHeight = combinedMaxHeight - reducedAnnotateHeight;
-
-      setAnnotateHeight(reducedAnnotateHeight);
-      setNotesHeight(Math.max(minHeight, availableNotesHeight));
-    }
-  }, [openAnnotate, openNotes]);
-
-  const handleResize = (e, type) => {
-    e.preventDefault();
-    const startY = e.clientY;
-    const startHeight = type === "annotate" ? annotateHeight : notesHeight;
-
-    const onMouseMove = (moveEvent) => {
-      const delta = ((moveEvent.clientY - startY) / window.innerHeight) * 100;
-
-      if (type === "annotate" && openAnnotate && openNotes) {
-        const newAnnotateHeight = Math.min(
-          maxHeight,
-          Math.max(32, startHeight + delta) // Use 32vh as the minimum for annotate when both are open
+      const onMouseMove = (moveEvent) => {
+        const delta = ((moveEvent.clientY - startY) / window.innerHeight) * 100;
+        const newAnnotateHeight = Math.max(
+          minHeight,
+          Math.min(maxHeight, startHeight + delta)
         );
-        const newNotesHeight = combinedMaxHeight - newAnnotateHeight;
+        const newNotesHeight = 60 - newAnnotateHeight;
+
         setAnnotateHeight(newAnnotateHeight);
-        setNotesHeight(Math.max(minHeight, newNotesHeight));
-      } else if (type === "notes" && openAnnotate && openNotes) {
-        const newNotesHeight = Math.min(
-          maxHeight,
-          Math.max(minHeight, startHeight - delta)
-        );
-        const newAnnotateHeight = combinedMaxHeight - newNotesHeight;
         setNotesHeight(newNotesHeight);
-        setAnnotateHeight(Math.max(32, newAnnotateHeight)); // Use 32vh as the minimum for annotate when both are open
-      }
-    };
+      };
 
-    const onMouseUp = () => {
-      window.removeEventListener("mousemove", onMouseMove);
-      window.removeEventListener("mouseup", onMouseUp);
-    };
+      const onMouseUp = () => {
+        window.removeEventListener("mousemove", onMouseMove);
+        window.removeEventListener("mouseup", onMouseUp);
+      };
 
-    window.addEventListener("mousemove", onMouseMove);
-    window.addEventListener("mouseup", onMouseUp);
+      window.addEventListener("mousemove", onMouseMove);
+      window.addEventListener("mouseup", onMouseUp);
+    }
+  };
+  const handleNotesResize = (e) => {
+    if (openAnnotate && openNotes) {
+      e.preventDefault();
+      const startY = e.clientY;
+      const startHeight = notesHeight;
+
+      const onMouseMove = (moveEvent) => {
+        const delta = ((startY - moveEvent.clientY) / window.innerHeight) * 100;
+        const newNotesHeight = Math.max(
+          minHeight,
+          Math.min(maxHeight, startHeight + delta)
+        );
+        const newAnnotateHeight = Math.max(minHeight, 60 - newNotesHeight);
+
+        setNotesHeight(newNotesHeight);
+        setAnnotateHeight(newAnnotateHeight);
+      };
+
+      const onMouseUp = () => {
+        window.removeEventListener("mousemove", onMouseMove);
+        window.removeEventListener("mouseup", onMouseUp);
+      };
+
+      window.addEventListener("mousemove", onMouseMove);
+      window.addEventListener("mouseup", onMouseUp);
+    }
   };
 
   const handleSessionClick = async (session_id) => {
@@ -382,33 +378,7 @@ const ArticleLayout = () => {
       console.error("Error updating session title:", error);
     }
   };
-  const handleAnnotateResize = (e) => {
-    if (openAnnotate && openNotes) {
-      e.preventDefault();
-      const startY = e.clientY;
-      const startHeight = annotateHeight;
 
-      const onMouseMove = (moveEvent) => {
-        const delta = ((moveEvent.clientY - startY) / window.innerHeight) * 100;
-        const newAnnotateHeight = Math.max(
-          minHeight,
-          Math.min(maxHeight, startHeight + delta)
-        );
-        const newNotesHeight = 60 - newAnnotateHeight;
-
-        setAnnotateHeight(newAnnotateHeight);
-        setNotesHeight(newNotesHeight);
-      };
-
-      const onMouseUp = () => {
-        window.removeEventListener("mousemove", onMouseMove);
-        window.removeEventListener("mouseup", onMouseUp);
-      };
-
-      window.addEventListener("mousemove", onMouseMove);
-      window.addEventListener("mouseup", onMouseUp);
-    }
-  };
   const [fileUrl, setFileUrl] = useState("");
   const [annotateFile, setAnnotateFile] = useState(false);
   const [isCitationsOpen, setIsCitationsOpen] = useState(false);
@@ -554,33 +524,6 @@ const ArticleLayout = () => {
     localStorage.removeItem("unsavedChanges");
   };
 
-  const handleNotesResize = (e) => {
-    if (openAnnotate && openNotes) {
-      e.preventDefault();
-      const startY = e.clientY;
-      const startHeight = notesHeight;
-
-      const onMouseMove = (moveEvent) => {
-        const delta = ((startY - moveEvent.clientY) / window.innerHeight) * 100;
-        const newNotesHeight = Math.max(
-          minHeight,
-          Math.min(maxHeight, startHeight + delta)
-        );
-        const newAnnotateHeight = Math.max(minHeight, 60 - newNotesHeight);
-
-        setNotesHeight(newNotesHeight);
-        setAnnotateHeight(newAnnotateHeight);
-      };
-
-      const onMouseUp = () => {
-        window.removeEventListener("mousemove", onMouseMove);
-        window.removeEventListener("mouseup", onMouseUp);
-      };
-
-      window.addEventListener("mousemove", onMouseMove);
-      window.addEventListener("mouseup", onMouseUp);
-    }
-  };
   function scrollToTop() {
     const articleContent = document.querySelector(".meta");
     if (articleContent) {
@@ -735,13 +678,24 @@ const ArticleLayout = () => {
               opacity: isLoggedIn ? 1 : 0.5,
             }}
           >
-            <div className="annotate-note">
+            <div
+              className="annotate-note"
+              style={{
+                height: "55vh",
+                overflowY: "hidden",
+
+                borderRadius:
+                  openAnnotate && openNotes ? "0px 0px 16px 16px" : "20px",
+              }}
+            >
               {openAnnotate && (
                 <div
                   ref={annotateRef}
                   className="annotate-height"
                   style={{
-                    height: `${annotateHeight}vh`,
+                    maxHeight: openAnnotate && openNotes ? `40vh` : undefined,
+                    height:
+                      openAnnotate && openNotes ? `${annotateHeight}vh` : "",
                   }}
                 >
                   {annotateFile ? (
@@ -755,30 +709,40 @@ const ArticleLayout = () => {
                       openAnnotate={openAnnotate}
                       annotateData={annotateData}
                       annotateHeight={annotateHeight}
+                      openNotes={openNotes}
                     />
                   )}
-                  <div
-                    className="annotate-line2"
-                    // onMouseDown={handleAnnotateResize}
-                    onMouseDown={(e) => handleResize(e, "annotate")}
-                  />
+                  {openAnnotate && openNotes ? (
+                    <div
+                      className="annotate-line2"
+                      onMouseDown={handleAnnotateResize}
+                    />
+                  ) : (
+                    ""
+                  )}
                 </div>
               )}
               {openNotes && (
                 <div
                   ref={notesRef}
                   className="notes-height"
-                  style={{ height: `${notesHeight}vh` }}
+                  style={{
+                    height: `${notesHeight}vh`,
+                  }}
                 >
                   <Notes selectedText={savedText} notesHeight={notesHeight} />
                   <div
                     className="notes-line1"
-                    onMouseDown={(e) => handleResize(e, "notes")}
+                    onMouseDown={handleNotesResize}
                   />
-                  <div
-                    className="notes-line2"
-                    onMouseDown={(e) => handleResize(e, "notes")}
-                  />
+                  {openAnnotate && openNotes ? (
+                    <div
+                      className="notes-line2"
+                      onMouseDown={handleNotesResize}
+                    />
+                  ) : (
+                    ""
+                  )}
                 </div>
               )}
             </div>
