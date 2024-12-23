@@ -1,23 +1,21 @@
 import React, { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCaretDown, faCaretRight } from "@fortawesome/free-solid-svg-icons";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import "./Annotations.css";
+
 const Annotation = ({
   openAnnotate,
   annotateData,
-  searchTerm,
   source: passedSource,
   annotateHeight,
 }) => {
-  console.log(annotateData);
+  const [expandedPmids, setExpandedPmids] = useState({});
+  const [expandedTexts, setExpandedTexts] = useState({});
+  const [source, setSource] = useState(passedSource || []);
   const location = useLocation();
   const navigate = useNavigate();
-  //const { pmid: pmidFromUrl } = useParams(); // Extract pmid from the URL
-  const [expandedPmids, setExpandedPmids] = useState({}); // Track which PMIDs are expanded
-  const [expandedTexts, setExpandedTexts] = useState({});
-  const { data } = location.state || { data: [] };
-  const [source, setSource] = useState(passedSource || []);
+
   useEffect(() => {
     // Check if the source is available in sessionStorage if not passed as props
     if (!passedSource) {
@@ -33,64 +31,52 @@ const Annotation = ({
     }
   }, [passedSource]);
   useEffect(() => {
-    // Reset expandedTexts when openAnnotate changes
     if (openAnnotate) {
-      setExpandedTexts({}); // Resets all expanded texts to the collapsed (sliced) state
+      setExpandedTexts({});
     }
   }, [openAnnotate]);
-  //   const handleNavigate = (article) => {
-  //   // const idType = getIdType(article); // Determine whether it's pmid or bioRxiv_id
-  //   const type = article.source === "BioRxiv" ? "bioRxiv_id" : article.source === "Public Library of Science (PLOS)" ? "plos_id" : "pmid";// Pass the type explicitly
-  //   navigate(`/article/${type}:${article}`, { state: { data: data, searchTerm,annotateData: annotateData } });
-  // };
+
+  const toggleExpandPmid = (pmid) => {
+    setExpandedPmids((prev) => ({
+      ...prev,
+      [pmid]: !prev[pmid],
+    }));
+
+    if (expandedPmids[pmid]) {
+      const updatedTexts = { ...expandedTexts };
+      Object.keys(updatedTexts).forEach((key) => {
+        if (key.startsWith(`${pmid}-`)) delete updatedTexts[key];
+      });
+      setExpandedTexts(updatedTexts);
+    }
+  };
+  const capitalizeFirstLetter = (string) => {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+  };
+  const toggleExpandText = (key) => {
+    setExpandedTexts((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
+  };
+
   const handleNavigate = (articleId) => {
     const article = source.find((entry) => entry.idType === articleId);
 
     if (article) {
-      const { source: articleSource } = article;
       const type =
-        articleSource === "BioRxiv"
+        article.source === "BioRxiv"
           ? "bioRxiv_id"
-          : articleSource === "Public Library of Science (PLOS)"
+          : article.source === "Public Library of Science (PLOS)"
           ? "plos_id"
-          : "pmid"; // Determine type based on source
+          : "pmid";
 
       navigate(`/article/content/${type}:${articleId}`, {
-        state: { data, searchTerm, annotateData },
+        state: { annotateData },
       });
     } else {
       console.error(`Article with ID ${articleId} not found in the source.`);
     }
-  };
-
-  const capitalizeFirstLetter = (string) => {
-    return string.charAt(0).toUpperCase() + string.slice(1);
-  };
-  // Function to toggle the expansion for all rows associated with a given PMID
-  const toggleExpandPmid = (pmid) => {
-    setExpandedPmids((prevState) => {
-      const isExpanding = !prevState[pmid]; // Determine if we are expanding or collapsing
-      if (!isExpanding) {
-        // If we are collapsing, reset the expanded texts for this PMID
-        const updatedTexts = { ...expandedTexts };
-        Object.keys(updatedTexts).forEach((key) => {
-          if (key.startsWith(`${pmid}-`)) {
-            delete updatedTexts[key]; // Remove expanded text for this PMID's rows
-          }
-        });
-        setExpandedTexts(updatedTexts); // Update expanded texts
-      }
-      return {
-        ...prevState,
-        [pmid]: isExpanding, // Toggle expansion for the specific PMID
-      };
-    });
-  };
-  const toggleExpandText = (key) => {
-    setExpandedTexts((prevState) => ({
-      ...prevState,
-      [key]: !prevState[key], // Toggle between full text and sliced text for a specific row
-    }));
   };
 
   const renderAnnotations = () => {
@@ -100,41 +86,48 @@ const Annotation = ({
         : [];
 
     return annotationEntries.flatMap(([pmid, categories]) => {
-      const rows = [];
-      const isExpanded = expandedPmids[pmid] || false; // Initially set expanded state to false if not set
+      const isExpanded = expandedPmids[pmid] || false; // Track expanded state for each PMID
 
+      const rows = [];
+
+      // Render the first row before expanding
       const sortedCategories = Object.entries(categories).sort(
         ([, a], [, b]) => (b.annotation_score || 0) - (a.annotation_score || 0)
       );
 
       sortedCategories.forEach(([category, values], index) => {
         if (category === "annotation_score") return;
-        const categoryKey = `${pmid}-${category}`;
-        const isTextExpanded = expandedTexts[categoryKey];
 
+        const categoryKey = `${pmid}-${category}`;
         const annotationScore = values.annotation_score
           ? `${values.annotation_score.toFixed(2)}%`
-          : "N/A";
-
+          : "";
         const categoryTexts = Object.entries(values)
           .filter(([key]) => key !== "annotation_score")
           .map(([key]) => key)
           .join(", ");
 
+        const isTextExpanded = expandedTexts[categoryKey];
         const displayText = isTextExpanded
           ? categoryTexts
-          : categoryTexts.slice(0, 30);
+          : categoryTexts.slice(0, 50); // Show up to 50 characters when collapsed
 
-        // Only display the first row initially if `isExpanded` is false
+        // Show the first row before expanding or all rows when expanded
         if (index === 0 || isExpanded) {
           rows.push(
-            <tr className="search-table-body" key={categoryKey}>
+            <tr
+              className="search-table-body"
+              key={categoryKey}
+              style={{
+                display: index === 0 || isExpanded ? "table-row" : "none",
+              }}
+            >
               <td
                 style={{
                   paddingLeft: index === 0 ? 0 : 30,
                 }}
               >
-                <div style={{ display: "flex" }}>
+                <div style={{ display: "flex", alignItems: "center" }}>
                   {index === 0 && (
                     <button onClick={() => toggleExpandPmid(pmid)}>
                       {isExpanded ? (
@@ -151,7 +144,7 @@ const Annotation = ({
                     </button>
                   )}
                   {index === 0 && (
-                    <span
+                    <a
                       style={{
                         color: "#1a82ff",
                         fontWeight: 600,
@@ -160,7 +153,7 @@ const Annotation = ({
                       onClick={() => handleNavigate(pmid)}
                     >
                       {pmid}
-                    </span>
+                    </a>
                   )}
                 </div>
               </td>
@@ -168,7 +161,7 @@ const Annotation = ({
               <td>{capitalizeFirstLetter(category)}</td>
               <td>
                 {displayText}
-                {categoryTexts.length > 30 && (
+                {categoryTexts.length > 50 && (
                   <span
                     style={{
                       color: "blue",
@@ -191,10 +184,9 @@ const Annotation = ({
   };
 
   return (
-    <div className="search-tables" >
+    <div className="search-tables">
       <div
         style={{
-          // background: "rgba(251, 251, 253, 1)",
           background:
             "linear-gradient(90deg,rgba(254, 118, 117, 0.7) -21.07%,rgba(204, 129, 185, 0.7) 37.85%,rgba(26, 168, 210, 0.7) 97.5%,rgba(76, 210, 217, 0.7) 151.24%)",
           borderRadius: "16px 16px 0 0",
@@ -205,14 +197,12 @@ const Annotation = ({
       </div>
       {annotateData &&
       Object.keys(annotateData).some(
-        (key) =>
-          annotateData[key] && // Ensure value is not null or undefined
-          Object.keys(annotateData[key]).length > 0 // Check if value is a non-empty object
+        (key) => annotateData[key] && Object.keys(annotateData[key]).length > 0
       ) ? (
         <div
           className="search-Annotate-tables"
           style={{
-            maxHeight: `${annotateHeight - 10}vh`,
+            height: `${annotateHeight}vh`,
             overflowY: "auto",
             overflowX: "hidden",
           }}

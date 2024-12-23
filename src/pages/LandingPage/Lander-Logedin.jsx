@@ -5,11 +5,6 @@ import { useNavigate } from "react-router-dom";
 import { setDeriveInsights } from "../../redux/reducers/deriveInsights";
 import Header from "../../components/Header-New";
 import Footer from "../../components/Footer-New";
-import LandingImage from "../../assets/images/image 1.svg";
-import circle from "../../assets/images/Left1.svg";
-import ReactLogo from "../../assets/images/Left2.svg";
-import Bulb from "../../assets/images/Right2.svg";
-import Molecules from "../../assets/images/Right1.svg";
 import SearchBar from "../../components/SearchBar";
 import points1 from "../../assets/images/points1.svg";
 import points2 from "../../assets/images/points2.svg";
@@ -43,7 +38,7 @@ const Lander = () => {
   const [isCitationsOpen, setIsCitationsOpen] = useState(false);
   const [isAnnotateOpen, setIsAnnotateOpen] = useState(false);
 
-  const [dimensions, setDimensions] = useState({ width: 400, height: 380 });
+  const [dimensions, setDimensions] = useState({ width: 340, height: 380 });
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const { user } = useSelector((state) => state.auth);
   const token = useSelector((state) => state.auth.access_token);
@@ -140,7 +135,7 @@ const Lander = () => {
           if (Array.isArray(entry.parts)) {
             currentEntry.query = entry.parts.join(" ");
           }
-        } else if (entry.role === "model") {
+        } else if (entry.role === "assistant") {
           if (Array.isArray(entry.parts)) {
             currentEntry.response = entry.parts.join(" ");
           }
@@ -206,34 +201,21 @@ const Lander = () => {
       </div>
 
       <div className="Landing-Content">
-        {/* <img className="Right2" src={ReactLogo} alt="Right Graphic 2" />
-        <img className="Left1" src={Bulb} alt="Left Graphic 1" />
-        <img className="Left2" src={circle} alt="Left Graphic 2" />
-        <img className="Right1" src={Molecules} alt="Right Graphic 1" /> */}
-        {/* <div className="Landing-Content-Left"> */}
         <div className="welcome-search">
-          
           <img src={Logo} alt="inferAI-logo" className="inferai-logo" />
-          <SearchBar className="Landingpage-SearchBar" landingWidth="80%" zIndex="0"></SearchBar>
+          <SearchBar
+            className="Landingpage-SearchBar"
+            landingWidth="80%"
+            zIndex="0"
+          ></SearchBar>
           <p className="Landing-Welcome-desc">
-          Inferai by Infer Solutions, Inc, a cutting-edge product leveraging generative AI to revolutionize research in pharmaceuticals, biotechnology, and healthcare. This innovative platform streamlines research processes, enhances data analysis, and uncovers new insights.
+            Inferai by Infer Solutions, Inc, a cutting-edge product leveraging
+            generative AI to revolutionize research in pharmaceuticals,
+            biotechnology, and healthcare. This innovative platform streamlines
+            research processes, enhances data analysis, and uncovers new
+            insights.
           </p>
         </div>
-        {/* </div> */}
-
-        {/* <div className="Landing-Content-Right">
-          <img
-            className="Landing-Content-Right-Image"
-            src={LandingImage}
-            alt="Landing Graphic"
-            style={{
-              height: "-webkit-fill-available",
-              maxWidth: "234px",
-              // maxHeight: "254px",
-              mixBlendMode: "color-burn",
-            }}
-          />
-        </div> */}
       </div>
 
       <div className="Landing-Features">
@@ -260,10 +242,10 @@ const Lander = () => {
               />
               <h4>Analytics</h4>
 
-              <span>Dashboard</span>
+              <span style={{}} title="This feature will ">
+                Dashboard
+              </span>
               <span>Reports</span>
-
-              <span onClick={handleOpenInsights}>Derive Insights</span>
             </div>
 
             <div className="Feature-Item">
@@ -273,9 +255,9 @@ const Lander = () => {
                 alt="Landing-Utilities-Icon"
               />
               <h4>Utilities</h4>
-
-              <span onClick={handleOpenAnnotate}>Annotations</span>
-              <span onClick={handleOpenCitations}>Citation</span>
+              <span onClick={handleOpenInsights}>Derive Insights</span>
+              {/* <span onClick={handleOpenAnnotate}>Annotations</span> */}
+              {/* <span onClick={handleOpenCitations}>Citation</span> */}
               <span>Protocol</span>
             </div>
             <div className="Feature-Item">
@@ -285,8 +267,16 @@ const Lander = () => {
                 alt="Landing-Help-Icon"
               />
               <h4>Help</h4>
-
-              <span>About Infer</span>
+              <span>User Guide</span>
+              {/* <span>About Infer</span> */}
+              <a
+                href="https://www.infersol.com/about-infer-solutions-inc/"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ textDecoration: "none", color: "#007BFF" }}
+              >
+                About Infer
+              </a>
               <span>FAQs</span>
             </div>
           </div>
@@ -359,7 +349,7 @@ const Lander = () => {
             });
             setPosition(position);
           }}
-          minWidth={400}
+          minWidth={340}
           minHeight={350}
           // maxWidth={800}
           // maxHeight={600}

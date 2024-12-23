@@ -29,6 +29,9 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   const { user } = useSelector((state) => state.auth);
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
   const displayIfLoggedIn = isLoggedIn ? null : "none";
+  const displayMessage = isLoggedIn
+    ? ""
+    : "This feature is available for subscribed users.";
   const user_id = user?.user_id;
   const token = useSelector((state) => state.auth.access_token);
   const searchTerm = sessionStorage.getItem("SearchTerm");
@@ -36,11 +39,10 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   const contentRightRef = useRef(null);
   const [result, setResults] = useState();
   const [loading, setLoading] = useState(false);
-  const [searchCollection, setSearchCollection] = useState("");
   const [selectedArticles, setSelectedArticles] = useState([]);
   const [bioRxivArticles, setBioRxivArticles] = useState([]);
   const [plosArticles, setPlosArticles] = useState([]);
-  const [handleAnnotateCall,setHandleAnnotateCall]=useState(false)
+  const [handleAnnotateCall, setHandleAnnotateCall] = useState(false);
   const totalArticles = useMemo(() => {
     return [...bioRxivArticles, ...plosArticles, ...selectedArticles];
   }, [bioRxivArticles, plosArticles, selectedArticles]);
@@ -73,36 +75,28 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
     }
   };
 
-  useEffect(() => {
-    if (user_id && token) {
-      fetchNotes();
-    }
-  }, [user_id, token]);
-
   const prevTotalArticlesRef = useRef(totalArticles);
 
   useEffect(() => {
     if (handleAnnotateCall) {
-      if(totalArticles.length>1){
-      // Check if the previous totalArticles length or values are different
-      const prevTotalArticles = prevTotalArticlesRef.current;
-      const isDifferent =
-        prevTotalArticles.length !== totalArticles.length ||
-        JSON.stringify(prevTotalArticles) !== JSON.stringify(totalArticles);
-  
-      if (isDifferent) {
-        console.log("totalArticles have changed");
-        handleAnnotateClick();
-      }
-  
-      // Update the ref to the current totalArticles
-      prevTotalArticlesRef.current = totalArticles;
-      setHandleAnnotateCall(false)
-    }
-    }
-  }, [handleAnnotateCall,totalArticles]); // Re-run when totalArticles or handleAnnotateCall changes
-  
+      if (totalArticles.length > 1) {
+        // Check if the previous totalArticles length or values are different
+        const prevTotalArticles = prevTotalArticlesRef.current;
+        const isDifferent =
+          prevTotalArticles.length !== totalArticles.length ||
+          JSON.stringify(prevTotalArticles) !== JSON.stringify(totalArticles);
 
+        if (isDifferent) {
+          console.log("totalArticles have changed");
+          handleAnnotateClick();
+        }
+
+        // Update the ref to the current totalArticles
+        prevTotalArticlesRef.current = totalArticles;
+        setHandleAnnotateCall(false);
+      }
+    }
+  }, [handleAnnotateCall, totalArticles]); // Re-run when totalArticles or handleAnnotateCall changes
 
   const fetchCollections = async () => {
     try {
@@ -133,7 +127,8 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
 
   const [emailSubject, setEmailSubject] = useState();
   const [description, setDecription] = useState();
-
+  const [collectionAction, setCollectionAction] = useState("existing"); // Tracks which radio button is selected
+  const [selectedCollection, setSelectedCollection] = useState("favorites");
   const [newCollectionName, setNewCollectionName] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageInput, setPageInput] = useState(1);
@@ -220,7 +215,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   }, [selectedDateRange]);
   const [articleTitle, setArticleTitle] = useState("");
   const [source, setSource] = useState("");
-  const [showTextAvailability, setShowTextAvailability] = useState(true);
   const [showArticleType, setShowArticleType] = useState(true);
   const [showSourceType, setShowSourceType] = useState(true);
   const [showPublicationDate, setShowPublicationDate] = useState(true);
@@ -381,7 +375,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   };
 
   const handleAnnotate = () => {
-
     if (openAnnotate) {
       setOpenAnnotate(false);
     } else if (annotateData && Object.keys(annotateData).length > 0) {
@@ -403,7 +396,10 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
     };
   }, [annotateLoading]);
   const handleCloseCollectionModal = () => {
-    setIsModalOpen(false);
+    setCollectionAction("existing"); // Reset to default state
+    setNewCollectionName(""); // Clear input
+    setSelectedCollection("favorites"); // Reset selection
+    setIsModalOpen(false); // Close modal
   };
   const isArticleBookmarked = (idType) => {
     const numericIdType = Number(idType);
@@ -462,6 +458,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   };
 
   const handleSaveToExisting = async (collectionName) => {
+    if (!collectionName) return;
     const bookmarkData = {
       user_id,
       collection_name: collectionName,
@@ -501,6 +498,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   };
 
   const handleCreateNewCollection = async () => {
+    if (!newCollectionName) return;
     const newCollection = {
       user_id,
       collection_name: newCollectionName,
@@ -520,7 +518,9 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       if (response.status === 201) {
         await fetchCollections(); // Refetch collections after successful creation
         setNewCollectionName("");
+        setCollectionAction("existing");
         setIsModalOpen(false);
+        handleCloseCollectionModal();
       }
       showSuccessToast("New Collection Created");
     } catch (error) {
@@ -806,7 +806,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
     );
   };
 
-
   const handleBioRxivBoxChange = (pmid) => {
     setBioRxivArticles(
       (prevBioRxiv) =>
@@ -861,7 +860,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
     }
   };
 
-  const isArticleSelected = (source, idType) => {
+  const isArticleSelected = (source, idType)   => {
     const uniqueId = `${source}_${idType}`; // Create unique ID for checking selection state
     if (source === "BioRxiv") {
       return bioRxivArticles.includes(uniqueId);
@@ -871,8 +870,18 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       return selectedArticles.includes(uniqueId); // For other sources
     }
   };
-  const handleShare = () => {
-    setIsEmailModalOpen(true);
+  const handleShare = async () => {
+    try {
+      // Fetch notes dynamically when the Share button is clicked
+      if (user_id && token) {
+        await fetchNotes();
+      }
+
+      // Open the email modal after fetching notes
+      setIsEmailModalOpen(true);
+    } catch (error) {
+      console.error("Error handling share action:", error);
+    }
   };
   const handleSendEmail = async () => {
     if (!email) {
@@ -893,12 +902,12 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       //const response = await apiService.shareArticle(emailData, token);
       const response = await axios.post(
         // "https://inferai.ai/api/core_search/sharearticle",
-        "https://cdc9-103-169-178-9.ngrok-free.app/api/core_search/sharearticle",
+        "https://inferai.ai/api/core_search/sharearticle",
         emailData,
         {
           headers: {
             Authorization: `Bearer ${token}`, // Add Bearer token
-            "ngrok-skip-browser-warning": true,
+            // "ngrok-skip-browser-warning": true,
           },
         }
       );
@@ -920,16 +929,73 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
     setEmailSubject("");
     setDecription("");
   };
+  // const handleAnnotateClick = async () => {
+  //   if (totalArticles.length > 0) {
+  //     sessionStorage.setItem("AnnotateData", "");
+  //     sessionStorage.setItem("AnnotateSource", "");
+  //     setAnnotateData([]);
+  //     setAnnotateLoading(true);
+
+  //     const extractIdType = (uniqueId) => {
+  //       return uniqueId.split("_")[1]; // This splits "source_idType" and returns only the idType
+  //     };
+  //     const extractIdSource = (uniqueId) => uniqueId.split("_")[0];
+
+  //     const annotatedArticles = totalArticles.map((id) => ({
+  //       source: extractIdSource(id),
+  //       idType: extractIdType(id),
+  //     }));
+
+  //     // Prepare the data by removing the "source_" part from uniqueId
+  //     const pubmedIds = selectedArticles.map((id) =>
+  //       parseInt(extractIdType(id), 10)
+  //     );
+  //     const biorxivIds = bioRxivArticles.map((id) =>
+  //       parseInt(extractIdType(id), 10)
+  //     );
+  //     const plosIds = plosArticles.map((id) => parseInt(extractIdType(id), 10));
+
+  //     axios
+  //       .post(
+  //         "https://inferai.ai/api/core_search/annotate",
+  //         {
+  //           pubmed: pubmedIds,
+  //           biorxiv: biorxivIds,
+  //           plos: plosIds,
+  //         },
+  //         {
+  //           headers: {
+  //             Authorization: `Bearer ${token}`, // Add the Bearer token here
+  //           },
+  //         }
+  //       )
+  //       .then((response) => {
+  //         const data = response.data;
+  //         sessionStorage.setItem("AnnotateData", JSON.stringify(data));
+  //         sessionStorage.setItem(
+  //           "AnnotateSource",
+  //           JSON.stringify(annotatedArticles)
+  //         );
+  //         setAnnotateData(data);
+  //         setAnnotateSource(annotatedArticles);
+  //         setOpenAnnotate(true);
+  //         setAnnotateLoading(false);
+  //       })
+  //       .catch((error) => {
+  //         console.error("Error fetching data from the API", error);
+  //         setAnnotateLoading(false);
+  //       });
+  //   }
+  // };
   const handleAnnotateClick = async () => {
     if (totalArticles.length > 0) {
       sessionStorage.setItem("AnnotateData", "");
       sessionStorage.setItem("AnnotateSource", "");
       setAnnotateData([]);
       setAnnotateLoading(true);
+      setLoading(true);
 
-      const extractIdType = (uniqueId) => {
-        return uniqueId.split("_")[1]; // This splits "source_idType" and returns only the idType
-      };
+      const extractIdType = (uniqueId) => uniqueId.split("_")[1];
       const extractIdSource = (uniqueId) => uniqueId.split("_")[0];
 
       const annotatedArticles = totalArticles.map((id) => ({
@@ -937,7 +1003,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
         idType: extractIdType(id),
       }));
 
-      // Prepare the data by removing the "source_" part from uniqueId
       const pubmedIds = selectedArticles.map((id) =>
         parseInt(extractIdType(id), 10)
       );
@@ -946,8 +1011,8 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       );
       const plosIds = plosArticles.map((id) => parseInt(extractIdType(id), 10));
 
-      axios
-        .post(
+      try {
+        const response = await axios.post(
           "https://inferai.ai/api/core_search/annotate",
           {
             pubmed: pubmedIds,
@@ -956,26 +1021,25 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
           },
           {
             headers: {
-              Authorization: `Bearer ${token}`, // Add the Bearer token here
+              Authorization: `Bearer ${token}`,
             },
           }
-        )
-        .then((response) => {
-          const data = response.data;
-          sessionStorage.setItem("AnnotateData", JSON.stringify(data));
-          sessionStorage.setItem(
-            "AnnotateSource",
-            JSON.stringify(annotatedArticles)
-          );
-          setAnnotateData(data);
-          setAnnotateSource(annotatedArticles);
-          setOpenAnnotate(true);
-          setAnnotateLoading(false);
-        })
-        .catch((error) => {
-          console.error("Error fetching data from the API", error);
-          setAnnotateLoading(false);
-        });
+        );
+        const data = response.data;
+        sessionStorage.setItem("AnnotateData", JSON.stringify(data));
+        sessionStorage.setItem(
+          "AnnotateSource",
+          JSON.stringify(annotatedArticles)
+        );
+        setAnnotateData(data);
+        setAnnotateSource(annotatedArticles);
+        setOpenAnnotate(true);
+      } catch (error) {
+        console.error("Error fetching data from the API", error);
+      } finally {
+        setAnnotateLoading(false);
+        setLoading(false);
+      }
     }
   };
 
@@ -1012,16 +1076,17 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
         <Header />
         <div className="SearchHeader-Logo">
           <Link to="/">
-
-        <img src={Logo} alt="inferAI-logo" className="inferai-logo" />
-        </Link>
-        <SearchBar className="searchResults-Bar" searchWidth="90%" ></SearchBar>
-      </div>
-
+            <img src={Logo} alt="inferAI-logo" className="inferai-logo" />
+          </Link>
+          <SearchBar
+            className="searchResults-Bar"
+            searchWidth="90%"
+          ></SearchBar>
+        </div>
       </div>
 
       <div id="Search-Content-Container">
-        <div className="searchContent-left"  style={{ top: containerHeight }}>
+        <div className="searchContent-left" style={{ top: containerHeight }}>
           <div className="searchContent-left-header">
             <p className="title">Filters</p>
             <p className="Filters-ResetAll" onClick={handleResetAll}>
@@ -1213,34 +1278,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                 )}
               </div>
             </div>
-            {/* Text availability section */}
-            <div className="searchfilter-section">
-              <h5
-                onClick={() => setShowTextAvailability(!showTextAvailability)}
-              >
-                <span>Text availability</span>
-                <span>
-                  {showTextAvailability ? (
-                    <img src={downarrow} alt="down-arrow" />
-                  ) : (
-                    <img src={uparrow} alt="up-arrow" />
-                  )}
-                </span>
-              </h5>
-              {showTextAvailability && (
-                <div className="searchfilter-options-dropdown">
-                  <label>
-                    <input type="checkbox" /> Abstract
-                  </label>
-                  <label>
-                    <input type="checkbox" /> Free full text
-                  </label>
-                  <label>
-                    <input type="checkbox" /> Full text
-                  </label>
-                </div>
-              )}
-            </div>
           </div>
         </div>
         {loading ? <Loading /> : ""}
@@ -1250,40 +1287,56 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
             <>
               <div className="SearchResult-Count-Filters">
                 <div className="SearchResult-Option-Buttons">
-                 
                   <div
                     className="SearchResult-Option-Left"
                     style={{
-                      cursor: selectedArticles.length > 0 ? "pointer" : "",
-                      opacity: selectedArticles.length > 0 ? 1 : "", // Change opacity for a disabled effect
-                      display: displayIfLoggedIn,
+                      cursor:
+                        isLoggedIn && selectedArticles.length > 0
+                          ? "pointer"
+                          : "not-allowed",
+                      opacity: isLoggedIn
+                        ? selectedArticles.length > 0
+                          ? 1
+                          : 1
+                        : 0.5, // Grayed out if not logged in1
                     }}
                     title={
-                      selectedArticles.length === 0
-                        ? "Select an article to share"
-                        : "Share selected articles"
+                      isLoggedIn
+                        ? selectedArticles.length === 0
+                          ? "Select an article to share"
+                          : "Share selected articles"
+                        : displayMessage
                     }
                   >
                     <button
-                      style={{ display: displayIfLoggedIn }}
                       onClick={
-                        Object.keys(shareableLinks).length > 0
+                        isLoggedIn && Object.keys(shareableLinks).length > 0
                           ? handleShare
                           : null
                       }
+                      disabled={
+                        !isLoggedIn || Object.keys(shareableLinks).length === 0
+                      }
                       className={`SearchResult-Share ${
-                        Object.keys(shareableLinks).length > 0
+                        isLoggedIn && Object.keys(shareableLinks).length > 0
                           ? "active"
                           : "disabled"
                       }`}
                       title={
-                        Object.keys(shareableLinks).length === 0
-                          ? "Select an article to share"
-                          : "Share selected articles"
+                        isLoggedIn
+                          ? Object.keys(shareableLinks).length === 0
+                            ? "Select an article to share"
+                            : "Share selected articles"
+                          : displayMessage
                       }
                     >
                       Share
                     </button>
+                    {/* {!isLoggedIn && (
+    <p style={{ color: "gray", fontSize: "0.9rem", marginTop: "5px" }}>
+      {displayMessage}
+    </p>
+  )} */}
                   </div>
                 </div>
                 <div
@@ -1500,26 +1553,35 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                                 style={{
                                   color: isArticleBookmarked(idType)
                                     .isBookmarked
-                                    ? "#0071bc"
+                                    ? "#1B365D"
                                     : "black",
-                                  cursor: "pointer",
-                                  display: displayIfLoggedIn,
+                                  cursor: isLoggedIn
+                                    ? "pointer"
+                                    : "not-allowed",
+                                  opacity: isLoggedIn ? 1 : 0.5,
                                 }}
                                 onClick={() =>
-                                  handleBookmarkClick(
-                                    idType,
-                                    result.article_title,
-                                    result.source || "PubMed"
-                                  )
+                                  isLoggedIn
+                                    ? handleBookmarkClick(
+                                        idType,
+                                        result.article_title,
+                                        result.source || "PubMed"
+                                      )
+                                    : ""
                                 }
                                 title={
-                                  isArticleBookmarked(idType).isBookmarked
-                                    ? "Bookmarked"
-                                    : "Bookmark this article"
+                                  isLoggedIn
+                                    ? isArticleBookmarked(idType).isBookmarked
+                                      ? "Bookmarked"
+                                      : "Bookmark this article"
+                                    : displayMessage
                                 }
                               />
                               {isModalOpen && (
-                                <div className="search-bookmark-modal-overlay">
+                                <div
+                                  className="search-bookmark-modal-overlay"
+                                  // onClick={handleCloseCollectionModal}
+                                >
                                   <button
                                     id="close-collection-modal"
                                     onClick={handleCloseCollectionModal}
@@ -1527,82 +1589,137 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                                     <IoCloseOutline size={20} />
                                   </button>
                                   <div className="search-modal-content">
-                                    <div className="bookmark-p">
-                                      <p className="bookmark-para">Bookmarks</p>
-                                    </div>
-                                    <h4>Create a new collection:</h4>
-                                    <input
-                                      type="text"
-                                      value={newCollectionName}
-                                      onChange={(e) =>
-                                        setNewCollectionName(e.target.value)
-                                      }
-                                      placeholder="New collection name"
-                                    />
-                                    <div
-                                      style={{
-                                        display: "flex",
-                                        gap: "20px",
-                                        marginBottom: "15px",
-                                      }}
-                                    >
-                                      <button
-                                        onClick={handleCreateNewCollection}
-                                        disabled={!newCollectionName}
-                                      >
-                                        Create
-                                      </button>
+                                    <p>ADD TO COLLECTION</p>
+                                    {/* Radio buttons for collection action */}
+                                    <div className="radio-buttons">
+                                      <div className="radio1">
+                                        <input
+                                          type="radio"
+                                          id="collectionAction"
+                                          value="existing"
+                                          checked={
+                                            collectionAction === "existing"
+                                          }
+                                          onChange={() =>
+                                            setCollectionAction("existing")
+                                          }
+                                        />
+                                        <label>
+                                          Add to Existing Collection
+                                        </label>
+                                      </div>
+                                      <div className="radio2">
+                                        <input
+                                          type="radio"
+                                          id="collectionAction"
+                                          value="new"
+                                          checked={collectionAction === "new"}
+                                          onChange={() =>
+                                            setCollectionAction("new")
+                                          }
+                                        />
+                                        <label>Create New Collection</label>
+                                      </div>
                                     </div>
 
-                                    {Object.keys(collections).length > 0 && (
-                                      <>
-                                        <h4>Save to existing collection:</h4>
+                                    {/* Logic for adding to existing collection */}
+                                    {collectionAction === "existing" && (
+                                      <div className="select-dropdown">
+                                        <div className="choose-collection">
+                                          <label htmlFor="">
+                                            *Choose a collection
+                                          </label>
+                                          <select
+                                            name="collections"
+                                            id="collection-select"
+                                            className="select-tag"
+                                            style={{
+                                              width: "35%",
+                                              height: "5vh",
+                                            }}
+                                            value={selectedCollection}
+                                            onChange={(e) =>
+                                              setSelectedCollection(
+                                                e.target.value
+                                              )
+                                            }
+                                          >
+                                            <option
+                                              value="favorites"
+                                              disabled
+                                              selected
+                                            >
+                                              Favorites
+                                            </option>
+                                            {Object.keys(collections).map(
+                                              (collectionName, index) => (
+                                                <option
+                                                  key={index}
+                                                  value={collectionName}
+                                                >
+                                                  {collectionName}
+                                                </option>
+                                              )
+                                            )}
+                                          </select>
+                                        </div>
+                                        <div
+                                          style={{
+                                            display: "flex",
+                                            gap: "20px",
+                                            // marginTop: "15px",
+                                          }}
+                                        >
+                                          <button
+                                            onClick={() =>
+                                              handleSaveToExisting(
+                                                selectedCollection
+                                              )
+                                            }
+                                            disabled={!selectedCollection}
+                                          >
+                                            Add
+                                          </button>
+                                          <button
+                                            onClick={handleCloseCollectionModal}
+                                          >
+                                            Cancel
+                                          </button>
+                                        </div>
+                                      </div>
+                                    )}
+
+                                    {/* Logic for creating a new collection */}
+                                    {collectionAction === "new" && (
+                                      <div>
                                         <input
                                           type="text"
-                                          value={searchCollection}
+                                          value={newCollectionName}
                                           onChange={(e) =>
-                                            setSearchCollection(e.target.value)
+                                            setNewCollectionName(e.target.value)
                                           }
-                                          placeholder="Search collections"
-                                          style={{
-                                            marginBottom: "10px",
-                                            padding: "8px 0 8px 8px",
-                                          }}
+                                          placeholder="New collection name"
                                         />
-                                        <ul className="bookmark-existing-collections">
-                                          {Object.keys(collections)
-                                            .filter((collectionName) =>
-                                              collectionName
-                                                .toLowerCase()
-                                                .includes(
-                                                  searchCollection.toLowerCase()
-                                                )
-                                            )
-                                            .map((collectionName, index) => (
-                                              <ul key={index}>
-                                                <li
-                                                  onClick={() =>
-                                                    handleSaveToExisting(
-                                                      collectionName
-                                                    )
-                                                  }
-                                                >
-                                                  <span className="collection-name">
-                                                    {collectionName}
-                                                  </span>
-                                                  <span className="collection-article-count">
-                                                    {
-                                                      collections[
-                                                        collectionName
-                                                      ].length
-                                                    }{" "}
-                                                    articles
-                                                  </span>
-                                                </li>
-                                              </ul>
-                                            ))}
-                                        </ul>
-                                      </>
+                                        <div
+                                          style={{
+                                            display: "flex",
+                                            gap: "20px",
+                                            marginTop: "15px",
+                                          }}
+                                        >
+                                          <button
+                                            onClick={handleCreateNewCollection}
+                                            disabled={!newCollectionName}
+                                          >
+                                            Create
+                                          </button>
+                                          <button
+                                            onClick={handleCloseCollectionModal}
+                                          >
+                                            Cancel
+                                          </button>
+                                        </div>
+                                      </div>
                                     )}
                                   </div>
                                 </div>
@@ -1660,7 +1777,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                                       <div
                                         className="notes-radio"
                                         style={{
-                                          display: "grid",
+                                          // display: "grid",
                                           width: "50%",
                                           height: "40vh",
                                           overflow: "auto",
@@ -1932,6 +2049,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                                     type="radio"
                                     id={`star${value}-${idType}`}
                                     name={`rate_${idType}`}
+                                    style={{ cursor: "default" }}
                                     value={value}
                                     checked={
                                       getRatingForArticle(
@@ -2034,10 +2152,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
         </div>
 
         <>
-          <div
-            className="search-right-aside"
-            style={{ display: displayIfLoggedIn,top: containerHeight }}
-          >
+          <div className="search-right-aside" style={{ top: containerHeight }}>
             {openAnnotate && (
               <div className="search-annotate">
                 <Annotation
@@ -2048,40 +2163,53 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
               </div>
             )}
             <div className="search-icons-group">
-  <>
-    <div
-      className={`search-annotate-icon ${
-        openAnnotate ? "open" : "closed"
-      } ${
-        annotateData && Object.keys(annotateData).length > 0 ? "" : "disabled"
-      } ${
-        totalArticles.length > 0 ? "active" : "disabled"
-      }`}
-       onClick={() => {
-       setHandleAnnotateCall(true)
-      if (annotateData && Object.keys(annotateData).length > 0) {
-        console.log("data");
-        handleAnnotate();
-      } else if (totalArticles.length > 0) {
-        console.log("api");
-        handleAnnotateClick();
-      }
-    }}
-      style={{
-        cursor:
-          annotateData && Object.keys(annotateData).length > 0
-            ? "pointer"
-            : totalArticles.length > 0
-            ? "pointer"
-            : "default",
-        opacity: annotateData && Object.keys(annotateData).length > 0 ? 1 : 1,
-      }}
-    >
-      <img src={annotate} alt="annotate-icon" />
-    </div>
-  </>
-</div>
-
+              <>
+                <div
+                  className={`search-annotate-icon ${
+                    openAnnotate ? "open" : "closed"
+                  }${
+                    isLoggedIn &&
+                    (!annotateData || Object.keys(annotateData).length === 0)
+                      ? "disabled"
+                      : ""
+                  } 
+                   
+                  `}
+                  onClick={() => {
+                    if (!isLoggedIn) {
+                      return; // Prevent action if not logged in
+                    }
+                    setHandleAnnotateCall(true);
+                    if (annotateData && Object.keys(annotateData).length > 0) {
+                      console.log("data");
+                      handleAnnotate();
+                    } else if (totalArticles.length > 0) {
+                      console.log("api");
+                      handleAnnotateClick();
+                    }
+                  }}
+                  title={isLoggedIn ? "" : displayMessage}
+                  style={{
+                    cursor: isLoggedIn
+                      ? annotateData && Object.keys(annotateData).length > 0
+                        ? "pointer"
+                        : totalArticles.length > 0
+                        ? "pointer"
+                        : "default"
+                      : "not-allowed", // Disable interaction if not logged in
+                    opacity: isLoggedIn
+                      ? annotateData && Object.keys(annotateData).length > 0
+                        ? 1
+                        : totalArticles.length > 0
+                        ? 1
+                        : 0.5
+                      : 0.5, // Grayed out if not logged in
+                  }}
+                >
+                  <img src={annotate} alt="annotate-icon" />
+                </div>
+              </>
+            </div>
           </div>
         </>
       </div>

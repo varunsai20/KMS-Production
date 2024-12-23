@@ -587,10 +587,36 @@ button {
   background-color: white;
   padding: 20px;
   border-radius: 8px;
-  max-width: 500px;
+  font-weight: 100;
+  max-width: 400px;
   width: 100%;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   z-index: 1001;
+  display: grid;
+  gap: 20px;
+}
+.radio-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.radio-buttons label {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+#collectionAction {
+  width: 4%;
+  margin-bottom: 0px;
+}
+.choose-collection {
+  display: flex;
+  justify-content: space-between;
+}
+.select-dropdown {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 .bookmark-p {
   display: flex;
@@ -613,20 +639,34 @@ button {
 }
 #close-collection-modal {
   position: absolute;
-  top: 8%;
-  left: 68%;
+  top: 33%;
+  left: 64%;
   color: #000;
   z-index: 10001;
 }
+.radio1 {
+  display: flex;
+  gap: 20px;
+}
+.radio2 {
+  display: flex;
+  gap: 20px;
+}
 .search-modal-content button {
-  padding: 10px 20px;
+  padding: 7px 20px;
   border: none;
   background-color: #007bff;
   color: white;
   border-radius: 5px;
   cursor: pointer;
+  width: 25%;
 }
-
+.select-tag {
+  width: 35%;
+  height: 4vh;
+  border: 1px solid #00000012;
+  border-radius: 8px;
+}
 .search-modal-content button:disabled {
   background-color: #ccc;
   cursor: not-allowed;
@@ -635,7 +675,7 @@ button {
 .search-modal-content input {
   width: 97%;
   padding: 8px 0 8px 8px;
-  margin-top: 10px;
+  /* margin-top: 10px; */
   margin-bottom: 15px;
   border-radius: 5px;
   border: 1px solid #ddd;
@@ -716,7 +756,7 @@ button {
   width: 1em;
   overflow: hidden;
   white-space: nowrap;
-  cursor: pointer;
+  cursor: default;
   font-size: 30px;
   color: rgb(205 205 205);
 }
@@ -909,7 +949,7 @@ button {
 
 .search-annotate-icon {
   border: 1px solid rgba(235, 235, 243, 1);
-  border-radius: 8px ;
+  border-radius: 8px;
   padding: 10px;
 }
 .search-citation-icon {
@@ -1118,10 +1158,10 @@ td {
 .search-annotate-icon.closed {
   background-color: white;
 }
-.search-annotate-icon.disabled{
+.search-annotate-icon.disabled {
   display: none;
 }
-.search-annotate-icon.active{
+.search-annotate-icon.active {
   display: block;
 }
 
@@ -1224,15 +1264,31 @@ button input {
   font-size: 14px;
 }
 #email-input {
-  padding: 5px 5px 5px 5px;
+  padding: 6px 5px 6px 5px;
   font-size: 12px;
   margin-bottom: 10px;
+  border: 1px solid #00000012;
+  border-radius: 8px;
 }
 #description-input {
   height: 20vh;
   resize: none;
+  border: 1px solid #00000012;
+  border-radius: 8px;
 }
 @media (min-width: 768px) and (max-width: 1042px) {
+  .SearchResult-Option-Left {
+    height: 4vh;
+  }
+  .searchfilter-options {
+    font-size: 15px;
+  }
+  .searchfilter-section label {
+    font-size: 10px;
+  }
+  .pagination-controls button {
+    margin: 0;
+  }
   .searchContent-left {
     width: 16%;
     font-size: 14px;
@@ -1261,10 +1317,16 @@ button input {
   }
   .SearchResult-Count-Filters {
     padding: 20px 0 10px 0;
-    display: flex;
+    display: inline;
     gap: 10px;
     background-color: #ffffff;
     flex-wrap: wrap;
+  }
+  .searchresult-title {
+    font-size: 14px;
+  }
+  .search-table-body td {
+    font-size: 10px;
   }
 }
 /* Surface Devices */
@@ -1294,7 +1356,7 @@ button input {
     width: 70%;
   }
   .search-annotate {
-    width: 400px;
+    width: 22vw;
   }
   .searchContent-left {
     width: 17%;
@@ -1302,5 +1364,15 @@ button input {
   }
   .pagination {
     margin-top: 10px;
+  }
+  .searchResults-Bar {
+    margin: 0%;
+  }
+  .search-table-body td {
+    font-size: 10px;
+    padding: 5px;
+  }
+  .search-tables p {
+    font-size: 16px;
   }
 }

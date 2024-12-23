@@ -17,7 +17,6 @@ import rehypeRaw from "rehype-raw";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTelegram } from "@fortawesome/free-brands-svg-icons";
 import { LiaTelegramPlane } from "react-icons/lia";
-import { login, logout } from "../../redux/reducers/LoginAuth"; // Import login and logout actions
 import { showErrorToast, showSuccessToast } from "../../utils/toastHelper";
 const ArticleContent = ({
   setRefreshSessions,
@@ -30,43 +29,40 @@ const ArticleContent = ({
   setAnnotateLoading,
 }) => {
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
-  const deriveInsights = useSelector((state) => state.deriveInsights?.active); // assuming deriveInsights is in Redux state
-
-  const displayIfLoggedIn = isLoggedIn ? null : "none";
-  const widthIfLoggedIn = isLoggedIn ? null : "80%";
-  const heightIfLoggedIn = isLoggedIn ? null : "80vh";
+  const deriveInsights = useSelector((state) => state.deriveInsights?.active);
+  const displayMessage = isLoggedIn
+    ? ""
+    : "This feature is available for subscribed users.";
   const { pmid } = useParams();
   const { user } = useSelector((state) => state.auth);
-  const profilePictureUrl = user?.profile_picture_url;
   const token = useSelector((state) => state.auth.access_token);
   const dispatch = useDispatch();
   const user_id = user?.user_id;
   const [type, id1] = pmid ? pmid.split(":") : "";
   const id = Number(id1);
   const [source, setSource] = useState();
-  // const [annotateLoading, setAnnotateLoading] = useState(false);
   const location = useLocation();
-  const { data } = location.state || { data: [] };
   const [searchTerm, setSearchTerm] = useState("");
   const [articleData, setArticleData] = useState(null);
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
-  const [searchCollection, setSearchCollection] = useState("");
   const [response, setResponse] = useState("");
   const [loading, setLoading] = useState(false);
   const [annotateData, setAnnotateData] = useState(
     location.state?.annotateData || ""
   );
+  console.log(type);
+  console.log(id);
   const endOfMessagesRef = useRef(null);
   const [chatHistory, setChatHistory] = useState(() => {
     const storedHistory = localStorage.getItem("chatHistory");
+    console.log("stored Chat History", storedHistory);
     return storedHistory ? JSON.parse(storedHistory) : [];
   });
-  // const [refreshSessions, setRefreshSessions] = useState(false);
   useEffect(() => {
     // Retrieve chat history from sessionStorage
     const storedChatHistory = localStorage.getItem("chatHistory");
-
+    console.log("got the chatHistory");
     if (storedChatHistory) {
       // Parse the chat history string back into an array
       setChatHistory(JSON.parse(storedChatHistory));
@@ -85,14 +81,10 @@ const ArticleContent = ({
     };
   }, [annotateLoading]);
   const [showStreamingSection, setShowStreamingSection] = useState(false);
-  // const [chatInput, setChatInput] = useState(true);
-  // const [openAnnotate, setOpenAnnotate] = useState(false);
-  // const [openNotes, setOpenNotes] = useState(false);
   const [activeSection, setActiveSection] = useState("Title");
   const [activeSessionId, setActiveSessionId] = useState(
     sessionStorage.getItem("session_id") || null
   );
-  const isOnArticlePage = location.pathname === "/article";
   const contentRef = useRef(null); // Ref to target the content div
   const [contentWidth, setContentWidth] = useState(); // State for content width
   const [ratingsList, setRatingsList] = useState(() => {
@@ -100,7 +92,6 @@ const ArticleContent = ({
   });
   const [triggerAskClick, setTriggerAskClick] = useState(false);
   const [triggerDeriveClick, setTriggerDeriveClick] = useState(false);
-  const [editingPmid, setEditingPmid] = useState(null);
   const [editedTitle, setEditedTitle] = useState("");
   const [articleTitle, setArticleTitle] = useState("");
   const [collections, setCollections] = useState([]);
@@ -140,42 +131,22 @@ const ArticleContent = ({
 
   const [currentid, setCurrentid] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [collectionAction, setCollectionAction] = useState("existing"); // Tracks which radio button is selected
+  const [selectedCollection, setSelectedCollection] = useState("favorites");
   const [newCollectionName, setNewCollectionName] = useState("");
   const [hasFetchedAnnotateData, setHasFetchedAnnotateData] = useState(false);
   const [sessions, setSessions] = useState([]);
   const [editingSessionId, setEditingSessionId] = useState(null);
 
-  const [bookmarkedPmids, setBookmarkedPmids] = useState({});
-  // const [savedText, setSavedText] = useState("");
   const selectedTextRef = useRef("");
   const popupRef = useRef(null);
   const popupPositionRef = useRef({ x: 0, y: 0 });
-  const [annotateHeight, setAnnotateHeight] = useState(35);
-  const [notesHeight, setNotesHeight] = useState(35);
-  const minHeight = 15;
-  const maxHeight = 60;
-  const [reloadArticle, setReloadArticle] = useState(
-    sessionStorage.getItem("reloadArticle") === "true"
-  );
-  // Add this useEffect to reset savedText when openNotes becomes false
+
   useEffect(() => {
     if (!openNotes) {
       setSavedText(""); // Reset savedText when notes are closed
     }
   }, [openNotes]);
-
-  useEffect(() => {
-    if (openAnnotate && !openNotes) {
-      setAnnotateHeight(70);
-      setNotesHeight(0);
-    } else if (openNotes && !openAnnotate) {
-      setNotesHeight(70);
-      setAnnotateHeight(0);
-    } else {
-      setAnnotateHeight(35); // Reset to default when both are open
-      setNotesHeight(35);
-    }
-  }, [openAnnotate, openNotes]);
 
   useEffect(() => {
     if (type === "bioRxiv_id") {
@@ -185,35 +156,13 @@ const ArticleContent = ({
     } else if (type === "plos_id") {
       setSource("plos");
     }
+    if (type === "biorxiv" || type === "pubmed" || type === "plos") {
+      setSource(type);
+    }
+    if (type === "biorxiv" || type === "pubmed" || type === "plos") {
+      setSource(type);
+    }
   }, [type]);
-
-  const handleProfileClick = () => {
-    if (user?.role === "Admin") {
-      navigate(`/admin/users/profile/${user_id}`); // Navigate to Admin profile page
-    } else if (user?.role === "User") {
-      navigate(`/users/profile/${user_id}`); // Navigate to User profile page
-    }
-  };
-  const handleLogin = () => navigate("/login");
-  const handleLogout = async () => {
-    try {
-      // Make API call to /auth/logout with user_id as a parameter
-      await axios.post(
-        `https://inferai.ai/api/auth/logout/?user_id=${user_id}`
-      );
-
-      // Dispatch logout action and navigate to the home page
-      dispatch(logout());
-      navigate("/");
-    } catch (error) {
-      console.error("Error logging out:", error);
-    }
-  };
-  useEffect(() => {
-    if (user_id && token) {
-      fetchCollections();
-    }
-  }, [user_id, token]);
 
   useEffect(() => {
     if (source && id && !deriveInsights) {
@@ -246,62 +195,6 @@ const ArticleContent = ({
     }
   }, [id, source, token, deriveInsights]);
 
-  const handleAnnotateResize = (e) => {
-    if (openAnnotate && openNotes) {
-      e.preventDefault();
-      const startY = e.clientY;
-      const startHeight = annotateHeight;
-
-      const onMouseMove = (moveEvent) => {
-        const delta = ((moveEvent.clientY - startY) / window.innerHeight) * 100;
-        const newAnnotateHeight = Math.max(
-          minHeight,
-          Math.min(maxHeight, startHeight + delta)
-        );
-        const newNotesHeight = 70 - newAnnotateHeight;
-
-        setAnnotateHeight(newAnnotateHeight);
-        setNotesHeight(newNotesHeight);
-      };
-
-      const onMouseUp = () => {
-        window.removeEventListener("mousemove", onMouseMove);
-        window.removeEventListener("mouseup", onMouseUp);
-      };
-
-      window.addEventListener("mousemove", onMouseMove);
-      window.addEventListener("mouseup", onMouseUp);
-    }
-  };
-
-  const handleNotesResize = (e) => {
-    if (openAnnotate && openNotes) {
-      e.preventDefault();
-      const startY = e.clientY;
-      const startHeight = notesHeight;
-
-      const onMouseMove = (moveEvent) => {
-        const delta = ((startY - moveEvent.clientY) / window.innerHeight) * 100;
-        const newNotesHeight = Math.max(
-          minHeight,
-          Math.min(maxHeight, startHeight + delta)
-        );
-        const newAnnotateHeight = Math.max(minHeight, 70 - newNotesHeight);
-
-        setNotesHeight(newNotesHeight);
-        setAnnotateHeight(newAnnotateHeight);
-      };
-
-      const onMouseUp = () => {
-        window.removeEventListener("mousemove", onMouseMove);
-        window.removeEventListener("mouseup", onMouseUp);
-      };
-
-      window.addEventListener("mousemove", onMouseMove);
-      window.addEventListener("mouseup", onMouseUp);
-    }
-  };
-
   useEffect(() => {
     // Access the computed width of the content div
     if (contentRef.current) {
@@ -316,37 +209,6 @@ const ArticleContent = ({
       setContentWidth(`${width}px`);
     }
   }, [openNotes]);
-
-  const getRatingForArticle = async (uniqueId) => {
-    // Check if the rating is already available in ratingsList
-    const cachedRating = ratingsList.find((item) => item.uniqueId === uniqueId);
-    if (cachedRating) return cachedRating.rating;
-
-    const [source, article_id] = uniqueId.split("_");
-
-    try {
-      const response = await axios.get(
-        `https://inferai.ai/api/rating/user-ratings/${user_id}/${article_id}/${source}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      const avgRating = response.data?.average_rating || 0;
-
-      // Update the local rating list with the fetched average rating
-      setRatingsList((prevRatings) => [
-        ...prevRatings.filter((item) => item.uniqueId !== uniqueId),
-        { uniqueId, rating: avgRating },
-      ]);
-
-      return avgRating;
-    } catch (error) {
-      console.error("Error fetching rating:", error);
-      return 0;
-    }
-  };
 
   const handleRatingChange = async (uniqueId, newRating) => {
     // Ensure ratingsList is an array
@@ -431,7 +293,10 @@ const ArticleContent = ({
     }
   };
   const handleCloseCollectionModal = () => {
-    setIsModalOpen(false);
+    setCollectionAction("existing"); // Reset to default state
+    setNewCollectionName(""); // Clear input
+    setSelectedCollection("favorites"); // Reset selection
+    setIsModalOpen(false); // Close modal
   };
 
   const isArticleBookmarked = (idType) => {
@@ -473,7 +338,7 @@ const ArticleContent = ({
             "collections",
             JSON.stringify(updatedCollections)
           );
-          showSuccessToast("Bookmark unsaved successfully");
+          //showSuccessToast("Bookmark unsaved successfully");
 
           await fetchCollections();
         }
@@ -489,6 +354,7 @@ const ArticleContent = ({
   };
 
   const handleSaveToExisting = async (collectionName) => {
+    if (!collectionName) return;
     const bookmarkData = {
       user_id,
       collection_name: collectionName,
@@ -538,6 +404,7 @@ const ArticleContent = ({
   };
 
   const handleCreateNewCollection = async () => {
+    if (!newCollectionName) return;
     const newCollection = {
       user_id,
       collection_name: newCollectionName,
@@ -560,11 +427,13 @@ const ArticleContent = ({
       );
 
       if (response.status === 201) {
-        showSuccessToast("Collection Created");
-        await fetchCollections();
+        await fetchCollections(); // Refetch collections after successful creation
         setNewCollectionName("");
+        setCollectionAction("existing");
         setIsModalOpen(false);
+        handleCloseCollectionModal();
       }
+      showSuccessToast("New Collection Created");
     } catch (error) {
       showErrorToast("Failed to CreateCollection");
       console.error("Error creating new collection:", error);
@@ -595,22 +464,6 @@ const ArticleContent = ({
     };
   }, []);
 
-  // const handleSaveToNote = () => {
-  //   const textToSave = selectedText;
-  //   console.log(selectedText);
-
-  //   if (textToSave) {
-  //     console.log(textToSave);
-  //     setSavedText(textToSave);
-  //     setShowPopup(false);
-
-  //     if (!openNotes) {
-  //       setOpenNotes(true);
-  //     }
-  //     window.getSelection().removeAllRanges();
-  //   }
-  // };
-
   const getid = () => {
     return `${source}_${id}`;
   };
@@ -639,16 +492,6 @@ const ArticleContent = ({
       }
     };
   });
-
-  function scrollToTop() {
-    const articleContent = document.querySelector(".meta");
-    if (articleContent) {
-      articleContent.scrollTo({
-        top: 0,
-        behavior: "smooth", // This will create the smooth scrolling effect
-      });
-    }
-  }
 
   useEffect(() => {
     // Scroll to the bottom whenever chat history is updated
@@ -964,26 +807,13 @@ const ArticleContent = ({
     }
   };
 
-  const handlePromptWithFile = (prompt) => {
-    if (!uploadedFile && !storedSessionId) return; // Ensure either a file is selected or a session exists
-
-    setQuery(prompt);
-    setTriggerDeriveClick(true);
-    // handleDeriveClick(prompt, uploadedFile);
-    // setQuery(prompt); // Set the prompt as the query
-    // handleDeriveClick(); // Immediately trigger derive click with file and prompt
-  };
   useEffect(() => {
     if (triggerDeriveClick) {
       handleDeriveClick();
       setTriggerDeriveClick(false); // Reset the flag after handling the click
     }
   }, [query, triggerDeriveClick]);
-  const handleDeriveKeyDown = (e) => {
-    if (e.key === "Enter") {
-      handleDeriveClick();
-    }
-  };
+
   const handleBackClick = () => {
     const unsavedChanges = localStorage.getItem("unsavedChanges");
     if (unsavedChanges === "true") {
@@ -1005,10 +835,6 @@ const ArticleContent = ({
     navigate(-1);
   };
 
-  const handleNavigationClick = (section) => {
-    setActiveSection(section);
-  };
-
   const boldTerm = (text) => {
     if (typeof text !== "string") {
       return JSON.stringify(text);
@@ -1022,50 +848,6 @@ const ArticleContent = ({
     // Replace the search term in the text with markdown bold syntax
     return text.replace(regex, "**$1**");
   };
-  const handleAnnotate = () => {
-    // Replace `desiredId` with the actual ID you want to match against
-    const matchingIdExists =
-      annotateData && Object.prototype.hasOwnProperty.call(annotateData, id);
-    if ((!annotateData || !matchingIdExists) && !hasFetchedAnnotateData) {
-      handleAnnotateClick();
-    } else {
-      setOpenAnnotate((prevOpenAnnotate) => !prevOpenAnnotate); // Open immediately if matching ID is present
-    }
-  };
-
-  const handleAnnotateClick = async () => {
-    // Define the request body according to source and id
-    let requestBody = {};
-    if (source === "pubmed" && id) {
-      requestBody = { pubmed: [id] };
-    } else if (source === "biorxiv" && id) {
-      requestBody = { biorxiv: [id] };
-    } else if (source === "plos" && id) {
-      requestBody = { plos: [id] };
-    }
-
-    setAnnotateLoading(true);
-    try {
-      const response = await axios.post(
-        "https://inferai.ai/api/core_search/annotate",
-        requestBody,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      const data = response.data;
-      setAnnotateData(data);
-      setHasFetchedAnnotateData(true); // Set flag after successful fetch
-      setOpenAnnotate(true); // Open annotation panel after data is received
-    } catch (error) {
-      console.error("Error fetching data from the API", error);
-    } finally {
-      setAnnotateLoading(false);
-    }
-  };
 
   // Optional: useEffect for clearing flag if needed, such as when sources change
   useEffect(() => {
@@ -1074,31 +856,8 @@ const ArticleContent = ({
     }
   }, [annotateData, source, id]);
 
-  const handleNotes = () => {
-    const unsavedforIcon = localStorage.getItem("unsavedChanges");
-    if (unsavedforIcon === "true") {
-      setShowConfirmIcon(true);
-    } else {
-      setOpenNotes((prevOpenNotes) => !prevOpenNotes);
-    }
-    //localStorage.removeItem("unsavedChanges");
-  };
-  const handleCancelIcon = () => {
-    setShowConfirmIcon(false);
-  };
-  const handleCloseIcon = () => {
-    setShowConfirmIcon(false);
-    setOpenNotes(false);
-    localStorage.removeItem("unsavedChanges");
-  };
-  // Dynamically render the nested content in order, removing numbers, and using keys as side headings
-  // Helper function to capitalize the first letter of each word
   const capitalizeFirstLetter = (text) => {
     return text.replace(/\b\w/g, (char) => char.toUpperCase());
-  };
-  const capitalize = (text) => {
-    if (!text) return text; // Return if the text is empty
-    return text.charAt(0).toUpperCase() + text.slice(1);
   };
   const MyMarkdownComponent = ({ markdownContent, handleMouseUp }) => {
     return (
@@ -1217,50 +976,6 @@ const ArticleContent = ({
     }
   }, [user_id, token]);
 
-  // Edit functions
-  const handleEditClick = (sessionId, title) => {
-    setEditingSessionId(sessionId);
-    setEditedTitle(title);
-  };
-
-  const handleTitleChange = (e) => {
-    setEditedTitle(e.target.value); // Update the state as the user types
-  };
-
-  const handleSaveEdit = async (sessionId) => {
-    try {
-      await axios.put(
-        "https://inferai.ai/api/history/conversations/edit",
-        {
-          user_id,
-          session_id: sessionId,
-          new_title: editedTitle,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      // console.log(sessionId);
-      // console.log(editedTitle);
-      // Update the local sessions state after a successful edit
-      setSessions((prevSessions) =>
-        prevSessions.map((session) =>
-          session.session_id === sessionId
-            ? { ...session, session_title: editedTitle }
-            : session
-        )
-      );
-
-      // Reset editing state
-      setEditingSessionId(null);
-      setEditedTitle("");
-    } catch (error) {
-      console.error("Error updating session title:", error);
-    }
-  };
-
   useEffect(() => {
     // Retrieve chat history from sessionStorage on component mount or on location state change
     const storedChatHistory = localStorage.getItem("chatHistory");
@@ -1273,99 +988,6 @@ const ArticleContent = ({
     }
   }, [location.state]); // Add location.state as a dependency to re-run on navigation
   console.log(source);
-  const handleSessionClick = async (session_id) => {
-    try {
-      const conversationResponse = await axios.get(
-        `https://inferai.ai/api/history/conversations/history/${user_id}/${session_id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      sessionStorage.setItem("session_id", session_id);
-      setIsPromptEnabled(true);
-      setActiveSessionId(session_id);
-      const formattedChatHistory = [];
-      let currentEntry = {};
-
-      // Process conversation data into chat history
-      conversationResponse.data.conversation.forEach((entry) => {
-        if (entry.role === "user") {
-          if (entry.file_url) {
-            currentEntry.file_url = entry.file_url;
-          }
-
-          if (currentEntry.query) {
-            formattedChatHistory.push(currentEntry);
-            currentEntry = {};
-          }
-          currentEntry.query = entry.parts.join(" ");
-        } else if (entry.role === "model") {
-          currentEntry.response = entry.parts.join(" ");
-          formattedChatHistory.push(currentEntry);
-          currentEntry = {};
-        }
-      });
-
-      if (currentEntry.query) {
-        formattedChatHistory.push(currentEntry);
-      }
-
-      localStorage.setItem("chatHistory", JSON.stringify(formattedChatHistory));
-
-      const sourceType =
-        conversationResponse.data.source === "biorxiv"
-          ? "bioRxiv_id"
-          : conversationResponse.data.source === "plos"
-          ? "plos_id"
-          : "pmid";
-
-      const navigatePath = conversationResponse.data.session_type
-        ? "/article"
-        : `/article/content/${sourceType}:${conversationResponse.data.article_id}`;
-
-      if (conversationResponse.data.session_type) {
-        // Navigate immediately if deriveInsights mode
-        dispatch(setDeriveInsights(true));
-        console.log(navigatePath);
-        navigate(navigatePath, {
-          state: {
-            id: conversationResponse.data.article_id || id,
-            source: source,
-            token: token,
-            user: { access_token: token, user_id: user_id },
-            annotateData: location.state?.annotateData,
-            data: location.state?.data,
-          },
-        });
-      } else {
-        console.log("nav");
-        dispatch(setDeriveInsights(false));
-
-        console.log(navigatePath);
-        navigate(navigatePath, {
-          state: {
-            id: conversationResponse.data.article_id || id,
-            source: source,
-            token: token,
-            user: { access_token: token, user_id: user_id },
-            annotateData: location.state?.annotateData,
-            data: location.state?.data,
-          },
-        });
-        // Fetch article data before navigating
-        // dispatch(setDeriveInsights(false));
-        // await fetchArticleBeforeNavigate(
-        //   conversationResponse.data.article_id,
-        //   sourceType,
-        //   location.state?.data
-        // );
-      }
-    } catch (error) {
-      console.error("Error fetching article or conversation data:", error);
-    }
-  };
   const getSourceFromType = (type) => {
     switch (type) {
       case "bioRxiv_id":
@@ -1379,41 +1001,6 @@ const ArticleContent = ({
     }
   };
 
-  const fetchArticleBeforeNavigate = async (articleId, sourceType, data) => {
-    try {
-      // Map sourceType to source using the utility function
-      const source = getSourceFromType(sourceType);
-      if (!source) {
-        console.error("Invalid sourceType provided");
-        return;
-      }
-
-      const response = await axios.get(
-        `https://inferai.ai/api/view_article/get_article/${articleId}?source=${source}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      const article = response.data;
-      setArticleData(article);
-      console.log(data);
-      // Navigate after article is fetched
-      navigate(`/article/${sourceType}:${articleId}`, {
-        state: {
-          id: articleId,
-          source: sourceType,
-          token: token,
-          user: { access_token: token, user_id: user_id },
-          data: data,
-        },
-      });
-    } catch (error) {
-      console.error("Error fetching article data:", error);
-    }
-  };
   useEffect(() => {
     const storedSessionId = sessionStorage.getItem("session_id");
     if (storedSessionId) {
@@ -1434,32 +1021,6 @@ const ArticleContent = ({
     }
   }, [handleDeriveClick, uploadedFile]);
 
-  // const handleFileUpload = (e) => {
-  //   const file = e.target.files[0];
-  //   if (file) {
-  //     setUploadedFile(file);
-  //   }
-  // };
-  const handleFileUpload = (e) => {
-    const file = e.target.files[0];
-    if (!file) return; // Exit if no file was selected
-    if (file.size > 5 * 1024 * 1024) {
-      showErrorToast("try uploading files 5MB or less");
-    }
-
-    const allowedExtensions = ["pdf", "docx"];
-    const fileExtension = file.name.split(".").pop().toLowerCase();
-
-    if (!allowedExtensions.includes(fileExtension)) {
-      //alert("Please upload a PDF or DOCX file.");
-      showErrorToast("try uploading .pdf,.docx");
-      return;
-    }
-
-    setUploadedFile(file); // Proceed if the file type is valid
-    setIsPromptEnabled(true);
-  };
-
   const removeUploadedFile = () => {
     setUploadedFile(null);
     setIsPromptEnabled(false);
@@ -1472,7 +1033,7 @@ const ArticleContent = ({
           className="article-content"
           onMouseUp={handleMouseUp}
           ref={contentRef}
-          style={{ height: heightIfLoggedIn }}
+          // style={{ height: heightIfLoggedIn }}
         >
           <div className="article-title">
             <div
@@ -1491,6 +1052,7 @@ const ArticleContent = ({
                 ></img>
                 <button className="back-button">Back</button>
               </div>
+              {/* HI varun */}
               {showConfirmPopup && (
                 <div className="Article-popup-overlay">
                   <div className="Article-popup-content">
@@ -1512,7 +1074,7 @@ const ArticleContent = ({
               )}
               <div
                 className="Rate-Article"
-                style={{ display: displayIfLoggedIn }}
+                // style={{ display: displayIfLoggedIn }}
               >
                 <div>
                   <span>Rate the article </span>
@@ -1530,14 +1092,26 @@ const ArticleContent = ({
                           type="radio"
                           id={`star${value}-${uniqueId}`}
                           name={`rate_${uniqueId}`}
-                          value={value}
-                          checked={existingRating === value}
-                          onChange={() => handleRatingChange(uniqueId, value)}
+                          value={isLoggedIn ? value : ""}
+                          checked={isLoggedIn ? existingRating === value : ""}
+                          onChange={() =>
+                            !isLoggedIn
+                              ? ""
+                              : handleRatingChange(uniqueId, value)
+                          }
                           // disabled={!!existingRating} // Disable if a rating already exists
                         />
                         <label
+                          style={{
+                            cursor: isLoggedIn ? "pointer" : "not-allowed",
+                            opacity:
+                              annotateData && annotateData.length > 0 ? 1 : 1, // Adjust visibility when disabled
+                          }}
+                          title={
+                            isLoggedIn ? "Rate the article" : displayMessage
+                          }
                           htmlFor={`star${value}-${uniqueId}`}
-                          title={`${value} star`}
+                          // title={`${value} star`}
                         />
                       </React.Fragment>
                     );
@@ -1566,22 +1140,26 @@ const ArticleContent = ({
                 size="l"
                 style={{
                   color: isArticleBookmarked(id).isBookmarked
-                    ? "#0071bc"
+                    ? "#1B365D"
                     : "black",
-                  cursor: "pointer",
-                  display: displayIfLoggedIn,
+                  cursor: isLoggedIn ? "pointer" : "not-allowed",
+                  opacity: isLoggedIn ? 1 : 0.5,
                 }}
                 onClick={() =>
-                  handleBookmarkClick(
-                    id,
-                    articleData.article.article_title,
-                    source || "PubMed"
-                  )
+                  isLoggedIn
+                    ? handleBookmarkClick(
+                        id,
+                        articleData.article.article_title,
+                        source || "PubMed"
+                      )
+                    : ""
                 }
                 title={
-                  isArticleBookmarked(id).isBookmarked
-                    ? "Bookmarked"
-                    : "Bookmark this article"
+                  isLoggedIn
+                    ? isArticleBookmarked(id).isBookmarked
+                      ? "Bookmarked"
+                      : "Bookmark this article"
+                    : displayMessage
                 }
               />
 
@@ -1593,78 +1171,111 @@ const ArticleContent = ({
                   >
                     <IoCloseOutline size={20} />
                   </button>
-                  <div className="modal-content">
-                    {/* Existing Collections */}
-                    <div className="bookmark-p">
-                      <p className="bookmark-para">Bookmarks</p>
+                  <div className="search-modal-content">
+                    <p>ADD TO COLLECTION</p>
+                    {/* Radio buttons for collection action */}
+                    <div className="radio-buttons">
+                      <div className="radio1">
+                        <input
+                          type="radio"
+                          id="collectionAction"
+                          value="existing"
+                          checked={collectionAction === "existing"}
+                          onChange={() => setCollectionAction("existing")}
+                        />
+                        <label>Add to Existing Collection</label>
+                      </div>
+                      <div className="radio2">
+                        <input
+                          type="radio"
+                          id="collectionAction"
+                          value="new"
+                          checked={collectionAction === "new"}
+                          onChange={() => setCollectionAction("new")}
+                        />
+                        <label>Create New Collection</label>
+                      </div>
                     </div>
 
-                    {/* Create New Collection */}
-                    <h4>Create a new collection:</h4>
-                    <input
-                      type="text"
-                      value={newCollectionName}
-                      onChange={(e) => setNewCollectionName(e.target.value)}
-                      placeholder="New collection name"
-                    />
-                    <div
-                      style={{
-                        display: "flex",
-                        gap: "20px",
-                        marginBottom: "15px",
-                      }}
-                    >
-                      <button
-                        onClick={handleCreateNewCollection}
-                        disabled={!newCollectionName}
-                      >
-                        Create
-                      </button>
-                    </div>
+                    {/* Logic for adding to existing collection */}
+                    {collectionAction === "existing" && (
+                      <div className="select-dropdown">
+                        <div className="choose-collection">
+                          <label htmlFor="">*Choose a collection</label>
+                          <select
+                            name="collections"
+                            id="collection-select"
+                            className="select-tag"
+                            style={{
+                              width: "35%",
+                              height: "5vh",
+                            }}
+                            value={selectedCollection}
+                            onChange={(e) =>
+                              setSelectedCollection(e.target.value)
+                            }
+                          >
+                            <option value="favorites" disabled selected>
+                              Favorites
+                            </option>
+                            {Object.keys(collections).map(
+                              (collectionName, index) => (
+                                <option key={index} value={collectionName}>
+                                  {collectionName}
+                                </option>
+                              )
+                            )}
+                          </select>
+                        </div>
+                        <div
+                          style={{
+                            display: "flex",
+                            gap: "20px",
+                            // marginTop: "15px",
+                          }}
+                        >
+                          <button
+                            onClick={() =>
+                              handleSaveToExisting(selectedCollection)
+                            }
+                            disabled={!selectedCollection}
+                          >
+                            Add
+                          </button>
+                          <button onClick={handleCloseCollectionModal}>
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    )}
 
-                    {Object.keys(collections).length > 0 && (
-                      <>
-                        <h4>Save to existing collection:</h4>
-
-                        {/* Search bar for collections */}
+                    {/* Logic for creating a new collection */}
+                    {collectionAction === "new" && (
+                      <div>
                         <input
                           type="text"
-                          value={searchCollection}
-                          onChange={(e) => setSearchCollection(e.target.value)}
-                          placeholder="Search collections"
-                          style={{
-                            marginBottom: "10px",
-                            padding: "8px 0 8px 8px",
-                          }}
+                          value={newCollectionName}
+                          onChange={(e) => setNewCollectionName(e.target.value)}
+                          placeholder="New collection name"
                         />
-
-                        {/* Filter collections based on search term */}
-                        <ul className="bookmark-existing-collections">
-                          {Object.keys(collections)
-                            .filter((collectionName) =>
-                              collectionName
-                                .toLowerCase()
-                                .includes(searchCollection.toLowerCase())
-                            )
-                            .map((collectionName, index) => (
-                              <ul key={index}>
-                                <li
-                                  onClick={() =>
-                                    handleSaveToExisting(collectionName)
-                                  }
-                                >
-                                  <span className="collection-name">
-                                    {collectionName}
-                                  </span>
-                                  <span className="collection-article-count">
-                                    {collections[collectionName].length}{" "}
-                                    articles
-                                  </span>
-                                </li>
-                              </ul>
-                            ))}
-                        </ul>
-                      </>
+                        <div
+                          style={{
+                            display: "flex",
+                            gap: "20px",
+                            marginTop: "15px",
+                          }}
+                        >
+                          <button
+                            onClick={handleCreateNewCollection}
+                            disabled={!newCollectionName}
+                          >
+                            Create
+                          </button>
+                          <button onClick={handleCloseCollectionModal}>
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -1674,7 +1285,7 @@ const ArticleContent = ({
 
           <div
             className="meta"
-            style={{ height: !isLoggedIn ? "68vh" : undefined }}
+            style={{ height: !isLoggedIn ? "42" : undefined }}
           >
             <div
               style={{
@@ -1696,9 +1307,9 @@ const ArticleContent = ({
                 ""
               )}
               <span style={{ color: "#2b9247" }}>
-                {type === "bioRxiv_id" && "BioRxiv ID"}
-                {type === "pmid" && "PMID"}
-                {type === "plos_id" && "PLOS ID"} : {id}
+                {(type === "bioRxiv_id" || type === "biorxiv") && "BioRxiv ID"}
+                {(type === "pmid" || type === "pubmed") && "PMID"}
+                {(type === "plos_id" || type === "plos") && "PLOS ID"} : {id}
               </span>{" "}
             </div>
 
@@ -1732,36 +1343,32 @@ const ArticleContent = ({
                 <div className="streaming-content">
                   {chatHistory.map((chat, index) => (
                     <div key={index}>
-                      <div className="query-asked">
-                        <span>
-                          {chat.query === "Summarize this article"
-                            ? "Summarize"
-                            : chat.query ===
-                              "what can we conclude form this article"
-                            ? "Conclusion"
-                            : chat.query ===
-                              "what are the key highlights from this article"
-                            ? "Key Highlights"
-                            : chat.query}
-                        </span>
-                      </div>
+                      {chat.query && (
+                        <div className="query-asked">
+                          <span>
+                            {chat.query === "Summarize this article"
+                              ? "Summarize"
+                              : chat.query ===
+                                "what can we conclude form this article"
+                              ? "Conclusion"
+                              : chat.query ===
+                                "what are the key highlights from this article"
+                              ? "Key Highlights"
+                              : chat.query}
+                          </span>
+                        </div>
+                      )}
 
-                      <div className="response" style={{ textAlign: "left" }}>
-                        {/* Check if there's a response, otherwise show loading dots */}
-                        {chat.response ? (
+                      {chat.response && (
+                        <div className="response" style={{ textAlign: "left" }}>
                           <>
                             <span>
                               <ReactMarkdown>{chat.response}</ReactMarkdown>
                             </span>
+                            <div ref={endOfMessagesRef} />
                           </>
-                        ) : (
-                          <div className="loading-dots">
-                            <span>•••</span>
-                          </div>
-                        )}
-
-                        <div ref={endOfMessagesRef} />
-                      </div>
+                        </div>
+                      )}
                     </div>
                   ))}
                   {/* This div will act as the reference for scrolling */}
@@ -1801,41 +1408,57 @@ const ArticleContent = ({
         <div
           className="article-chat-query"
           style={{
-            width: openAnnotate || openNotes ? contentWidth : "70%",
-            display: displayIfLoggedIn,
+            width: openAnnotate || openNotes ? contentWidth : "56%",
+            cursor: isLoggedIn ? "" : "not-allowed",
+            opacity: isLoggedIn ? 1 : 0.5,
           }}
+          title={isLoggedIn ? "" : displayMessage}
         >
           <div className="predefined-prompts">
-            <button onClick={() => handlePromptClick("Summarize this article")}>
+            <button
+              style={{ cursor: isLoggedIn ? "pointer" : "not-allowed" }}
+              onClick={() =>
+                isLoggedIn ? handlePromptClick("Summarize this article") : ""
+              }
+            >
               Summarize
             </button>
             <button
+              style={{ cursor: isLoggedIn ? "pointer" : "not-allowed" }}
               onClick={() =>
-                handlePromptClick("what can we conclude form this article")
+                isLoggedIn
+                  ? handlePromptClick("what can we conclude form this article")
+                  : ""
               }
             >
               Conclusion
             </button>
             <button
+              style={{ cursor: isLoggedIn ? "pointer" : "not-allowed" }}
               onClick={() =>
-                handlePromptClick(
-                  "what are the key highlights from this article"
-                )
+                isLoggedIn
+                  ? handlePromptClick(
+                      "what are the key highlights from this article"
+                    )
+                  : ""
               }
             >
               Key Highlights
             </button>
           </div>
-          <div className="stream-input">
+          <div
+            className="stream-input"
+            style={{ cursor: isLoggedIn ? "" : "not-allowed" }}
+          >
             <img src={flag} alt="flag-logo" className="stream-flag-logo" />
             <input
+              style={{ cursor: isLoggedIn ? "" : "not-allowed" }}
               type="text"
               placeholder="Ask anything..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              onKeyDown={handleKeyDown}
+              onKeyDown={isLoggedIn ? handleKeyDown : null} // Pass null when not logged in
             />
-            {/* <button onClick={handleAskClick} > */}
             {loading ? (
               <CircularProgress
                 className="button"
@@ -1846,12 +1469,14 @@ const ArticleContent = ({
             ) : (
               <FontAwesomeIcon
                 className="button"
-                onClick={handleAskClick}
+                onClick={isLoggedIn ? handleAskClick : null} // Pass null when not logged in
                 icon={faTelegram}
                 size={"xl"}
+                style={{
+                  cursor: isLoggedIn ? "pointer" : "not-allowed",
+                }}
               />
             )}
-            {/* </button> */}
           </div>
         </div>
       ) : (

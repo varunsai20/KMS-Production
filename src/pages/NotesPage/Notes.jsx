@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import NotesList from "../../components/Notes/NotesList";
 import Createnotes from "../../components/Notes/CreateNotes";
 import Editnotes from "../../components/Notes/EditNotes";
@@ -14,7 +14,7 @@ const NotesManager = ({
   oncloseNotes,
 }) => {
   console.log(propSelectedText);
-  console.log(notesHeight);
+  console.log("notesHeight in Notes manager", notesHeight);
   const { user } = useSelector((state) => state.auth);
   const user_id = user?.user_id;
   const token = useSelector((state) => state.auth.access_token);
@@ -25,6 +25,7 @@ const NotesManager = ({
   const [filterText, setFilterText] = useState("");
   const [selectedNote, setSelectedNote] = useState(null);
   const [lastOpenView, setLastOpenView] = useState("list");
+  const hasFetchedNotes = useRef(false);
 
   useEffect(() => {
     if (propSelectedText) {
@@ -62,11 +63,11 @@ const NotesManager = ({
   };
 
   useEffect(() => {
-    if (user_id && token) {
+    if (user_id && token && !hasFetchedNotes.current) {
       fetchNotes();
+      hasFetchedNotes.current = true;
     }
   }, [user_id, token]);
-
   console.log(notes);
 
   useEffect(() => {

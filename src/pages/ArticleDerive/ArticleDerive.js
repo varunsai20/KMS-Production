@@ -17,12 +17,10 @@ import { showErrorToast } from "../../utils/toastHelper";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import upload from "../../assets/images/upload-file.svg";
 import { apiService } from "../../assets/api/apiService";
-import { Document, Page, pdfjs } from "react-pdf";
+import { Document, Page } from "react-pdf";
 import { renderAsync } from "docx-preview";
-
-//import mammoth from "mammoth"; // For DOCX Preview
-// Disable worker usage
-pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+import { LiaTelegramPlane } from "react-icons/lia";
+import Citations from "../../components/Citations";
 
 const ArticleDerive = ({
   setRefreshSessions,
@@ -33,6 +31,10 @@ const ArticleDerive = ({
   setSavedText,
   annotateLoading,
   setAnnotateLoading,
+  uploadedFile,
+  setUploadedFile,
+  isCitationsOpen,
+  setIsCitationsOpen,
 }) => {
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
   const deriveInsights = useSelector((state) => state.deriveInsights?.active);
@@ -52,10 +54,8 @@ const ArticleDerive = ({
   const [numPages, setNumPages] = useState(null);
   const [pageNumber, setPageNumber] = useState(1);
   const [docxContent, setDocxContent] = useState("");
-
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
-
   const [response, setResponse] = useState("");
   const [loading, setLoading] = useState(false);
   const [annotateData, setAnnotateData] = useState(
@@ -197,7 +197,13 @@ const ArticleDerive = ({
       setContentWidth(`${width}px`);
     }
   }, [openNotes]);
-
+  const handleCloseCitations = () => {
+    setIsCitationsOpen(false);
+  };
+  const handleOpenCitations = () => {
+    setIsCitationsOpen(true);
+  };
+  const [isCollectionOpen, setIsCollectionOpen] = useState(false);
   const handleMouseUpInsideContent = (e) => {
     if (!isLoggedIn) return;
     const content = contentRef.current;
@@ -267,6 +273,17 @@ const ArticleDerive = ({
       content.removeEventListener("mouseup", handleMouseUpInsideContent);
     };
   }, [contentRef]);
+
+  const handleSendToNotes = () => {
+    if (selectedTextRef.current) {
+      setSavedText(selectedTextRef.current); // Update savedText
+      selectedTextRef.current = ""; // Clear the selected text
+    }
+    if (!openNotes) {
+      setOpenNotes(true); // Open Notes if not already open
+    }
+    popupRef.current.style.display = "none"; // Hide popup
+  };
   useEffect(() => {
     const articleContent = document.querySelector(".meta");
     const handleScroll = () => {
@@ -462,6 +479,7 @@ const ArticleDerive = ({
       let url = "https://inferai.ai/api/insights/upload";
       const headers = {
         Authorization: `Bearer ${token}`,
+        // "ngrok-skip-browser-warning": true,
       };
 
       // Initialize FormData
@@ -645,7 +663,6 @@ const ArticleDerive = ({
     }
   }, [sessions]);
 
-  const [uploadedFile, setUploadedFile] = useState(null);
   useEffect(() => {
     const storedSessionId =
       localStorage.getItem("sessionId") || localStorage.getItem("session_id");
@@ -756,58 +773,15 @@ const ArticleDerive = ({
         ref={contentRef}
         onMouseUp={handleMouseUpInsideContent}
       >
-        {/* File Preview */}
-        {uploadedFile && uploadedFile.name.endsWith(".pdf") && (
-          <div className="pdf-preview">
-            <Document
-              file={uploadedFile}
-              loading="Loading PDF..."
-              onLoadSuccess={({ numPages }) => setNumPages(numPages)}
-              options={{ renderTextLayer: false }}
-            >
-              <Page pageNumber={pageNumber} />
-            </Document>
-            <div className="pagination">
-              <button onClick={goToPreviousPage} disabled={pageNumber <= 1}>
-                Previous
-              </button>
-              <span>
-                Page {pageNumber} of {numPages}
-              </span>
-              <button onClick={goToNextPage} disabled={pageNumber >= numPages}>
-                Next
-              </button>
-            </div>
-          </div>
-        )}
-
-        {uploadedFile && uploadedFile.name.endsWith(".docx") && (
-          <div className="docx-preview">
-            <h3>Preview</h3>
-            <div
-              id="docx-container"
-              style={{
-                maxHeight: "400px",
-                overflow: "auto",
-                border: "1px solid #ccc",
-              }}
-            ></div>
-          </div>
-        )}
-        {/* Adjust derive-chat-query placement dynamically */}
         <div
           className="derive-chat-query"
           style={{
-            position: "absolute",
-            top: !uploadedFile && chatHistory.length === 0 ? "50%" : "auto",
             bottom: uploadedFile || chatHistory.length > 0 ? "0px" : "auto",
-            left: openAnnotate || openNotes ? "33%" : "40%",
-            transform:
-              !uploadedFile && chatHistory.length === 0
-                ? "translate(-25%, -50%)"
-                : "translate(-25%,0%)",
-            width: openAnnotate || openNotes ? contentWidth : "70%",
+            position: uploadedFile || chatHistory.length > 0 ? "absolute" : "",
+            width:
+              uploadedFile || chatHistory.length > 0 ? contentWidth : "95%",
             display: displayIfLoggedIn,
+            margin: "auto",
           }}
         >
           <div className="derive-predefined-prompts">
@@ -956,25 +930,106 @@ const ArticleDerive = ({
                   ) : (
                     ""
                   )}
-                  <div className="response" style={{ textAlign: "left" }}>
-                    {chat.response ? (
+                  {chat.response && (
+                    <div className="response" style={{ textAlign: "left" }}>
                       <span ref={endOfMessagesRef}>
-                        <ReactMarkdown>{chat.response}</ReactMarkdown>
+                        <ReactMarkdown>{chat.response.trim()}</ReactMarkdown>
                       </span>
-                    ) : (
-                      <div className="loading-dots">
-                        <span>•••</span>
-                      </div>
-                    )}
+                    </div>
+                  )}
+
+                  <div
+                    ref={popupRef}
+                    className="popup-button"
+                    style={{
+                      position: "absolute",
+                      display: "none",
+                      backgroundColor: "#afa7a7",
+                      color: "white",
+                      borderRadius: "5px",
+                      cursor: "pointer",
+                    }}
+                  >
+                    <button
+                      onClick={handleSendToNotes}
+                      className="Popup-buttons"
+                      title="Send to Notes"
+                    >
+                      <span className="send-to-notes">Send to notes</span>
+                      <LiaTelegramPlane size={20} color="black" />
+                    </button>
                   </div>
                 </div>
               ))}
+              {uploadedFile && uploadedFile.name.endsWith(".docx") && (
+                <div className="docx-preview">
+                  <h3>Preview</h3>
+                  <div
+                    id="docx-container"
+                    style={{
+                      maxHeight: "300px",
+                      overflow: "auto",
+                      border: "1px solid #ccc",
+                    }}
+                  ></div>
+                </div>
+              )}
+              {/* File Preview */}
+              {uploadedFile && uploadedFile.name.endsWith(".pdf") && (
+                <div className="iframe-preview">
+                  <iframe
+                    src={URL.createObjectURL(uploadedFile)}
+                    width="100%"
+                    height="350px"
+                    title="PDF Preview"
+                  ></iframe>
+                </div>
+              )}
             </div>
           </div>
         ) : (
-          ""
+          <>
+            {uploadedFile && uploadedFile.name.endsWith(".docx") && (
+              <div className="docx-preview">
+                <h3>Preview</h3>
+                <div
+                  ref={endOfMessagesRef}
+                  id="docx-container"
+                  style={{
+                    maxHeight: "300px",
+                    overflow: "auto",
+                    border: "1px solid #ccc",
+                  }}
+                ></div>
+              </div>
+            )}
+            {/* File Preview */}
+            {uploadedFile && uploadedFile.name.endsWith(".pdf") && (
+              <div className="iframe-preview" ref={endOfMessagesRef}>
+                <iframe
+                  src={URL.createObjectURL(uploadedFile)}
+                  width="100%"
+                  height="350px"
+                  title="PDF Preview"
+                ></iframe>
+              </div>
+            )}
+          </>
         )}
       </div>
+      {isCitationsOpen && (
+        <>
+          <div className="citation-overlay">
+            <div className="citation-modal">
+              <Citations
+                handleCloseCitations={handleCloseCitations}
+                uploadedFile={uploadedFile}
+                handleCitations={true}
+              />
+            </div>
+          </div>
+        </>
+      )}
     </>
   );
 };

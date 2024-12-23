@@ -37,7 +37,6 @@ const Header = () => {
     } catch (error) {
       navigate("/server-error");
       console.error("Error logging out:", error);
-      toast.error("Error logging out:", error);
     }
   };
 

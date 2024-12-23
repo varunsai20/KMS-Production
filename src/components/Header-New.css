@@ -74,7 +74,7 @@
   gap: 10px;
   padding: 20px 32px;
 }
-@media (min-width: 1080px) and (max-width: 1366px) {
+@media (min-width: 768px) and (max-width: 1366px) {
   .Navbar-Header {
     margin: 0px;
   }
@@ -87,5 +87,8 @@
   }
   .logo-descreption span {
     font-size: 16px;
+  }
+  .Navbar-Header-Items {
+    padding: 0 15px;
   }
 }
