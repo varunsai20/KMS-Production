@@ -860,7 +860,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
     }
   };
 
-  const isArticleSelected = (source, idType) => {
+  const isArticleSelected = (source, idType)   => {
     const uniqueId = `${source}_${idType}`; // Create unique ID for checking selection state
     if (source === "BioRxiv") {
       return bioRxivArticles.includes(uniqueId);
@@ -2172,13 +2172,9 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                     (!annotateData || Object.keys(annotateData).length === 0)
                       ? "disabled"
                       : ""
-                  }  ${
-                    isLoggedIn
-                      ? totalArticles.length > 0
-                        ? "active"
-                        : "disabled"
-                      : "" // No class if not logged in
-                  }`}
+                  } 
+                   
+                  `}
                   onClick={() => {
                     if (!isLoggedIn) {
                       return; // Prevent action if not logged in

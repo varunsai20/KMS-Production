@@ -170,7 +170,7 @@ const Annotation = ({
                     }}
                     onClick={() => toggleExpandText(categoryKey)}
                   >
-                    {isTextExpanded ? " Less" : "... More"}
+                    {isTextExpanded ? "" : "..."}
                   </span>
                 )}
               </td>
