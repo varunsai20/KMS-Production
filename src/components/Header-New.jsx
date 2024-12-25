@@ -8,7 +8,6 @@ import "../styles/variables.css";
 import "./Header-New.css";
 import Logo from "../assets/images/logo.svg";
 import ProfileIcon from "../assets/images/Profile-start.svg";
-import { toast } from "react-toastify";
 
 const Header = () => {
   const location = useLocation();
@@ -20,7 +19,7 @@ const Header = () => {
 
   useEffect(() => {
     setCurrentProfileImage(user?.profile_picture_url || ProfileIcon);
-  }, [user.profile_picture_url, profileUpdated]); // Re-run when profileUpdated changes
+  }, [user.profile_picture_url, profileUpdated]);
 
   const userId = user?.user_id;
   const userRole = user?.role;
@@ -52,12 +51,16 @@ const Header = () => {
     }
   };
 
+  const handleNavigateHome = () => {
+    navigate("/");
+  };
+
   return (
     <div
       className="Navbar-Header"
       style={{
         width: location.pathname.startsWith("/article") ? "100%" : "100%",
-      }} // Set width conditionally
+      }}
     >
       <div className="Navbar-Header-Items">
         <a href="https://www.infersol.com/" target="_blank" rel="noreferrer">
@@ -75,6 +78,19 @@ const Header = () => {
       <section className="Search-nav-login">
         {isLoggedIn ? (
           <>
+            {location.pathname.startsWith(`/users/profile/${userId}`) && (
+              <span
+                onClick={handleNavigateHome}
+                style={{
+                  marginLeft: "10px",
+                  textDecoration: "none",
+                  fontWeight: "bold",
+                  cursor: "pointer",
+                }}
+              >
+                Home
+              </span>
+            )}
             <div
               onClick={handleProfileClick}
               style={{ cursor: "pointer", height: "35px" }}
@@ -86,6 +102,7 @@ const Header = () => {
                 className="profile-icon"
               />
             </div>
+
             <Button
               text="Logout"
               className="logout-btn"

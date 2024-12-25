@@ -114,72 +114,82 @@ const Lander = () => {
     localStorage.setItem("session_id", session_id);
     console.log(sessions[0]);
     try {
-      const conversationResponse = await apiService.sessionClick(
+      // Fetch the conversation data
+      const conversationResponse = await apiService.fetchChatConversation(
         user_id,
         session_id,
         token
       );
-      console.log(conversationResponse);
-      const formattedChatHistory = [];
-      let currentEntry = {};
-
-      conversationResponse.data.conversation.forEach((entry) => {
-        if (entry.role === "user") {
-          if (entry.file_url) {
-            currentEntry.file_url = entry.file_url;
-          }
-          if (currentEntry.query) {
-            formattedChatHistory.push(currentEntry);
-            currentEntry = {};
-          }
-          if (Array.isArray(entry.parts)) {
-            currentEntry.query = entry.parts.join(" ");
-          }
-        } else if (entry.role === "assistant") {
-          if (Array.isArray(entry.parts)) {
-            currentEntry.response = entry.parts.join(" ");
-          }
-          formattedChatHistory.push(currentEntry);
-          currentEntry = {};
+    
+      // Save session ID in local and session storage
+      localStorage.setItem("session_id", session_id);
+      sessionStorage.setItem("session_id", session_id);
+    
+      // Initialize chat history
+      let formattedChatHistory = [];
+    
+      // Format and store chat history only if data is present and valid
+      if (conversationResponse.data.conversation?.length > 0) {
+        formattedChatHistory = conversationResponse.data.conversation
+          .map((entry) => ({
+            query: entry.role === "user" ? entry.content : null,
+            response: entry.role === "assistant" ? entry.content : null,
+            file_url: entry.file_url || null,
+          }))
+          .filter(
+            (entry) => entry.query || entry.response || entry.file_url // Keep entries with at least one valid field
+          );
+    
+        if (formattedChatHistory.length > 0) {
+          localStorage.setItem(
+            "chatHistory",
+            JSON.stringify(formattedChatHistory)
+          );
         }
-      });
-
-      if (currentEntry.query) {
-        formattedChatHistory.push(currentEntry);
       }
-
-      localStorage.setItem("chatHistory", JSON.stringify(formattedChatHistory));
-      const sourceType =
-        conversationResponse.data.source === "biorxiv"
-          ? "bioRxiv_id"
-          : conversationResponse.data.source === "plos"
-          ? "plos_id"
-          : "pmid";
-
-      const article_id = conversationResponse.data.article_id;
-
-      const navigatePath = conversationResponse.data.session_type
-        ? "/article/derive"
-        : `/article/content/${sourceType}:${article_id}`;
-      console.log(navigatePath);
-      // console.log(session_type)
-      if (conversationResponse.data.session_type) {
+    
+      // Extract and store other session details if they are present
+      const { source, session_type, session_title } =
+        conversationResponse.data || {};
+    
+      // Define navigation path based on session type
+      const navigatePath =
+        session_type === "file_type"
+          ? "/article/derive"
+          : `/article/content/${source}:${conversationResponse.data?.article_id}`;
+    
+      // Clear annotation data and update state
+    
+    
+      // Navigate based on session type
+      if (session_type === "file_type") {
         dispatch(setDeriveInsights(true));
-      } else {
+        navigate(navigatePath, {
+          state: {
+            session_id,
+            source,
+            token,
+            user: { access_token: token, user_id },
+            chatHistory: formattedChatHistory,
+            sessionTitle: session_title,
+          },
+        });
+      } else if (conversationResponse.data.article_id) {
         dispatch(setDeriveInsights(false));
+        navigate(navigatePath, {
+          state: {
+            id: conversationResponse.data.article_id,
+            source,
+            token,
+            user: { access_token: token, user_id },
+            chatHistory: formattedChatHistory,
+          },
+        });
       }
-
-      navigate(navigatePath, {
-        state: {
-          id: article_id,
-          source: sourceType,
-          token: token,
-          user: { access_token: token, user_id: user_id },
-        },
-      });
     } catch (error) {
       console.error("Error fetching article or conversation data:", error);
     }
+    
   };
 
   useEffect(() => {
@@ -209,9 +219,8 @@ const Lander = () => {
             zIndex="0"
           ></SearchBar>
           <p className="Landing-Welcome-desc">
-            Inferai by Infer Solutions, Inc, a cutting-edge product leveraging
-            generative AI to revolutionize research in pharmaceuticals,
-            biotechnology, and healthcare. This innovative platform streamlines
+            <span className="highlight-context-infer">Infer</span><span className="highlight-context-ai">ai</span> (<span className="highlight-context-infer">In</span>formation <span className="highlight-context-infer">F</span>or <span className="highlight-context-infer">E</span>xcellence in <span className="highlight-context-infer">R</span>esearch using <span className="highlight-context-ai">A</span>rtifical <span className="highlight-context-ai">I</span>ntelligence) by Infer Solutions, Inc, a cutting-edge product leveraging
+             Artificial Intelligence to revolutionize research in the life sciences industry. This innovative platform streamlines
             research processes, enhances data analysis, and uncovers new
             insights.
           </p>
@@ -290,8 +299,8 @@ const Lander = () => {
                 </div>
                 <h3 className="card-title">AI-Driven Data Curation</h3>
                 <p className="card-content">
-                  InfER’s system helps speed up research by organizing data,
-                  making it easy to connect with different data sources.
+                  Inferai helps speed up research by organizing data,
+                  making it easy to connect with different content sources.
                 </p>
               </div>
             </div>
@@ -302,7 +311,7 @@ const Lander = () => {
                 </div>
                 <h3 className="card-title">Seamless Integration</h3>
                 <p className="card-content">
-                  InfER easily connects with popular platforms, allowing
+                  Inferai seamlessly integrates with popular platforms, allowing
                   real-time data sharing and automatic updates.
                 </p>
               </div>
@@ -314,7 +323,7 @@ const Lander = () => {
                 </div>
                 <h3 className="card-title">Advanced Analytics Engine</h3>
                 <p className="card-content">
-                  Uses smart technology to provide insights through forecasts,
+                  Inferai leverages Artificial Intelligence to provide insights through forecasts,
                   live data displays, and in-depth analysis.
                 </p>
               </div>
@@ -326,8 +335,8 @@ const Lander = () => {
                 </div>
                 <h3 className="card-title">Collaborative Tools</h3>
                 <p className="card-content">
-                  InfER’s Collaborative Tools make it easy for teams to share
-                  data, add comments, & give feedback in real time.
+                  Inferai's collaborative tools make it easy for researchers to share
+                  data, rate content, make notes, & give feedback in real time.
                 </p>
               </div>
             </div>

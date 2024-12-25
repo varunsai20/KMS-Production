@@ -88,7 +88,16 @@
   line-height: 23.36px;
   color: #454545;
 }
-
+.highlight-context-infer{
+  color: #1B3856;
+  font-weight: 700;
+  font-size: 18px;
+}
+.highlight-context-ai{
+  color: #B7D20B;
+  font-weight: 700;
+  font-size: 18px;
+}
 .Landing-Searchbar {
   width: 85%;
   margin: 0;

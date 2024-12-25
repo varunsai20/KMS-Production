@@ -1455,23 +1455,26 @@ const ArticleContent = ({
               onKeyDown={isLoggedIn ? handleKeyDown : null} // Pass null when not logged in
             />
             {loading ? (
-              <CircularProgress
-                className="button"
-                size={24}
-                style={{ marginLeft: "1.5%" }}
-                color="white"
-              />
-            ) : (
-              <FontAwesomeIcon
-                className="button"
-                onClick={isLoggedIn ? handleAskClick : null} // Pass null when not logged in
-                icon={faTelegram}
-                size={"xl"}
-                style={{
-                  cursor: isLoggedIn ? "pointer" : "not-allowed",
-                }}
-              />
-            )}
+  <CircularProgress
+    className="button"
+    size={24}
+    style={{ marginLeft: "1.5%" }}
+    color="white"
+  />
+) : (
+  <FontAwesomeIcon
+    className="button"
+    onClick={isLoggedIn && query ? handleAskClick : null} // Disable click if query is null/empty
+    icon={faTelegram}
+    size={"xl"}
+    style={{
+      cursor: isLoggedIn && query ? "pointer" : "not-allowed", // Set cursor
+      color: isLoggedIn && query ? "" : "grey", // Change color to grey when disabled
+    }}
+    title={!query?"Please enter a query to continue":""}
+  />
+)}
+
           </div>
         </div>
         </div>
