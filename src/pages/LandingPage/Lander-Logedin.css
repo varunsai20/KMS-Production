@@ -90,13 +90,20 @@
 }
 .highlight-context-infer{
   color: #1B3856;
+}
+.highlight-context-infer-out{
+  color: #1B3856;
+  font-weight: 700;
+  font-size: 18px;
+}
+.highlight-context-ai-out{
+  color: #B7D20B;
   font-weight: 700;
   font-size: 18px;
 }
 .highlight-context-ai{
   color: #B7D20B;
-  font-weight: 700;
-  font-size: 18px;
+  
 }
 .Landing-Searchbar {
   width: 85%;

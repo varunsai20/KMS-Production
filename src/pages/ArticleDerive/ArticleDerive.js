@@ -877,6 +877,10 @@ const ArticleDerive = ({
                 onClick={handleDeriveClick}
                 icon={faTelegram}
                 size={"xl"}
+                style={{
+                  cursor: isLoggedIn && query ? "pointer" : "not-allowed", // Set cursor
+                  color: isLoggedIn && query || uploadedFile ? "" : "grey", // Change color to grey when disabled
+                }}
               />
             )}
           </div>

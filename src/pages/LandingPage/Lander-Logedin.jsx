@@ -219,7 +219,7 @@ const Lander = () => {
             zIndex="0"
           ></SearchBar>
           <p className="Landing-Welcome-desc">
-            <span className="highlight-context-infer">Infer</span><span className="highlight-context-ai">ai</span> (<span className="highlight-context-infer">In</span>formation <span className="highlight-context-infer">F</span>or <span className="highlight-context-infer">E</span>xcellence in <span className="highlight-context-infer">R</span>esearch using <span className="highlight-context-ai">A</span>rtifical <span className="highlight-context-ai">I</span>ntelligence) by Infer Solutions, Inc, a cutting-edge product leveraging
+            <span className="highlight-context-infer-out">Infer</span><span className="highlight-context-ai-out">ai</span> (<span className="highlight-context-infer">In</span>formation <span className="highlight-context-infer">F</span>or <span className="highlight-context-infer">E</span>xcellence in <span className="highlight-context-infer">R</span>esearch using <span className="highlight-context-ai">A</span>rtifical <span className="highlight-context-ai">I</span>ntelligence) by Infer Solutions, Inc, a cutting-edge product leveraging
              Artificial Intelligence to revolutionize research in the life sciences industry. This innovative platform streamlines
             research processes, enhances data analysis, and uncovers new
             insights.
@@ -267,7 +267,8 @@ const Lander = () => {
               <span onClick={handleOpenInsights}>Derive Insights</span>
               {/* <span onClick={handleOpenAnnotate}>Annotations</span> */}
               {/* <span onClick={handleOpenCitations}>Citation</span> */}
-              <span>Protocol</span>
+              <span>Job Scheduler</span>
+              <span>LifeSciHub</span>
             </div>
             <div className="Feature-Item">
               <img
