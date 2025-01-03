@@ -103,13 +103,12 @@
   display: flex;
   /* flex-direction: column-reverse; */
 
-  justify-content:center;
-
+  justify-content: center;
 }
 .iframe-preview {
   width: 100%;
 }
-iframe{
+iframe {
   height: 100%;
 }
 .derive-query-asked {
@@ -219,6 +218,13 @@ iframe{
   border-radius: 10px;
   background-color: #007bff;
 }
+#menu-dots {
+  cursor: pointer;
+  padding: 0 10px;
+  font-size: 20px;
+  line-height: 20px;
+  text-decoration: none;
+}
 
 .history-pagination ul li:not(:last-child)::after {
   content: "";
@@ -228,9 +234,55 @@ iframe{
   width: 100%;
   height: 1px;
 }
+.popup-rename {
+  padding: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+.popup-delete {
+  padding: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  color: red;
+}
+.popup-rename:hover {
+  background-color: rgba(237, 237, 237, 1);
+  padding: 10px;
+}
+.popup-delete:hover {
+  background-color: rgba(237, 237, 237, 1);
+  padding: 10px;
+}
+.popup-menu-renamedelete {
+  position: absolute;
+  top: 25px;
+  right: 0;
+  background: white;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  z-index: 9999; /* Ensure high stacking order */
+}
+
+li {
+  position: relative;
+}
+
+#menu-dots {
+  visibility: hidden;
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+li:hover #menu-dots {
+  visibility: visible;
+}
 
 .custom-bold {
-  font-weight: 900; 
+  font-weight: 900;
 }
 .derive-chat-query {
   display: flex;

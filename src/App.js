@@ -62,12 +62,7 @@ function AppRoutes() {
             </ProtectedRoute>
           }
         />
-        <Route
-          path="/article"
-          element={
-              <ArticleLayout />
-          }
-        >
+        <Route path="/article" element={<ArticleLayout />}>
           <Route path="derive" element={<ArticleDerive />} />
           <Route path="content/:pmid" element={<ArticleContent />} />
         </Route>
@@ -106,15 +101,12 @@ function AppRoutes() {
   );
 }
 
-
 function App() {
   return (
     <Router>
       <LogoutHandler>
         <AppRoutes />
       </LogoutHandler>
-
-
     </Router>
   );
 }

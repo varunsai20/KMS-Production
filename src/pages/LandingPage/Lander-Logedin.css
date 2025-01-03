@@ -88,22 +88,21 @@
   line-height: 23.36px;
   color: #454545;
 }
-.highlight-context-infer{
-  color: #1B3856;
+.highlight-context-infer {
+  color: #1b3856;
 }
-.highlight-context-infer-out{
-  color: #1B3856;
+.highlight-context-infer-out {
+  color: #1b3856;
   font-weight: 700;
   font-size: 18px;
 }
-.highlight-context-ai-out{
-  color: #B7D20B;
+.highlight-context-ai-out {
+  color: #b7d20b;
   font-weight: 700;
   font-size: 18px;
 }
-.highlight-context-ai{
-  color: #B7D20B;
-  
+.highlight-context-ai {
+  color: #b7d20b;
 }
 .Landing-Searchbar {
   width: 85%;
@@ -395,6 +394,9 @@
 }
 .Lander-manager {
   background: rgba(251, 251, 253, 1);
+}
+.lander-note-save-button {
+  z-index: 1;
 }
 .lander-plus-dots {
   display: flex;

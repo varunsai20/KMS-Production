@@ -121,12 +121,13 @@ const Collection = ({ setIsCollectionOpen }) => {
                 src={SearchIcon}
                 alt="search"
                 className="Search-collection-icon"
+                style={{ width: "1.5vw" }}
               />
               <input
                 type="text"
                 value={text}
                 onChange={handleSearch}
-                placeholder="Search articles..."
+                placeholder="Search articles"
                 className="Search-collection-input"
               />
             </div>

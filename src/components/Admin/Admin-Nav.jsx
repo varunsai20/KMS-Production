@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom"; // Use Link and useLocation for route handling
+import { Link, useLocation } from "react-router-dom";
 import "./Admin-Nav.css";
 import Researcher from "../../assets/images/Researcher-Icon.svg";
 import { RxHome } from "react-icons/rx";
@@ -7,7 +7,6 @@ const AdminNav = () => {
   const location = useLocation(); // Get the current route
   const [activeItem, setActiveItem] = useState("Dashboard");
 
-  // Sync activeItem with the current path from the URL
   useEffect(() => {
     if (location.pathname === "/admin/users") {
       setActiveItem("Researchers");
@@ -24,7 +23,6 @@ const AdminNav = () => {
         <ul className="sidebar-nav">
           <Link to="/">
             <li className={`nav-item ${activeItem === "" ? "active" : ""}`}>
-              {/* <img src={Researcher} alt="Researchers" className="nav-icon" /> */}
               <RxHome size={20} className="nav-icon" />
 
               <span>Home</span>

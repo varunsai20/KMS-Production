@@ -38,7 +38,7 @@ const Lander = () => {
   const [isCitationsOpen, setIsCitationsOpen] = useState(false);
   const [isAnnotateOpen, setIsAnnotateOpen] = useState(false);
 
-  const [dimensions, setDimensions] = useState({ width: 340, height: 380 });
+  const [dimensions, setDimensions] = useState({ width: 340, height: 350 });
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const { user } = useSelector((state) => state.auth);
   const token = useSelector((state) => state.auth.access_token);
@@ -55,16 +55,10 @@ const Lander = () => {
     setIsCollectionOpen(true);
   };
 
-  const handleOpenCitations = () => {
-    setIsCitationsOpen(true);
-  };
   const handleCloseCitations = () => {
     setIsCitationsOpen(false);
   };
 
-  const handleOpenAnnotate = () => {
-    setIsAnnotateOpen(true);
-  };
   const handleCloseAnnotate = () => {
     setIsAnnotateOpen(false);
   };
@@ -98,7 +92,7 @@ const Lander = () => {
 
       localStorage.setItem("chatHistory", []);
     }
-  }, [user_id, token]);
+  }, [user_id, token, dispatch]);
 
   console.log(sessions);
   const handleSessionClick = async () => {
@@ -120,14 +114,14 @@ const Lander = () => {
         session_id,
         token
       );
-    
+
       // Save session ID in local and session storage
       localStorage.setItem("session_id", session_id);
       sessionStorage.setItem("session_id", session_id);
-    
+
       // Initialize chat history
       let formattedChatHistory = [];
-    
+
       // Format and store chat history only if data is present and valid
       if (conversationResponse.data.conversation?.length > 0) {
         formattedChatHistory = conversationResponse.data.conversation
@@ -139,7 +133,7 @@ const Lander = () => {
           .filter(
             (entry) => entry.query || entry.response || entry.file_url // Keep entries with at least one valid field
           );
-    
+
         if (formattedChatHistory.length > 0) {
           localStorage.setItem(
             "chatHistory",
@@ -147,20 +141,19 @@ const Lander = () => {
           );
         }
       }
-    
+
       // Extract and store other session details if they are present
       const { source, session_type, session_title } =
         conversationResponse.data || {};
-    
+
       // Define navigation path based on session type
       const navigatePath =
         session_type === "file_type"
           ? "/article/derive"
           : `/article/content/${source}:${conversationResponse.data?.article_id}`;
-    
+
       // Clear annotation data and update state
-    
-    
+
       // Navigate based on session type
       if (session_type === "file_type") {
         dispatch(setDeriveInsights(true));
@@ -189,7 +182,6 @@ const Lander = () => {
     } catch (error) {
       console.error("Error fetching article or conversation data:", error);
     }
-    
   };
 
   useEffect(() => {
@@ -202,7 +194,7 @@ const Lander = () => {
 
       setPosition({ x: bottomRightX, y: bottomRightY });
     }
-  }, [isLanderNotesOpen]);
+  }, [isLanderNotesOpen, dimensions.height, dimensions.width]);
 
   return (
     <div className="Landing-Container">
@@ -219,10 +211,18 @@ const Lander = () => {
             zIndex="0"
           ></SearchBar>
           <p className="Landing-Welcome-desc">
-            <span className="highlight-context-infer-out">Infer</span><span className="highlight-context-ai-out">ai</span> (<span className="highlight-context-infer">In</span>formation <span className="highlight-context-infer">F</span>or <span className="highlight-context-infer">E</span>xcellence in <span className="highlight-context-infer">R</span>esearch using <span className="highlight-context-ai">A</span>rtifical <span className="highlight-context-ai">I</span>ntelligence) by Infer Solutions, Inc, a cutting-edge product leveraging
-             Artificial Intelligence to revolutionize research in the life sciences industry. This innovative platform streamlines
-            research processes, enhances data analysis, and uncovers new
-            insights.
+            <span className="highlight-context-infer-out">Infer</span>
+            <span className="highlight-context-ai-out">ai</span> (
+            <span className="highlight-context-infer">In</span>formation{" "}
+            <span className="highlight-context-infer">F</span>or{" "}
+            <span className="highlight-context-infer">E</span>xcellence in{" "}
+            <span className="highlight-context-infer">R</span>esearch using{" "}
+            <span className="highlight-context-ai">A</span>rtifical{" "}
+            <span className="highlight-context-ai">I</span>ntelligence) by Infer
+            Solutions, Inc, a cutting-edge product leveraging Artificial
+            Intelligence to revolutionize research in the life sciences
+            industry. This innovative platform streamlines research processes,
+            enhances data analysis, and uncovers new insights.
           </p>
         </div>
       </div>
@@ -300,8 +300,8 @@ const Lander = () => {
                 </div>
                 <h3 className="card-title">AI-Driven Data Curation</h3>
                 <p className="card-content">
-                  Inferai helps speed up research by organizing data,
-                  making it easy to connect with different content sources.
+                  Inferai helps speed up research by organizing data, making it
+                  easy to connect with different content sources.
                 </p>
               </div>
             </div>
@@ -324,8 +324,8 @@ const Lander = () => {
                 </div>
                 <h3 className="card-title">Advanced Analytics Engine</h3>
                 <p className="card-content">
-                  Inferai leverages Artificial Intelligence to provide insights through forecasts,
-                  live data displays, and in-depth analysis.
+                  Inferai leverages Artificial Intelligence to provide insights
+                  through forecasts, live data displays, and in-depth analysis.
                 </p>
               </div>
             </div>
@@ -336,8 +336,9 @@ const Lander = () => {
                 </div>
                 <h3 className="card-title">Collaborative Tools</h3>
                 <p className="card-content">
-                  Inferai's collaborative tools make it easy for researchers to share
-                  data, rate content, make notes, & give feedback in real time.
+                  Inferai's collaborative tools make it easy for researchers to
+                  share data, rate content, make notes, & give feedback in real
+                  time.
                 </p>
               </div>
             </div>

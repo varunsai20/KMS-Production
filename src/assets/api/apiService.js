@@ -17,7 +17,6 @@ const apiClient = axios.create({
   baseURL: "https://inferai.ai/api",
   headers: {
     "Content-Type": "application/json",
-    // "ngrok-skip-browser-warning": true,
   },
 });
 
@@ -152,7 +151,7 @@ export const apiService = {
     return apiClient.post("/core_search/annotate_file", formData, {
       headers: {
         Authorization: `Bearer ${token}`,
-        "Content-Type": "multipart/form-data", // Ensure content type is set for file upload
+        "Content-Type": "multipart/form-data",
       },
     });
   },
@@ -261,12 +260,27 @@ export const apiService = {
         Authorization: `Bearer ${token}`,
       },
     }),
-  saveEdit: (token) =>
-    apiClient.put(`history/conversations/edit`, {
+  deleteSession: (token, user_id, session_id) =>
+    apiClient.delete(`history/conversations/delete/${user_id}/${session_id}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     }),
+  saveEdit: (token, { user_id, session_id, new_title }) =>
+    apiClient.put(
+      `history/conversations/edit`,
+      {
+        user_id,
+        session_id,
+        new_title,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    ),
+
   sessionClick: (user_id, session_id, token) =>
     apiClient.get(`history/conversations/history/${user_id}/${session_id}`, {
       headers: {
@@ -278,12 +292,18 @@ export const apiService = {
   // landing page
 
   //Article Layout
-  annotateFileFromURL: (token) =>
-    apiClient.post(`core_search/annotate_from_url`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
+  annotateFileFromURL: (token, { url }) =>
+    apiClient.post(
+      `core_search/annotate_from_url`,
+      {
+        url,
       },
-    }),
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    ),
 
   shareArticle: (token, emailData) =>
     apiClient.post(`core_search/sharearticle`, emailData, {

@@ -6,7 +6,6 @@ import { RiDeleteBin6Line } from "react-icons/ri";
 import { GoMail } from "react-icons/go";
 import { useSelector } from "react-redux";
 import axios from "axios";
-//import { apiService } from "../../assets/api/apiService";
 import { showSuccessToast, showErrorToast } from "../../utils/toastHelper";
 
 const NoteItem = ({

@@ -472,7 +472,7 @@ const Editnotes = ({
                 className="editNotes-modal-close-button"
                 onClick={handleCloseModal}
               >
-                <IoCloseOutline size={20} />
+                <IoCloseOutline size={22} color="black" />
               </button>
             </div>
             <div className="editNotes-modal-body">
@@ -480,13 +480,13 @@ const Editnotes = ({
                 <button className="editNotes-Email">
                   <div
                     style={{
-                      backgroundColor: "#A5A5A5",
+                      // backgroundColor: "#A5A5A5",
                       padding: "5px 10px",
                       borderRadius: "10px",
                     }}
                     onClick={handleEmailClick}
                   >
-                    <MdEmail size={40} color="white" />
+                    <MdEmail size={40} color="rgb(27, 54, 93)" />
                   </div>
                   <span
                     style={{ fontSize: "16px", color: "black", padding: "3px" }}
@@ -498,12 +498,12 @@ const Editnotes = ({
               <button onClick={handleCopy} className="editNotes-copy">
                 <div
                   style={{
-                    backgroundColor: "#A5A5A5",
+                    // backgroundColor: "#A5A5A5",
                     padding: "5px 10px",
                     borderRadius: "10px",
                   }}
                 >
-                  <IoCopyOutline size={40} color="white" />
+                  <IoCopyOutline size={40} color="rgb(27, 54, 93)" />
                 </div>
                 <span
                   style={{ fontSize: "16px", color: "black", padding: "3px" }}

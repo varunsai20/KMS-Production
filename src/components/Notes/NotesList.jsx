@@ -86,7 +86,7 @@ const NotesList = ({
         className={isOpenNotes ? "lander-notes__container" : "notes__container"}
         style={
           isOpenNotes
-            ? { height: `${height - 110}px`, overflowY: "auto" }
+            ? { height: `${height - 75}px`, overflowY: "auto" }
             : { maxHeight: "42vh", overflowY: "auto" }
         }
       >
