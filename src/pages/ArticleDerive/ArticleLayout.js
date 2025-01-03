@@ -564,17 +564,23 @@ const ArticleLayout = () => {
             <ul>
               {sessions.length > 0 ? (
                 sessions.map((session) => {
-                  const mappedTitle = session.session_title.includes(
+                  // Trim quotes from session titles
+                  const sanitizedTitle = session.session_title.replace(
+                    /^"|"$/g,
+                    ""
+                  ); // Removes leading and trailing quotes
+
+                  const mappedTitle = sanitizedTitle.includes(
                     "what are the key highlights from this article"
                   )
                     ? "Key Highlights"
-                    : session.session_title.includes(
+                    : sanitizedTitle.includes(
                         "what can we conclude form this article"
                       )
                     ? "Conclusion"
-                    : session.session_title.includes("Summarize this article")
+                    : sanitizedTitle.includes("Summarize this article")
                     ? "Summarize"
-                    : session.session_title;
+                    : sanitizedTitle;
 
                   return (
                     <li

@@ -507,47 +507,53 @@ const ArticleDerive = ({
 
       const readStream = async () => {
         let done = false;
-
+        const delay = 100; // Delay between words
+      
         while (!done) {
           const { value, done: streamDone } = await reader.read();
           done = streamDone;
-
+      
           if (value) {
             buffer += decoder.decode(value, { stream: true });
-
+      
             while (buffer.indexOf("{") !== -1 && buffer.indexOf("}") !== -1) {
               let start = buffer.indexOf("{");
               let end = buffer.indexOf("}", start);
               if (start !== -1 && end !== -1) {
                 const jsonChunk = buffer.slice(start, end + 1);
                 buffer = buffer.slice(end + 1);
-
+      
                 try {
                   const parsedData = JSON.parse(jsonChunk);
                   const answer = parsedData.answer;
-                  apiResponse += answer + " ";
-
-                  if (!storedSessionId && parsedData.session_id) {
-                    localStorage.setItem("session_id", parsedData.session_id);
-                  }
-
-                  setChatHistory((chatHistory) => {
-                    const updatedChatHistory = [...chatHistory];
-                    const lastEntryIndex = updatedChatHistory.length - 1;
-                    if (lastEntryIndex >= 0) {
-                      updatedChatHistory[lastEntryIndex] = {
-                        ...updatedChatHistory[lastEntryIndex],
-                        response: apiResponse.trim(),
-                        showDot: false,
-                      };
-                    }
-                    return updatedChatHistory;
-                  });
-
-                  if (endOfMessagesRef.current) {
-                    endOfMessagesRef.current.scrollIntoView({
-                      behavior: "smooth",
+                  const words = answer.split(" ");
+      
+                  for (const word of words) {
+                    await new Promise((resolve) => setTimeout(resolve, delay));
+      
+                    setChatHistory((chatHistory) => {
+                      const updatedChatHistory = [...chatHistory];
+                      const lastEntryIndex = updatedChatHistory.length - 1;
+      
+                      if (lastEntryIndex >= 0) {
+                        updatedChatHistory[lastEntryIndex] = {
+                          ...updatedChatHistory[lastEntryIndex],
+                          response:
+                            (updatedChatHistory[lastEntryIndex].response || "") +
+                            " " +
+                            word,
+                          showDot: true,
+                        };
+                      }
+      
+                      return updatedChatHistory;
                     });
+      
+                    if (endOfMessagesRef.current) {
+                      endOfMessagesRef.current.scrollIntoView({
+                        behavior: "smooth",
+                      });
+                    }
                   }
                 } catch (error) {
                   console.error("Error parsing JSON chunk:", error);
@@ -556,11 +562,12 @@ const ArticleDerive = ({
             }
           }
         }
+      
         setRefreshSessions((prev) => !prev);
         setLoading(false);
-
         localStorage.setItem("chatHistory", JSON.stringify(chatHistory));
       };
+      
 
       readStream();
     } catch (error) {

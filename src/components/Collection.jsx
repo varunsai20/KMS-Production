@@ -71,12 +71,14 @@ const Collection = ({ setIsCollectionOpen }) => {
     setIsCollectionOpen(false);
   };
   const handleArticleClick = (article_id, source) => {
+    console.log(source);
     const sourceType =
-      source === "BioRxiv"
-        ? "bioRxiv_id"
-        : source === "Public Library of Science (PLOS)"
-        ? "plos_id"
-        : "pmid";
+  source === "BioRxiv" || source === "biorxiv"
+    ? "bioRxiv_id"
+    : source === "Public Library of Science (PLOS)" || source === "plos"
+    ? "plos_id"
+    : "pmid";
+
     navigate(`/article/content/${sourceType}:${article_id}`, {
       state: {
         annotateData: [],
