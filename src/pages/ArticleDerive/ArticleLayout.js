@@ -538,115 +538,121 @@ const ArticleLayout = () => {
               </button>
             </div>
             <ul>
-              {sessions.length > 0 ? (
-                sessions.map((session) => {
-                  const mappedTitle = session.session_title.includes(
-                    "what are the key highlights from this article"
-                  )
-                    ? "Key Highlights"
-                    : session.session_title.includes(
-                        "what can we conclude form this article"
-                      )
-                    ? "Conclusion"
-                    : session.session_title.includes("Summarize this article")
-                    ? "Summarize"
-                    : session.session_title;
+            {
+  sessions.length > 0 ? (
+    sessions.map((session) => {
+      // Trim quotes from session titles
+      const sanitizedTitle = session.session_title.replace(/^"|"$/g, ""); // Removes leading and trailing quotes
 
-                  return (
-                    <li
-                      key={session.session_id}
-                      className={
-                        session.session_id === activeSessionId ? "active" : ""
-                      }
-                      onClick={() => {
-                        handleSessionClick(session.session_id);
-                      }}
-                      style={{ position: "relative" }} // To position the popup
-                    >
-                      {editingSessionId === session.session_id ? (
-                        <input
-                          type="text"
-                          style={{
-                            padding: "0",
-                            height: "20px",
-                            width: "100%",
-                            fontSize: "14px",
-                            outline: "none",
-                            borderColor: editedTitle ? "" : "",
-                          }}
-                          value={editedTitle}
-                          onChange={handleTitleChange}
-                          onBlur={() => handleSaveEdit(session.session_id)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                              handleSaveEdit(session.session_id);
-                            }
-                          }}
-                          autoFocus
-                        />
-                      ) : (
-                        <span>
-                          {mappedTitle.slice(0, 25)}
-                          {mappedTitle.length > 25 ? "..." : ""}
-                        </span>
-                      )}
-                      <div
-                        style={{
-                          display: "inline-block",
-                          position: "relative",
-                        }}
-                      >
-                        {/* Menu dots */}
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation(); // Prevent click from reaching <li>
-                            togglePopup(session.session_id);
-                          }}
-                          id="menu-dots"
-                          title="Options"
-                        >
-                          ⋮
-                        </button>
+      const mappedTitle = sanitizedTitle.includes(
+        "what are the key highlights from this article"
+      )
+        ? "Key Highlights"
+        : sanitizedTitle.includes(
+            "what can we conclude form this article"
+          )
+        ? "Conclusion"
+        : sanitizedTitle.includes("Summarize this article")
+        ? "Summarize"
+        : sanitizedTitle;
 
-                        {popupSessionId === session.session_id && (
-                          <div
-                            ref={dropdownRef}
-                            className="popup-menu-renamedelete"
-                          >
-                            <div
-                              className="popup-rename"
-                              onClick={() =>
-                                handleEditClick(session.session_id, mappedTitle)
-                              }
-                            >
-                              <img
-                                src={pen}
-                                alt="pen-icon"
-                                style={{ marginRight: "10px", width: "16px" }}
-                              />
-                              Rename
-                            </div>
-                            <div
-                              className="popup-delete"
-                              onClick={() =>
-                                handleDeleteSession(session.session_id)
-                              }
-                            >
-                              <IoTrashOutline
-                                size={15}
-                                style={{ marginRight: "10px" }}
-                              />
-                              Delete
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </li>
-                  );
-                })
-              ) : (
-                <li>No sessions available</li>
-              )}
+      return (
+        <li
+          key={session.session_id}
+          className={
+            session.session_id === activeSessionId ? "active" : ""
+          }
+          onClick={() => {
+            handleSessionClick(session.session_id);
+          }}
+          style={{ position: "relative" }} // To position the popup
+        >
+          {editingSessionId === session.session_id ? (
+            <input
+              type="text"
+              style={{
+                padding: "0",
+                height: "20px",
+                width: "100%",
+                fontSize: "14px",
+                outline: "none",
+                borderColor: editedTitle ? "" : "",
+              }}
+              value={editedTitle}
+              onChange={handleTitleChange}
+              onBlur={() => handleSaveEdit(session.session_id)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleSaveEdit(session.session_id);
+                }
+              }}
+              autoFocus
+            />
+          ) : (
+            <span>
+              {mappedTitle.slice(0, 25)}
+              {mappedTitle.length > 25 ? "..." : ""}
+            </span>
+          )}
+          <div
+            style={{
+              display: "inline-block",
+              position: "relative",
+            }}
+          >
+            {/* Menu dots */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation(); // Prevent click from reaching <li>
+                togglePopup(session.session_id);
+              }}
+              id="menu-dots"
+              title="Options"
+            >
+              ⋮
+            </button>
+
+            {popupSessionId === session.session_id && (
+              <div
+                ref={dropdownRef}
+                className="popup-menu-renamedelete"
+              >
+                <div
+                  className="popup-rename"
+                  onClick={() =>
+                    handleEditClick(session.session_id, mappedTitle)
+                  }
+                >
+                  <img
+                    src={pen}
+                    alt="pen-icon"
+                    style={{ marginRight: "10px", width: "16px" }}
+                  />
+                  Rename
+                </div>
+                <div
+                  className="popup-delete"
+                  onClick={() =>
+                    handleDeleteSession(session.session_id)
+                  }
+                >
+                  <IoTrashOutline
+                    size={15}
+                    style={{ marginRight: "10px" }}
+                  />
+                  Delete
+                </div>
+              </div>
+            )}
+          </div>
+        </li>
+      );
+    })
+  ) : (
+    <li>No sessions available</li>
+  )
+}
+
             </ul>
           </div>
           {/* <ArticleContent/> */}
