@@ -36,7 +36,10 @@ const ArticleLayout = () => {
   const navigate = useNavigate();
   const { pmid } = useParams();
   const prevPathRef = useRef(location.pathname);
+
   const dropdownRef = useRef(null);
+  const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
+
   const [openAnnotate, setOpenAnnotate] = useState(false);
   const [annotateHeight, setAnnotateHeight] = useState(0);
   const [notesHeight, setNotesHeight] = useState(0);
@@ -215,8 +218,26 @@ const ArticleLayout = () => {
     };
   }, []);
 
-  const togglePopup = (sessionId) => {
-    setPopupSessionId((prev) => (prev === sessionId ? null : sessionId));
+  // const togglePopup = (sessionId) => {
+  //   setPopupSessionId((prev) => (prev === sessionId ? null : sessionId));
+  // };
+  const togglePopup = (sessionId, event) => {
+    if (popupSessionId === sessionId) {
+      setPopupSessionId(null);
+    } else {
+      // Get the position and dimensions of the menu dots
+      const menuDotsRect = event.target.getBoundingClientRect();
+
+      // Calculate the position for the popup
+      const popupX = menuDotsRect.right + 10; // Offset slightly to the right
+      const popupY = menuDotsRect.top;
+
+      // Store the position dynamically
+      setPopupPosition({ x: popupX, y: popupY });
+
+      // Set the active popup session
+      setPopupSessionId(sessionId);
+    }
   };
 
   const handleDeleteSession = async (sessionId) => {
@@ -225,11 +246,14 @@ const ArticleLayout = () => {
       setSessions((prevSessions) =>
         prevSessions.filter((session) => session.session_id !== sessionId)
       );
+      if (activeSessionId === sessionId) {
+        // localStorage.removeItem("session_id");
+        // setActiveSessionId(null);
+        handleOpenChat();
+      }
     } catch (error) {
       console.error("Error deleting session:", error);
     }
-    // Implement delete session logic here
-    //console.log(`Deleting session: ${sessionId}`);
   };
   const handleSessionClick = async (session_id) => {
     console.log("called in session");
@@ -561,7 +585,7 @@ const ArticleLayout = () => {
                       onClick={() => {
                         handleSessionClick(session.session_id);
                       }}
-                      style={{ position: "relative" }} // To position the popup
+                      style={{ position: "relative" }}
                     >
                       {editingSessionId === session.session_id ? (
                         <input
@@ -587,7 +611,7 @@ const ArticleLayout = () => {
                       ) : (
                         <span>
                           {mappedTitle.slice(0, 25)}
-                          {mappedTitle.length > 25 ? "..." : ""}
+                          {mappedTitle.length > 25 ? "" : ""}
                         </span>
                       )}
                       <div
@@ -600,7 +624,7 @@ const ArticleLayout = () => {
                         <button
                           onClick={(e) => {
                             e.stopPropagation(); // Prevent click from reaching <li>
-                            togglePopup(session.session_id);
+                            togglePopup(session.session_id, e);
                           }}
                           id="menu-dots"
                           title="Options"
@@ -612,6 +636,9 @@ const ArticleLayout = () => {
                           <div
                             ref={dropdownRef}
                             className="popup-menu-renamedelete"
+                            style={{
+                              transform: `translate(${popupPosition.x}px, ${popupPosition.y}px)`,
+                            }}
                           >
                             <div
                               className="popup-rename"
@@ -766,7 +793,8 @@ const ArticleLayout = () => {
                   cursor: isLoggedIn ? "pointer" : "not-allowed",
                   opacity:
                     (uploadedFile && deriveInsights) ||
-                    (annotateData && annotateData.length > 0)
+                    (annotateData && annotateData.length > 0) ||
+                    activeSessionId
                       ? 1
                       : 0.5,
                   borderRadius: !deriveInsights ? "8px 8px 0 0" : "8px 8px 0 0",

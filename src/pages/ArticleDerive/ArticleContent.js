@@ -181,6 +181,7 @@ const ArticleContent = ({
           const article = response.data;
           setArticleData(article);
           setAnnotateLoading(false);
+          console.log("API Response for Article:", response.data);
 
           // Retrieve and set saved search term from sessionStorage
           const savedTerm = sessionStorage.getItem("SearchTerm");
@@ -188,6 +189,10 @@ const ArticleContent = ({
         } catch (error) {
           setAnnotateLoading(false);
           console.error("Error fetching article data:", error);
+          console.error(
+            "Error fetching article data:",
+            error.response?.data || error.message
+          );
         }
       };
 

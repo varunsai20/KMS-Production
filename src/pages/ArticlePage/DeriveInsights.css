@@ -256,13 +256,14 @@ iframe {
   padding: 10px;
 }
 .popup-menu-renamedelete {
-  position: absolute;
-  top: 25px;
-  right: 0;
+  position: fixed;
+  top: 0;
+  left: 0;
   background: white;
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
   border-radius: 4px;
   z-index: 9999; /* Ensure high stacking order */
+  /* transform: translate(365%, 376%); */
 }
 
 li {
@@ -272,7 +273,7 @@ li {
 #menu-dots {
   visibility: hidden;
   position: absolute;
-  right: 10px;
+  right: 0px;
   top: 50%;
   transform: translateY(-50%);
 }
