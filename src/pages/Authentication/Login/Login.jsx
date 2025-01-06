@@ -3,8 +3,7 @@ import "./Login.css";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { showSuccessToast, showErrorToast } from "../../../utils/toastHelper";
-import { login } from "../../../redux/reducers/LoginAuth"; // Import login action
-import { toast } from "react-toastify";
+import { login } from "../../../redux/reducers/LoginAuth";
 import Logo from "../../../assets/images/InfersolD17aR04aP01ZL-Polk4a 1.svg";
 import { apiService } from "../../../assets/api/apiService";
 
@@ -12,10 +11,8 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [emailError, setEmailError] = useState("");
-  //const [loginError, setloginError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [isButtonDisabled, setIsButtonDisabled] = useState(true);
-  //const [errorCode, setErrorCode] = useState(null);
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [showPassword, setShowPassword] = useState(false);
@@ -59,10 +56,10 @@ const Login = () => {
     if (!emailError && !passwordError && email && password) {
       try {
         const response = await apiService.login(email, password);
+        console.debug("debug", response);
         if (response.status === 200) {
           const token = response.data.access_token;
           const userId = response.data.user_id;
-          // Fetch user profile with token
           const profileResponse = await apiService.loginProfile(userId, token);
 
           const userProfile = profileResponse.data.user_profile;

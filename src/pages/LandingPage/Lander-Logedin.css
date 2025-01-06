@@ -969,6 +969,117 @@
     margin-top: auto;
   }
 }
+
+@media (min-width: 320px) and (max-width: 768px) {
+  .Landing-Container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    text-align: center;
+    box-sizing: border-box;
+  }
+
+  .Landing-Header {
+    width: 100%;
+    flex-shrink: 0;
+  }
+
+  .Landing-Content {
+    display: flex;
+    justify-content: space-between;
+    width: 90%;
+    margin: 0 auto;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .Landing-Content-Left,
+  .Landing-Content-Right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 250px;
+  }
+
+  .Landing-Content-Left {
+    text-align: left;
+  }
+
+  .Landing-Content-Right img {
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
+  }
+
+  .Landing-Features {
+    /* display: grid; */
+    width: 90%;
+    flex-shrink: 0;
+  }
+
+  .Feature-Item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    /* grid-template-columns: repeat(2, 1fr); */
+    text-align: center;
+    background: #fff;
+    border-radius: 16px;
+    padding: 20px;
+    transition: transform 0.3s ease-in-out;
+  }
+
+  .Feature-Item:hover {
+    transform: translateY(-5px);
+  }
+
+  .WhyInfer-points {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    width: 85%;
+    margin: 20px auto;
+  }
+  .LoggedinFeatures {
+    display: grid;
+    width: 100%;
+    grid-template-columns: repeat(1, 1fr);
+    gap: 20px;
+  }
+
+  .Landing-Features-card {
+    text-align: center;
+    /* padding: 20px; */
+    border: 1px solid #fe7675;
+    border-radius: 16px;
+    background: #fff;
+    transition: transform 0.3s ease-in-out;
+  }
+
+  .Landing-Features-card:hover {
+    transform: translateY(-5px);
+  }
+
+  .card-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin: 10px 0;
+  }
+
+  .card-content {
+    font-size: 0.9rem;
+    color: #666;
+  }
+
+  .Footer {
+    width: 100%;
+    flex-shrink: 0;
+    margin-top: auto;
+  }
+}
 @media (min-width: 1080px) and (max-width: 1366px) {
   .Landing-Container {
     display: flex;

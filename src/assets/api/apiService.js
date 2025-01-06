@@ -2,6 +2,7 @@ import axios from "axios";
 import { showErrorToast } from "../../utils/toastHelper";
 import { hideNetworkErrorToast } from "../../utils/toastHelper";
 import { showNetworkErrorToast } from "../../utils/toastHelper";
+import { redirectToLogin } from "../../helpers/navigationHelper";
 
 let isNetworkErrorDisplayed = false;
 
@@ -37,11 +38,13 @@ apiClient.interceptors.response.use(
       const { status, data } = error.response;
       if (status === 401) {
         showErrorToast("Unauthorized. Please login again.");
+        redirectToLogin();
       } else if (status === 404) {
         showErrorToast("Resource not found.");
-      } else {
-        showErrorToast(data?.message || "An error occurred.");
       }
+      // else {
+      //   showErrorToast(data?.message || "An error occurred.");
+      // }
     } else if (error.request) {
       if (!isNetworkErrorDisplayed) {
         isNetworkErrorDisplayed = true;

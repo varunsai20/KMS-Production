@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+} from "react";
 import { useSelector } from "react-redux";
 import { useParams, useLocation } from "react-router-dom";
 import "../ArticlePage/ArticlePage.css";
@@ -63,6 +69,10 @@ const ArticleDerive = ({
   });
 
   const { resetArticleData, resetChatHistory } = location.state || {};
+  const pdfURL = useMemo(
+    () => uploadedFile && URL.createObjectURL(uploadedFile),
+    [uploadedFile]
+  );
 
   useEffect(() => {
     if (resetArticleData) {
@@ -508,47 +518,48 @@ const ArticleDerive = ({
       const readStream = async () => {
         let done = false;
         const delay = 100; // Delay between words
-      
+
         while (!done) {
           const { value, done: streamDone } = await reader.read();
           done = streamDone;
-      
+
           if (value) {
             buffer += decoder.decode(value, { stream: true });
-      
+
             while (buffer.indexOf("{") !== -1 && buffer.indexOf("}") !== -1) {
               let start = buffer.indexOf("{");
               let end = buffer.indexOf("}", start);
               if (start !== -1 && end !== -1) {
                 const jsonChunk = buffer.slice(start, end + 1);
                 buffer = buffer.slice(end + 1);
-      
+
                 try {
                   const parsedData = JSON.parse(jsonChunk);
                   const answer = parsedData.answer;
                   const words = answer.split(" ");
-      
+
                   for (const word of words) {
                     await new Promise((resolve) => setTimeout(resolve, delay));
-      
+
                     setChatHistory((chatHistory) => {
                       const updatedChatHistory = [...chatHistory];
                       const lastEntryIndex = updatedChatHistory.length - 1;
-      
+
                       if (lastEntryIndex >= 0) {
                         updatedChatHistory[lastEntryIndex] = {
                           ...updatedChatHistory[lastEntryIndex],
                           response:
-                            (updatedChatHistory[lastEntryIndex].response || "") +
+                            (updatedChatHistory[lastEntryIndex].response ||
+                              "") +
                             " " +
                             word,
                           showDot: true,
                         };
                       }
-      
+
                       return updatedChatHistory;
                     });
-      
+
                     if (endOfMessagesRef.current) {
                       endOfMessagesRef.current.scrollIntoView({
                         behavior: "smooth",
@@ -562,12 +573,11 @@ const ArticleDerive = ({
             }
           }
         }
-      
+
         setRefreshSessions((prev) => !prev);
         setLoading(false);
         localStorage.setItem("chatHistory", JSON.stringify(chatHistory));
       };
-      
 
       readStream();
     } catch (error) {
@@ -961,7 +971,7 @@ const ArticleDerive = ({
               {uploadedFile && uploadedFile.name.endsWith(".pdf") && (
                 <div className="iframe-preview">
                   <iframe
-                    src={URL.createObjectURL(uploadedFile)}
+                    src={pdfURL}
                     width="100%"
                     height="350px"
                     title="PDF Preview"
@@ -990,7 +1000,7 @@ const ArticleDerive = ({
             {uploadedFile && uploadedFile.name.endsWith(".pdf") && (
               <div className="iframe-preview" ref={endOfMessagesRef}>
                 <iframe
-                  src={URL.createObjectURL(uploadedFile)}
+                  src={pdfURL}
                   width="100%"
                   height="350px"
                   title="PDF Preview"
