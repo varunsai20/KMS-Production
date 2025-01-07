@@ -217,7 +217,7 @@ const Lander = () => {
           <img src={Logo} alt="inferAI-logo" className="inferai-logo" />
           <div className="search-bar-div" style={{ position: "relative" }}>
             <SearchBar
-              className="Landingpage-SearchBar"
+              className="Landingpage-SearchBar" 
               landingWidth="80%"
               zIndex="0"
               setTermMissing={setTermMissing}

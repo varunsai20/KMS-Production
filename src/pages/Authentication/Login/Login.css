@@ -7,7 +7,7 @@
   height: 100vh;
   overflow-y: hidden;
   gap: 20px;
-  padding: 20px;
+  /* padding: 20px; */
 }
 .logo-in-login {
   width: 12vw;
@@ -64,7 +64,7 @@
   border-radius: 10px;
   border: none;
   width: 100%;
-  height: 100%;
+  height: 90%;
 }
 
 .input:focus {
@@ -201,7 +201,7 @@
   height: 100vh; /* Ensure it takes up the full viewport height */
   overflow-y: hidden;
   gap: 20px;
-  padding: 20px; /* Add padding for better spacing on smaller screens */
+  /* padding: 20px;  */
 }
 
 .logo-in-login {
@@ -256,7 +256,7 @@
   border: 1.5px solid #2d79f3;
 }
 
-.input {
+/* .input {
   border-radius: 10px;
   border: none;
   width: 100%;
@@ -265,7 +265,7 @@
 
 .input:focus {
   outline: none;
-}
+} */
 
 .flex-row {
   display: flex;
