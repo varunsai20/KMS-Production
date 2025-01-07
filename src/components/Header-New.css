@@ -81,12 +81,12 @@
   padding: 20px 32px;
 }
 
-@media (min-width: 320px) and (max-width: 767px) {
+@media (min-width: 250px) and (max-width: 767px) {
   .Navbar-Header {
     margin: 0px;
   }
   .Search-nav-logo {
-    height: 8vw;
+    height: 6vw;
     display: flex;
   }
   .logo-descreption {
@@ -102,7 +102,8 @@
     font-size: 3vw;
   }
   .Navbar-Header-Items {
-    padding: 0 15px;
+    padding: 0 6px;
+    gap: 5px;
   }
   .Search-nav-login {
     display: flex;

@@ -91,14 +91,10 @@ const Login = () => {
           }
         }
       } catch (error) {
-        if (error.response) {
-          const statusCode = error.response.status;
-
-          if (statusCode === 401 || statusCode === 403) {
-            showErrorToast("Login failed. Please check your credentials.");
-          } else {
-            navigate("/server-error");
-          }
+        if (error.reason === "invalid_credentials") {
+          showErrorToast("Login failed. Please check your credentials.");
+        } else if (error.reason === "session_expired") {
+          showErrorToast("Session expired. Please login again.");
         } else {
           console.error("Unknown error occurred:", error);
           navigate("/server-error");

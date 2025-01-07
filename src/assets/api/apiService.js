@@ -35,12 +35,17 @@ apiClient.interceptors.response.use(
   },
   (error) => {
     if (error.response) {
-      const { status, data } = error.response;
-      if (status === 401) {
-        showErrorToast("Unauthorized. Please login again.");
+      const { status, config } = error.response;
+      if (status === 401 && config.url.includes("auth/login")) {
+        error.reason = "invalid_credentials";
+      } else if (status === 401) {
+        error.reason = "session_expired";
         redirectToLogin();
-      } else if (status === 404) {
+      } else if (status === 404 && status === 500) {
         showErrorToast("Resource not found.");
+      }
+      if (status === 403) {
+        error.reason = "access_denied";
       }
       // else {
       //   showErrorToast(data?.message || "An error occurred.");
