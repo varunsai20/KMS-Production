@@ -15,15 +15,51 @@
 .Landing-Content {
   display: flex;
   width: 80%;
-  padding: 5% 0;
+  padding: 4% 0;
   grid-template-columns: 1fr 1fr;
   flex-grow: 1;
+  position: relative;
 }
 .Landing-Content-Left {
   position: relative;
   display: grid;
   align-content: space-evenly;
 }
+/* Container for error */
+.search-term-missing-container {
+  position: absolute;
+  display: flex;
+  width: 80%;
+  margin: 10px 0;
+  justify-content: center;
+}
+
+/* Error box styling */
+.search-term-missing-error {
+  display: inline-block;
+  background-color: #fef3c7;
+  border: 1px solid #fbbf24;
+  color: #92400e;
+  padding: 10px 15px;
+  border-radius: 5px;
+  font-size: 14px;
+  /* box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); */
+  position: relative;
+}
+
+/* Arrow under the error box */
+.search-term-missing-error .error-arrow {
+  position: absolute;
+  top: -9px;
+  /* left: 50%;  */
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 10px 10px 10px; /* Adjust the borders to point downward */
+  border-color: transparent transparent #fef3c7 transparent; 
+}
+
 .welcome-search {
   display: flex;
   flex-direction: column;
@@ -63,7 +99,11 @@
 .inferai-logo {
   width: 10vw;
 }
-
+.SearchTerm-missing-error{
+  position: absolute;
+  display: flex;
+  justify-content: center;
+}
 .Landing-Infer {
   background: linear-gradient(
     90.5deg,
