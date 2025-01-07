@@ -22,6 +22,8 @@ import ProtectedRoute from "./protectedRoute";
 import DeriveInsights from "./pages/ArticlePage/DeriveInsights";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useNavigate } from "react-router-dom";
+import { setNavigate } from "./helpers/navigationHelper";
 
 import Error500 from "./utils/Error500";
 // import ErrorBoundary from "./utils/ErrorBoundry";
@@ -33,6 +35,11 @@ import ArticleDerive from "./pages/ArticleDerive/ArticleDerive";
 function AppRoutes() {
   const location = useLocation();
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    setNavigate(navigate);
+  }, [navigate]);
 
   useEffect(() => {
     if (location.pathname === "/article/derive") {
@@ -62,12 +69,7 @@ function AppRoutes() {
             </ProtectedRoute>
           }
         />
-        <Route
-          path="/article"
-          element={
-              <ArticleLayout />
-          }
-        >
+        <Route path="/article" element={<ArticleLayout />}>
           <Route path="derive" element={<ArticleDerive />} />
           <Route path="content/:pmid" element={<ArticleContent />} />
         </Route>
@@ -106,15 +108,12 @@ function AppRoutes() {
   );
 }
 
-
 function App() {
   return (
     <Router>
       <LogoutHandler>
         <AppRoutes />
       </LogoutHandler>
-
-
     </Router>
   );
 }

@@ -13,6 +13,8 @@ const Researchers = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [userIdToDelete, setUserIdToDelete] = useState(null);
+  const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
+
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
 
@@ -76,8 +78,16 @@ const Researchers = () => {
     setFilteredData(filtered);
   };
 
-  const toggleDropdown = (email) => {
+  const toggleDropdown = (email, event) => {
     setIsOpen(isOpen === email ? null : email);
+    const menuDotsRect = event.target.getBoundingClientRect();
+
+    // Calculate the position for the popup
+    const popupX = menuDotsRect.right + 10; // Offset slightly to the right
+    const popupY = menuDotsRect.top;
+
+    // Store the position dynamically
+    setPopupPosition({ x: popupX, y: popupY });
   };
 
   const handleCreateClick = () => {
@@ -234,7 +244,7 @@ const Researchers = () => {
                   <div className="action-dropdown">
                     <div
                       className="action-icon"
-                      onClick={() => toggleDropdown(user.email)}
+                      onClick={(e) => toggleDropdown(user.email, e)}
                     >
                       ⋮
                     </div>
@@ -242,6 +252,9 @@ const Researchers = () => {
                       <ul
                         ref={dropdownRef}
                         className="dropdown-menu"
+                        style={{
+                          transform: `translate(${popupPosition.x}px, ${popupPosition.y}px)`,
+                        }}
                         onClick={(e) => e.stopPropagation()} // Prevents click inside from closing
                       >
                         <li

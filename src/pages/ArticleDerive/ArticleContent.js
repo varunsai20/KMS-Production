@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import { useSelector, useDispatch } from "react-redux";
-import { setDeriveInsights } from "../../redux/reducers/deriveInsights";
+import { useSelector } from "react-redux";
+//import { setDeriveInsights } from "../../redux/reducers/deriveInsights";
 import { useParams, useLocation } from "react-router-dom";
 import "../ArticlePage/ArticlePage.css";
 import { IoCloseOutline } from "react-icons/io5";
@@ -36,7 +36,7 @@ const ArticleContent = ({
   const { pmid } = useParams();
   const { user } = useSelector((state) => state.auth);
   const token = useSelector((state) => state.auth.access_token);
-  const dispatch = useDispatch();
+  //const dispatch = useDispatch();
   const user_id = user?.user_id;
   const [type, id1] = pmid ? pmid.split(":") : "";
   const id = Number(id1);
@@ -81,7 +81,7 @@ const ArticleContent = ({
     };
   }, [annotateLoading]);
   const [showStreamingSection, setShowStreamingSection] = useState(false);
-  const [activeSection, setActiveSection] = useState("Title");
+  //const [activeSection, setActiveSection] = useState("Title");
   const [activeSessionId, setActiveSessionId] = useState(
     sessionStorage.getItem("session_id") || null
   );
@@ -92,11 +92,11 @@ const ArticleContent = ({
   });
   const [triggerAskClick, setTriggerAskClick] = useState(false);
   const [triggerDeriveClick, setTriggerDeriveClick] = useState(false);
-  const [editedTitle, setEditedTitle] = useState("");
+  //const [editedTitle, setEditedTitle] = useState("");
   const [articleTitle, setArticleTitle] = useState("");
   const [collections, setCollections] = useState([]);
   const [showConfirmPopup, setShowConfirmPopup] = useState(false);
-  const [showConfirmIcon, setShowConfirmIcon] = useState(false);
+  //const [showConfirmIcon, setShowConfirmIcon] = useState(false);
   const [isPromptEnabled, setIsPromptEnabled] = useState(false);
 
   const fetchCollections = async () => {
@@ -136,7 +136,7 @@ const ArticleContent = ({
   const [newCollectionName, setNewCollectionName] = useState("");
   const [hasFetchedAnnotateData, setHasFetchedAnnotateData] = useState(false);
   const [sessions, setSessions] = useState([]);
-  const [editingSessionId, setEditingSessionId] = useState(null);
+  //const [editingSessionId, setEditingSessionId] = useState(null);
 
   const selectedTextRef = useRef("");
   const popupRef = useRef(null);
@@ -181,6 +181,7 @@ const ArticleContent = ({
           const article = response.data;
           setArticleData(article);
           setAnnotateLoading(false);
+          console.log("API Response for Article:", response.data);
 
           // Retrieve and set saved search term from sessionStorage
           const savedTerm = sessionStorage.getItem("SearchTerm");
@@ -188,6 +189,10 @@ const ArticleContent = ({
         } catch (error) {
           setAnnotateLoading(false);
           console.error("Error fetching article data:", error);
+          console.error(
+            "Error fetching article data:",
+            error.response?.data || error.message
+          );
         }
       };
 
@@ -988,19 +993,6 @@ const ArticleContent = ({
     }
   }, [location.state]); // Add location.state as a dependency to re-run on navigation
   console.log(source);
-  const getSourceFromType = (type) => {
-    switch (type) {
-      case "bioRxiv_id":
-        return "biorxiv";
-      case "pmid":
-        return "pubmed";
-      case "plos_id":
-        return "plos";
-      default:
-        return null;
-    }
-  };
-
   useEffect(() => {
     const storedSessionId = sessionStorage.getItem("session_id");
     if (storedSessionId) {
@@ -1401,164 +1393,87 @@ const ArticleContent = ({
             </div>
           </div>
           <div
-          className="article-chat-query"
-          style={{
-            width: openAnnotate || openNotes ? contentWidth : "50%",
-            cursor: isLoggedIn ? "" : "not-allowed",
-            opacity: isLoggedIn ? 1 : 0.5,
-          }}
-          title={isLoggedIn ? "" : displayMessage}
-        >
-          <div className="predefined-prompts">
-            <button
-              style={{ cursor: isLoggedIn ? "pointer" : "not-allowed" }}
-              onClick={() =>
-                isLoggedIn ? handlePromptClick("Summarize this article") : ""
-              }
-            >
-              Summarize
-            </button>
-            <button
-              style={{ cursor: isLoggedIn ? "pointer" : "not-allowed" }}
-              onClick={() =>
-                isLoggedIn
-                  ? handlePromptClick("what can we conclude form this article")
-                  : ""
-              }
-            >
-              Conclusion
-            </button>
-            <button
-              style={{ cursor: isLoggedIn ? "pointer" : "not-allowed" }}
-              onClick={() =>
-                isLoggedIn
-                  ? handlePromptClick(
-                      "what are the key highlights from this article"
-                    )
-                  : ""
-              }
-            >
-              Key Highlights
-            </button>
-          </div>
-          <div
-            className="stream-input"
-            style={{ cursor: isLoggedIn ? "" : "not-allowed" }}
+            className="article-chat-query"
+            style={{
+              width: openAnnotate || openNotes ? contentWidth : "50%",
+              cursor: isLoggedIn ? "" : "not-allowed",
+              opacity: isLoggedIn ? 1 : 0.5,
+            }}
+            title={isLoggedIn ? "" : displayMessage}
           >
-            <img src={flag} alt="flag-logo" className="stream-flag-logo" />
-            <input
+            <div className="predefined-prompts">
+              <button
+                style={{ cursor: isLoggedIn ? "pointer" : "not-allowed" }}
+                onClick={() =>
+                  isLoggedIn ? handlePromptClick("Summarize this article") : ""
+                }
+              >
+                Summarize
+              </button>
+              <button
+                style={{ cursor: isLoggedIn ? "pointer" : "not-allowed" }}
+                onClick={() =>
+                  isLoggedIn
+                    ? handlePromptClick(
+                        "what can we conclude form this article"
+                      )
+                    : ""
+                }
+              >
+                Conclusion
+              </button>
+              <button
+                style={{ cursor: isLoggedIn ? "pointer" : "not-allowed" }}
+                onClick={() =>
+                  isLoggedIn
+                    ? handlePromptClick(
+                        "what are the key highlights from this article"
+                      )
+                    : ""
+                }
+              >
+                Key Highlights
+              </button>
+            </div>
+            <div
+              className="stream-input"
               style={{ cursor: isLoggedIn ? "" : "not-allowed" }}
-              type="text"
-              placeholder="Ask anything..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              onKeyDown={isLoggedIn ? handleKeyDown : null} // Pass null when not logged in
-            />
-            {loading ? (
-  <CircularProgress
-    className="button"
-    size={24}
-    style={{ marginLeft: "1.5%" }}
-    color="white"
-  />
-) : (
-  <FontAwesomeIcon
-    className="button"
-    onClick={isLoggedIn && query ? handleAskClick : null} // Disable click if query is null/empty
-    icon={faTelegram}
-    size={"xl"}
-    style={{
-      cursor: isLoggedIn && query ? "pointer" : "not-allowed", // Set cursor
-      color: isLoggedIn && query ? "" : "grey", // Change color to grey when disabled
-    }}
-    title={!query?"Please enter a query to continue":""}
-  />
-)}
-
+            >
+              <img src={flag} alt="flag-logo" className="stream-flag-logo" />
+              <input
+                style={{ cursor: isLoggedIn ? "" : "not-allowed" }}
+                type="text"
+                placeholder="Ask anything..."
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={isLoggedIn ? handleKeyDown : null} // Pass null when not logged in
+              />
+              {loading ? (
+                <CircularProgress
+                  className="button"
+                  size={24}
+                  style={{ marginLeft: "1.5%" }}
+                  color="white"
+                />
+              ) : (
+                <FontAwesomeIcon
+                  className="button"
+                  onClick={isLoggedIn && query ? handleAskClick : null} // Disable click if query is null/empty
+                  icon={faTelegram}
+                  size={"xl"}
+                  style={{
+                    cursor: isLoggedIn && query ? "pointer" : "not-allowed", // Set cursor
+                    color: isLoggedIn && query ? "" : "grey", // Change color to grey when disabled
+                  }}
+                  title={!query ? "Please enter a query to continue" : ""}
+                />
+              )}
+            </div>
           </div>
-        </div>
         </div>
       ) : (
         ""
       )}
-      {/* {articleData ? (
-        <div
-          className="article-chat-query"
-          style={{
-            width: openAnnotate || openNotes ? contentWidth : "56%",
-            cursor: isLoggedIn ? "" : "not-allowed",
-            opacity: isLoggedIn ? 1 : 0.5,
-          }}
-          title={isLoggedIn ? "" : displayMessage}
-        >
-          <div className="predefined-prompts">
-            <button
-              style={{ cursor: isLoggedIn ? "pointer" : "not-allowed" }}
-              onClick={() =>
-                isLoggedIn ? handlePromptClick("Summarize this article") : ""
-              }
-            >
-              Summarize
-            </button>
-            <button
-              style={{ cursor: isLoggedIn ? "pointer" : "not-allowed" }}
-              onClick={() =>
-                isLoggedIn
-                  ? handlePromptClick("what can we conclude form this article")
-                  : ""
-              }
-            >
-              Conclusion
-            </button>
-            <button
-              style={{ cursor: isLoggedIn ? "pointer" : "not-allowed" }}
-              onClick={() =>
-                isLoggedIn
-                  ? handlePromptClick(
-                      "what are the key highlights from this article"
-                    )
-                  : ""
-              }
-            >
-              Key Highlights
-            </button>
-          </div>
-          <div
-            className="stream-input"
-            style={{ cursor: isLoggedIn ? "" : "not-allowed" }}
-          >
-            <img src={flag} alt="flag-logo" className="stream-flag-logo" />
-            <input
-              style={{ cursor: isLoggedIn ? "" : "not-allowed" }}
-              type="text"
-              placeholder="Ask anything..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              onKeyDown={isLoggedIn ? handleKeyDown : null} // Pass null when not logged in
-            />
-            {loading ? (
-              <CircularProgress
-                className="button"
-                size={24}
-                style={{ marginLeft: "1.5%" }}
-                color="white"
-              />
-            ) : (
-              <FontAwesomeIcon
-                className="button"
-                onClick={isLoggedIn ? handleAskClick : null} // Pass null when not logged in
-                icon={faTelegram}
-                size={"xl"}
-                style={{
-                  cursor: isLoggedIn ? "pointer" : "not-allowed",
-                }}
-              />
-            )}
-          </div>
-        </div>
-      ) : (
-        ""
-      )} */}
     </>
   );
 };

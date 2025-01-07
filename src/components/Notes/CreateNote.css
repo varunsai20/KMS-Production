@@ -35,7 +35,6 @@
 .create-note__form {
   display: flex;
   flex-direction: column;
-  /* min-height: 15vh; */
   max-height: 41vh;
 }
 .note-input {
@@ -61,13 +60,6 @@
   background: rgba(251, 251, 253, 1);
   position: absolute;
   z-index: 1000;
-}
-
-.open-header-dropdown {
-  /* gap: 10px; */
-  /* text-align: start; */
-  /* display: flex; */
-  /* flex-direction: column; */
 }
 .dropdown-button-group {
   width: 100%;

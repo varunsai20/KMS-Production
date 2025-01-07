@@ -1,5 +1,10 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
-import axios from "axios";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+} from "react";
 import { useSelector } from "react-redux";
 import { useParams, useLocation } from "react-router-dom";
 import "../ArticlePage/ArticlePage.css";
@@ -17,7 +22,6 @@ import { showErrorToast } from "../../utils/toastHelper";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import upload from "../../assets/images/upload-file.svg";
 import { apiService } from "../../assets/api/apiService";
-import { Document, Page } from "react-pdf";
 import { renderAsync } from "docx-preview";
 import { LiaTelegramPlane } from "react-icons/lia";
 import Citations from "../../components/Citations";
@@ -51,9 +55,6 @@ const ArticleDerive = ({
   const location = useLocation();
   const [searchTerm, setSearchTerm] = useState("");
   const [articleData, setArticleData] = useState(null);
-  const [numPages, setNumPages] = useState(null);
-  const [pageNumber, setPageNumber] = useState(1);
-  const [docxContent, setDocxContent] = useState("");
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [response, setResponse] = useState("");
@@ -68,6 +69,10 @@ const ArticleDerive = ({
   });
 
   const { resetArticleData, resetChatHistory } = location.state || {};
+  const pdfURL = useMemo(
+    () => uploadedFile && URL.createObjectURL(uploadedFile),
+    [uploadedFile]
+  );
 
   useEffect(() => {
     if (resetArticleData) {
@@ -139,7 +144,7 @@ const ArticleDerive = ({
   const [sessions, setSessions] = useState([]);
   const selectedTextRef = useRef("");
   const popupRef = useRef(null);
-  const popupPositionRef = useRef({ x: 0, y: 0 });
+  //const popupPositionRef = useRef({ x: 0, y: 0 });
   useEffect(() => {
     if (!openNotes) {
       setSavedText(""); // Reset savedText when notes are closed
@@ -200,10 +205,6 @@ const ArticleDerive = ({
   const handleCloseCitations = () => {
     setIsCitationsOpen(false);
   };
-  const handleOpenCitations = () => {
-    setIsCitationsOpen(true);
-  };
-  const [isCollectionOpen, setIsCollectionOpen] = useState(false);
   const handleMouseUpInsideContent = (e) => {
     if (!isLoggedIn) return;
     const content = contentRef.current;
@@ -516,6 +517,7 @@ const ArticleDerive = ({
 
       const readStream = async () => {
         let done = false;
+        const delay = 100; // Delay between words
 
         while (!done) {
           const { value, done: streamDone } = await reader.read();
@@ -534,29 +536,35 @@ const ArticleDerive = ({
                 try {
                   const parsedData = JSON.parse(jsonChunk);
                   const answer = parsedData.answer;
-                  apiResponse += answer + " ";
+                  const words = answer.split(" ");
 
-                  if (!storedSessionId && parsedData.session_id) {
-                    localStorage.setItem("session_id", parsedData.session_id);
-                  }
+                  for (const word of words) {
+                    await new Promise((resolve) => setTimeout(resolve, delay));
 
-                  setChatHistory((chatHistory) => {
-                    const updatedChatHistory = [...chatHistory];
-                    const lastEntryIndex = updatedChatHistory.length - 1;
-                    if (lastEntryIndex >= 0) {
-                      updatedChatHistory[lastEntryIndex] = {
-                        ...updatedChatHistory[lastEntryIndex],
-                        response: apiResponse.trim(),
-                        showDot: false,
-                      };
-                    }
-                    return updatedChatHistory;
-                  });
+                    setChatHistory((chatHistory) => {
+                      const updatedChatHistory = [...chatHistory];
+                      const lastEntryIndex = updatedChatHistory.length - 1;
 
-                  if (endOfMessagesRef.current) {
-                    endOfMessagesRef.current.scrollIntoView({
-                      behavior: "smooth",
+                      if (lastEntryIndex >= 0) {
+                        updatedChatHistory[lastEntryIndex] = {
+                          ...updatedChatHistory[lastEntryIndex],
+                          response:
+                            (updatedChatHistory[lastEntryIndex].response ||
+                              "") +
+                            " " +
+                            word,
+                          showDot: true,
+                        };
+                      }
+
+                      return updatedChatHistory;
                     });
+
+                    if (endOfMessagesRef.current) {
+                      endOfMessagesRef.current.scrollIntoView({
+                        behavior: "smooth",
+                      });
+                    }
                   }
                 } catch (error) {
                   console.error("Error parsing JSON chunk:", error);
@@ -565,9 +573,9 @@ const ArticleDerive = ({
             }
           }
         }
+
         setRefreshSessions((prev) => !prev);
         setLoading(false);
-
         localStorage.setItem("chatHistory", JSON.stringify(chatHistory));
       };
 
@@ -619,15 +627,7 @@ const ArticleDerive = ({
   useEffect(() => {
     const fetchSessions = async () => {
       try {
-        const response = await axios.get(
-          `https://inferai.ai/api/history/conversations/history/${user_id}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
+        const response = await apiService.fetchSessions(user_id, token);
         if (response.data?.sessions) {
           const sessionsData = response.data.sessions.reverse(); // Reverse the array order
           // console.log(sessionsData)
@@ -694,8 +694,8 @@ const ArticleDerive = ({
     setUploadedFile(file); // Proceed if the file type is valid
     setIsPromptEnabled(true);
     if (fileExtension === "pdf") {
-      setNumPages(null);
-      setPageNumber(1);
+      // setNumPages(null);
+      // setPageNumber(1);
     } else if (fileExtension === "docx") {
       handleDocxPreview(file);
     }
@@ -717,9 +717,9 @@ const ArticleDerive = ({
   const removeUploadedFile = () => {
     setUploadedFile(null);
     setIsPromptEnabled(false);
-    setDocxContent("");
-    setNumPages(null);
-    setPageNumber(1);
+    // setDocxContent("");
+    // setNumPages(null);
+    // setPageNumber(1);
   };
 
   const getFileIcon = (filename) => {
@@ -752,17 +752,6 @@ const ArticleDerive = ({
       default:
         return <span style={{ fontSize: "20px" }}>📄</span>;
     }
-  };
-  const onDocumentLoadSuccess = ({ numPages }) => {
-    setNumPages(numPages);
-  };
-
-  const goToNextPage = () => {
-    if (pageNumber < numPages) setPageNumber(pageNumber + 1);
-  };
-
-  const goToPreviousPage = () => {
-    if (pageNumber > 1) setPageNumber(pageNumber - 1);
   };
 
   return (
@@ -879,7 +868,7 @@ const ArticleDerive = ({
                 size={"xl"}
                 style={{
                   cursor: isLoggedIn && query ? "pointer" : "not-allowed", // Set cursor
-                  color: isLoggedIn && query || uploadedFile ? "" : "grey", // Change color to grey when disabled
+                  color: (isLoggedIn && query) || uploadedFile ? "" : "grey", // Change color to grey when disabled
                 }}
               />
             )}
@@ -981,14 +970,13 @@ const ArticleDerive = ({
               {/* File Preview */}
               {uploadedFile && uploadedFile.name.endsWith(".pdf") && (
                 <div className="iframe-preview">
-                <iframe
-                  src={URL.createObjectURL(uploadedFile)}
-                  width="100%"
-                  height="350px"
-                  title="PDF Preview"
-                ></iframe>
-              </div>
-              
+                  <iframe
+                    src={pdfURL}
+                    width="100%"
+                    height="350px"
+                    title="PDF Preview"
+                  ></iframe>
+                </div>
               )}
             </div>
           </div>
@@ -1012,7 +1000,7 @@ const ArticleDerive = ({
             {uploadedFile && uploadedFile.name.endsWith(".pdf") && (
               <div className="iframe-preview" ref={endOfMessagesRef}>
                 <iframe
-                  src={URL.createObjectURL(uploadedFile)}
+                  src={pdfURL}
                   width="100%"
                   height="350px"
                   title="PDF Preview"

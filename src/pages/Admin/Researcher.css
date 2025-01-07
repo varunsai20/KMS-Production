@@ -37,7 +37,6 @@
   opacity: 0px;
 }
 .Researcher-List {
-
   margin-top: 20px;
   height: 60vh; /* Set a static height for the table container based on viewport */
   overflow-y: auto; /* Allow vertical scrolling */
@@ -86,7 +85,6 @@
   background-color: #e8efff;
 }
 
-
 /* Container for action dropdown */
 .action-dropdown {
   position: relative;
@@ -104,10 +102,10 @@
 
 /* Dropdown menu */
 .dropdown-menu {
-  width: 125px;
-  position: absolute;
-  top: 25px;
-  right: 0;
+  width: 85px;
+  position: fixed;
+  top: -65px;
+  left: -40px;
   background-color: white;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   border-radius: 8px;

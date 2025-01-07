@@ -71,12 +71,14 @@ const Collection = ({ setIsCollectionOpen }) => {
     setIsCollectionOpen(false);
   };
   const handleArticleClick = (article_id, source) => {
+    console.log(source);
     const sourceType =
-      source === "BioRxiv"
-        ? "bioRxiv_id"
-        : source === "Public Library of Science (PLOS)"
-        ? "plos_id"
-        : "pmid";
+  source === "BioRxiv" || source === "biorxiv"
+    ? "bioRxiv_id"
+    : source === "Public Library of Science (PLOS)" || source === "plos"
+    ? "plos_id"
+    : "pmid";
+
     navigate(`/article/content/${sourceType}:${article_id}`, {
       state: {
         annotateData: [],
@@ -121,12 +123,13 @@ const Collection = ({ setIsCollectionOpen }) => {
                 src={SearchIcon}
                 alt="search"
                 className="Search-collection-icon"
+                style={{ width: "1.5vw" }}
               />
               <input
                 type="text"
                 value={text}
                 onChange={handleSearch}
-                placeholder="Search articles..."
+                placeholder="Search articles"
                 className="Search-collection-input"
               />
             </div>

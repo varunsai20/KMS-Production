@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom";
 import { setDeriveInsights } from "../../redux/reducers/deriveInsights";
 import newChat from "../../assets/images/20px@2x.svg";
 import { apiService } from "../../assets/api/apiService";
-import axios from "axios";
 import pen from "../../assets/images/16px.svg";
 import { useRef } from "react";
 import { useLocation, useParams, Link } from "react-router-dom";
@@ -20,6 +19,7 @@ import Loading from "../../components/Loading";
 import GenerateAnnotate from "../../components/DeriveAnnotations";
 import { faAnglesUp } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { IoTrashOutline } from "react-icons/io5";
 import SearchBar from "../../components/SearchBar";
 import Logo from "../../assets/images/InfersolD17aR04aP01ZL-Polk4a 1.svg";
 
@@ -36,11 +36,16 @@ const ArticleLayout = () => {
   const navigate = useNavigate();
   const { pmid } = useParams();
   const prevPathRef = useRef(location.pathname);
+
+  const dropdownRef = useRef(null);
+  const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
+
   const [openAnnotate, setOpenAnnotate] = useState(false);
   const [annotateHeight, setAnnotateHeight] = useState(0);
   const [notesHeight, setNotesHeight] = useState(0);
   const [hasFetchedAnnotateData, setHasFetchedAnnotateData] = useState(false);
-  const [unsavedChanges, setUnsavedChanges] = useState(false);
+  //const [unsavedChanges, setUnsavedChanges] = useState(false);
+  const [popupSessionId, setPopupSessionId] = useState(null);
   const [annotateLoading, setAnnotateLoading] = useState(false);
   const [showConfirmIcon, setShowConfirmIcon] = useState(false);
   const [savedText, setSavedText] = useState("");
@@ -48,7 +53,7 @@ const ArticleLayout = () => {
   const [openNotes, setOpenNotes] = useState(false);
   const [type, id1] = pmid ? pmid.split(":") : "";
   const id = Number(id1);
-  const [source, setSource] = useState();
+  //const [source, setSource] = useState();
   const displayMessage = isLoggedIn
     ? ""
     : "This feature is available for subscribed users.";
@@ -61,7 +66,7 @@ const ArticleLayout = () => {
     localStorage.getItem("session_id") || null
   );
 
-  const [isPromptEnabled, setIsPromptEnabled] = useState(false);
+  //const [isPromptEnabled, setIsPromptEnabled] = useState(false);
   const [editedTitle, setEditedTitle] = useState("");
   const [annotateData, setAnnotateData] = useState(
     location.state?.annotateData || ""
@@ -200,6 +205,56 @@ const ArticleLayout = () => {
     }
   };
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setPopupSessionId(null);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  // const togglePopup = (sessionId) => {
+  //   setPopupSessionId((prev) => (prev === sessionId ? null : sessionId));
+  // };
+  const togglePopup = (sessionId, event) => {
+    if (popupSessionId === sessionId) {
+      setPopupSessionId(null);
+    } else {
+      // Get the position and dimensions of the menu dots
+      const menuDotsRect = event.target.getBoundingClientRect();
+
+      // Calculate the position for the popup
+      const popupX = menuDotsRect.right + 10; // Offset slightly to the right
+      const popupY = menuDotsRect.top;
+
+      // Store the position dynamically
+      setPopupPosition({ x: popupX, y: popupY });
+
+      // Set the active popup session
+      setPopupSessionId(sessionId);
+    }
+  };
+
+  const handleDeleteSession = async (sessionId) => {
+    try {
+      await apiService.deleteSession(token, user_id, sessionId);
+      setSessions((prevSessions) =>
+        prevSessions.filter((session) => session.session_id !== sessionId)
+      );
+      if (activeSessionId === sessionId) {
+        // localStorage.removeItem("session_id");
+        // setActiveSessionId(null);
+        handleOpenChat();
+      }
+    } catch (error) {
+      console.error("Error deleting session:", error);
+    }
+  };
   const handleSessionClick = async (session_id) => {
     console.log("called in session");
     localStorage.removeItem("session_id");
@@ -214,7 +269,7 @@ const ArticleLayout = () => {
       // Save session ID in local and session storage
       localStorage.setItem("session_id", session_id);
       sessionStorage.setItem("session_id", session_id);
-      setIsPromptEnabled(true);
+      //setIsPromptEnabled(true);
       setActiveSessionId(session_id);
 
       // Initialize chat history
@@ -284,47 +339,6 @@ const ArticleLayout = () => {
     }
   };
 
-  const fetchSessionData = async (session_id) => {
-    console.log("session Data func");
-    try {
-      // Fetch the session data
-      const conversationResponse = await axios.get(
-        `https://inferai.ai/api/history/conversations/history/${user_id}/${session_id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      console.log(conversationResponse);
-      // Save session ID in local and session storage
-      localStorage.setItem("session_id", session_id);
-      sessionStorage.setItem("session_id", session_id);
-
-      // Format the chat history
-      const formattedChatHistory = conversationResponse.data.conversation.map(
-        (entry) => ({
-          query: entry.role === "user" ? entry.content : null,
-          response: entry.role === "assistant" ? entry.content : null,
-          file_url: entry.file_url || null,
-        })
-      );
-
-      // Save the formatted chat history in localStorage
-      localStorage.setItem("chatHistory", JSON.stringify(formattedChatHistory));
-
-      return {
-        session_id: conversationResponse.data.session_id,
-        session_title: conversationResponse.data.session_title,
-        session_type: conversationResponse.data.session_type,
-        chatHistory: formattedChatHistory,
-      };
-    } catch (error) {
-      console.error("Error fetching session data:", error);
-      throw error;
-    }
-  };
-
   useEffect(() => {
     sessionStorage.removeItem("AnnotateData");
     setAnnotateData("");
@@ -335,16 +349,6 @@ const ArticleLayout = () => {
 
     if (prevPathRef.current !== location.pathname) {
       console.log("workHappened");
-      const storedSessionId = localStorage.getItem("session_id");
-      // if (storedSessionId) {
-      //   fetchSessionData(storedSessionId)
-      //     .then((sessionData) => {
-      //       console.log("Session data updated:", sessionData);
-      //     })
-      //     .catch((error) => {
-      //       console.error("Error fetching session data in useEffect:", error);
-      //     });
-      // }
     }
     prevPathRef.current = location.pathname;
   }, [location.pathname]);
@@ -352,6 +356,7 @@ const ArticleLayout = () => {
   const handleEditClick = (sessionId, title) => {
     setEditingSessionId(sessionId);
     setEditedTitle(title);
+    setPopupSessionId(null);
   };
 
   const handleTitleChange = (e) => {
@@ -392,25 +397,25 @@ const ArticleLayout = () => {
       setOpenAnnotate((prevOpenAnnotate) => !prevOpenAnnotate);
       return;
     }
-  
+
     const matchingIdExists =
       annotateData && Object.prototype.hasOwnProperty.call(annotateData, id);
     let chatHistory = [];
     const chatHistoryRaw = localStorage.getItem("chatHistory");
     chatHistory = chatHistoryRaw ? JSON.parse(chatHistoryRaw) : [];
     const latestFileEntry = chatHistory.filter((entry) => entry.file_url).pop();
-  
+
     if (uploadedFile) {
       handleAnnotateUploadedFile(); // Handle uploaded file annotation
       return;
     }
-  
+
     if (latestFileEntry && !annotateData) {
       setFileUrl(latestFileEntry.file_url);
       handleAnnotateFile(latestFileEntry.file_url);
       return;
     }
-  
+
     if (annotateData && annotateData.length > 0) {
       setOpenAnnotate(true);
     } else if (
@@ -422,19 +427,13 @@ const ArticleLayout = () => {
       setOpenAnnotate((prevOpenAnnotate) => !prevOpenAnnotate);
     }
   };
-  
+
   const handleAnnotateFile = async () => {
     setAnnotateLoading(true);
     try {
-      const response = await axios.post(
-        "https://inferai.ai/api/core_search/annotate_from_url",
-        { url: fileUrl },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await apiService.annotateFileFromURL(token, {
+        url: fileUrl,
+      });
       const data = response.data;
       setAnnotateData(data);
       setHasFetchedAnnotateData(true);
@@ -478,18 +477,7 @@ const ArticleLayout = () => {
       const formData = new FormData();
       formData.append("file", uploadedFile); // Append the uploaded file to FormData
 
-      const response = await axios.post(
-        "https://inferai.ai/api/core_search/annotate_file",
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data", // Required for file upload
-            // "ngrok-skip-browser-warning": true,
-          },
-        }
-      );
-
+      const response = await apiService.annotateFile(formData, token);
       const data = response.data;
       setAnnotateData(data);
       setHasFetchedAnnotateData(true); // Set flag after successful fetch
@@ -506,11 +494,11 @@ const ArticleLayout = () => {
     if (!annotateData) {
       setHasFetchedAnnotateData(false);
     }
-  }, [annotateData, source, id]);
+  }, [annotateData, id]);
   useEffect(() => {
     if (savedText) {
       setOpenNotes(true);
-      setUnsavedChanges(true);
+      //setUnsavedChanges(true);
     }
   }, [savedText]);
 
@@ -570,28 +558,29 @@ const ArticleLayout = () => {
             >
               <p>Recent Interactions</p>
               <button className="new-chat-button" onClick={handleOpenChat}>
-                <img
-                  src={newChat}
-                  alt="new-chat-icon"
-                  // style={{ paddingRight: "10px" }}
-                />
+                <img src={newChat} alt="new-chat-icon" />
               </button>
             </div>
             <ul>
               {sessions.length > 0 ? (
                 sessions.map((session) => {
-                  // Mapping keywords to custom titles
-                  const mappedTitle = session.session_title.includes(
+                  // Trim quotes from session titles
+                  const sanitizedTitle = session.session_title.replace(
+                    /^"|"$/g,
+                    ""
+                  ); // Removes leading and trailing quotes
+
+                  const mappedTitle = sanitizedTitle.includes(
                     "what are the key highlights from this article"
                   )
                     ? "Key Highlights"
-                    : session.session_title.includes(
+                    : sanitizedTitle.includes(
                         "what can we conclude form this article"
                       )
                     ? "Conclusion"
-                    : session.session_title.includes("Summarize this article")
+                    : sanitizedTitle.includes("Summarize this article")
                     ? "Summarize"
-                    : session.session_title; // Default title if no keyword match
+                    : sanitizedTitle;
 
                   return (
                     <li
@@ -602,6 +591,7 @@ const ArticleLayout = () => {
                       onClick={() => {
                         handleSessionClick(session.session_id);
                       }}
+                      style={{ position: "relative" }}
                     >
                       {editingSessionId === session.session_id ? (
                         <input
@@ -610,13 +600,13 @@ const ArticleLayout = () => {
                             padding: "0",
                             height: "20px",
                             width: "100%",
-                            fontSize: "16px",
+                            fontSize: "14px",
                             outline: "none",
-                            borderColor: editedTitle ? "#1a82ff" : "#1a82ff",
+                            borderColor: editedTitle ? "" : "",
                           }}
                           value={editedTitle}
                           onChange={handleTitleChange}
-                          onBlur={() => handleSaveEdit(session.session_id)} // Save on blur
+                          onBlur={() => handleSaveEdit(session.session_id)}
                           onKeyDown={(e) => {
                             if (e.key === "Enter") {
                               handleSaveEdit(session.session_id);
@@ -627,19 +617,63 @@ const ArticleLayout = () => {
                       ) : (
                         <span>
                           {mappedTitle.slice(0, 25)}
-                          {mappedTitle.length > 25 ? "..." : ""}
+                          {mappedTitle.length > 25 ? "" : ""}
                         </span>
                       )}
-                      <img
-                        src={pen}
-                        alt="pen-icon"
-                        title="Rename the title"
-                        //icon={faPen}
-                        onClick={() =>
-                          handleEditClick(session.session_id, mappedTitle)
-                        }
-                        style={{ cursor: "pointer", marginLeft: "10px" }}
-                      />
+                      <div
+                        style={{
+                          display: "inline-block",
+                          position: "relative",
+                        }}
+                      >
+                        {/* Menu dots */}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation(); // Prevent click from reaching <li>
+                            togglePopup(session.session_id, e);
+                          }}
+                          id="menu-dots"
+                          title="Options"
+                        >
+                          ⋮
+                        </button>
+
+                        {popupSessionId === session.session_id && (
+                          <div
+                            ref={dropdownRef}
+                            className="popup-menu-renamedelete"
+                            style={{
+                              transform: `translate(${popupPosition.x}px, ${popupPosition.y}px)`,
+                            }}
+                          >
+                            <div
+                              className="popup-rename"
+                              onClick={() =>
+                                handleEditClick(session.session_id, mappedTitle)
+                              }
+                            >
+                              <img
+                                src={pen}
+                                alt="pen-icon"
+                                style={{ marginRight: "10px", width: "16px" }}
+                              />
+                              Rename
+                            </div>
+                            <div
+                              className="popup-delete"
+                              onClick={() =>
+                                handleDeleteSession(session.session_id)
+                              }
+                            >
+                              <IoTrashOutline
+                                size={15}
+                                style={{ marginRight: "10px" }}
+                              />
+                              Delete
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </li>
                   );
                 })
@@ -765,7 +799,8 @@ const ArticleLayout = () => {
                   cursor: isLoggedIn ? "pointer" : "not-allowed",
                   opacity:
                     (uploadedFile && deriveInsights) ||
-                    (annotateData && annotateData.length > 0)
+                    (annotateData && annotateData.length > 0) ||
+                    activeSessionId
                       ? 1
                       : 0.5,
                   borderRadius: !deriveInsights ? "8px 8px 0 0" : "8px 8px 0 0",
@@ -778,7 +813,7 @@ const ArticleLayout = () => {
                 className={`notes-icon ${openNotes ? "open" : "closed"}`}
                 style={{
                   borderRadius: !deriveInsights ? "0 0 8px 8px" : 0,
-                  cursor: isLoggedIn ? "pointer" : "not-allowed", // Apply border-radius if deriveInsights is false
+                  cursor: isLoggedIn ? "pointer" : "not-allowed",
                 }}
                 title={isLoggedIn ? "Open notes" : displayMessage}
                 onClick={() => {
@@ -794,7 +829,7 @@ const ArticleLayout = () => {
                   }`}
                   onClick={handleOpenCitations}
                   style={{
-                    opacity: uploadedFile ? 1 : 0.5, // Adjust visibility when disabled
+                    opacity: uploadedFile ? 1 : 0.5,
                   }}
                 >
                   <img src={citation_icon} alt="citation-icon" />

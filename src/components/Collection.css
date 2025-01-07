@@ -23,6 +23,7 @@
   width: 80%;
   box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
   z-index: 1000;
+  overflow: hidden;
 }
 
 /* Collections list on the left side */
@@ -133,8 +134,10 @@
 
 .articles-list tbody {
   display: block;
+  height: 47vh;
   max-height: 400px; /* Adjust this height as needed */
   overflow-y: auto;
+  padding: 5px;
   width: 100%;
 }
 
@@ -155,4 +158,9 @@
 }
 .bookmark-Source {
   width: 15%;
+}
+@media (min-width: 900px) and (max-width: 1366px) {
+  .articles-list td {
+    font-size: 14px;
+  }
 }

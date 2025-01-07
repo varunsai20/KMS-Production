@@ -14,7 +14,6 @@ import { useSelector } from "react-redux";
 import { MdEmail } from "react-icons/md";
 import "./CreateNote.css";
 import ConfirmSave from "../../utils/ConfirmSave";
-import { toast } from "react-toastify";
 import { BiSave } from "react-icons/bi";
 const Createnotes = ({
   setNotes,
@@ -315,7 +314,13 @@ const Createnotes = ({
             </div>
           </div>
         )}
-        <button className="note-save-button" text="Save" onClick={handleSubmit}>
+        <button
+          className={
+            isOpenNotes ? "lander-note-save-button" : "note-save-button"
+          }
+          text="Save"
+          onClick={handleSubmit}
+        >
           <div
             className="save-in"
             style={{ display: "flex", gap: "3px", alignItems: "center" }}
@@ -397,10 +402,6 @@ const Createnotes = ({
           }}
         ></div>
       </form>
-
-      {/* Feedback Message */}
-      {/* {shareMessage && <div className="share-message">{shareMessage}</div>} */}
-
       <div className="toolbar">
         <button
           onClick={() => handleFormat("bold")}

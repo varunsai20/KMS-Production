@@ -860,7 +860,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
     }
   };
 
-  const isArticleSelected = (source, idType)   => {
+  const isArticleSelected = (source, idType) => {
     const uniqueId = `${source}_${idType}`; // Create unique ID for checking selection state
     if (source === "BioRxiv") {
       return bioRxivArticles.includes(uniqueId);
@@ -1748,6 +1748,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                                           src={SearchIcon}
                                           alt="search"
                                           className="search-icon-notes"
+                                          style={{ padding: "2px" }}
                                         />
                                         <input
                                           type="text"
@@ -1759,9 +1760,10 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                                           className="note-search-input"
                                           style={{
                                             width: "100%",
-                                            padding: "8px 8px 8px 20px",
+                                            padding: "10px 8px 8px 20px",
                                             border: "1px solid #ccc",
                                             borderRadius: "4px",
+                                            fontSize: "14px",
                                           }}
                                         />
                                       </div>
