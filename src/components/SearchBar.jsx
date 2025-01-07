@@ -10,7 +10,7 @@ import { useDispatch } from "react-redux";
 import { setSearchResults, clearSearchResults } from "../redux/actions/actions";
 import { apiService } from "../assets/api/apiService";
 
-const SearchBar = ({ renderInputContainer, className,landingWidth,zIndex,searchWidth }) => {
+const SearchBar = ({ renderInputContainer, className,landingWidth,zIndex,searchWidth,setTermMissing }) => {
 
   const [searchTerm, setSearchTerm] = useState("");
   const [results, setResults] = useState([]);
@@ -21,6 +21,7 @@ const SearchBar = ({ renderInputContainer, className,landingWidth,zIndex,searchW
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
   const token = useSelector((state) => state.auth.access_token);
+  
   useEffect(() => {
     // if (location.pathname === "/search" || location.pathname === "/article/content/:articleId") {
       // Check if searchTerm is present in sessionStorage
@@ -41,7 +42,6 @@ const SearchBar = ({ renderInputContainer, className,landingWidth,zIndex,searchW
 
   useEffect(() => {
     localStorage.removeItem("filters");
-    
   }, []);
 
   const handleInputChange = (event, value) => {
@@ -68,9 +68,14 @@ const SearchBar = ({ renderInputContainer, className,landingWidth,zIndex,searchW
     setFilteredResults([]);
   };
   const handleButtonClick = () => {
+    
     dispatch(clearSearchResults());
     sessionStorage.removeItem("ResultData");
+    if(!searchTerm){
+      setTermMissing(true)
+    }
     if (searchTerm) {
+      setTermMissing(false)
       let searchQuery = sessionStorage.getItem("SearchTerm");
       setLoading(true);
 
