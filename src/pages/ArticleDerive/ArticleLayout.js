@@ -27,8 +27,7 @@ const ArticleLayout = () => {
   const [uploadedFile, setUploadedFile] = useState(null);
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
   const { user } = useSelector((state) => state.auth);
-  const deriveInsights = useSelector((state) => state.deriveInsights?.active); // assuming deriveInsights is in Redux state
-  console.log(deriveInsights);
+  const deriveInsights = useSelector((state) => state.deriveInsights?.active);
   const token = useSelector((state) => state.auth.access_token);
   const user_id = user?.user_id;
   const dispatch = useDispatch();
@@ -49,7 +48,6 @@ const ArticleLayout = () => {
   const [annotateLoading, setAnnotateLoading] = useState(false);
   const [showConfirmIcon, setShowConfirmIcon] = useState(false);
   const [savedText, setSavedText] = useState("");
-  console.log("tet saved in", savedText);
   const [openNotes, setOpenNotes] = useState(false);
   const [type, id1] = pmid ? pmid.split(":") : "";
   const id = Number(id1);
@@ -90,8 +88,7 @@ const ArticleLayout = () => {
       try {
         const response = await apiService.fetchSessions(user_id, token);
         if (response.data?.sessions) {
-          const sessionsData = response.data.sessions.reverse(); // Reverse the array order
-          // console.log(sessionsData)
+          const sessionsData = response.data.sessions.reverse(); 
           setSessions(sessionsData); // Set the reversed sessions array to state
         }
       } catch (error) {
@@ -256,7 +253,6 @@ const ArticleLayout = () => {
     }
   };
   const handleSessionClick = async (session_id) => {
-    console.log("called in session");
     localStorage.removeItem("session_id");
     try {
       // Fetch the conversation data
@@ -344,11 +340,9 @@ const ArticleLayout = () => {
     setAnnotateData("");
     setOpenAnnotate(false);
     setAnnotateFile(false);
-    console.log(prevPathRef);
-    console.log(location.pathname);
+  
 
     if (prevPathRef.current !== location.pathname) {
-      console.log("workHappened");
     }
     prevPathRef.current = location.pathname;
   }, [location.pathname]);

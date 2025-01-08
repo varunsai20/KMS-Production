@@ -61,7 +61,6 @@ const NoteItem = ({
 
       if (response.status === 200) {
         showSuccessToast("Email sent successfully");
-        console.log("Email sent successfully to:", email);
         handleCloseEmailModal();
       } else {
         showErrorToast("Failed to send email:");

@@ -51,18 +51,17 @@ const ArticleContent = ({
   const [annotateData, setAnnotateData] = useState(
     location.state?.annotateData || ""
   );
-  console.log(type);
-  console.log(id);
+
   const endOfMessagesRef = useRef(null);
+  const [autoScrollEnabled, setAutoScrollEnabled] = useState(true); 
+const messagesContainerRef = useRef(null); 
   const [chatHistory, setChatHistory] = useState(() => {
     const storedHistory = localStorage.getItem("chatHistory");
-    console.log("stored Chat History", storedHistory);
     return storedHistory ? JSON.parse(storedHistory) : [];
   });
   useEffect(() => {
     // Retrieve chat history from sessionStorage
     const storedChatHistory = localStorage.getItem("chatHistory");
-    console.log("got the chatHistory");
     if (storedChatHistory) {
       // Parse the chat history string back into an array
       setChatHistory(JSON.parse(storedChatHistory));
@@ -181,7 +180,6 @@ const ArticleContent = ({
           const article = response.data;
           setArticleData(article);
           setAnnotateLoading(false);
-          console.log("API Response for Article:", response.data);
 
           // Retrieve and set saved search term from sessionStorage
           const savedTerm = sessionStorage.getItem("SearchTerm");
@@ -497,13 +495,40 @@ const ArticleContent = ({
       }
     };
   });
-
   useEffect(() => {
-    // Scroll to the bottom whenever chat history is updated
-    if (endOfMessagesRef.current) {
+    if (autoScrollEnabled && endOfMessagesRef.current) {
       endOfMessagesRef.current.scrollIntoView({ behavior: "smooth" });
     }
-  }, [chatHistory]); // This will trigger when chatHistory changes
+  }, [chatHistory, autoScrollEnabled]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!messagesContainerRef.current) return;
+  
+      const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current;
+  
+      // If user scrolls up (not at the bottom)
+      if (scrollTop + clientHeight < scrollHeight) {
+        setAutoScrollEnabled(false);
+      } else {
+        // User scrolls back to the bottom
+        setAutoScrollEnabled(true);
+      }
+    };
+  
+    const container = messagesContainerRef.current;
+    if (container) {
+      container.addEventListener("scroll", handleScroll);
+    }
+  
+    return () => {
+      if (container) {
+        container.removeEventListener("scroll", handleScroll);
+      }
+    };
+  }, []);
+
+
 
   const handleAskClick = async () => {
     if (!query) {
@@ -682,142 +707,140 @@ const ArticleContent = ({
   };
   const storedSessionId =
     sessionStorage.getItem("sessionId") || sessionStorage.getItem("session_id");
-  const handleDeriveClick = async () => {
-    if (!query && !uploadedFile) {
-      showErrorToast("Please enter a query or upload a file", {
-        position: "top-center",
-        autoClose: 2000,
-      });
+  // const handleDeriveClick = async () => {
+  //   if (!query && !uploadedFile) {
+  //     showErrorToast("Please enter a query or upload a file", {
+  //       position: "top-center",
+  //       autoClose: 2000,
+  //     });
 
-      return;
-    }
-    removeUploadedFile();
-    setQuery("");
-    setLoading(true);
-    const newChatEntry = {
-      query,
-      file: uploadedFile,
-      response: "",
-      showDot: true,
-    };
-    setChatHistory((prevChatHistory) => [...prevChatHistory, newChatEntry]);
+  //     return;
+  //   }
+  //   removeUploadedFile();
+  //   setQuery("");
+  //   setLoading(true);
+  //   const newChatEntry = {
+  //     query,
+  //     file: uploadedFile,
+  //     response: "",
+  //     showDot: true,
+  //   };
+  //   setChatHistory((prevChatHistory) => [...prevChatHistory, newChatEntry]);
 
-    try {
-      let url = "https://inferai.ai/api/insights/upload";
-      const headers = {
-        Authorization: `Bearer ${token}`,
-        "ngrok-skip-browser-warning": true,
-      };
-      console.log(storedSessionId);
-      // Initialize FormData
-      const formData = new FormData();
-      formData.append("question", query);
+  //   try {
+  //     let url = "https://inferai.ai/api/insights/upload";
+  //     const headers = {
+  //       Authorization: `Bearer ${token}`,
+  //       "ngrok-skip-browser-warning": true,
+  //     };
+  //     // Initialize FormData
+  //     const formData = new FormData();
+  //     formData.append("question", query);
 
-      // Conditionally set user_id or userid based on session_id existence
-      if (storedSessionId) {
-        formData.append("user_id", user.user_id);
-        formData.append("session_id", storedSessionId);
-      } else {
-        formData.append("userid", user.user_id);
-      }
+  //     // Conditionally set user_id or userid based on session_id existence
+  //     if (storedSessionId) {
+  //       formData.append("user_id", user.user_id);
+  //       formData.append("session_id", storedSessionId);
+  //     } else {
+  //       formData.append("userid", user.user_id);
+  //     }
 
-      if (uploadedFile) {
-        formData.append("file", uploadedFile);
-      }
+  //     if (uploadedFile) {
+  //       formData.append("file", uploadedFile);
+  //     }
 
-      if (storedSessionId) {
-        url = "https://inferai.ai/api/insights/ask";
-      }
-      console.log(storedSessionId);
-      // Use fetch instead of axios to handle streaming response
-      const response = await fetch(url, {
-        method: "POST",
-        headers: headers,
-        body: formData,
-      });
+  //     if (storedSessionId) {
+  //       url = "https://inferai.ai/api/insights/ask";
+  //     }
+  //     // Use fetch instead of axios to handle streaming response
+  //     const response = await fetch(url, {
+  //       method: "POST",
+  //       headers: headers,
+  //       body: formData,
+  //     });
 
-      if (!response.ok) throw new Error("Network response was not ok");
+  //     if (!response.ok) throw new Error("Network response was not ok");
 
-      // Stream response and update chat history
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = "";
-      let apiResponse = ""; // To accumulate the full response
+  //     // Stream response and update chat history
+  //     const reader = response.body.getReader();
+  //     const decoder = new TextDecoder();
+  //     let buffer = "";
+  //     let apiResponse = ""; // To accumulate the full response
 
-      const readStream = async () => {
-        let done = false;
-        const delay = 100;
+  //     const readStream = async () => {
+  //       let done = false;
+  //       const delay = 100;
 
-        while (!done) {
-          const { value, done: streamDone } = await reader.read();
-          done = streamDone;
+  //       while (!done) {
+  //         const { value, done: streamDone } = await reader.read();
+  //         done = streamDone;
 
-          if (value) {
-            buffer += decoder.decode(value, { stream: true });
+  //         if (value) {
+  //           buffer += decoder.decode(value, { stream: true });
 
-            // Process chunks of JSON-like data
-            while (buffer.indexOf("{") !== -1 && buffer.indexOf("}") !== -1) {
-              let start = buffer.indexOf("{");
-              let end = buffer.indexOf("}", start);
-              if (start !== -1 && end !== -1) {
-                const jsonChunk = buffer.slice(start, end + 1);
-                buffer = buffer.slice(end + 1);
+  //           // Process chunks of JSON-like data
+  //           while (buffer.indexOf("{") !== -1 && buffer.indexOf("}") !== -1) {
+  //             let start = buffer.indexOf("{");
+  //             let end = buffer.indexOf("}", start);
+  //             if (start !== -1 && end !== -1) {
+  //               const jsonChunk = buffer.slice(start, end + 1);
+  //               buffer = buffer.slice(end + 1);
 
-                try {
-                  const parsedData = JSON.parse(jsonChunk);
-                  const answer = parsedData.answer;
-                  apiResponse += answer + " "; // Accumulate the full response
+  //               try {
+  //                 const parsedData = JSON.parse(jsonChunk);
+  //                 const answer = parsedData.answer;
+  //                 apiResponse += answer + " "; // Accumulate the full response
 
-                  // Store session_id if not already stored
-                  if (!storedSessionId && parsedData.session_id) {
-                    // setSessionId(parsedData.session_id);
-                    sessionStorage.setItem("session_id", parsedData.session_id);
-                  }
+  //                 // Store session_id if not already stored
+  //                 if (!storedSessionId && parsedData.session_id) {
+  //                   // setSessionId(parsedData.session_id);
+  //                   sessionStorage.setItem("session_id", parsedData.session_id);
+  //                 }
 
-                  setChatHistory((chatHistory) => {
-                    const updatedChatHistory = [...chatHistory];
-                    const lastEntryIndex = updatedChatHistory.length - 1;
-                    if (lastEntryIndex >= 0) {
-                      updatedChatHistory[lastEntryIndex] = {
-                        ...updatedChatHistory[lastEntryIndex],
-                        response: apiResponse.trim(),
-                        showDot: false,
-                      };
-                    }
-                    return updatedChatHistory;
-                  });
+  //                 setChatHistory((chatHistory) => {
+  //                   const updatedChatHistory = [...chatHistory];
+  //                   const lastEntryIndex = updatedChatHistory.length - 1;
+  //                   if (lastEntryIndex >= 0) {
+  //                     updatedChatHistory[lastEntryIndex] = {
+  //                       ...updatedChatHistory[lastEntryIndex],
+  //                       response: apiResponse.trim(),
+  //                       showDot: false,
+  //                     };
+  //                   }
+  //                   return updatedChatHistory;
+  //                 });
 
-                  if (endOfMessagesRef.current) {
-                    endOfMessagesRef.current.scrollIntoView({
-                      behavior: "smooth",
-                      // block: "end",
-                    });
-                  }
-                } catch (error) {
-                  console.error("Error parsing JSON chunk:", error);
-                }
-              }
-            }
-          }
-        }
-        setRefreshSessions((prev) => !prev);
-        setLoading(false);
-        localStorage.setItem("chatHistory", JSON.stringify(chatHistory));
-      };
+  //                 if (endOfMessagesRef.current) {
+  //                   endOfMessagesRef.current.scrollIntoView({
+  //                     behavior: "smooth",
+  //                     // block: "end",
+  //                   });
+  //                 }
+  //               } catch (error) {
+  //                 console.error("Error parsing JSON chunk:", error);
+  //               }
+  //             }
+  //           }
+  //         }
+  //       }
+  //       setRefreshSessions((prev) => !prev);
+  //       setLoading(false);
+  //       localStorage.setItem("chatHistory", JSON.stringify(chatHistory));
+  //     };
 
-      readStream();
-    } catch (error) {
-      console.error("Error fetching or reading stream:", error);
-      setLoading(false);
-    }
-  };
+  //     readStream();
+  //   } catch (error) {
+  //     console.error("Error fetching or reading stream:", error);
+  //     setLoading(false);
+  //   }
+  // };
 
-  useEffect(() => {
-    if (triggerDeriveClick) {
-      handleDeriveClick();
-      setTriggerDeriveClick(false); // Reset the flag after handling the click
-    }
-  }, [query, triggerDeriveClick]);
+  // useEffect(() => {
+  //   if (triggerDeriveClick) {
+  //     handleDeriveClick();
+  //     setTriggerDeriveClick(false); // Reset the flag after handling the click
+  //   }
+  // }, [query, triggerDeriveClick]);
 
   const handleBackClick = () => {
     const unsavedChanges = localStorage.getItem("unsavedChanges");
@@ -992,7 +1015,7 @@ const ArticleContent = ({
       setShowStreamingSection(false); // Default to false if no stored chat history
     }
   }, [location.state]); // Add location.state as a dependency to re-run on navigation
-  console.log(source);
+  // console.log(source);
   useEffect(() => {
     const storedSessionId = sessionStorage.getItem("session_id");
     if (storedSessionId) {
@@ -1001,17 +1024,16 @@ const ArticleContent = ({
   }, [sessions]);
 
   const [uploadedFile, setUploadedFile] = useState(null);
-  useEffect(() => {
-    const storedSessionId =
-      sessionStorage.getItem("sessionId") ||
-      sessionStorage.getItem("session_id");
-    console.log("exec");
-    if (storedSessionId || uploadedFile) {
-      setIsPromptEnabled(true); // Enable prompts if session_id exists or a file is uploaded
-    } else {
-      setIsPromptEnabled(false); // Disable prompts if neither session_id nor file is present
-    }
-  }, [handleDeriveClick, uploadedFile]);
+  // useEffect(() => {
+  //   const storedSessionId =
+  //     sessionStorage.getItem("sessionId") ||
+  //     sessionStorage.getItem("session_id");
+  //   if (storedSessionId || uploadedFile) {
+  //     setIsPromptEnabled(true); // Enable prompts if session_id exists or a file is uploaded
+  //   } else {
+  //     setIsPromptEnabled(false); // Disable prompts if neither session_id nor file is present
+  //   }
+  // }, [handleDeriveClick, uploadedFile]);
 
   const removeUploadedFile = () => {
     setUploadedFile(null);
@@ -1027,6 +1049,7 @@ const ArticleContent = ({
           ref={contentRef}
           // style={{ height: heightIfLoggedIn }}
         >
+          <div className="article-content-inside"> 
           <div className="article-title">
             <div
               style={{
@@ -1118,7 +1141,6 @@ const ArticleContent = ({
                   marginTop: "0",
                   marginBottom: "0",
                   color: "#0071bc",
-                  fontSize: "20px",
                 }}
               >
                 {articleData.article.article_title}
@@ -1392,10 +1414,11 @@ const ArticleContent = ({
               </button>
             </div>
           </div>
+          </div>
           <div
             className="article-chat-query"
             style={{
-              width: openAnnotate || openNotes ? contentWidth : "50%",
+              width: openAnnotate || openNotes ? contentWidth : `${parseInt(contentWidth) - 2}px`,
               cursor: isLoggedIn ? "" : "not-allowed",
               opacity: isLoggedIn ? 1 : 0.5,
             }}

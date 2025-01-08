@@ -87,7 +87,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
           JSON.stringify(prevTotalArticles) !== JSON.stringify(totalArticles);
 
         if (isDifferent) {
-          console.log("totalArticles have changed");
           handleAnnotateClick();
         }
 
@@ -1804,7 +1803,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                                                 }
                                                 onChange={() => {
                                                   if (note.note_id) {
-                                                    console.log(note.note_id);
                                                     setSelectedNote(
                                                       (prevSelected) =>
                                                         prevSelected.includes(
@@ -2183,10 +2181,8 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                     }
                     setHandleAnnotateCall(true);
                     if (annotateData && Object.keys(annotateData).length > 0) {
-                      console.log("data");
                       handleAnnotate();
                     } else if (totalArticles.length > 0) {
-                      console.log("api");
                       handleAnnotateClick();
                     }
                   }}

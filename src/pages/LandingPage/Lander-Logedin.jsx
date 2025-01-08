@@ -88,7 +88,6 @@ const Lander = () => {
         const response = await apiService.fetchSessions(user_id, token);
         if (response.data?.sessions) {
           const sessionsData = response.data.sessions.reverse();
-          console.log(sessionsData);
           setSessions(sessionsData);
         }
       } catch (error) {
@@ -104,7 +103,6 @@ const Lander = () => {
     }
   }, [user_id, token, dispatch]);
 
-  console.log(sessions);
   const handleSessionClick = async () => {
     if (sessions.length === 0) {
       toast.error("No conversations currently", {
@@ -116,7 +114,6 @@ const Lander = () => {
 
     const { session_id } = sessions[0];
     localStorage.setItem("session_id", session_id);
-    console.log(sessions[0]);
     try {
       // Fetch the conversation data
       const conversationResponse = await apiService.fetchChatConversation(
