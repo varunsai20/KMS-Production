@@ -24,7 +24,7 @@ import Collection from "../../components/Collection";
 import Citations from "../../components/Citations";
 import GenerateAnnotate from "../../components/GenerateAnnotate";
 import Logo from "../../assets/images/InfersolD17aR04aP01ZL-Polk4a 1.svg";
-
+import SearchTermMissing from "../../components/SearchTermMissing";
 import Notes from "../NotesPage/Notes";
 import { toast } from "react-toastify";
 
@@ -88,7 +88,6 @@ const Lander = () => {
         const response = await apiService.fetchSessions(user_id, token);
         if (response.data?.sessions) {
           const sessionsData = response.data.sessions.reverse();
-          console.log(sessionsData);
           setSessions(sessionsData);
         }
       } catch (error) {
@@ -104,7 +103,6 @@ const Lander = () => {
     }
   }, [user_id, token, dispatch]);
 
-  console.log(sessions);
   const handleSessionClick = async () => {
     if (sessions.length === 0) {
       toast.error("No conversations currently", {
@@ -116,7 +114,6 @@ const Lander = () => {
 
     const { session_id } = sessions[0];
     localStorage.setItem("session_id", session_id);
-    console.log(sessions[0]);
     try {
       // Fetch the conversation data
       const conversationResponse = await apiService.fetchChatConversation(
@@ -217,21 +214,22 @@ const Lander = () => {
           <img src={Logo} alt="inferAI-logo" className="inferai-logo" />
           <div className="search-bar-div" style={{ position: "relative" }}>
             <SearchBar
-              className="Landingpage-SearchBar"
+              className="Landingpage-SearchBar" 
               landingWidth="80%"
               zIndex="0"
               setTermMissing={setTermMissing}
             ></SearchBar>
 
             {/* TermMissing Outbox */}
-            {termMissing && (
+            {/* {termMissing && (
               <div className="search-term-missing-container">
                 <div className="search-term-missing-error">
                   <div className="error-arrow"></div>
                   <span>Search Term is Missing</span>
                 </div>
               </div>
-            )}
+            )} */}
+            <SearchTermMissing termMissing={termMissing} setTermMissing={setTermMissing}/>
           </div>
           <p className="Landing-Welcome-desc">
             <span className="highlight-context-infer-out">Infer</span>

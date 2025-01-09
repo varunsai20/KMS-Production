@@ -325,3 +325,13 @@
   letter-spacing: 0.02em;
   text-align: center;
 }
+@media (min-width: 250px) and (max-width: 767px) {
+  .MuiPaper-root {
+    border-radius: 10px !important;
+    text-align: justify;
+  }
+  .MuiAutocomplete-option {
+    font-size: 0.9rem;
+    min-height: 40px;
+  }
+}

@@ -267,15 +267,15 @@ const Researchers = () => {
                           Edit
                         </li>
                         <li
-                          className="dropdown-item delete"
+                          className={`dropdown-item delete ${
+                            user.user_status.toLowerCase() === "active" ? "suspend" : "activate"
+                          }`}
                           onClick={(e) => {
                             e.stopPropagation();
                             handleSuspendClick(user.user_id, user.user_status);
                           }}
                         >
-                          {user.user_status.toLowerCase() === "active"
-                            ? "Suspend"
-                            : "Activate"}
+                          {user.user_status.toLowerCase() === "active" ? "Suspend" : "Activate"}
                         </li>
                         <li
                           className="dropdown-item delete"

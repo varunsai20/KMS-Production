@@ -208,18 +208,14 @@ const ArticleDerive = ({
   const handleMouseUpInsideContent = (e) => {
     if (!isLoggedIn) return;
     const content = contentRef.current;
-    console.log("content", content);
     const popup = popupRef.current;
-    console.log("popup ref", popup);
 
     if (!content || !popup) return;
 
     const selection = window.getSelection();
-    console.log("selection", selection);
     if (selection.rangeCount > 0) {
       const range = selection.getRangeAt(0);
       const selectedText = selection.toString().trim();
-      console.log("selected", selectedText);
 
       if (selectedText && content.contains(range.commonAncestorContainer)) {
         const rects = range.getClientRects();
@@ -391,7 +387,7 @@ const ArticleDerive = ({
                   }
 
                   const answer = parsedData.answer;
-                  const words = answer.split(" ");
+                  const words = answer.split("");
 
                   for (const word of words) {
                     await new Promise((resolve) => setTimeout(resolve, delay));
@@ -406,7 +402,7 @@ const ArticleDerive = ({
                           response:
                             (updatedChatHistory[lastEntryIndex].response ||
                               "") +
-                            " " +
+                            "" +
                             word,
                           showDot: true,
                         };
@@ -415,7 +411,7 @@ const ArticleDerive = ({
                       return updatedChatHistory;
                     });
 
-                    setResponse((prev) => prev + " " + word);
+                    setResponse((prev) => prev + "" + word);
 
                     if (endOfMessagesRef.current) {
                       endOfMessagesRef.current.scrollIntoView({
@@ -517,7 +513,7 @@ const ArticleDerive = ({
 
       const readStream = async () => {
         let done = false;
-        const delay = 100; // Delay between words
+        const delay = 1; // Delay between words
 
         while (!done) {
           const { value, done: streamDone } = await reader.read();
@@ -536,7 +532,7 @@ const ArticleDerive = ({
                 try {
                   const parsedData = JSON.parse(jsonChunk);
                   const answer = parsedData.answer;
-                  const words = answer.split(" ");
+                  const words = answer.split("");
 
                   for (const word of words) {
                     await new Promise((resolve) => setTimeout(resolve, delay));
@@ -551,7 +547,7 @@ const ArticleDerive = ({
                           response:
                             (updatedChatHistory[lastEntryIndex].response ||
                               "") +
-                            " " +
+                            "" +
                             word,
                           showDot: true,
                         };
@@ -653,8 +649,7 @@ const ArticleDerive = ({
     } else {
       setShowStreamingSection(false); // Default to false if no stored chat history
     }
-  }, [location.state]); // Add location.state as a dependency to re-run on navigation
-  console.log(source);
+  }, [location.state]); 
 
   useEffect(() => {
     const storedSessionId = localStorage.getItem("session_id");

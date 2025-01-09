@@ -23,3 +23,8 @@
   width: fit-content;
   color: #010101;
 }
+@media (min-width: 320px) and (max-width: 768px) {
+  .footer {
+    padding: 3% 0;
+  }
+}

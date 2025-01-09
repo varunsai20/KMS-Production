@@ -10,8 +10,14 @@ import { useDispatch } from "react-redux";
 import { setSearchResults, clearSearchResults } from "../redux/actions/actions";
 import { apiService } from "../assets/api/apiService";
 
-const SearchBar = ({ renderInputContainer, className,landingWidth,zIndex,searchWidth,setTermMissing }) => {
-
+const SearchBar = ({
+  renderInputContainer,
+  className,
+  landingWidth,
+  zIndex,
+  searchWidth,
+  setTermMissing,
+}) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -21,27 +27,28 @@ const SearchBar = ({ renderInputContainer, className,landingWidth,zIndex,searchW
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
   const token = useSelector((state) => state.auth.access_token);
-  
+
   useEffect(() => {
     // if (location.pathname === "/search" || location.pathname === "/article/content/:articleId") {
-      // Check if searchTerm is present in sessionStorage
-      const storedSearchTerm = sessionStorage.getItem("SearchTerm");
-      if (storedSearchTerm) {
-        setSearchTerm(storedSearchTerm);
-        handleInputChange(null, storedSearchTerm); // Populate suggestions based on the stored term
-      }
-      if(location.pathname === "/"){
-        sessionStorage.removeItem("SearchTerm");
-        setSearchTerm("")
-      }
+    // Check if searchTerm is present in sessionStorage
+    const storedSearchTerm = sessionStorage.getItem("SearchTerm");
+    if (storedSearchTerm) {
+      setSearchTerm(storedSearchTerm);
+      handleInputChange(null, storedSearchTerm); // Populate suggestions based on the stored term
+    }
+    if (location.pathname === "/") {
+      sessionStorage.removeItem("SearchTerm");
+      setSearchTerm("");
+    }
     // } else {
     //   // Clear session storage when not on the search page
-      //sessionStorage.removeItem("SearchTerm");
+    //sessionStorage.removeItem("SearchTerm");
     // }
   }, [location.pathname]);
 
   useEffect(() => {
     localStorage.removeItem("filters");
+    setFilteredResults([]);
   }, []);
 
   const handleInputChange = (event, value) => {
@@ -68,14 +75,13 @@ const SearchBar = ({ renderInputContainer, className,landingWidth,zIndex,searchW
     setFilteredResults([]);
   };
   const handleButtonClick = () => {
-    
     dispatch(clearSearchResults());
     sessionStorage.removeItem("ResultData");
-    if(!searchTerm){
-      setTermMissing(true)
+    if (!searchTerm) {
+      setTermMissing(true);
     }
     if (searchTerm) {
-      setTermMissing(false)
+      setTermMissing(false);
       let searchQuery = sessionStorage.getItem("SearchTerm");
       setLoading(true);
 
@@ -123,9 +129,12 @@ const SearchBar = ({ renderInputContainer, className,landingWidth,zIndex,searchW
   };
   return (
     <>
-      {renderInputContainer ? (
+      {/* {renderInputContainer ? (
+        <div style={{display:"none"}}>
+
         <div className="input-container" style={{ outline: "none" }}>
           <img src={Search} alt="search-icon" className="search-icon" />
+        </div>
           <Autocomplete
             freeSolo
             open
@@ -220,11 +229,15 @@ const SearchBar = ({ renderInputContainer, className,landingWidth,zIndex,searchW
             text="Search"
           />
         </div>
-      ) : (
-
-        <div className={`Search-Bar ${className}`}  style={{width:`${landingWidth}`,zIndex:`${zIndex}`}}>
-          <div className="input-container" style={{width:searchWidth?`${searchWidth}`:"100%"}}>
-
+      ) : ( */}
+        <div
+          className={`Search-Bar ${className}`}
+          style={{ width: `${landingWidth}`, zIndex: `${zIndex}` }}
+        >
+          <div
+            className="input-container"
+            style={{ width: searchWidth ? `${searchWidth}` : "100%" }}
+          >
             <img src={Search} alt="search-icon" className="search-icon" />
             <Autocomplete
               freeSolo
@@ -317,7 +330,7 @@ const SearchBar = ({ renderInputContainer, className,landingWidth,zIndex,searchW
             />
           </div>
         </div>
-      )}
+      {/* )} */}
     </>
   );
 };

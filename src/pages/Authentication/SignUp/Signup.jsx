@@ -187,7 +187,6 @@ const SignUpForm = () => {
   const prevStep = () => setCurrentStep(currentStep - 1);
 
   const submitForm = () => {
-    console.log("Form Submitted", formData);
     navigate("/");
     // Add form submission logic here
   };

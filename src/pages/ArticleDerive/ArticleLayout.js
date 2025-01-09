@@ -22,13 +22,13 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IoTrashOutline } from "react-icons/io5";
 import SearchBar from "../../components/SearchBar";
 import Logo from "../../assets/images/InfersolD17aR04aP01ZL-Polk4a 1.svg";
-
+import SearchTermMissing from "../../components/SearchTermMissing";
+import SearchNavbar from "../../components/SearchNavbar";
 const ArticleLayout = () => {
   const [uploadedFile, setUploadedFile] = useState(null);
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
   const { user } = useSelector((state) => state.auth);
-  const deriveInsights = useSelector((state) => state.deriveInsights?.active); // assuming deriveInsights is in Redux state
-  console.log(deriveInsights);
+  const deriveInsights = useSelector((state) => state.deriveInsights?.active);
   const token = useSelector((state) => state.auth.access_token);
   const user_id = user?.user_id;
   const dispatch = useDispatch();
@@ -36,7 +36,7 @@ const ArticleLayout = () => {
   const navigate = useNavigate();
   const { pmid } = useParams();
   const prevPathRef = useRef(location.pathname);
-
+  const [termMissing, setTermMissing] = useState(false);
   const dropdownRef = useRef(null);
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
 
@@ -49,7 +49,6 @@ const ArticleLayout = () => {
   const [annotateLoading, setAnnotateLoading] = useState(false);
   const [showConfirmIcon, setShowConfirmIcon] = useState(false);
   const [savedText, setSavedText] = useState("");
-  console.log("tet saved in", savedText);
   const [openNotes, setOpenNotes] = useState(false);
   const [type, id1] = pmid ? pmid.split(":") : "";
   const id = Number(id1);
@@ -90,8 +89,7 @@ const ArticleLayout = () => {
       try {
         const response = await apiService.fetchSessions(user_id, token);
         if (response.data?.sessions) {
-          const sessionsData = response.data.sessions.reverse(); // Reverse the array order
-          // console.log(sessionsData)
+          const sessionsData = response.data.sessions.reverse(); 
           setSessions(sessionsData); // Set the reversed sessions array to state
         }
       } catch (error) {
@@ -256,7 +254,6 @@ const ArticleLayout = () => {
     }
   };
   const handleSessionClick = async (session_id) => {
-    console.log("called in session");
     localStorage.removeItem("session_id");
     try {
       // Fetch the conversation data
@@ -344,11 +341,9 @@ const ArticleLayout = () => {
     setAnnotateData("");
     setOpenAnnotate(false);
     setAnnotateFile(false);
-    console.log(prevPathRef);
-    console.log(location.pathname);
+  
 
     if (prevPathRef.current !== location.pathname) {
-      console.log("workHappened");
     }
     prevPathRef.current = location.pathname;
   }, [location.pathname]);
@@ -531,18 +526,8 @@ const ArticleLayout = () => {
   return (
     <>
       <div className="container">
-        <div className="search-container-content">
-          <Header />
-          <div className="SearchHeader-Logo">
-            <Link to="/">
-              <img src={Logo} alt="inferAI-logo" className="inferai-logo" />
-            </Link>
-            <SearchBar
-              className="searchResults-Bar"
-              searchWidth="90%"
-            ></SearchBar>
-          </div>
-        </div>
+              <SearchNavbar containerRef={null}/>
+
 
         <div className="content">
           <div
@@ -602,7 +587,8 @@ const ArticleLayout = () => {
                             width: "100%",
                             fontSize: "14px",
                             outline: "none",
-                            borderColor: editedTitle ? "" : "",
+                            // borderColor: editedTitle ? "" : "",
+                            border:"1px solid #007BFF"
                           }}
                           value={editedTitle}
                           onChange={handleTitleChange}
@@ -634,6 +620,7 @@ const ArticleLayout = () => {
                           }}
                           id="menu-dots"
                           title="Options"
+                          style={{display:editedTitle?"none":"block"}}
                         >
                           ⋮
                         </button>

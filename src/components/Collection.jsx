@@ -71,7 +71,7 @@ const Collection = ({ setIsCollectionOpen }) => {
     setIsCollectionOpen(false);
   };
   const handleArticleClick = (article_id, source) => {
-    console.log(source);
+    
     const sourceType =
   source === "BioRxiv" || source === "biorxiv"
     ? "bioRxiv_id"
