@@ -64,7 +64,7 @@ const ArticleLayout = () => {
   const [activeSessionId, setActiveSessionId] = useState(
     localStorage.getItem("session_id") || null
   );
-
+  const isStreamDoneRef = useRef(false);
   //const [isPromptEnabled, setIsPromptEnabled] = useState(false);
   const [editedTitle, setEditedTitle] = useState("");
   const [annotateData, setAnnotateData] = useState(
@@ -72,7 +72,7 @@ const ArticleLayout = () => {
   );
   const annotateRef = useRef(null);
   const notesRef = useRef(null);
-
+  const [isStreamDone, setIsStreamDone] = useState(false);
   useEffect(() => {
     localStorage.removeItem("session_id");
     setActiveSessionId(null);
@@ -254,6 +254,8 @@ const ArticleLayout = () => {
     }
   };
   const handleSessionClick = async (session_id) => {
+    setIsStreamDone(true)
+    localStorage.removeItem("chatHistory")
     localStorage.removeItem("session_id");
     try {
       // Fetch the conversation data
@@ -384,6 +386,9 @@ const ArticleLayout = () => {
   const [isCitationsOpen, setIsCitationsOpen] = useState(false);
 
   const handleOpenCitations = () => {
+    if(!uploadedFile){
+      return
+    }
     setIsCitationsOpen(true);
   };
   const handleAnnotate = () => {
@@ -685,6 +690,9 @@ const ArticleLayout = () => {
               setUploadedFile={setUploadedFile}
               isCitationsOpen={isCitationsOpen}
               setIsCitationsOpen={setIsCitationsOpen}
+              isStreamDone={isStreamDone}
+              setIsStreamDone={setIsStreamDone}
+              isStreamDoneRef ={isStreamDoneRef }
             />
           ) : (
             <ArticleContent
@@ -696,6 +704,9 @@ const ArticleLayout = () => {
               openNotes={openNotes}
               annotateLoading={annotateLoading}
               setAnnotateLoading={setAnnotateLoading}
+              isStreamDone={isStreamDone}
+              setIsStreamDone={setIsStreamDone}
+              isStreamDoneRef ={isStreamDoneRef }
             />
           )}
 
@@ -789,7 +800,7 @@ const ArticleLayout = () => {
                     (annotateData && annotateData.length > 0) ||
                     activeSessionId
                       ? 1
-                      : 0.5,
+                      : 1,
                   borderRadius: !deriveInsights ? "8px 8px 0 0" : "8px 8px 0 0",
                 }}
                 title={isLoggedIn ? "annotate the article" : displayMessage}

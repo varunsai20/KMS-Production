@@ -6,9 +6,9 @@ import Header from '../../components/Header-New';
 const Admin = () => {
   const navigate = useNavigate();
 
-  React.useEffect(() => {
-    navigate("/admin/users");
-  }, []);
+  // React.useEffect(() => {
+  //   navigate("/admin/users");
+  // }, []);
 
   return (
     <div className='AdminPage' style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>

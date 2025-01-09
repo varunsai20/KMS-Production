@@ -42,8 +42,12 @@ const Header = () => {
   const handleProfileClick = () => {
     if (userId) {
       if (userRole === "Admin") {
-        navigate(`/admin/users/profile/${userId}`);
-      } else if (userRole === "User") {
+        if (location.pathname.startsWith("/admin/users")) {
+          navigate(`/admin/users/profile/${userId}`);
+        } else {
+          navigate(`/admin/users`);
+        }
+       } else if (userRole === "User") {
         navigate(`/users/profile/${userId}`);
       }
     } else {
