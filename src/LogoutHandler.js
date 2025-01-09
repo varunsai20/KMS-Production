@@ -12,14 +12,13 @@ const LogoutHandler = ({ children }) => {
     (state) => state.auth
   );
   const userId = useSelector((state) => state.auth.user.user_id);
-  //console.log(refresh_token);
+
   const refresh_token1 = useSelector((state) => state.auth);
-  //console.log(refresh_token1);
+  
 
   const handleLogout = async () => {
     try {
       const refreshToken = refresh_token; // Ensure that refresh_token is available and valid
-      console.log(refreshToken);
       if (!refreshToken) {
         console.error("Refresh token is missing!");
         return;
@@ -29,7 +28,6 @@ const LogoutHandler = ({ children }) => {
         "https://inferai.ai/api/auth/refresh",
         { refresh_token: refresh_token1.refresh_token } // Send the refresh_token in the body as required
       );
-      //console.log("Refresh response:", response.data); // Print the refresh response
       dispatch(
         updateTokens({
           access_token: response.data.access_token, // New expiration value

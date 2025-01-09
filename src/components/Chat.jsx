@@ -44,24 +44,17 @@ const ArticlePage = () => {
       setContentWidth(`${width}px`); // Update the contentWidth state with the computed width
     }
   }, [openNotes]);
-  console.log(showStreamingSection);
 
   useEffect(() => {
     if (data && data.articles) {
       const savedTerm = sessionStorage.getItem("SearchTerm");
       setSearchTerm(savedTerm);
-      console.log(
-        "PMID from state data:",
-        typeof data.articles.map((article) => article.pmid)
-      );
-      console.log(typeof pmid);
-      // console.log(pmid)
+      
       const article = data.articles.find((article) => {
         // Example: If pmid is stored as `article.pmid.value`, modify accordingly
         const articlePmid = article.pmid.value || article.pmid; // Update this line based on the actual structure of pmid
         return String(articlePmid) === String(pmid);
       });
-      console.log(article);
       if (article) {
         setArticleData(article);
       } else {
@@ -71,7 +64,6 @@ const ArticlePage = () => {
       console.error("Data or articles not available");
     }
   }, [pmid, data]);
-  console.log(articleData);
   useEffect(() => {
     // Scroll to the bottom whenever chat history is updated
     if (endOfMessagesRef.current) {

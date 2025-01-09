@@ -96,10 +96,10 @@
     flex-direction: column;
   }
   .logo-descreption p {
-    font-size: 3vw;
+    font-size: 0.7rem;
   }
   .logo-descreption span {
-    font-size: 3vw;
+    font-size: 0.7rem;
   }
   .Navbar-Header-Items {
     padding: 0 6px;

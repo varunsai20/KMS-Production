@@ -37,7 +37,6 @@ const EditResearcher = () => {
             Authorization: `Bearer ${token}`,
           },
         });
-        console.log(response)
         setFormData(response.data.user_profile);
       } catch (error) {
         console.error('Error fetching user details:', error);

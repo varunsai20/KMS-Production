@@ -40,7 +40,7 @@ const Profile = () => {
         const userProfile = response.data.user_profile;
 
         setFormData(userProfile);
-        console.log(userProfile);
+        
         // Check if profile_picture_url is available and set profileImage accordingly
         if (userProfile.profile_picture_url) {
           setProfileImage(userProfile.profile_picture_url);
@@ -56,7 +56,7 @@ const Profile = () => {
       fetchUserDetails();
     }
   }, [user_id, token]);
-  console.log(formData);
+  
   // Handle image upload
   const handleImageChange = async (e) => {
     const file = e.target.files[0];
@@ -69,8 +69,7 @@ const Profile = () => {
 
       try {
         const response = await apiService.imageUpdate(user_id, token, formData);
-        console.log("Profile picture uploaded successfully.");
-        console.log(response);
+        
         // Dispatch the updateProfilePicture action to update Redux state
         if (response.data.url) {
           dispatch(updateProfilePicture(response.data.url));

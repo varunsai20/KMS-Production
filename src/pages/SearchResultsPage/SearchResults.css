@@ -89,7 +89,7 @@ button {
   z-index: 1000;
 }
 .SearchHeader-Logo {
-  display: flex;
+  /* display: flex; */
   gap: 5px;
   width: 70%;
   margin: 1% auto 0.5%;
@@ -1242,6 +1242,14 @@ button input {
   resize: none;
   border: 1px solid #00000012;
   border-radius: 8px;
+}
+@media (min-width: 320px) and (max-width: 768px) {
+  .inferai-logo {
+    width: 16vw;
+  }
+  .SearchHeader-Logo{
+    width: 100%;
+  }
 }
 @media (min-width: 768px) and (max-width: 1042px) {
   .SearchResult-Option-Left {

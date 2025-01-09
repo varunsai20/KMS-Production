@@ -24,7 +24,7 @@ import Collection from "../../components/Collection";
 import Citations from "../../components/Citations";
 import GenerateAnnotate from "../../components/GenerateAnnotate";
 import Logo from "../../assets/images/InfersolD17aR04aP01ZL-Polk4a 1.svg";
-
+import SearchTermMissing from "../../components/SearchTermMissing";
 import Notes from "../NotesPage/Notes";
 import { toast } from "react-toastify";
 
@@ -33,7 +33,7 @@ const Lander = () => {
   const isLoggedIn = useSelector((state) => state.auth?.isLoggedIn);
   const [sessions, setSessions] = useState([]);
   const [isLanderNotesOpen, setIsLanderNotesOpen] = useState(false);
-  const [termMissing,setTermMissing]=useState(false)
+  const [termMissing, setTermMissing] = useState(false);
   const [isCollectionOpen, setIsCollectionOpen] = useState(false);
   const [isCitationsOpen, setIsCitationsOpen] = useState(false);
   const [isAnnotateOpen, setIsAnnotateOpen] = useState(false);
@@ -88,7 +88,6 @@ const Lander = () => {
         const response = await apiService.fetchSessions(user_id, token);
         if (response.data?.sessions) {
           const sessionsData = response.data.sessions.reverse();
-          console.log(sessionsData);
           setSessions(sessionsData);
         }
       } catch (error) {
@@ -104,7 +103,6 @@ const Lander = () => {
     }
   }, [user_id, token, dispatch]);
 
-  console.log(sessions);
   const handleSessionClick = async () => {
     if (sessions.length === 0) {
       toast.error("No conversations currently", {
@@ -116,7 +114,6 @@ const Lander = () => {
 
     const { session_id } = sessions[0];
     localStorage.setItem("session_id", session_id);
-    console.log(sessions[0]);
     try {
       // Fetch the conversation data
       const conversationResponse = await apiService.fetchChatConversation(
@@ -205,7 +202,7 @@ const Lander = () => {
       setPosition({ x: bottomRightX, y: bottomRightY });
     }
   }, [isLanderNotesOpen, dimensions.height, dimensions.width]);
-  
+
   return (
     <div className="Landing-Container">
       <div className="Landing-Header">
@@ -213,41 +210,42 @@ const Lander = () => {
       </div>
 
       <div className="Landing-Content">
-      <div className="welcome-search">
-  <img src={Logo} alt="inferAI-logo" className="inferai-logo" />
-  <div style={{position:"relative"}}><SearchBar
-    className="Landingpage-SearchBar"
-    landingWidth="80%"
-    zIndex="0"
-    setTermMissing={setTermMissing}
-  ></SearchBar>
+        <div className="welcome-search">
+          <img src={Logo} alt="inferAI-logo" className="inferai-logo" />
+          <div className="search-bar-div" style={{ position: "relative" }}>
+            <SearchBar
+              className="Landingpage-SearchBar" 
+              landingWidth="80%"
+              zIndex="0"
+              setTermMissing={setTermMissing}
+            ></SearchBar>
 
-  {/* TermMissing Outbox */}
-  {termMissing && (
-    <div className="search-term-missing-container">
-      <div className="search-term-missing-error">
-        <div className="error-arrow"></div>
-        <span>Search Term is Missing</span>
-      </div>
-    </div>
-  )}
-</div>
-  <p className="Landing-Welcome-desc">
-    <span className="highlight-context-infer-out">Infer</span>
-    <span className="highlight-context-ai-out">ai</span> (
-    <span className="highlight-context-infer">In</span>formation{" "}
-    <span className="highlight-context-infer">F</span>or{" "}
-    <span className="highlight-context-infer">E</span>xcellence in{" "}
-    <span className="highlight-context-infer">R</span>esearch using{" "}
-    <span className="highlight-context-ai">A</span>rtifical{" "}
-    <span className="highlight-context-ai">I</span>ntelligence) by Infer
-    Solutions, Inc, a cutting-edge product leveraging Artificial
-    Intelligence to revolutionize research in the life sciences
-    industry. This innovative platform streamlines research processes,
-    enhances data analysis, and uncovers new insights.
-  </p>
-</div>
-
+            {/* TermMissing Outbox */}
+            {/* {termMissing && (
+              <div className="search-term-missing-container">
+                <div className="search-term-missing-error">
+                  <div className="error-arrow"></div>
+                  <span>Search Term is Missing</span>
+                </div>
+              </div>
+            )} */}
+            <SearchTermMissing termMissing={termMissing} setTermMissing={setTermMissing}/>
+          </div>
+          <p className="Landing-Welcome-desc">
+            <span className="highlight-context-infer-out">Infer</span>
+            <span className="highlight-context-ai-out">ai</span> (
+            <span className="highlight-context-infer">In</span>formation{" "}
+            <span className="highlight-context-infer">F</span>or{" "}
+            <span className="highlight-context-infer">E</span>xcellence in{" "}
+            <span className="highlight-context-infer">R</span>esearch using{" "}
+            <span className="highlight-context-ai">A</span>rtifical{" "}
+            <span className="highlight-context-ai">I</span>ntelligence) by Infer
+            Solutions, Inc, a cutting-edge product leveraging Artificial
+            Intelligence to revolutionize research in the life sciences
+            industry. This innovative platform streamlines research processes,
+            enhances data analysis, and uncovers new insights.
+          </p>
+        </div>
       </div>
 
       <div className="Landing-Features">

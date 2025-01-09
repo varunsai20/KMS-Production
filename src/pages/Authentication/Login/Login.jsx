@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import "./Login.css";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, Link } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { showSuccessToast, showErrorToast } from "../../../utils/toastHelper";
 import { login } from "../../../redux/reducers/LoginAuth";
@@ -106,7 +106,9 @@ const Login = () => {
   return (
     <>
       <div className="Login-Form">
+        <Link to="/">
         <img src={Logo} alt="logo" className="logo-in-login" />
+        </Link>
         <form className="form" onSubmit={handleSubmit}>
           <h2 style={{ margin: "0" }}>Login</h2>
 

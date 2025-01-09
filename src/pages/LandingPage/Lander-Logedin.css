@@ -35,7 +35,6 @@
   justify-content: center;
 }
 
-/* Error box styling */
 .search-term-missing-error {
   display: inline-block;
   background-color: #fef3c7;
@@ -44,21 +43,18 @@
   padding: 10px 15px;
   border-radius: 5px;
   font-size: 14px;
-  /* box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); */
   position: relative;
 }
 
-/* Arrow under the error box */
 .search-term-missing-error .error-arrow {
   position: absolute;
   top: -9px;
-  /* left: 50%;  */
   transform: translateX(-50%);
   width: 0;
   height: 0;
   border-style: solid;
-  border-width: 0 10px 10px 10px; /* Adjust the borders to point downward */
-  border-color: transparent transparent #fef3c7 transparent; 
+  border-width: 0 10px 10px 10px;
+  border-color: transparent transparent #fef3c7 transparent;
 }
 
 .welcome-search {
@@ -71,7 +67,7 @@
 .inferai-logo {
   width: 10vw;
 }
-.SearchTerm-missing-error{
+.SearchTerm-missing-error {
   position: absolute;
   display: flex;
   justify-content: center;
@@ -95,7 +91,7 @@
   text-align: justify;
   margin: 0;
   font-family: Manrope;
-  font-size: 1vw;
+  font-size: 0.8rem;
   font-weight: 500;
   line-height: 23.36px;
   color: #454545;
@@ -854,17 +850,16 @@
   width: 10%;
   background-color: #1a82ff;
 }
-@media (max-width: 912px) {
-  .Landing-Content-Left,
-  .Landing-Content-Right {
-    flex-direction: column;
-  }
-
-  .Landing-Features,
-  .WhyInfer-points {
-    gap: 15px;
-  }
+.socials {
+  width: 100%;
+  background-color: rgba(244, 249, 255, 1);
 }
+.social-icons {
+  display: flex;
+  justify-content: space-evenly;
+  margin: 0.5% 0%;
+}
+
 @media screen and (min-width: 768px) and (max-width: 1080px) {
   .Landing-Container {
     display: flex;
@@ -987,13 +982,22 @@
     align-items: center;
     flex-wrap: wrap;
   }
-
+  .search-bar-div {
+    position: relative;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .Landing-Welcome-desc {
+    width: 80%;
+  }
   .Landing-Features {
     width: 90%;
     flex-shrink: 0;
   }
   .Landing-Welcome-desc {
-    font-size: 0.7em;
+    font-size: 0.7rem;
   }
 
   .Feature-Item {
@@ -1040,13 +1044,13 @@
   }
 
   .card-title {
-    font-size: 1.2rem;
+    font-size: 1rem;
     font-weight: bold;
     margin: 10px 0;
   }
 
   .card-content {
-    font-size: 0.9rem;
+    font-size: 0.7rem;
     color: #666;
   }
   .social-icons {
@@ -1077,18 +1081,9 @@
     justify-content: space-between;
     margin: 0 auto;
     align-items: center;
-    padding: 3% 0%;
+    padding: 2% 0%;
   }
   .card-title {
     margin: 0;
   }
-}
-.socials {
-  width: 100%;
-  background-color: rgba(244, 249, 255, 1);
-}
-.social-icons {
-  display: flex;
-  justify-content: space-evenly;
-  margin: 0.5% 0%;
 }

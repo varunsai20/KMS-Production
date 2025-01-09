@@ -124,8 +124,7 @@ const RecentIntercaions = (displayIfLoggedIn) => {
               },
             }
           );
-          console.log(sessionId);
-          console.log(editedTitle);
+          
           // Update the local sessions state after a successful edit
           setSessions((prevSessions) =>
             prevSessions.map((session) =>
@@ -190,8 +189,7 @@ const RecentIntercaions = (displayIfLoggedIn) => {
                       ) : (
                         <a
                           onClick={() => {
-                            console.log("Session ID:", session.session_id);
-                            console.log("Source:", session.source);
+                            
                             handleSessionClick(
                               session.article_id,
                               session.source,
