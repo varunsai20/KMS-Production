@@ -55,10 +55,10 @@ const GenerateAnnotate = ({ handleCloseAnnotate }) => {
       const response = await apiService.annotateFile(formData, token);
 
       if (response.status === 200) {
-        console.log(response);
+        
         const result = await response.data;
         setAnnotateData(result);
-        console.log(result);
+        
         setAnnotateLoading(false);
       } else {
         setAnnotateLoading(false);

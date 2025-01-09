@@ -156,7 +156,6 @@ const Editnotes = ({
 
       if (response.status === 200) {
         showSuccessToast("Email sent successfully");
-        console.log("Email sent successfully to:", email);
         handleCloseEmailModal(); // Close the modal after sending
       } else {
         showErrorToast("Failed to send email:");
@@ -245,7 +244,6 @@ const Editnotes = ({
           showSuccessToast("Notes Saved Successfully");
           setUnsavedChanges(false); // Reset unsaved changes after saving
           initialText.current = updatedNote.content;
-          console.log("Note updated:", updatedNote);
         } else {
           toast.error("Failed to update note:");
           console.error("Failed to update note:", response);
@@ -305,7 +303,6 @@ const Editnotes = ({
       }));
     }
   };
-  console.log(notesHeight);
 
   const handleKeyDown = (event) => {
     if (event.key === "Enter") {

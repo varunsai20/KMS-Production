@@ -20,6 +20,7 @@
   flex-grow: 1;
   position: relative;
 }
+
 .Landing-Content-Left {
   position: relative;
   display: grid;
@@ -34,7 +35,6 @@
   justify-content: center;
 }
 
-/* Error box styling */
 .search-term-missing-error {
   display: inline-block;
   background-color: #fef3c7;
@@ -43,21 +43,18 @@
   padding: 10px 15px;
   border-radius: 5px;
   font-size: 14px;
-  /* box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); */
   position: relative;
 }
 
-/* Arrow under the error box */
 .search-term-missing-error .error-arrow {
   position: absolute;
   top: -9px;
-  /* left: 50%;  */
   transform: translateX(-50%);
   width: 0;
   height: 0;
   border-style: solid;
-  border-width: 0 10px 10px 10px; /* Adjust the borders to point downward */
-  border-color: transparent transparent #fef3c7 transparent; 
+  border-width: 0 10px 10px 10px;
+  border-color: transparent transparent #fef3c7 transparent;
 }
 
 .welcome-search {
@@ -67,39 +64,10 @@
   width: 90%;
   margin: 0 auto;
 }
-.Left1,
-.Left2,
-.Right1,
-.Right2 {
-  position: absolute;
-  width: 10%;
-}
-.Left1 {
-  left: 12.5%;
-}
-.Left2 {
-  top: 80%;
-}
-.Right1 {
-  top: 12.5%;
-  left: 75%;
-}
-.Right2 {
-  top: 82%;
-  left: 60%;
-}
-.Landing-Content-Left-Content {
-  position: absolute;
-  top: 30%;
-  left: 20%;
-  width: 75%;
-  margin: auto;
-}
-
 .inferai-logo {
   width: 10vw;
 }
-.SearchTerm-missing-error{
+.SearchTerm-missing-error {
   position: absolute;
   display: flex;
   justify-content: center;
@@ -123,7 +91,7 @@
   text-align: justify;
   margin: 0;
   font-family: Manrope;
-  font-size: 1vw;
+  font-size: 0.8rem;
   font-weight: 500;
   line-height: 23.36px;
   color: #454545;
@@ -770,18 +738,15 @@
   padding: 10px 0px 0px 10px;
 }
 .lander-create-note__actions {
-  /* background-color: #1a82ff;
-  margin-right: 10vh; */
   z-index: 1;
 }
-/* email-overlay */
+
 .lander-email-modal-overlay {
   width: 100%;
   height: 100%;
   position: fixed;
   top: 0;
   left: 0;
-  /* background: rgba(0, 0, 0, 0.6); */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -815,9 +780,6 @@
   width: 100%;
   top: 30%;
   left: 0;
-  /* width: 50vw;
-  height: 50vh;
-  background: rgba(0, 0, 0, 0.6); */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -888,17 +850,16 @@
   width: 10%;
   background-color: #1a82ff;
 }
-@media (max-width: 912px) {
-  .Landing-Content-Left,
-  .Landing-Content-Right {
-    flex-direction: column;
-  }
-
-  .Landing-Features,
-  .WhyInfer-points {
-    gap: 15px;
-  }
+.socials {
+  width: 100%;
+  background-color: rgba(244, 249, 255, 1);
 }
+.social-icons {
+  display: flex;
+  justify-content: space-evenly;
+  margin: 0.5% 0%;
+}
+
 @media screen and (min-width: 768px) and (max-width: 1080px) {
   .Landing-Container {
     display: flex;
@@ -920,26 +881,6 @@
     margin: 0 auto;
     align-items: center;
     flex-wrap: wrap;
-  }
-
-  .Landing-Content-Left,
-  .Landing-Content-Right {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    min-height: 250px;
-  }
-
-  .Landing-Content-Left {
-    text-align: left;
-  }
-
-  .Landing-Content-Right img {
-    max-width: 100%;
-    height: auto;
-    object-fit: contain;
   }
 
   .Landing-Features {
@@ -1011,6 +952,15 @@
 }
 
 @media (min-width: 320px) and (max-width: 768px) {
+  .inferai-logo {
+    width: 35vw;
+  }
+  .welcome-search {
+    gap: 8%;
+    width: auto;
+    margin: 0 auto;
+    align-items: center;
+  }
   .Landing-Container {
     display: flex;
     flex-direction: column;
@@ -1027,36 +977,27 @@
   .Landing-Content {
     display: flex;
     justify-content: space-between;
-    width: 90%;
+    width: 100%;
     margin: 0 auto;
     align-items: center;
     flex-wrap: wrap;
   }
-
-  .Landing-Content-Left,
-  .Landing-Content-Right {
-    flex: 1;
+  .search-bar-div {
+    position: relative;
+    width: 100%;
     display: flex;
-    flex-direction: column;
     justify-content: center;
     align-items: center;
-    min-height: 250px;
   }
-
-  .Landing-Content-Left {
-    text-align: left;
+  .Landing-Welcome-desc {
+    width: 80%;
   }
-
-  .Landing-Content-Right img {
-    max-width: 100%;
-    height: auto;
-    object-fit: contain;
-  }
-
   .Landing-Features {
-    /* display: grid; */
     width: 90%;
     flex-shrink: 0;
+  }
+  .Landing-Welcome-desc {
+    font-size: 0.7rem;
   }
 
   .Feature-Item {
@@ -1064,7 +1005,6 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    /* grid-template-columns: repeat(2, 1fr); */
     text-align: center;
     background: #fff;
     border-radius: 16px;
@@ -1077,8 +1017,8 @@
   }
 
   .WhyInfer-points {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    display: flex;
+    flex-direction: column;
     gap: 20px;
     width: 85%;
     margin: 20px auto;
@@ -1104,20 +1044,26 @@
   }
 
   .card-title {
-    font-size: 1.2rem;
+    font-size: 1rem;
     font-weight: bold;
     margin: 10px 0;
   }
 
   .card-content {
-    font-size: 0.9rem;
+    font-size: 0.7rem;
     color: #666;
+  }
+  .social-icons {
+    display: flex;
+    justify-content: space-evenly;
+    margin: 4% 0%;
   }
 
   .Footer {
     width: 100%;
     flex-shrink: 0;
     margin-top: auto;
+    padding: 4% 0%;
   }
 }
 @media (min-width: 1080px) and (max-width: 1366px) {
@@ -1135,18 +1081,9 @@
     justify-content: space-between;
     margin: 0 auto;
     align-items: center;
-    padding: 3% 0%;
+    padding: 2% 0%;
   }
   .card-title {
     margin: 0;
   }
-}
-.socials {
-  width: 100%;
-  background-color: rgba(244, 249, 255, 1);
-}
-.social-icons {
-  display: flex;
-  justify-content: space-evenly;
-  margin: 0.5% 0%;
 }

@@ -26,7 +26,6 @@ const Createnotes = ({
   height,
   fetchNotes,
 }) => {
-  console.log(textToSave);
   const [title, setTitle] = useState("");
   const [isOpenDropdown, setIsOpenDropdown] = useState(false);
   const headerRef = useRef(null);
@@ -73,13 +72,11 @@ const Createnotes = ({
   };
 
   const handleSendEmail = () => {
-    console.log("Sending email to:", email, "with subject:", subject);
 
     setEmail("");
     setSubject("");
     handleCloseEmailModal();
   };
-  console.log("Selected Text:", textToSave);
 
   const handleCancel = () => {
     setShowConfirm(false);
@@ -235,7 +232,6 @@ const Createnotes = ({
       console.error("Error saving note:", error);
     }
   };
-  console.log("text is saved", textToSave);
   const handleCloseClick = () => {
     const localUnsavedChanges = localStorage.getItem("unsavedChanges");
     if (unsavedChanges || localUnsavedChanges === "true") {

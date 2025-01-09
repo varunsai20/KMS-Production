@@ -8,7 +8,7 @@ const Annotation = ({
   source: passedSource,
   annotateHeight,
 }) => {
-  console.log(annotateData);
+  
   //const location = useLocation();
   const [source, setSource] = useState(passedSource || []);
 

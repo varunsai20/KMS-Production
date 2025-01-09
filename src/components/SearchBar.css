@@ -1,15 +1,11 @@
 .Search-Bar {
-  /* margin: 0 auto; */
   background: rgba(255, 255, 255, 0.2);
   border-radius: 16px;
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-  /* backdrop-filter: blur(5px); */
-  /* -webkit-backdrop-filter: blur(5px); */
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 20px;
   width: 60%;
   height: 94px;
-  /* padding: 24px 0px 24px 0px; */
   gap: 32px;
   z-index: 99;
   bottom: 30px;
@@ -19,9 +15,8 @@
 }
 
 .input-container {
-  position: relative; /* Needed for absolute positioning of elements */
+  position: relative;
   width: 80%;
-  /*max-width: 500px;*/ /* Set a maximum width to control sizing */
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -29,12 +24,12 @@
 
 .search-input {
   width: 80%;
-  padding-left: 40px; /* Add padding to make space for the icon */
-  padding-right: 100px; /* Add padding for the search button */
+  padding-left: 40px;
+  padding-right: 100px;
   height: 40px;
   font-size: 16px;
   border: 1px solid #ccc;
-  border-radius: 20px; /* Rounded input */
+  border-radius: 20px;
   outline: none;
   box-sizing: border-box;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 5);
@@ -42,9 +37,6 @@
 .search-icon {
   position: absolute;
   left: 10px;
-  /* top: 13%; */
-  /* transform: translateY(-50%); */
-  /* width: 5%; */
   height: 20px;
   z-index: 1;
 }
@@ -81,8 +73,6 @@
   margin: auto;
   left: 5%;
   top: 26%;
-  /* background: #fff; */
-  /* border: 1px solid black; */
   border-radius: 54px;
   display: flex;
   flex-direction: row;
@@ -118,7 +108,6 @@
   justify-content: space-between;
   opacity: 100%;
   color: black;
-  /* padding-left: 5%; */
 }
 #LandingHeader-custom-textfield .MuiInputBase-input {
   padding-left: 30px; /* Adjust this value to increase padding */
@@ -325,8 +314,6 @@
 .searchbar-text {
   width: 75%;
   align-items: center;
-  /* margin: auto; */
-  /* margin-top: 12%; */
   position: absolute;
   top: 50%;
   left: 15%;
@@ -337,4 +324,14 @@
   line-height: 20.44px;
   letter-spacing: 0.02em;
   text-align: center;
+}
+@media (min-width: 250px) and (max-width: 767px) {
+  .MuiPaper-root {
+    border-radius: 10px !important;
+    text-align: justify;
+  }
+  .MuiAutocomplete-option {
+    font-size: 0.9rem;
+    min-height: 40px;
+  }
 }

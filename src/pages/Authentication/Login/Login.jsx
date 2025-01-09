@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import "./Login.css";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, Link } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { showSuccessToast, showErrorToast } from "../../../utils/toastHelper";
 import { login } from "../../../redux/reducers/LoginAuth";
@@ -91,14 +91,10 @@ const Login = () => {
           }
         }
       } catch (error) {
-        if (error.response) {
-          const statusCode = error.response.status;
-
-          if (statusCode === 401 || statusCode === 403) {
-            showErrorToast("Login failed. Please check your credentials.");
-          } else {
-            navigate("/server-error");
-          }
+        if (error.reason === "invalid_credentials") {
+          showErrorToast("Login failed. Please check your credentials.");
+        } else if (error.reason === "session_expired") {
+          showErrorToast("Session expired. Please login again.");
         } else {
           console.error("Unknown error occurred:", error);
           navigate("/server-error");
@@ -110,7 +106,9 @@ const Login = () => {
   return (
     <>
       <div className="Login-Form">
+        <Link to="/">
         <img src={Logo} alt="logo" className="logo-in-login" />
+        </Link>
         <form className="form" onSubmit={handleSubmit}>
           <h2 style={{ margin: "0" }}>Login</h2>
 
