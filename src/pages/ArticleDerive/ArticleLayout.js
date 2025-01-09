@@ -22,7 +22,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IoTrashOutline } from "react-icons/io5";
 import SearchBar from "../../components/SearchBar";
 import Logo from "../../assets/images/InfersolD17aR04aP01ZL-Polk4a 1.svg";
-
+import SearchTermMissing from "../../components/SearchTermMissing";
+import SearchNavbar from "../../components/SearchNavbar";
 const ArticleLayout = () => {
   const [uploadedFile, setUploadedFile] = useState(null);
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
@@ -35,7 +36,7 @@ const ArticleLayout = () => {
   const navigate = useNavigate();
   const { pmid } = useParams();
   const prevPathRef = useRef(location.pathname);
-
+  const [termMissing, setTermMissing] = useState(false);
   const dropdownRef = useRef(null);
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
 
@@ -525,18 +526,8 @@ const ArticleLayout = () => {
   return (
     <>
       <div className="container">
-        <div className="search-container-content">
-          <Header />
-          <div className="SearchHeader-Logo">
-            <Link to="/">
-              <img src={Logo} alt="inferAI-logo" className="inferai-logo" />
-            </Link>
-            <SearchBar
-              className="searchResults-Bar"
-              searchWidth="90%"
-            ></SearchBar>
-          </div>
-        </div>
+              <SearchNavbar containerRef={null}/>
+
 
         <div className="content">
           <div
@@ -596,7 +587,8 @@ const ArticleLayout = () => {
                             width: "100%",
                             fontSize: "14px",
                             outline: "none",
-                            borderColor: editedTitle ? "" : "",
+                            // borderColor: editedTitle ? "" : "",
+                            border:"1px solid #007BFF"
                           }}
                           value={editedTitle}
                           onChange={handleTitleChange}
@@ -628,6 +620,7 @@ const ArticleLayout = () => {
                           }}
                           id="menu-dots"
                           title="Options"
+                          style={{display:editedTitle?"none":"block"}}
                         >
                           ⋮
                         </button>

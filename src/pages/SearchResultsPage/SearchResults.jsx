@@ -21,7 +21,8 @@ import { showSuccessToast, showErrorToast } from "../../utils/toastHelper";
 import Header from "../../components/Header-New";
 import Logo from "../../assets/images/InfersolD17aR04aP01ZL-Polk4a 1.svg";
 import NoteItem from "../../components/Notes/NoteItem";
-
+import SearchTermMissing from "../../components/SearchTermMissing";
+import SearchNavbar from "../../components/SearchNavbar";
 const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   const ITEMS_PER_PAGE = 10;
   const location = useLocation(); // Access the passed state
@@ -136,7 +137,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   const [customEndDate, setCustomEndDate] = useState("");
   const [completePMID, setCompletePMID] = useState([]);
   const [ratingsList, setRatingsList] = useState([]);
-
+    // const [termMissing, setTermMissing] = useState(false);
   // Function to get the rating for a specific article by pmid
   const getRatingForArticle = (id, source) => {
     // Standardize source values for specific cases
@@ -1071,18 +1072,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   }, []);
   return (
     <div className="Container" ref={contentRightRef}>
-      <div className="search-container-content" ref={containerRef}>
-        <Header />
-        <div className="SearchHeader-Logo">
-          <Link to="/">
-            <img src={Logo} alt="inferAI-logo" className="inferai-logo" />
-          </Link>
-          <SearchBar
-            className="searchResults-Bar"
-            searchWidth="90%"
-          ></SearchBar>
-        </div>
-      </div>
+      <SearchNavbar containerRef={containerRef}/>
 
       <div id="Search-Content-Container">
         <div className="searchContent-left" style={{ top: containerHeight }}>

@@ -129,9 +129,12 @@ const SearchBar = ({
   };
   return (
     <>
-      {renderInputContainer ? (
+      {/* {renderInputContainer ? (
+        <div style={{display:"none"}}>
+
         <div className="input-container" style={{ outline: "none" }}>
           <img src={Search} alt="search-icon" className="search-icon" />
+        </div>
           <Autocomplete
             freeSolo
             open
@@ -226,7 +229,7 @@ const SearchBar = ({
             text="Search"
           />
         </div>
-      ) : (
+      ) : ( */}
         <div
           className={`Search-Bar ${className}`}
           style={{ width: `${landingWidth}`, zIndex: `${zIndex}` }}
@@ -327,7 +330,7 @@ const SearchBar = ({
             />
           </div>
         </div>
-      )}
+      {/* )} */}
     </>
   );
 };

@@ -24,7 +24,7 @@ import Collection from "../../components/Collection";
 import Citations from "../../components/Citations";
 import GenerateAnnotate from "../../components/GenerateAnnotate";
 import Logo from "../../assets/images/InfersolD17aR04aP01ZL-Polk4a 1.svg";
-
+import SearchTermMissing from "../../components/SearchTermMissing";
 import Notes from "../NotesPage/Notes";
 import { toast } from "react-toastify";
 
@@ -221,14 +221,15 @@ const Lander = () => {
             ></SearchBar>
 
             {/* TermMissing Outbox */}
-            {termMissing && (
+            {/* {termMissing && (
               <div className="search-term-missing-container">
                 <div className="search-term-missing-error">
                   <div className="error-arrow"></div>
                   <span>Search Term is Missing</span>
                 </div>
               </div>
-            )}
+            )} */}
+            <SearchTermMissing termMissing={termMissing} setTermMissing={setTermMissing}/>
           </div>
           <p className="Landing-Welcome-desc">
             <span className="highlight-context-infer-out">Infer</span>

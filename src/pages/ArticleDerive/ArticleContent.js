@@ -18,6 +18,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTelegram } from "@fortawesome/free-brands-svg-icons";
 import { LiaTelegramPlane } from "react-icons/lia";
 import { showErrorToast, showSuccessToast } from "../../utils/toastHelper";
+import { faArrowDown } from "@fortawesome/free-solid-svg-icons";
+
 const ArticleContent = ({
   setRefreshSessions,
   openAnnotate,
@@ -53,8 +55,11 @@ const ArticleContent = ({
   );
 
   const endOfMessagesRef = useRef(null);
-  const [autoScrollEnabled, setAutoScrollEnabled] = useState(true); 
-const messagesContainerRef = useRef(null); 
+  const messagesContainerRef = useRef(null);
+  const [autoScrollEnabled, setAutoScrollEnabled] = useState(false);
+  const [showScrollDownButton, setShowScrollDownButton] = useState(false); // To show the down arrow button
+
+
   const [chatHistory, setChatHistory] = useState(() => {
     const storedHistory = localStorage.getItem("chatHistory");
     return storedHistory ? JSON.parse(storedHistory) : [];
@@ -495,41 +500,51 @@ const messagesContainerRef = useRef(null);
       }
     };
   });
-  useEffect(() => {
-    if (autoScrollEnabled && endOfMessagesRef.current) {
-      endOfMessagesRef.current.scrollIntoView({ behavior: "smooth" });
+  
+
+  const handleScroll = () => {
+    if (!messagesContainerRef.current) return;
+
+    const { scrollTop, scrollHeight, clientHeight } =
+      messagesContainerRef.current;
+
+    // Check if the user scrolled up (not at the bottom)
+    if (scrollTop + clientHeight < scrollHeight - 50) {
+      setAutoScrollEnabled(false);
+      setShowScrollDownButton(true); // Show the down arrow button
+    } else {
+      setShowScrollDownButton(false); // Hide the down arrow button when at the bottom
     }
-  }, [chatHistory, autoScrollEnabled]);
+  };
+
+  const scrollToBottom = () => {
+    if (endOfMessagesRef.current) {
+      endOfMessagesRef.current.scrollIntoView({ behavior: "smooth" });
+      setAutoScrollEnabled(true); // Re-enable auto-scroll
+    }
+  };
 
   useEffect(() => {
-    const handleScroll = () => {
-      if (!messagesContainerRef.current) return;
-  
-      const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current;
-  
-      // If user scrolls up (not at the bottom)
-      if (scrollTop + clientHeight < scrollHeight) {
-        setAutoScrollEnabled(false);
-      } else {
-        // User scrolls back to the bottom
-        setAutoScrollEnabled(true);
-      }
-    };
-  
     const container = messagesContainerRef.current;
     if (container) {
       container.addEventListener("scroll", handleScroll);
     }
-  
+
     return () => {
       if (container) {
         container.removeEventListener("scroll", handleScroll);
       }
     };
-  }, []);
+  }, [chatHistory]);
 
-
-
+  useEffect(() => {
+    // Auto-scroll to the bottom if enabled
+    if (autoScrollEnabled && endOfMessagesRef.current) {
+      endOfMessagesRef.current.scrollIntoView({ behavior: "smooth" });
+      setAutoScrollEnabled(false)
+    }
+  }, [chatHistory,autoScrollEnabled]);
+  console.log(autoScrollEnabled)
   const handleAskClick = async () => {
     if (!query) {
       showErrorToast("Please enter a query");
@@ -575,113 +590,110 @@ const messagesContainerRef = useRef(null);
       setQuery("");
 
       const readStream = async () => {
-        try {
-          let done = false;
-          const delay = 100; // Delay between words
+  try {
+    let done = false;
+    const delay = 1; // Delay between words
+    let autoScrollSet = false; // Track if auto-scroll was set
 
-          while (!done) {
-            const { value, done: streamDone } = await reader.read();
-            done = streamDone;
+    while (!done) {
+      const { value, done: streamDone } = await reader.read();
+      done = streamDone;
 
-            if (value) {
-              buffer += decoder.decode(value, { stream: true });
+      if (value) {
+        buffer += decoder.decode(value, { stream: true });
 
-              while (buffer.indexOf("{") !== -1 && buffer.indexOf("}") !== -1) {
-                let start = buffer.indexOf("{");
-                let end = buffer.indexOf("}", start);
-                if (start !== -1 && end !== -1) {
-                  const jsonChunk = buffer.slice(start, end + 1);
-                  buffer = buffer.slice(end + 1);
+        while (buffer.indexOf("{") !== -1 && buffer.indexOf("}") !== -1) {
+          let start = buffer.indexOf("{");
+          let end = buffer.indexOf("}", start);
+          if (start !== -1 && end !== -1) {
+            const jsonChunk = buffer.slice(start, end + 1);
+            buffer = buffer.slice(end + 1);
 
-                  try {
-                    const parsedData = JSON.parse(jsonChunk);
+            try {
+              const parsedData = JSON.parse(jsonChunk);
 
-                    if (parsedData.session_id) {
-                      const articleSessions =
-                        JSON.parse(sessionStorage.getItem("articleSessions")) ||
-                        {};
-                      articleSessions[sessionKey] = parsedData.session_id;
-                      sessionStorage.setItem(
-                        "articleSessions",
-                        JSON.stringify(articleSessions)
-                      );
-                    }
+              if (parsedData.session_id) {
+                const articleSessions =
+                  JSON.parse(sessionStorage.getItem("articleSessions")) || {};
+                articleSessions[sessionKey] = parsedData.session_id;
+                sessionStorage.setItem(
+                  "articleSessions",
+                  JSON.stringify(articleSessions)
+                );
+              }
 
-                    const answer = parsedData.answer;
-                    const words = answer.split(" ");
+              const answer = parsedData.answer;
+              const words = answer.split("");
 
-                    for (const word of words) {
-                      await new Promise((resolve) =>
-                        setTimeout(resolve, delay)
-                      );
+              for (const word of words) {
+                await new Promise((resolve) => setTimeout(resolve, delay));
 
-                      setChatHistory((chatHistory) => {
-                        const updatedChatHistory = [...chatHistory];
-                        const lastEntryIndex = updatedChatHistory.length - 1;
+                setChatHistory((chatHistory) => {
+                  const updatedChatHistory = [...chatHistory];
+                  const lastEntryIndex = updatedChatHistory.length - 1;
 
-                        if (lastEntryIndex >= 0) {
-                          updatedChatHistory[lastEntryIndex] = {
-                            ...updatedChatHistory[lastEntryIndex],
-                            response:
-                              (updatedChatHistory[lastEntryIndex].response ||
-                                "") +
-                              " " +
-                              word,
-                            showDot: true,
-                          };
-                        }
-
-                        return updatedChatHistory;
-                      });
-
-                      setResponse((prev) => prev + " " + word);
-
-                      if (endOfMessagesRef.current) {
-                        endOfMessagesRef.current.scrollIntoView({
-                          behavior: "smooth",
-                        });
-                      }
-                    }
-                    setChatHistory((chatHistory) => {
-                      const updatedChatHistory = [...chatHistory];
-                      const lastEntryIndex = updatedChatHistory.length - 1;
-                      if (lastEntryIndex >= 0) {
-                        updatedChatHistory[lastEntryIndex].showDot = false;
-                      }
-                      return updatedChatHistory;
-                    });
-                  } catch (error) {
-                    console.error("Error parsing JSON chunk:", error);
+                  if (lastEntryIndex >= 0) {
+                    updatedChatHistory[lastEntryIndex] = {
+                      ...updatedChatHistory[lastEntryIndex],
+                      response:
+                        (updatedChatHistory[lastEntryIndex].response || "") +
+                        "" +
+                        word,
+                      showDot: true,
+                    };
                   }
+
+                  return updatedChatHistory;
+                });
+
+                setResponse((prev) => prev + "" + word);
+
+                // Set auto-scroll enabled only once
+                if (!autoScrollSet && endOfMessagesRef.current) {
+                  setAutoScrollEnabled(true);
+                  autoScrollSet = true;
                 }
               }
+              setChatHistory((chatHistory) => {
+                const updatedChatHistory = [...chatHistory];
+                const lastEntryIndex = updatedChatHistory.length - 1;
+                if (lastEntryIndex >= 0) {
+                  updatedChatHistory[lastEntryIndex].showDot = false;
+                }
+                return updatedChatHistory;
+              });
+            } catch (error) {
+              console.error("Error parsing JSON chunk:", error);
             }
           }
-          setRefreshSessions((prev) => !prev);
-          setLoading(false);
-          localStorage.setItem("chatHistory", JSON.stringify(chatHistory));
-        } catch (error) {
-          console.error("Error fetching or reading stream:", error);
-
-          setChatHistory((chatHistory) => {
-            const updatedChatHistory = [...chatHistory];
-            const lastEntryIndex = updatedChatHistory.length - 1;
-
-            if (lastEntryIndex >= 0) {
-              updatedChatHistory[lastEntryIndex] = {
-                ...updatedChatHistory[lastEntryIndex],
-                response:
-                  "There is some error. Please try again after some time.",
-                showDot: false,
-              };
-            }
-
-            return updatedChatHistory;
-          });
-
-          setLoading(false);
         }
-      };
+      }
+    }
+    setRefreshSessions((prev) => !prev);
+    setLoading(false);
+    localStorage.setItem("chatHistory", JSON.stringify(chatHistory));
+  } catch (error) {
+    console.error("Error fetching or reading stream:", error);
+
+    setChatHistory((chatHistory) => {
+      const updatedChatHistory = [...chatHistory];
+      const lastEntryIndex = updatedChatHistory.length - 1;
+
+      if (lastEntryIndex >= 0) {
+        updatedChatHistory[lastEntryIndex] = {
+          ...updatedChatHistory[lastEntryIndex],
+          response: "There is some error. Please try again after some time.",
+          showDot: false,
+        };
+      }
+
+      return updatedChatHistory;
+    });
+
+    setLoading(false);
+  }
+};
+
 
       readStream();
     } catch (error) {
@@ -707,141 +719,6 @@ const messagesContainerRef = useRef(null);
   };
   const storedSessionId =
     sessionStorage.getItem("sessionId") || sessionStorage.getItem("session_id");
-  // const handleDeriveClick = async () => {
-  //   if (!query && !uploadedFile) {
-  //     showErrorToast("Please enter a query or upload a file", {
-  //       position: "top-center",
-  //       autoClose: 2000,
-  //     });
-
-  //     return;
-  //   }
-  //   removeUploadedFile();
-  //   setQuery("");
-  //   setLoading(true);
-  //   const newChatEntry = {
-  //     query,
-  //     file: uploadedFile,
-  //     response: "",
-  //     showDot: true,
-  //   };
-  //   setChatHistory((prevChatHistory) => [...prevChatHistory, newChatEntry]);
-
-  //   try {
-  //     let url = "https://inferai.ai/api/insights/upload";
-  //     const headers = {
-  //       Authorization: `Bearer ${token}`,
-  //       "ngrok-skip-browser-warning": true,
-  //     };
-  //     // Initialize FormData
-  //     const formData = new FormData();
-  //     formData.append("question", query);
-
-  //     // Conditionally set user_id or userid based on session_id existence
-  //     if (storedSessionId) {
-  //       formData.append("user_id", user.user_id);
-  //       formData.append("session_id", storedSessionId);
-  //     } else {
-  //       formData.append("userid", user.user_id);
-  //     }
-
-  //     if (uploadedFile) {
-  //       formData.append("file", uploadedFile);
-  //     }
-
-  //     if (storedSessionId) {
-  //       url = "https://inferai.ai/api/insights/ask";
-  //     }
-  //     // Use fetch instead of axios to handle streaming response
-  //     const response = await fetch(url, {
-  //       method: "POST",
-  //       headers: headers,
-  //       body: formData,
-  //     });
-
-  //     if (!response.ok) throw new Error("Network response was not ok");
-
-  //     // Stream response and update chat history
-  //     const reader = response.body.getReader();
-  //     const decoder = new TextDecoder();
-  //     let buffer = "";
-  //     let apiResponse = ""; // To accumulate the full response
-
-  //     const readStream = async () => {
-  //       let done = false;
-  //       const delay = 100;
-
-  //       while (!done) {
-  //         const { value, done: streamDone } = await reader.read();
-  //         done = streamDone;
-
-  //         if (value) {
-  //           buffer += decoder.decode(value, { stream: true });
-
-  //           // Process chunks of JSON-like data
-  //           while (buffer.indexOf("{") !== -1 && buffer.indexOf("}") !== -1) {
-  //             let start = buffer.indexOf("{");
-  //             let end = buffer.indexOf("}", start);
-  //             if (start !== -1 && end !== -1) {
-  //               const jsonChunk = buffer.slice(start, end + 1);
-  //               buffer = buffer.slice(end + 1);
-
-  //               try {
-  //                 const parsedData = JSON.parse(jsonChunk);
-  //                 const answer = parsedData.answer;
-  //                 apiResponse += answer + " "; // Accumulate the full response
-
-  //                 // Store session_id if not already stored
-  //                 if (!storedSessionId && parsedData.session_id) {
-  //                   // setSessionId(parsedData.session_id);
-  //                   sessionStorage.setItem("session_id", parsedData.session_id);
-  //                 }
-
-  //                 setChatHistory((chatHistory) => {
-  //                   const updatedChatHistory = [...chatHistory];
-  //                   const lastEntryIndex = updatedChatHistory.length - 1;
-  //                   if (lastEntryIndex >= 0) {
-  //                     updatedChatHistory[lastEntryIndex] = {
-  //                       ...updatedChatHistory[lastEntryIndex],
-  //                       response: apiResponse.trim(),
-  //                       showDot: false,
-  //                     };
-  //                   }
-  //                   return updatedChatHistory;
-  //                 });
-
-  //                 if (endOfMessagesRef.current) {
-  //                   endOfMessagesRef.current.scrollIntoView({
-  //                     behavior: "smooth",
-  //                     // block: "end",
-  //                   });
-  //                 }
-  //               } catch (error) {
-  //                 console.error("Error parsing JSON chunk:", error);
-  //               }
-  //             }
-  //           }
-  //         }
-  //       }
-  //       setRefreshSessions((prev) => !prev);
-  //       setLoading(false);
-  //       localStorage.setItem("chatHistory", JSON.stringify(chatHistory));
-  //     };
-
-  //     readStream();
-  //   } catch (error) {
-  //     console.error("Error fetching or reading stream:", error);
-  //     setLoading(false);
-  //   }
-  // };
-
-  // useEffect(() => {
-  //   if (triggerDeriveClick) {
-  //     handleDeriveClick();
-  //     setTriggerDeriveClick(false); // Reset the flag after handling the click
-  //   }
-  // }, [query, triggerDeriveClick]);
-
   const handleBackClick = () => {
     const unsavedChanges = localStorage.getItem("unsavedChanges");
     if (unsavedChanges === "true") {
@@ -1351,10 +1228,11 @@ const messagesContainerRef = useRef(null);
             {/* <div className="content-brake"></div>  */}
             {articleData.article.body_content &&
               renderContentInOrder(articleData.article.body_content, true)}
-
+            
             {showStreamingSection && (
               <div className="streaming-section">
                 <div className="streaming-content">
+                <div ref={messagesContainerRef} className="messages-container">
                   {chatHistory.map((chat, index) => (
                     <div key={index}>
                       {chat.query && (
@@ -1385,6 +1263,7 @@ const messagesContainerRef = useRef(null);
                       )}
                     </div>
                   ))}
+                  </div>
                   {/* This div will act as the reference for scrolling */}
                 </div>
               </div>
@@ -1493,6 +1372,27 @@ const messagesContainerRef = useRef(null);
               )}
             </div>
           </div>
+          {showScrollDownButton && (
+        <button
+          className="scroll-down-button"
+          onClick={scrollToBottom}
+          title="Scroll to bottom"
+          style={{
+            position: "fixed",
+            bottom: "10px",
+            right: "10px",
+            zIndex: 1000,
+            border: "none",
+            backgroundColor: "#0071bc",
+            color: "white",
+            borderRadius: "50%",
+            padding: "10px",
+            cursor: "pointer",
+          }}
+        >
+          <FontAwesomeIcon icon={faArrowDown} />
+        </button>
+      )}
         </div>
       ) : (
         ""

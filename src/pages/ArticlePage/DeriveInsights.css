@@ -292,10 +292,22 @@ li:hover #menu-dots {
   border-radius: 20px;
   border: 1px solid rgba(235, 235, 243, 1);
 }
-.derive-predefined-prompts {
+.flex-for-prompts {
   display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
+}
+.derive-predefined-prompts {
+  /* display: flex;
   gap: 20px;
-  padding: 5px 10px 10px 10px;
+  padding: 5px 10px 10px 10px; */
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  flex: 1;
 }
 
 .derive-predefined-prompts button {
