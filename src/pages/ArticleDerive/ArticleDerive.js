@@ -770,7 +770,7 @@ const ArticleDerive = ({
     <>
       <div
         className="derive-article-content"
-        style={{ width: widthIfLoggedIn, height: heightIfLoggedIn,border:!uploadedFile  && !chatHistory && "1px solid rgba(235, 235, 243, 1)" }}
+        style={{ width: widthIfLoggedIn, height: heightIfLoggedIn,border:!uploadedFile  && chatHistory.length==0 && "1px solid rgba(235, 235, 243, 1)" }}
         ref={contentRef}
         onMouseUp={handleMouseUpInsideContent}
       >
