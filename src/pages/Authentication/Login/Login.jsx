@@ -81,7 +81,7 @@ const Login = () => {
               profile_picture_url: userProfile.profile_picture_url,
             })
           );
-          showSuccessToast("Loged in Successfully");
+          showSuccessToast("Logged in Successfully");
 
           // Redirect based on role
           if (userProfile.role === "Admin") {
@@ -95,6 +95,8 @@ const Login = () => {
           showErrorToast("Login failed. Please check your credentials.");
         } else if (error.reason === "session_expired") {
           showErrorToast("Session expired. Please login again.");
+        } else if (error.reason === "access_denied") {
+          showErrorToast("User does not exists.");
         } else {
           console.error("Unknown error occurred:", error);
           navigate("/server-error");
@@ -107,7 +109,7 @@ const Login = () => {
     <>
       <div className="Login-Form">
         <Link to="/">
-        <img src={Logo} alt="logo" className="logo-in-login" />
+          <img src={Logo} alt="logo" className="logo-in-login" />
         </Link>
         <form className="form" onSubmit={handleSubmit}>
           <h2 style={{ margin: "0" }}>Login</h2>

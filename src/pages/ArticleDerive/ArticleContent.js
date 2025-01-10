@@ -63,7 +63,6 @@ const ArticleContent = ({
   const [autoScrollEnabled, setAutoScrollEnabled] = useState(false);
   const [showScrollDownButton, setShowScrollDownButton] = useState(false); // To show the down arrow button
 
-
   const [chatHistory, setChatHistory] = useState(() => {
     const storedHistory = localStorage.getItem("chatHistory");
     return storedHistory ? JSON.parse(storedHistory) : [];
@@ -270,24 +269,27 @@ const ArticleContent = ({
     console.log(`Layer X: ${event.layerX}, Layer Y: ${event.layerY}`);
   
     if (!isLoggedIn) return;
+
   
     if (!contentRef.current || !contentRef.current.contains(event.target)) {
       return;
     }
-  
+
     const selection = window.getSelection();
     if (selection.rangeCount > 0) {
       const range = selection.getRangeAt(0);
       const selectedText = selection.toString().trim();
-  
+
       if (selectedText) {
         const rects = range.getClientRects();
         const lastRect = rects[rects.length - 1];
         if (lastRect) {
           selectedTextRef.current = selectedText;
           popupPositionRef.current = {
+
             x: event.layerX, // Use Layer X
             y: event.layerY, // Use Layer Y
+
           };
   
           if (popupRef.current) {
@@ -309,10 +311,10 @@ const ArticleContent = ({
   };
     
   const handleCloseCollectionModal = () => {
-    setCollectionAction("existing"); // Reset to default state
-    setNewCollectionName(""); // Clear input
-    setSelectedCollection("favorites"); // Reset selection
-    setIsModalOpen(false); // Close modal
+    setCollectionAction("existing");
+    setNewCollectionName("");
+    setSelectedCollection("favorites");
+    setIsModalOpen(false);
   };
 
   const isArticleBookmarked = (idType) => {
@@ -508,7 +510,6 @@ const ArticleContent = ({
       }
     };
   });
-  
 
   const handleScroll = () => {
     if (!messagesContainerRef.current) return;
@@ -549,15 +550,16 @@ const ArticleContent = ({
     // Auto-scroll to the bottom if enabled
     if (autoScrollEnabled && endOfMessagesRef.current) {
       endOfMessagesRef.current.scrollIntoView({ behavior: "smooth" });
-      setAutoScrollEnabled(false)
+      setAutoScrollEnabled(false);
     }
+
   }, [chatHistory,autoScrollEnabled]);
 
   useEffect(() => {
     isStreamDoneRef.current = isStreamDone; // Sync the ref with the state
     console.log(`isStreamDone changed: ${isStreamDone}`);
   }, [isStreamDone]);
-  
+
   const handleAskClick = async () => {
     if (!query) {
       showErrorToast("Please enter a query");
@@ -602,6 +604,7 @@ const ArticleContent = ({
   
       const readStream = async () => {
         try {
+
           const delay = 1;
           let autoScrollSet = false;
   
@@ -613,13 +616,14 @@ const ArticleContent = ({
   
             if (value) {
               buffer += decoder.decode(value, { stream: true });
-  
+
               while (buffer.indexOf("{") !== -1 && buffer.indexOf("}") !== -1) {
                 let start = buffer.indexOf("{");
                 let end = buffer.indexOf("}", start);
                 if (start !== -1 && end !== -1) {
                   const jsonChunk = buffer.slice(start, end + 1);
                   buffer = buffer.slice(end + 1);
+
   
                   try {
                     const parsedData = JSON.parse(jsonChunk);
@@ -627,12 +631,14 @@ const ArticleContent = ({
                     if (parsedData.session_id) {
                       const articleSessions =
                         JSON.parse(sessionStorage.getItem("articleSessions")) || {};
+
                       articleSessions[sessionKey] = parsedData.session_id;
                       sessionStorage.setItem(
                         "articleSessions",
                         JSON.stringify(articleSessions)
                       );
                     }
+
   
                     const answer = parsedData.answer;
                     const words = answer.split("");
@@ -644,29 +650,33 @@ const ArticleContent = ({
                       setChatHistory((chatHistory) => {
                         const updatedChatHistory = [...chatHistory];
                         const lastEntryIndex = updatedChatHistory.length - 1;
-  
+
                         if (lastEntryIndex >= 0) {
                           updatedChatHistory[lastEntryIndex] = {
                             ...updatedChatHistory[lastEntryIndex],
                             response:
+
                               (updatedChatHistory[lastEntryIndex].response || "") +
+
                               "" +
                               word,
                             showDot: true,
                           };
                         }
+
   
                         return updatedChatHistory;
                       });
   
                       setResponse((prev) => prev + "" + word);
   
+
                       if (!autoScrollSet && endOfMessagesRef.current) {
                         setAutoScrollEnabled(true);
                         autoScrollSet = true;
                       }
                     }
-  
+
                     setChatHistory((chatHistory) => {
                       const updatedChatHistory = [...chatHistory];
                       const lastEntryIndex = updatedChatHistory.length - 1;
@@ -682,12 +692,13 @@ const ArticleContent = ({
               }
             }
           }
-  
+
           setRefreshSessions((prev) => !prev);
           setLoading(false);
           localStorage.setItem("chatHistory", JSON.stringify(chatHistory));
         } catch (error) {
           console.error("Error fetching or reading stream:", error);
+
   
           setChatHistory((chatHistory) => {
             const updatedChatHistory = [...chatHistory];
@@ -939,378 +950,393 @@ const ArticleContent = ({
           ref={contentRef}
           // style={{ height: heightIfLoggedIn }}
         >
-          <div className="article-content-inside"> 
-          <div className="article-title">
-            <div
-              style={{
-                display: "flex",
-                cursor: "pointer",
-                marginTop: "1%",
-                justifyContent: "space-between",
-              }}
-            >
-              <div style={{ display: "flex" }} onClick={handleBackClick}>
-                <img
-                  src={Arrow}
-                  style={{ width: "14px" }}
-                  alt="arrow-icon"
-                ></img>
-                <button className="back-button">Back</button>
-              </div>
-              {/* HI varun */}
-              {showConfirmPopup && (
-                <div className="Article-popup-overlay">
-                  <div className="Article-popup-content">
-                    <p className="Saving-note">Saving Note</p>
-                    <p id="confirming">Are you sure to leave without saving?</p>
-                    <div className="Article-confirm-buttons">
-                      <button
-                        className="overlay-cancel-button"
-                        onClick={handleCancelConfirm}
-                      >
-                        Cancel
-                      </button>
-                      <button className="overlay-ok-button" onClick={handleOk}>
-                        Leave
-                      </button>
+          <div className="article-content-inside">
+            <div className="article-title">
+              <div
+                style={{
+                  display: "flex",
+                  cursor: "pointer",
+                  marginTop: "1%",
+                  justifyContent: "space-between",
+                }}
+              >
+                <div style={{ display: "flex" }} onClick={handleBackClick}>
+                  <img
+                    src={Arrow}
+                    style={{ width: "14px" }}
+                    alt="arrow-icon"
+                  ></img>
+                  <button className="back-button">Back</button>
+                </div>
+                {/* HI varun */}
+                {showConfirmPopup && (
+                  <div className="Article-popup-overlay">
+                    <div className="Article-popup-content">
+                      <p className="Saving-note">Saving Note</p>
+                      <p id="confirming">
+                        Are you sure to leave without saving?
+                      </p>
+                      <div className="Article-confirm-buttons">
+                        <button
+                          className="overlay-cancel-button"
+                          onClick={handleCancelConfirm}
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          className="overlay-ok-button"
+                          onClick={handleOk}
+                        >
+                          Leave
+                        </button>
+                      </div>
                     </div>
+                  </div>
+                )}
+                <div
+                  className="Rate-Article"
+                  // style={{ display: displayIfLoggedIn }}
+                >
+                  <div>
+                    <span>Rate the article </span>
+                  </div>
+                  <div className="rate">
+                    {[5, 4, 3, 2, 1].map((value) => {
+                      const existingRating =
+                        Array.isArray(ratingsList) &&
+                        ratingsList.find((item) => item.uniqueId === uniqueId)
+                          ?.rating;
+
+                      return (
+                        <React.Fragment key={value}>
+                          <input
+                            type="radio"
+                            id={`star${value}-${uniqueId}`}
+                            name={`rate_${uniqueId}`}
+                            value={isLoggedIn ? value : ""}
+                            checked={isLoggedIn ? existingRating === value : ""}
+                            onChange={() =>
+                              !isLoggedIn
+                                ? ""
+                                : handleRatingChange(uniqueId, value)
+                            }
+                            // disabled={!!existingRating} // Disable if a rating already exists
+                          />
+                          <label
+                            style={{
+                              cursor: isLoggedIn ? "pointer" : "not-allowed",
+                              opacity:
+                                annotateData && annotateData.length > 0 ? 1 : 1, // Adjust visibility when disabled
+                            }}
+                            title={
+                              isLoggedIn ? "Rate the article" : displayMessage
+                            }
+                            htmlFor={`star${value}-${uniqueId}`}
+                            // title={`${value} star`}
+                          />
+                        </React.Fragment>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              <div className="ArticleTitle-Bookmark">
+                <p
+                  style={{
+                    marginTop: "0",
+                    marginBottom: "0",
+                    color: "#0071bc",
+                  }}
+                >
+                  {articleData.article.article_title}
+                </p>
+                <FontAwesomeIcon
+                  icon={
+                    isArticleBookmarked(id).isBookmarked
+                      ? solidBookmark
+                      : regularBookmark
+                  }
+                  size="l"
+                  style={{
+                    color: isArticleBookmarked(id).isBookmarked
+                      ? "#1B365D"
+                      : "black",
+                    cursor: isLoggedIn ? "pointer" : "not-allowed",
+                    opacity: isLoggedIn ? 1 : 0.5,
+                  }}
+                  onClick={() =>
+                    isLoggedIn
+                      ? handleBookmarkClick(
+                          id,
+                          articleData.article.article_title,
+                          source || "PubMed"
+                        )
+                      : ""
+                  }
+                  title={
+                    isLoggedIn
+                      ? isArticleBookmarked(id).isBookmarked
+                        ? "Bookmarked"
+                        : "Bookmark this article"
+                      : displayMessage
+                  }
+                />
+
+                {isModalOpen && (
+                  <div className="bookmark-modal-overlay">
+                    <button
+                      id="close-collection-modal"
+                      onClick={handleCloseCollectionModal}
+                    >
+                      <IoCloseOutline size={20} />
+                    </button>
+                    <div className="search-modal-content">
+                      <p>ADD TO COLLECTION</p>
+                      {/* Radio buttons for collection action */}
+                      <div className="radio-buttons">
+                        <div className="radio1">
+                          <input
+                            type="radio"
+                            id="collectionAction"
+                            value="existing"
+                            checked={collectionAction === "existing"}
+                            onChange={() => setCollectionAction("existing")}
+                          />
+                          <label>Add to Existing Collection</label>
+                        </div>
+                        <div className="radio2">
+                          <input
+                            type="radio"
+                            id="collectionAction"
+                            value="new"
+                            checked={collectionAction === "new"}
+                            onChange={() => setCollectionAction("new")}
+                          />
+                          <label>Create New Collection</label>
+                        </div>
+                      </div>
+
+                      {/* Logic for adding to existing collection */}
+                      {collectionAction === "existing" && (
+                        <div className="select-dropdown">
+                          <div className="choose-collection">
+                            <label htmlFor="">*Choose a collection</label>
+                            <select
+                              name="collections"
+                              id="collection-select"
+                              className="select-tag"
+                              style={{
+                                width: "35%",
+                                height: "5vh",
+                              }}
+                              value={selectedCollection}
+                              onChange={(e) =>
+                                setSelectedCollection(e.target.value)
+                              }
+                            >
+                              <option value="favorites" disabled selected>
+                                Favorites
+                              </option>
+                              {Object.keys(collections).map(
+                                (collectionName, index) => (
+                                  <option key={index} value={collectionName}>
+                                    {collectionName}
+                                  </option>
+                                )
+                              )}
+                            </select>
+                          </div>
+                          <div
+                            style={{
+                              display: "flex",
+                              gap: "20px",
+                              // marginTop: "15px",
+                            }}
+                          >
+                            <button
+                              onClick={() =>
+                                handleSaveToExisting(selectedCollection)
+                              }
+                              disabled={!selectedCollection}
+                            >
+                              Add
+                            </button>
+                            <button onClick={handleCloseCollectionModal}>
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                      {collectionAction === "new" && (
+                        <div>
+                          <input
+                            type="text"
+                            value={newCollectionName}
+                            onChange={(e) =>
+                              setNewCollectionName(e.target.value)
+                            }
+                            placeholder="New collection name"
+                          />
+                          <div
+                            style={{
+                              display: "flex",
+                              gap: "20px",
+                              marginTop: "15px",
+                            }}
+                          >
+                            <button
+                              onClick={handleCreateNewCollection}
+                              disabled={!newCollectionName}
+                            >
+                              Create
+                            </button>
+                            <button onClick={handleCloseCollectionModal}>
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div
+              className="meta"
+              style={{ height: !isLoggedIn ? "42" : undefined }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  fontSize: "14px",
+                  color: "grey",
+                  marginBottom: "5px",
+                }}
+              >
+                {articleData.article.publication_type ? (
+                  <span>
+                    Publication Type :
+                    <strong style={{ color: "black" }}>
+                      {articleData.article.publication_type.join(", ")}
+                    </strong>
+                  </span>
+                ) : (
+                  ""
+                )}
+                <span style={{ color: "#2b9247" }}>
+                  {(type === "bioRxiv_id" || type === "biorxiv") &&
+                    "BioRxiv ID"}
+                  {(type === "pmid" || type === "pubmed") && "PMID"}
+                  {(type === "plos_id" || type === "plos") && "PLOS ID"} : {id}
+                </span>{" "}
+              </div>
+
+              {articleData.article.abstract_content && (
+                <>
+                  <Typography
+                    variant="h4"
+                    gutterBottom
+                    style={{
+                      fontSize: "18px",
+                      marginBottom: "0 ",
+                      marginTop: "1%",
+                    }}
+                  >
+                    Abstract
+                  </Typography>
+                  <p>
+                    {renderContentInOrder(
+                      articleData.article.abstract_content,
+                      true
+                    )}
+                  </p>
+                </>
+              )}
+              {/* <div className="content-brake"></div>  */}
+              {articleData.article.body_content &&
+                renderContentInOrder(articleData.article.body_content, true)}
+
+              {showStreamingSection && (
+                <div className="streaming-section">
+                  <div className="streaming-content">
+                    <div
+                      ref={messagesContainerRef}
+                      className="messages-container"
+                    >
+                      {chatHistory.map((chat, index) => (
+                        <div key={index}>
+                          {chat.query && (
+                            <div className="query-asked">
+                              <span>
+                                {chat.query === "Summarize this article"
+                                  ? "Summarize"
+                                  : chat.query ===
+                                    "what can we conclude form this article"
+                                  ? "Conclusion"
+                                  : chat.query ===
+                                    "what are the key highlights from this article"
+                                  ? "Key Highlights"
+                                  : chat.query}
+                              </span>
+                            </div>
+                          )}
+
+                          {chat.response && (
+                            <div
+                              className="response"
+                              style={{ textAlign: "left" }}
+                            >
+                              <>
+                                <span>
+                                  <ReactMarkdown>{chat.response}</ReactMarkdown>
+                                </span>
+                                <div ref={endOfMessagesRef} />
+                              </>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                    {/* This div will act as the reference for scrolling */}
                   </div>
                 </div>
               )}
               <div
-                className="Rate-Article"
-                // style={{ display: displayIfLoggedIn }}
-              >
-                <div>
-                  <span>Rate the article </span>
-                </div>
-                <div className="rate">
-                  {[5, 4, 3, 2, 1].map((value) => {
-                    const existingRating =
-                      Array.isArray(ratingsList) &&
-                      ratingsList.find((item) => item.uniqueId === uniqueId)
-                        ?.rating;
-
-                    return (
-                      <React.Fragment key={value}>
-                        <input
-                          type="radio"
-                          id={`star${value}-${uniqueId}`}
-                          name={`rate_${uniqueId}`}
-                          value={isLoggedIn ? value : ""}
-                          checked={isLoggedIn ? existingRating === value : ""}
-                          onChange={() =>
-                            !isLoggedIn
-                              ? ""
-                              : handleRatingChange(uniqueId, value)
-                          }
-                          // disabled={!!existingRating} // Disable if a rating already exists
-                        />
-                        <label
-                          style={{
-                            cursor: isLoggedIn ? "pointer" : "not-allowed",
-                            opacity:
-                              annotateData && annotateData.length > 0 ? 1 : 1, // Adjust visibility when disabled
-                          }}
-                          title={
-                            isLoggedIn ? "Rate the article" : displayMessage
-                          }
-                          htmlFor={`star${value}-${uniqueId}`}
-                          // title={`${value} star`}
-                        />
-                      </React.Fragment>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-
-            <div className="ArticleTitle-Bookmark">
-              <p
+                ref={popupRef}
+                className="popup-button"
+                // className="Popup"
                 style={{
-                  marginTop: "0",
-                  marginBottom: "0",
-                  color: "#0071bc",
+                  position: "absolute",
+                  display: "none", // Initially hidden
+                  backgroundColor: "#afa7a7",
+                  // padding: "5px",
+                  color: "white",
+                  borderRadius: "5px",
+                  cursor: "pointer",
                 }}
+                //onClick={handleSaveToNote}
               >
-                {articleData.article.article_title}
-              </p>
-              <FontAwesomeIcon
-                icon={
-                  isArticleBookmarked(id).isBookmarked
-                    ? solidBookmark
-                    : regularBookmark
-                }
-                size="l"
-                style={{
-                  color: isArticleBookmarked(id).isBookmarked
-                    ? "#1B365D"
-                    : "black",
-                  cursor: isLoggedIn ? "pointer" : "not-allowed",
-                  opacity: isLoggedIn ? 1 : 0.5,
-                }}
-                onClick={() =>
-                  isLoggedIn
-                    ? handleBookmarkClick(
-                        id,
-                        articleData.article.article_title,
-                        source || "PubMed"
-                      )
-                    : ""
-                }
-                title={
-                  isLoggedIn
-                    ? isArticleBookmarked(id).isBookmarked
-                      ? "Bookmarked"
-                      : "Bookmark this article"
-                    : displayMessage
-                }
-              />
-
-              {isModalOpen && (
-                <div className="bookmark-modal-overlay">
-                  <button
-                    id="close-collection-modal"
-                    onClick={handleCloseCollectionModal}
-                  >
-                    <IoCloseOutline size={20} />
-                  </button>
-                  <div className="search-modal-content">
-                    <p>ADD TO COLLECTION</p>
-                    {/* Radio buttons for collection action */}
-                    <div className="radio-buttons">
-                      <div className="radio1">
-                        <input
-                          type="radio"
-                          id="collectionAction"
-                          value="existing"
-                          checked={collectionAction === "existing"}
-                          onChange={() => setCollectionAction("existing")}
-                        />
-                        <label>Add to Existing Collection</label>
-                      </div>
-                      <div className="radio2">
-                        <input
-                          type="radio"
-                          id="collectionAction"
-                          value="new"
-                          checked={collectionAction === "new"}
-                          onChange={() => setCollectionAction("new")}
-                        />
-                        <label>Create New Collection</label>
-                      </div>
-                    </div>
-
-                    {/* Logic for adding to existing collection */}
-                    {collectionAction === "existing" && (
-                      <div className="select-dropdown">
-                        <div className="choose-collection">
-                          <label htmlFor="">*Choose a collection</label>
-                          <select
-                            name="collections"
-                            id="collection-select"
-                            className="select-tag"
-                            style={{
-                              width: "35%",
-                              height: "5vh",
-                            }}
-                            value={selectedCollection}
-                            onChange={(e) =>
-                              setSelectedCollection(e.target.value)
-                            }
-                          >
-                            <option value="favorites" disabled selected>
-                              Favorites
-                            </option>
-                            {Object.keys(collections).map(
-                              (collectionName, index) => (
-                                <option key={index} value={collectionName}>
-                                  {collectionName}
-                                </option>
-                              )
-                            )}
-                          </select>
-                        </div>
-                        <div
-                          style={{
-                            display: "flex",
-                            gap: "20px",
-                            // marginTop: "15px",
-                          }}
-                        >
-                          <button
-                            onClick={() =>
-                              handleSaveToExisting(selectedCollection)
-                            }
-                            disabled={!selectedCollection}
-                          >
-                            Add
-                          </button>
-                          <button onClick={handleCloseCollectionModal}>
-                            Cancel
-                          </button>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Logic for creating a new collection */}
-                    {collectionAction === "new" && (
-                      <div>
-                        <input
-                          type="text"
-                          value={newCollectionName}
-                          onChange={(e) => setNewCollectionName(e.target.value)}
-                          placeholder="New collection name"
-                        />
-                        <div
-                          style={{
-                            display: "flex",
-                            gap: "20px",
-                            marginTop: "15px",
-                          }}
-                        >
-                          <button
-                            onClick={handleCreateNewCollection}
-                            disabled={!newCollectionName}
-                          >
-                            Create
-                          </button>
-                          <button onClick={handleCloseCollectionModal}>
-                            Cancel
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div
-            className="meta"
-            style={{ height: !isLoggedIn ? "42" : undefined }}
-          >
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                fontSize: "14px",
-                color: "grey",
-                marginBottom: "5px",
-              }}
-            >
-              {articleData.article.publication_type ? (
-                <span>
-                  Publication Type :
-                  <strong style={{ color: "black" }}>
-                    {articleData.article.publication_type.join(", ")}
-                  </strong>
-                </span>
-              ) : (
-                ""
-              )}
-              <span style={{ color: "#2b9247" }}>
-                {(type === "bioRxiv_id" || type === "biorxiv") && "BioRxiv ID"}
-                {(type === "pmid" || type === "pubmed") && "PMID"}
-                {(type === "plos_id" || type === "plos") && "PLOS ID"} : {id}
-              </span>{" "}
-            </div>
-
-            {articleData.article.abstract_content && (
-              <>
-                <Typography
-                  variant="h4"
-                  gutterBottom
-                  style={{
-                    fontSize: "18px",
-                    marginBottom: "0 ",
-                    marginTop: "1%",
-                  }}
+                <button
+                  onClick={handleSaveToNote}
+                  className="Popup-buttons"
+                  title="Send to Notes"
                 >
-                  Abstract
-                </Typography>
-                <p>
-                  {renderContentInOrder(
-                    articleData.article.abstract_content,
-                    true
-                  )}
-                </p>
-              </>
-            )}
-            {/* <div className="content-brake"></div>  */}
-            {articleData.article.body_content &&
-              renderContentInOrder(articleData.article.body_content, true)}
-            
-            {showStreamingSection && (
-              <div className="streaming-section">
-                <div className="streaming-content">
-                <div ref={messagesContainerRef} className="messages-container">
-                  {chatHistory.map((chat, index) => (
-                    <div key={index}>
-                      {chat.query && (
-                        <div className="query-asked">
-                          <span>
-                            {chat.query === "Summarize this article"
-                              ? "Summarize"
-                              : chat.query ===
-                                "what can we conclude form this article"
-                              ? "Conclusion"
-                              : chat.query ===
-                                "what are the key highlights from this article"
-                              ? "Key Highlights"
-                              : chat.query}
-                          </span>
-                        </div>
-                      )}
-
-                      {chat.response && (
-                        <div className="response" style={{ textAlign: "left" }}>
-                          <>
-                            <span>
-                              <ReactMarkdown>{chat.response}</ReactMarkdown>
-                            </span>
-                            <div ref={endOfMessagesRef} />
-                          </>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                  </div>
-                  {/* This div will act as the reference for scrolling */}
-                </div>
+                  <span className="send-to-notes">Send to notes</span>
+                  <LiaTelegramPlane size={20} color="black" />
+                </button>
               </div>
-            )}
-            <div
-              ref={popupRef}
-              className="popup-button"
-              // className="Popup"
-              style={{
-                position: "absolute",
-                display: "none", // Initially hidden
-                backgroundColor: "#afa7a7",
-                // padding: "5px",
-                color: "white",
-                borderRadius: "5px",
-                cursor: "pointer",
-              }}
-              //onClick={handleSaveToNote}
-            >
-              <button
-                onClick={handleSaveToNote}
-                className="Popup-buttons"
-                title="Send to Notes"
-              >
-                <span className="send-to-notes">Send to notes</span>
-                <LiaTelegramPlane size={20} color="black" />
-              </button>
             </div>
-          </div>
           </div>
           <div
             className="article-chat-query"
             style={{
-              width: openAnnotate || openNotes ? contentWidth : `${parseInt(contentWidth) - 2}px`,
+              width:
+                openAnnotate || openNotes
+                  ? contentWidth
+                  : `${parseInt(contentWidth) - 2}px`,
               cursor: isLoggedIn ? "" : "not-allowed",
               opacity: isLoggedIn ? 1 : 0.5,
             }}
@@ -1386,26 +1412,26 @@ const ArticleContent = ({
             </div>
           </div>
           {showScrollDownButton && (
-        <button
-          className="scroll-down-button"
-          onClick={scrollToBottom}
-          title="Scroll to bottom"
-          style={{
-            position: "fixed",
-            bottom: "10px",
-            right: "10px",
-            zIndex: 1000,
-            border: "none",
-            backgroundColor: "#0071bc",
-            color: "white",
-            borderRadius: "50%",
-            padding: "10px",
-            cursor: "pointer",
-          }}
-        >
-          <FontAwesomeIcon icon={faArrowDown} />
-        </button>
-      )}
+            <button
+              className="scroll-down-button"
+              onClick={scrollToBottom}
+              title="Scroll to bottom"
+              style={{
+                position: "fixed",
+                bottom: "10px",
+                right: "10px",
+                zIndex: 1000,
+                border: "none",
+                backgroundColor: "#0071bc",
+                color: "white",
+                borderRadius: "50%",
+                padding: "10px",
+                cursor: "pointer",
+              }}
+            >
+              <FontAwesomeIcon icon={faArrowDown} />
+            </button>
+          )}
         </div>
       ) : (
         ""

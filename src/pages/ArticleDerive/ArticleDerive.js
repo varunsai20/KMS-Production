@@ -666,7 +666,7 @@ const ArticleDerive = ({
     } else {
       setShowStreamingSection(false); // Default to false if no stored chat history
     }
-  }, [location.state]); 
+  }, [location.state]);
 
   useEffect(() => {
     const storedSessionId = localStorage.getItem("session_id");
@@ -785,61 +785,63 @@ const ArticleDerive = ({
             margin: "auto",
           }}
         >
-          <div className="derive-predefined-prompts">
-            <button
-              onClick={() => handlePromptWithFile("Summarize this article")}
-              disabled={!isPromptEnabled}
-              style={{
-                backgroundColor: isPromptEnabled ? "#c4dad2" : "#cccccc",
-                color: isPromptEnabled ? "#000000" : "#666666",
-              }}
-            >
-              Summarize
-            </button>
-            <button
-              onClick={() =>
-                handlePromptWithFile("What can we conclude from this article")
-              }
-              disabled={!isPromptEnabled}
-              style={{
-                backgroundColor: isPromptEnabled ? "#c4dad2" : "#cccccc",
-                color: isPromptEnabled ? "#000000" : "#666666",
-              }}
-            >
-              Conclusion
-            </button>
-            <button
-              onClick={() =>
-                handlePromptWithFile(
-                  "What are the key highlights from this article"
-                )
-              }
-              disabled={!isPromptEnabled}
-              style={{
-                backgroundColor: isPromptEnabled ? "#c4dad2" : "#cccccc",
-                color: isPromptEnabled ? "#000000" : "#666666",
-              }}
-            >
-              Key Highlights
-            </button>
-          </div>
-          <div className="file-palcement">
-            {uploadedFile && (
-              <div className="file-showing">
-                <span className="uploaded-file-indicator">
-                  {getFileIcon(uploadedFile.name)}
-                  <span style={{ width: "max-content" }}>
-                    {uploadedFile.name}
+          <div className="prompts">
+            <div className="derive-predefined-prompts">
+              <button
+                onClick={() => handlePromptWithFile("Summarize this article")}
+                disabled={!isPromptEnabled}
+                style={{
+                  backgroundColor: isPromptEnabled ? "#c4dad2" : "#cccccc",
+                  color: isPromptEnabled ? "#000000" : "#666666",
+                }}
+              >
+                Summarize
+              </button>
+              <button
+                onClick={() =>
+                  handlePromptWithFile("What can we conclude from this article")
+                }
+                disabled={!isPromptEnabled}
+                style={{
+                  backgroundColor: isPromptEnabled ? "#c4dad2" : "#cccccc",
+                  color: isPromptEnabled ? "#000000" : "#666666",
+                }}
+              >
+                Conclusion
+              </button>
+              <button
+                onClick={() =>
+                  handlePromptWithFile(
+                    "What are the key highlights from this article"
+                  )
+                }
+                disabled={!isPromptEnabled}
+                style={{
+                  backgroundColor: isPromptEnabled ? "#c4dad2" : "#cccccc",
+                  color: isPromptEnabled ? "#000000" : "#666666",
+                }}
+              >
+                Key Highlights
+              </button>
+            </div>
+            <div className="file-palcement">
+              {uploadedFile && (
+                <div className="file-showing">
+                  <span className="uploaded-file-indicator">
+                    {getFileIcon(uploadedFile.name)}
+                    <span style={{ width: "max-content" }}>
+                      {uploadedFile.name.slice(0, 10)}...
+                    </span>
+                    <FontAwesomeIcon
+                      icon={faTimes}
+                      onClick={removeUploadedFile}
+                      className="cancel-file"
+                      color="black"
+                    />
                   </span>
-                  <FontAwesomeIcon
-                    icon={faTimes}
-                    onClick={removeUploadedFile}
-                    className="cancel-file"
-                    color="black"
-                  />
-                </span>
-              </div>
-            )}
+                </div>
+              )}
+            </div>
           </div>
           <div className="derive-stream-input">
             <label htmlFor="file-upload" className="custom-file-upload">

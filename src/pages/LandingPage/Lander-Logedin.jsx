@@ -202,6 +202,32 @@ const Lander = () => {
       setPosition({ x: bottomRightX, y: bottomRightY });
     }
   }, [isLanderNotesOpen, dimensions.height, dimensions.width]);
+  useEffect(() => {
+    const handleResize = () => {
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+
+      // Ensure the notes stay within the viewport bounds
+      const adjustedX = Math.min(position.x, viewportWidth - dimensions.width);
+      const adjustedY = Math.min(
+        position.y,
+        viewportHeight - dimensions.height
+      );
+
+      setPosition({
+        x: Math.max(0, adjustedX), // Ensure x is not negative
+        y: Math.max(0, adjustedY), // Ensure y is not negative
+      });
+    };
+
+    // Attach the resize event listener
+    window.addEventListener("resize", handleResize);
+
+    // Cleanup the event listener on component unmount
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, [position, dimensions]);
 
   return (
     <div className="Landing-Container">
@@ -214,7 +240,7 @@ const Lander = () => {
           <img src={Logo} alt="inferAI-logo" className="inferai-logo" />
           <div className="search-bar-div" style={{ position: "relative" }}>
             <SearchBar
-              className="Landingpage-SearchBar" 
+              className="Landingpage-SearchBar"
               landingWidth="80%"
               zIndex="0"
               setTermMissing={setTermMissing}
@@ -229,7 +255,10 @@ const Lander = () => {
                 </div>
               </div>
             )} */}
-            <SearchTermMissing termMissing={termMissing} setTermMissing={setTermMissing}/>
+            <SearchTermMissing
+              termMissing={termMissing}
+              setTermMissing={setTermMissing}
+            />
           </div>
           <p className="Landing-Welcome-desc">
             <span className="highlight-context-infer-out">Infer</span>

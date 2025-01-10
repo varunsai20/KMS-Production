@@ -53,7 +53,7 @@
   outline: none;
   font-size: 14px;
   font-family: manrope;
-  border-bottom: 1px solid #ebebf3;
+  border: 1px solid #ebebf3;
 }
 
 .edit-note__details {
