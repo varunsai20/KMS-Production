@@ -26,9 +26,13 @@ const ArticleContent = ({
   openNotes,
   setOpenNotes,
   setOpenAnnotate,
+  isStreaming,
   setSavedText,
   annotateLoading,
   setAnnotateLoading,
+  isStreamDone,
+  setIsStreamDone,
+  isStreamDoneRef
 }) => {
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
   const deriveInsights = useSelector((state) => state.deriveInsights?.active);
@@ -144,7 +148,7 @@ const ArticleContent = ({
   const selectedTextRef = useRef("");
   const popupRef = useRef(null);
   const popupPositionRef = useRef({ x: 0, y: 0 });
-
+  
   useEffect(() => {
     if (!openNotes) {
       setSavedText(""); // Reset savedText when notes are closed
@@ -262,25 +266,32 @@ const ArticleContent = ({
     }
   };
   const handleMouseUp = (event) => {
+    console.log(`Layer X: ${event.layerX}, Layer Y: ${event.layerY}`);
+  
     if (!isLoggedIn) return;
-    console.log("Mouse up event:", popupRef);
+
+  
     if (!contentRef.current || !contentRef.current.contains(event.target)) {
       return;
     }
+
     const selection = window.getSelection();
     if (selection.rangeCount > 0) {
       const range = selection.getRangeAt(0);
       const selectedText = selection.toString().trim();
+
       if (selectedText) {
         const rects = range.getClientRects();
         const lastRect = rects[rects.length - 1];
         if (lastRect) {
           selectedTextRef.current = selectedText;
           popupPositionRef.current = {
-            x: event.layerX,
-            y: event.layerY,
-          };
 
+            x: event.layerX, // Use Layer X
+            y: event.layerY, // Use Layer Y
+
+          };
+  
           if (popupRef.current) {
             popupRef.current.style.left = `${popupPositionRef.current.x}px`;
             popupRef.current.style.top = `${popupPositionRef.current.y + 5}px`;
@@ -298,6 +309,7 @@ const ArticleContent = ({
       }
     }
   };
+    
   const handleCloseCollectionModal = () => {
     setCollectionAction("existing");
     setNewCollectionName("");
@@ -540,33 +552,38 @@ const ArticleContent = ({
       endOfMessagesRef.current.scrollIntoView({ behavior: "smooth" });
       setAutoScrollEnabled(false);
     }
-  }, [chatHistory, autoScrollEnabled]);
-  console.log(autoScrollEnabled);
+
+  }, [chatHistory,autoScrollEnabled]);
+
+  useEffect(() => {
+    isStreamDoneRef.current = isStreamDone; // Sync the ref with the state
+    console.log(`isStreamDone changed: ${isStreamDone}`);
+  }, [isStreamDone]);
+
   const handleAskClick = async () => {
     if (!query) {
       showErrorToast("Please enter a query");
       return;
     }
-
+  
     setShowStreamingSection(true);
     setLoading(true);
-
+  
     const newChatEntry = { query, response: "", showDot: true };
     setChatHistory((prevChatHistory) => [...prevChatHistory, newChatEntry]);
-
-    // Create a unique key for the session based on the source and article id
+  
     const sessionKey = `${source}_${id}`;
     const storedSessionId =
       JSON.parse(sessionStorage.getItem("articleSessions"))?.[sessionKey] || "";
-
+  
     const bodyData = JSON.stringify({
       question: query,
       user_id: user_id,
-      session_id: storedSessionId || undefined, // Use stored session_id if available
+      session_id: storedSessionId || undefined,
       source: source,
       article_id: Number(id),
     });
-
+  
     try {
       const response = await fetch(
         "https://inferai.ai/api/view_article/generateanswer",
@@ -574,28 +591,29 @@ const ArticleContent = ({
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`, // Add the Bearer token here
+            Authorization: `Bearer ${token}`,
           },
           body: bodyData,
         }
       );
-      // console.log("API Response:", response);
-
+  
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let buffer = "";
       setQuery("");
-
+  
       const readStream = async () => {
         try {
-          let done = false;
-          const delay = 1; // Delay between words
-          let autoScrollSet = false; // Track if auto-scroll was set
 
-          while (!done) {
+          const delay = 1;
+          let autoScrollSet = false;
+  
+          while (true) {
+            if (isStreamDoneRef.current) break; // Check the ref value
+  
             const { value, done: streamDone } = await reader.read();
-            done = streamDone;
-
+            if (streamDone) break;
+  
             if (value) {
               buffer += decoder.decode(value, { stream: true });
 
@@ -606,13 +624,14 @@ const ArticleContent = ({
                   const jsonChunk = buffer.slice(start, end + 1);
                   buffer = buffer.slice(end + 1);
 
+  
                   try {
                     const parsedData = JSON.parse(jsonChunk);
-
+  
                     if (parsedData.session_id) {
                       const articleSessions =
-                        JSON.parse(sessionStorage.getItem("articleSessions")) ||
-                        {};
+                        JSON.parse(sessionStorage.getItem("articleSessions")) || {};
+
                       articleSessions[sessionKey] = parsedData.session_id;
                       sessionStorage.setItem(
                         "articleSessions",
@@ -620,14 +639,14 @@ const ArticleContent = ({
                       );
                     }
 
+  
                     const answer = parsedData.answer;
                     const words = answer.split("");
-
+  
                     for (const word of words) {
-                      await new Promise((resolve) =>
-                        setTimeout(resolve, delay)
-                      );
-
+                      if (isStreamDoneRef.current) break; // Check the ref value
+                      await new Promise((resolve) => setTimeout(resolve, delay));
+  
                       setChatHistory((chatHistory) => {
                         const updatedChatHistory = [...chatHistory];
                         const lastEntryIndex = updatedChatHistory.length - 1;
@@ -636,25 +655,28 @@ const ArticleContent = ({
                           updatedChatHistory[lastEntryIndex] = {
                             ...updatedChatHistory[lastEntryIndex],
                             response:
-                              (updatedChatHistory[lastEntryIndex].response ||
-                                "") +
+
+                              (updatedChatHistory[lastEntryIndex].response || "") +
+
                               "" +
                               word,
                             showDot: true,
                           };
                         }
 
+  
                         return updatedChatHistory;
                       });
-
+  
                       setResponse((prev) => prev + "" + word);
+  
 
-                      // Set auto-scroll enabled only once
                       if (!autoScrollSet && endOfMessagesRef.current) {
                         setAutoScrollEnabled(true);
                         autoScrollSet = true;
                       }
                     }
+
                     setChatHistory((chatHistory) => {
                       const updatedChatHistory = [...chatHistory];
                       const lastEntryIndex = updatedChatHistory.length - 1;
@@ -670,32 +692,33 @@ const ArticleContent = ({
               }
             }
           }
+
           setRefreshSessions((prev) => !prev);
           setLoading(false);
           localStorage.setItem("chatHistory", JSON.stringify(chatHistory));
         } catch (error) {
           console.error("Error fetching or reading stream:", error);
 
+  
           setChatHistory((chatHistory) => {
             const updatedChatHistory = [...chatHistory];
             const lastEntryIndex = updatedChatHistory.length - 1;
-
+  
             if (lastEntryIndex >= 0) {
               updatedChatHistory[lastEntryIndex] = {
                 ...updatedChatHistory[lastEntryIndex],
-                response:
-                  "There is some error. Please try again after some time.",
+                response: "There is some error. Please try again after some time.",
                 showDot: false,
               };
             }
-
+  
             return updatedChatHistory;
           });
-
+  
           setLoading(false);
         }
       };
-
+  
       readStream();
     } catch (error) {
       console.error("Error fetching or reading stream:", error);

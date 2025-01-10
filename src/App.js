@@ -76,11 +76,11 @@ function AppRoutes() {
         <Route
           path="/admin"
           element={
-            <ProtectedRoute>
+
               <ProtectedRoute>
                 <Admin />
               </ProtectedRoute>
-            </ProtectedRoute>
+
           }
         >
           <Route path="users" element={<Researchers />} />

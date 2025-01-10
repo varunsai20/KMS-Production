@@ -138,6 +138,13 @@
   color: green;
 }
 
+.dropdown-item.delete.suspend {
+  color: red;
+}
+
+.dropdown-item.delete.activate {
+  color: green;
+}
 .dropdown-item.delete:hover {
   background-color: #ffe5e5;
 }
