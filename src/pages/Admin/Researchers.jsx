@@ -277,6 +277,7 @@ const Researchers = () => {
                         >
                           {user.user_status.toLowerCase() === "active" ? "Suspend" : "Activate"}
                         </li>
+
                         <li
                           className="dropdown-item delete"
                           onClick={(e) => {

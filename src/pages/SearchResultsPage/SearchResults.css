@@ -3,6 +3,7 @@
   top: 0;
   z-index: 1;
   background: white;
+  width: 100%;
 }
 .search-header {
   width: 93.61%;
@@ -1247,7 +1248,7 @@ button input {
   .inferai-logo {
     width: 16vw;
   }
-  .SearchHeader-Logo{
+  .SearchHeader-Logo {
     width: 100%;
   }
 }

@@ -4,6 +4,7 @@ import React, {
   useRef,
   useCallback,
   useMemo,
+  
 } from "react";
 import { useSelector } from "react-redux";
 import { useParams, useLocation } from "react-router-dom";
@@ -39,7 +40,11 @@ const ArticleDerive = ({
   setUploadedFile,
   isCitationsOpen,
   setIsCitationsOpen,
+  isStreamDone,
+  setIsStreamDone,
+  isStreamDoneRef
 }) => {
+
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
   const deriveInsights = useSelector((state) => state.deriveInsights?.active);
   const displayIfLoggedIn = isLoggedIn ? null : "none";
@@ -456,131 +461,143 @@ const ArticleDerive = ({
   const storedSessionId =
     localStorage.getItem("sessionId") || localStorage.getItem("session_id");
 
-  const handleDeriveClick = useCallback(async () => {
-    if (!query && !uploadedFile) {
-      showErrorToast("Please enter a query or upload a file");
-      return;
-    }
-    removeUploadedFile();
-    setQuery("");
-    setLoading(true);
-    const newChatEntry = {
-      query,
-      file: uploadedFile,
-      response: "",
-      showDot: true,
-    };
-    setChatHistory((prevChatHistory) => [...prevChatHistory, newChatEntry]);
 
-    try {
-      let url = "https://inferai.ai/api/insights/upload";
-      const headers = {
-        Authorization: `Bearer ${token}`,
-        // "ngrok-skip-browser-warning": true,
+    useEffect(() => {
+      isStreamDoneRef.current = isStreamDone; // Sync ref with state
+      console.log(`isStreamDone changed: ${isStreamDone}`);
+    }, [isStreamDone]);
+    
+    const handleDeriveClick = useCallback(async () => {
+      if (!query && !uploadedFile) {
+        showErrorToast("Please enter a query or upload a file");
+        return;
+      }
+      setIsStreamDone(false)
+      removeUploadedFile();
+      setQuery("");
+      setLoading(true);
+    
+      const newChatEntry = {
+        query,
+        file: uploadedFile,
+        response: "",
+        showDot: true,
       };
-
-      // Initialize FormData
-      const formData = new FormData();
-      formData.append("question", query);
-
-      if (storedSessionId) {
-        formData.append("user_id", user.user_id);
-        formData.append("session_id", storedSessionId);
-      } else {
-        formData.append("userid", user.user_id);
-      }
-
-      if (uploadedFile) {
-        formData.append("file", uploadedFile);
-      }
-
-      if (storedSessionId) {
-        url = "https://inferai.ai/api/insights/ask";
-      }
-
-      const response = await fetch(url, {
-        method: "POST",
-        headers: headers,
-        body: formData,
-      });
-
-      if (!response.ok) throw new Error("Network response was not ok");
-
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = "";
-      let apiResponse = "";
-
-      const readStream = async () => {
-        let done = false;
-        const delay = 1; // Delay between words
-
-        while (!done) {
-          const { value, done: streamDone } = await reader.read();
-          done = streamDone;
-
-          if (value) {
-            buffer += decoder.decode(value, { stream: true });
-
-            while (buffer.indexOf("{") !== -1 && buffer.indexOf("}") !== -1) {
-              let start = buffer.indexOf("{");
-              let end = buffer.indexOf("}", start);
-              if (start !== -1 && end !== -1) {
-                const jsonChunk = buffer.slice(start, end + 1);
-                buffer = buffer.slice(end + 1);
-
-                try {
-                  const parsedData = JSON.parse(jsonChunk);
-                  const answer = parsedData.answer;
-                  const words = answer.split("");
-
-                  for (const word of words) {
-                    await new Promise((resolve) => setTimeout(resolve, delay));
-
-                    setChatHistory((chatHistory) => {
-                      const updatedChatHistory = [...chatHistory];
-                      const lastEntryIndex = updatedChatHistory.length - 1;
-
-                      if (lastEntryIndex >= 0) {
-                        updatedChatHistory[lastEntryIndex] = {
-                          ...updatedChatHistory[lastEntryIndex],
-                          response:
-                            (updatedChatHistory[lastEntryIndex].response ||
-                              "") +
-                            "" +
-                            word,
-                          showDot: true,
-                        };
+      setChatHistory((prevChatHistory) => [...prevChatHistory, newChatEntry]);
+    
+      try {
+        let url = "https://inferai.ai/api/insights/upload";
+        const headers = {
+          Authorization: `Bearer ${token}`,
+        };
+    
+        const formData = new FormData();
+        formData.append("question", query);
+    
+        if (storedSessionId) {
+          formData.append("user_id", user.user_id);
+          formData.append("session_id", storedSessionId);
+        } else {
+          formData.append("userid", user.user_id);
+        }
+    
+        if (uploadedFile) {
+          formData.append("file", uploadedFile);
+        }
+    
+        if (storedSessionId) {
+          url = "https://inferai.ai/api/insights/ask";
+        }
+    
+        const response = await fetch(url, {
+          method: "POST",
+          headers: headers,
+          body: formData,
+        });
+    
+        if (!response.ok) throw new Error("Network response was not ok");
+    
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+    
+        const readStream = async () => {
+          try {
+            let done = false;
+            const delay = 1;
+    
+            while (!done) {
+              if (isStreamDoneRef.current) break; // Stop streaming if flagged
+              const { value, done: streamDone } = await reader.read();
+              done = streamDone;
+    
+              if (value) {
+                buffer += decoder.decode(value, { stream: true });
+    
+                while (buffer.indexOf("{") !== -1 && buffer.indexOf("}") !== -1) {
+                  let start = buffer.indexOf("{");
+                  let end = buffer.indexOf("}", start);
+                  if (start !== -1 && end !== -1) {
+                    const jsonChunk = buffer.slice(start, end + 1);
+                    buffer = buffer.slice(end + 1);
+    
+                    try {
+                      const parsedData = JSON.parse(jsonChunk);
+                      const answer = parsedData.answer;
+                      const words = answer.split("");
+    
+                      for (const word of words) {
+                        if (isStreamDoneRef.current) break; // Stop streaming if flagged
+                        await new Promise((resolve) => setTimeout(resolve, delay));
+    
+                        setChatHistory((chatHistory) => {
+                          const updatedChatHistory = [...chatHistory];
+                          const lastEntryIndex = updatedChatHistory.length - 1;
+    
+                          if (lastEntryIndex >= 0) {
+                            updatedChatHistory[lastEntryIndex] = {
+                              ...updatedChatHistory[lastEntryIndex],
+                              response:
+                                (updatedChatHistory[lastEntryIndex].response || "") +
+                                "" +
+                                word,
+                              showDot: true,
+                            };
+                          }
+    
+                          return updatedChatHistory;
+                        });
+    
+                        if (endOfMessagesRef.current) {
+                          endOfMessagesRef.current.scrollIntoView({
+                            behavior: "smooth",
+                          });
+                        }
                       }
-
-                      return updatedChatHistory;
-                    });
-
-                    if (endOfMessagesRef.current) {
-                      endOfMessagesRef.current.scrollIntoView({
-                        behavior: "smooth",
-                      });
+                    } catch (error) {
+                      console.error("Error parsing JSON chunk:", error);
                     }
                   }
-                } catch (error) {
-                  console.error("Error parsing JSON chunk:", error);
                 }
               }
             }
+    
+            setRefreshSessions((prev) => !prev);
+            setLoading(false);
+            localStorage.setItem("chatHistory", JSON.stringify(chatHistory));
+          } catch (error) {
+            console.error("Error reading stream:", error);
+            setLoading(false);
           }
-        }
-
-        setRefreshSessions((prev) => !prev);
+        };
+    
+        readStream();
+      } catch (error) {
+        console.error("Error during fetch or reading stream:", error);
         setLoading(false);
-        localStorage.setItem("chatHistory", JSON.stringify(chatHistory));
-      };
-
-      readStream();
-    } catch (error) {
-      console.error("Error fetching or reading stream:", error);
-      setLoading(false);
-    }
-  }, [query, token, storedSessionId, user.user_id]);
+      }
+    }, [query, token, storedSessionId, user.user_id, uploadedFile]);
+    
 
   const handlePromptWithFile = (prompt) => {
     if (!uploadedFile && !storedSessionId) return; // Ensure either a file is selected or a session exists
@@ -649,7 +666,7 @@ const ArticleDerive = ({
     } else {
       setShowStreamingSection(false); // Default to false if no stored chat history
     }
-  }, [location.state]); 
+  }, [location.state]);
 
   useEffect(() => {
     const storedSessionId = localStorage.getItem("session_id");
@@ -753,126 +770,16 @@ const ArticleDerive = ({
     <>
       <div
         className="derive-article-content"
-        style={{ width: widthIfLoggedIn, height: heightIfLoggedIn }}
+        style={{ width: widthIfLoggedIn, height: heightIfLoggedIn,border:!uploadedFile  && chatHistory.length==0 && "1px solid rgba(235, 235, 243, 1)" }}
         ref={contentRef}
         onMouseUp={handleMouseUpInsideContent}
       >
-        <div
-          className="derive-chat-query"
-          style={{
-            bottom: uploadedFile || chatHistory.length > 0 ? "0px" : "auto",
-            position: uploadedFile || chatHistory.length > 0 ? "absolute" : "",
-            width:
-              uploadedFile || chatHistory.length > 0 ? contentWidth : "95%",
-            display: displayIfLoggedIn,
-            margin: "auto",
-          }}
-        >
-          <div className="derive-predefined-prompts">
-            <button
-              onClick={() => handlePromptWithFile("Summarize this article")}
-              disabled={!isPromptEnabled}
-              style={{
-                backgroundColor: isPromptEnabled ? "#c4dad2" : "#cccccc",
-                color: isPromptEnabled ? "#000000" : "#666666",
-              }}
-            >
-              Summarize
-            </button>
-            <button
-              onClick={() =>
-                handlePromptWithFile("What can we conclude from this article")
-              }
-              disabled={!isPromptEnabled}
-              style={{
-                backgroundColor: isPromptEnabled ? "#c4dad2" : "#cccccc",
-                color: isPromptEnabled ? "#000000" : "#666666",
-              }}
-            >
-              Conclusion
-            </button>
-            <button
-              onClick={() =>
-                handlePromptWithFile(
-                  "What are the key highlights from this article"
-                )
-              }
-              disabled={!isPromptEnabled}
-              style={{
-                backgroundColor: isPromptEnabled ? "#c4dad2" : "#cccccc",
-                color: isPromptEnabled ? "#000000" : "#666666",
-              }}
-            >
-              Key Highlights
-            </button>
-          </div>
-          <div className="file-palcement">
-            {uploadedFile && (
-              <div className="file-showing">
-                <span className="uploaded-file-indicator">
-                  {getFileIcon(uploadedFile.name)}
-                  <span style={{ width: "max-content" }}>
-                    {uploadedFile.name}
-                  </span>
-                  <FontAwesomeIcon
-                    icon={faTimes}
-                    onClick={removeUploadedFile}
-                    className="cancel-file"
-                    color="black"
-                  />
-                </span>
-              </div>
-            )}
-          </div>
-          <div className="derive-stream-input">
-            <label htmlFor="file-upload" className="custom-file-upload">
-              <img
-                src={upload}
-                alt="upload-icon"
-                style={{ paddingLeft: "10px", cursor: "pointer" }}
-              />
-            </label>
-            <input
-              id="file-upload"
-              type="file"
-              accept=".pdf,.docx,.txt"
-              onChange={handleFileUpload}
-              style={{ display: "none" }}
-            />
-            <div className="query-file-input">
-              <input
-                type="text"
-                placeholder="Ask anything..."
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                onKeyDown={handleDeriveKeyDown}
-              />
-            </div>
-            {loading ? (
-              <CircularProgress
-                className="button"
-                size={24}
-                style={{ marginLeft: "1.5%" }}
-                color="white"
-              />
-            ) : (
-              <FontAwesomeIcon
-                className="button"
-                onClick={handleDeriveClick}
-                icon={faTelegram}
-                size={"xl"}
-                style={{
-                  cursor: isLoggedIn && query ? "pointer" : "not-allowed", // Set cursor
-                  color: (isLoggedIn && query) || uploadedFile ? "" : "grey", // Change color to grey when disabled
-                }}
-              />
-            )}
-          </div>
-        </div>
+        
         {/* Display File, Query, and Response */}
         {chatHistory.length > 0 ? (
-          <div className="streaming-section">
-            <div className="streaming-content">
+          <div className="streaming-section-derive">
+            
+            <div className="streaming-content" style={{paddingRight:"0"}}>
               <div style={{ display: "flex" }} onClick={handleBackClick}>
                 <img
                   src={Arrow}
@@ -881,7 +788,10 @@ const ArticleDerive = ({
                 ></img>
                 <button className="back-button">Back</button>
               </div>
+              <div style={{overflowY:"auto"}}>
+                
               {chatHistory.map((chat, index) => (
+                <div style={{paddingRight:"10px"}}>
                 <div key={index}>
                   {chat.file_url ? (
                     <div className="chat-file">
@@ -948,7 +858,9 @@ const ArticleDerive = ({
                     </button>
                   </div>
                 </div>
+                </div>
               ))}
+              </div>
               {uploadedFile && uploadedFile.name.endsWith(".docx") && (
                 <div className="docx-preview">
                   <h3>Preview</h3>
@@ -1004,6 +916,123 @@ const ArticleDerive = ({
             )}
           </>
         )}
+        
+        <div
+          className="derive-chat-query"
+          style={{
+            bottom: uploadedFile || chatHistory.length > 0 ? "0px" : "auto",
+            // position: uploadedFile || chatHistory.length > 0 ? "absolute" : "",
+            width: uploadedFile || chatHistory.length > 0 
+            ? "100%"
+            : "95%",
+            display: displayIfLoggedIn,
+            // margin: "auto",
+          }}
+        >
+          <div className="prompts">
+            <div className="derive-predefined-prompts">
+              <button
+                onClick={() => handlePromptWithFile("Summarize this article")}
+                disabled={!isPromptEnabled}
+                style={{
+                  backgroundColor: isPromptEnabled ? "#c4dad2" : "#cccccc",
+                  color: isPromptEnabled ? "#000000" : "#666666",
+                }}
+              >
+                Summarize
+              </button>
+              <button
+                onClick={() =>
+                  handlePromptWithFile("What can we conclude from this article")
+                }
+                disabled={!isPromptEnabled}
+                style={{
+                  backgroundColor: isPromptEnabled ? "#c4dad2" : "#cccccc",
+                  color: isPromptEnabled ? "#000000" : "#666666",
+                }}
+              >
+                Conclusion
+              </button>
+              <button
+                onClick={() =>
+                  handlePromptWithFile(
+                    "What are the key highlights from this article"
+                  )
+                }
+                disabled={!isPromptEnabled}
+                style={{
+                  backgroundColor: isPromptEnabled ? "#c4dad2" : "#cccccc",
+                  color: isPromptEnabled ? "#000000" : "#666666",
+                }}
+              >
+                Key Highlights
+              </button>
+            </div>
+            <div className="file-palcement">
+              {uploadedFile && (
+                <div className="file-showing">
+                  <span className="uploaded-file-indicator">
+                    {getFileIcon(uploadedFile.name)}
+                    <span style={{ width: "max-content" }}>
+                      {uploadedFile.name.slice(0, 10)}...
+                    </span>
+                    <FontAwesomeIcon
+                      icon={faTimes}
+                      onClick={removeUploadedFile}
+                      className="cancel-file"
+                      color="black"
+                    />
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="derive-stream-input">
+            <label htmlFor="file-upload" className="custom-file-upload">
+              <img
+                src={upload}
+                alt="upload-icon"
+                style={{ paddingLeft: "10px", cursor: "pointer" }}
+              />
+            </label>
+            <input
+              id="file-upload"
+              type="file"
+              accept=".pdf,.docx,.txt"
+              onChange={handleFileUpload}
+              style={{ display: "none" }}
+            />
+            <div className="query-file-input">
+              <input
+                type="text"
+                placeholder="Ask anything..."
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={handleDeriveKeyDown}
+              />
+            </div>
+            {loading ? (
+              <CircularProgress
+                className="button"
+                size={24}
+                style={{ marginLeft: "1.5%" }}
+                color="white"
+              />
+            ) : (
+              <FontAwesomeIcon
+                className="button"
+                onClick={handleDeriveClick}
+                icon={faTelegram}
+                size={"xl"}
+                style={{
+                  cursor: isLoggedIn && query ? "pointer" : "not-allowed", // Set cursor
+                  color: (isLoggedIn && query) || uploadedFile ? "" : "grey", // Change color to grey when disabled
+                }}
+              />
+            )}
+          </div>
+        </div>
+        
       </div>
       {isCitationsOpen && (
         <>
