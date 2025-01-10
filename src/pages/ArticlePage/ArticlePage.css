@@ -338,7 +338,7 @@
   background-color: #c4dad2;
 }
 .file-palcement {
-  position: absolute;
+  /* position: absolute; */
   right: 25px;
 }
 .file-showing {

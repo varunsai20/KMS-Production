@@ -565,7 +565,7 @@ const ArticleContent = ({
       showErrorToast("Please enter a query");
       return;
     }
-  
+    setIsStreamDone(false)
     setShowStreamingSection(true);
     setLoading(true);
   
