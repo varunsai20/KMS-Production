@@ -34,6 +34,7 @@ const Editnotes = ({
   const token = useSelector((state) => state.auth.access_token);
   const [noteContent, setNoteContent] = useState("");
   const [title, setTitle] = useState(note.title);
+  const [titleError, setTitleError] = useState("");
   const [note_id, setNote_id] = useState(note.note_id);
   const [isPlaceholderVisible, setIsPlaceholderVisible] = useState(false);
   const [activeFormats, setActiveFormats] = useState({
@@ -216,6 +217,12 @@ const Editnotes = ({
   const handleForm = async (e) => {
     e.preventDefault();
     const noteDetails = editorRef.current.innerHTML;
+    if (!title.trim()) {
+      setTitleError("Add title to save");
+      return;
+    } else {
+      setTitleError("");
+    }
 
     if (title && noteDetails && noteDetails !== "Take your note...") {
       const updatedNote = {
@@ -358,13 +365,17 @@ const Editnotes = ({
       >
         <input
           type="text"
-          placeholder="Title"
+          placeholder={titleError || "Title"}
           value={title}
           onChange={(e) => {
             setTitle(e.target.value);
+            setTitleError("");
             setUnsavedChanges(true);
           }}
           autoFocus
+          style={{
+            borderColor: titleError ? "red" : undefined,
+          }}
           className={
             isOpenNotes ? "lander-edit-note__title" : "edit-note__title"
           }

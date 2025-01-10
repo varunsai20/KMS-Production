@@ -292,13 +292,9 @@ li:hover #menu-dots {
   border-radius: 20px;
   border: 1px solid rgba(235, 235, 243, 1);
 }
-.flex-for-prompts {
+.prompts {
   display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
   justify-content: space-between;
-  align-items: flex-start;
-  width: 100%;
 }
 .derive-predefined-prompts {
   /* display: flex;
@@ -306,8 +302,7 @@ li:hover #menu-dots {
   padding: 5px 10px 10px 10px; */
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  flex: 1;
+  gap: 2px;
 }
 
 .derive-predefined-prompts button {
