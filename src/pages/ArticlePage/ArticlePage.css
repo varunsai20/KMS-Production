@@ -319,7 +319,8 @@
 }
 .predefined-prompts {
   display: flex;
-  gap: 20px;
+  flex-wrap: wrap;
+  gap: 10px;
   padding: 10px 10px 10px 10px;
 }
 .derive-predefined-prompts {
@@ -908,6 +909,9 @@ td {
   .article-content {
     width: 50%;
   }
+  .ArticleTitle-Bookmark p {
+    font-size: 0.9rem;
+  }
   .history-pagination p {
     font-size: 12px;
   }
@@ -985,6 +989,10 @@ td {
 @media (min-width: 900px) and (max-width: 1366px) {
   .content {
     width: 80%;
+  }
+  .ArticleTitle-Bookmark p {
+    font-size: 18px;
+    line-height: 17px;
   }
   .article-chat-query {
     /* padding: 5px;

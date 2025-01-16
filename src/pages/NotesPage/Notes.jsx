@@ -44,7 +44,6 @@ const NotesManager = ({
     }
   }, [propSelectedText]);
 
-
   const fetchNotes = async () => {
     try {
       const response = await apiService.fetchNotes(user_id, token);
