@@ -227,12 +227,13 @@ const ArticleDerive = ({
         const lastRect = rects[rects.length - 1];
         if (lastRect) {
           selectedTextRef.current = selectedText;
-
-          const popupX = lastRect.right + window.scrollX;
-          const popupY = lastRect.bottom + window.scrollY;
-
-          popup.style.left = `${popupX}px`;
-          popup.style.top = `${popupY + 5}px`; // Add offset below the text
+      
+          // Use event.layerX and event.layerY for positioning
+          const lastX = e.layerX;
+          const lastY = e.layerY;
+      
+          popup.style.left = `${lastX}px`; // Set position using lastX
+          popup.style.top = `${lastY + 5}px`; // Set position using lastY with offset
           popup.style.display = "block";
         } else {
           popup.style.display = "none";
@@ -240,6 +241,7 @@ const ArticleDerive = ({
       } else {
         popup.style.display = "none";
       }
+      
     } else {
       popup.style.display = "none";
     }
@@ -265,16 +267,16 @@ const ArticleDerive = ({
     };
   }, [isModalOpen]);
 
-  useEffect(() => {
-    const content = contentRef.current;
-    if (!content) return;
+    useEffect(() => {
+      const content = contentRef.current;
+      if (!content) return;
 
-    content.addEventListener("mouseup", handleMouseUpInsideContent);
+      content.addEventListener("mouseup", handleMouseUpInsideContent);
 
-    return () => {
-      content.removeEventListener("mouseup", handleMouseUpInsideContent);
-    };
-  }, [contentRef]);
+      return () => {
+        content.removeEventListener("mouseup", handleMouseUpInsideContent);
+      };
+    }, [contentRef]);
 
   const handleSendToNotes = () => {
     if (selectedTextRef.current) {

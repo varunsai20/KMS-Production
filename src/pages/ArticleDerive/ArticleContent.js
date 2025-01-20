@@ -1040,7 +1040,8 @@ const ArticleContent = ({
                     marginTop: "0",
                     marginBottom: "0",
                     color: "#0071bc",
-                  }}
+                    fontSize: !openNotes && !openAnnotate ? "20px" : undefined
+                    }}
                 >
                   {articleData.article.article_title}
                 </p>
