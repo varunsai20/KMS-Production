@@ -15,17 +15,20 @@ import { MdEmail } from "react-icons/md";
 import "./CreateNote.css";
 import ConfirmSave from "../../utils/ConfirmSave";
 import { BiSave } from "react-icons/bi";
+import { contextType } from "react-quill";
 const Createnotes = ({
   setNotes,
   onClose,
   textToSave,
   notesHeight,
   onDelete,
+  notes,
   note,
   isOpenNotes,
   height,
   fetchNotes,
 }) => {
+  console.log("Notes in create notes",notes)
   const [title, setTitle] = useState("");
   const [isOpenDropdown, setIsOpenDropdown] = useState(false);
   const headerRef = useRef(null);
@@ -128,7 +131,10 @@ const Createnotes = ({
         editorRef.current.innerHTML = newContent;
         setNoteContent(newContent);
 
-        if (newContent !== initialContent.current) {
+        if (!newContent.trim() && !title.trim()) {
+          setUnsavedChanges(false);
+          localStorage.removeItem("unsavedChanges");
+        } else if (newContent !== initialContent.current) {
           setUnsavedChanges(true);
           localStorage.setItem("unsavedChanges", "true");
         }
@@ -141,9 +147,16 @@ const Createnotes = ({
   }, []);
 
   const handleInput = (e) => {
-    setNoteContent(e.target.innerText);
+    const content = e.target.innerText;
+  setNoteContent(content);
+
+  if (!title.trim() && !content.trim()) {
+    setUnsavedChanges(false);
+    localStorage.removeItem("unsavedChanges");
+  } else {
     setUnsavedChanges(true);
     localStorage.setItem("unsavedChanges", "true");
+  }
   };
 
   const handleEditorClick = () => {
@@ -201,6 +214,12 @@ const Createnotes = ({
     } else {
       setTitleError("");
     }
+    const isTitleDuplicate = notes.some((note) => note.title === title.trim());
+  if (isTitleDuplicate) {
+    setTitleError("Title already exists. Please try another one.");
+    return;
+  }
+  console.log("Error shown");
     const note = {
       title: title || noteContent.slice(0, 25) || "Untitled Note",
       content: noteContent,
@@ -234,6 +253,12 @@ const Createnotes = ({
   };
   const handleCloseClick = () => {
     const localUnsavedChanges = localStorage.getItem("unsavedChanges");
+    if (!title.trim() && !noteContent.trim()) {
+      setUnsavedChanges(false);
+      localStorage.removeItem("unsavedChanges");
+      onClose();
+      return;
+    }
     if (unsavedChanges || localUnsavedChanges === "true") {
       setShowConfirm(true);
     } else {
@@ -370,8 +395,18 @@ const Createnotes = ({
           type="text"
           placeholder={titleError || "Title"}
           value={title}
+          required
           onChange={(e) => {
-            setTitle(e.target.value);
+            const newTitle = e.target.value
+            setTitle(newTitle);
+            if (!newTitle.trim() && !noteContent.trim()) {
+              setUnsavedChanges(false);
+              localStorage.removeItem("unsavedChanges");
+            } else {
+              setUnsavedChanges(true);
+              localStorage.setItem("unsavedChanges", "true");
+            }
+        
             setTitleError("");
             setUnsavedChanges(true);
           }}
@@ -388,6 +423,7 @@ const Createnotes = ({
           onClick={handleEditorClick}
           onInput={handleInput}
           placeholder="Note details..."
+          
           style={{
             padding: "10px",
             marginBottom: "4px",
@@ -395,6 +431,7 @@ const Createnotes = ({
             fontSize: "14px",
             textAlign: "start",
             overflowY: "auto",
+            height:notesHeight
           }}
         ></div>
       </form>

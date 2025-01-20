@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import "./Login.css";
-import { useLocation, useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { showSuccessToast, showErrorToast } from "../../../utils/toastHelper";
 import { login } from "../../../redux/reducers/LoginAuth";
@@ -95,9 +95,15 @@ const Login = () => {
           showErrorToast("Login failed. Please check your credentials.");
         } else if (error.reason === "session_expired") {
           showErrorToast("Session expired. Please login again.");
-        } else if (error.reason === "access_denied") {
-          showErrorToast("User does not exists.");
-        } else {
+        }
+        else if (error.response?.status === 403) {
+          if (error.response?.data.reason === "Inactive") {
+            showErrorToast("Your account is currently inactive.");
+          } else {
+            showErrorToast("Access denied. You are not authorized to log in.");
+          }
+        }
+        else {
           console.error("Unknown error occurred:", error);
           navigate("/server-error");
         }
@@ -149,13 +155,13 @@ const Login = () => {
             </div>
           </div>
 
-          <div className="flex-row">
+          {/* <div className="flex-row">
             <div style={{ display: "flex" }}>
               <input type="checkbox" style={{ marginBottom: "0" }} />
               <label>Remember me</label>
             </div>
             <span className="span">Forgot password?</span>
-          </div>
+          </div> */}
 
           <button
             type="submit"
