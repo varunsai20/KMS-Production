@@ -32,7 +32,7 @@ const ArticleContent = ({
   setAnnotateLoading,
   isStreamDone,
   setIsStreamDone,
-  isStreamDoneRef
+  isStreamDoneRef,
 }) => {
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
   const deriveInsights = useSelector((state) => state.deriveInsights?.active);
@@ -148,7 +148,7 @@ const ArticleContent = ({
   const selectedTextRef = useRef("");
   const popupRef = useRef(null);
   const popupPositionRef = useRef({ x: 0, y: 0 });
-  
+
   useEffect(() => {
     if (!openNotes) {
       setSavedText(""); // Reset savedText when notes are closed
@@ -267,10 +267,9 @@ const ArticleContent = ({
   };
   const handleMouseUp = (event) => {
     console.log(`Layer X: ${event.layerX}, Layer Y: ${event.layerY}`);
-  
+
     if (!isLoggedIn) return;
 
-  
     if (!contentRef.current || !contentRef.current.contains(event.target)) {
       return;
     }
@@ -286,12 +285,10 @@ const ArticleContent = ({
         if (lastRect) {
           selectedTextRef.current = selectedText;
           popupPositionRef.current = {
-
             x: event.layerX, // Use Layer X
             y: event.layerY, // Use Layer Y
-
           };
-  
+
           if (popupRef.current) {
             popupRef.current.style.left = `${popupPositionRef.current.x}px`;
             popupRef.current.style.top = `${popupPositionRef.current.y + 5}px`;
@@ -309,7 +306,7 @@ const ArticleContent = ({
       }
     }
   };
-    
+
   const handleCloseCollectionModal = () => {
     setCollectionAction("existing");
     setNewCollectionName("");
@@ -552,8 +549,7 @@ const ArticleContent = ({
       endOfMessagesRef.current.scrollIntoView({ behavior: "smooth" });
       setAutoScrollEnabled(false);
     }
-
-  }, [chatHistory,autoScrollEnabled]);
+  }, [chatHistory, autoScrollEnabled]);
 
   useEffect(() => {
     isStreamDoneRef.current = isStreamDone; // Sync the ref with the state
@@ -565,17 +561,17 @@ const ArticleContent = ({
       showErrorToast("Please enter a query");
       return;
     }
-  
+    setIsStreamDone(false);
     setShowStreamingSection(true);
     setLoading(true);
-  
+
     const newChatEntry = { query, response: "", showDot: true };
     setChatHistory((prevChatHistory) => [...prevChatHistory, newChatEntry]);
-  
+
     const sessionKey = `${source}_${id}`;
     const storedSessionId =
       JSON.parse(sessionStorage.getItem("articleSessions"))?.[sessionKey] || "";
-  
+
     const bodyData = JSON.stringify({
       question: query,
       user_id: user_id,
@@ -583,7 +579,7 @@ const ArticleContent = ({
       source: source,
       article_id: Number(id),
     });
-  
+
     try {
       const response = await fetch(
         "https://inferai.ai/api/view_article/generateanswer",
@@ -596,24 +592,23 @@ const ArticleContent = ({
           body: bodyData,
         }
       );
-  
+
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let buffer = "";
       setQuery("");
-  
+
       const readStream = async () => {
         try {
-
           const delay = 1;
           let autoScrollSet = false;
-  
+
           while (true) {
             if (isStreamDoneRef.current) break; // Check the ref value
-  
+
             const { value, done: streamDone } = await reader.read();
             if (streamDone) break;
-  
+
             if (value) {
               buffer += decoder.decode(value, { stream: true });
 
@@ -624,13 +619,13 @@ const ArticleContent = ({
                   const jsonChunk = buffer.slice(start, end + 1);
                   buffer = buffer.slice(end + 1);
 
-  
                   try {
                     const parsedData = JSON.parse(jsonChunk);
-  
+
                     if (parsedData.session_id) {
                       const articleSessions =
-                        JSON.parse(sessionStorage.getItem("articleSessions")) || {};
+                        JSON.parse(sessionStorage.getItem("articleSessions")) ||
+                        {};
 
                       articleSessions[sessionKey] = parsedData.session_id;
                       sessionStorage.setItem(
@@ -639,14 +634,15 @@ const ArticleContent = ({
                       );
                     }
 
-  
                     const answer = parsedData.answer;
                     const words = answer.split("");
-  
+
                     for (const word of words) {
                       if (isStreamDoneRef.current) break; // Check the ref value
-                      await new Promise((resolve) => setTimeout(resolve, delay));
-  
+                      await new Promise((resolve) =>
+                        setTimeout(resolve, delay)
+                      );
+
                       setChatHistory((chatHistory) => {
                         const updatedChatHistory = [...chatHistory];
                         const lastEntryIndex = updatedChatHistory.length - 1;
@@ -655,21 +651,18 @@ const ArticleContent = ({
                           updatedChatHistory[lastEntryIndex] = {
                             ...updatedChatHistory[lastEntryIndex],
                             response:
-
-                              (updatedChatHistory[lastEntryIndex].response || "") +
-
+                              (updatedChatHistory[lastEntryIndex].response ||
+                                "") +
                               "" +
                               word,
                             showDot: true,
                           };
                         }
 
-  
                         return updatedChatHistory;
                       });
-  
+
                       setResponse((prev) => prev + "" + word);
-  
 
                       if (!autoScrollSet && endOfMessagesRef.current) {
                         setAutoScrollEnabled(true);
@@ -699,26 +692,26 @@ const ArticleContent = ({
         } catch (error) {
           console.error("Error fetching or reading stream:", error);
 
-  
           setChatHistory((chatHistory) => {
             const updatedChatHistory = [...chatHistory];
             const lastEntryIndex = updatedChatHistory.length - 1;
-  
+
             if (lastEntryIndex >= 0) {
               updatedChatHistory[lastEntryIndex] = {
                 ...updatedChatHistory[lastEntryIndex],
-                response: "There is some error. Please try again after some time.",
+                response:
+                  "There is some error. Please try again after some time.",
                 showDot: false,
               };
             }
-  
+
             return updatedChatHistory;
           });
-  
+
           setLoading(false);
         }
       };
-  
+
       readStream();
     } catch (error) {
       console.error("Error fetching or reading stream:", error);
@@ -1047,10 +1040,12 @@ const ArticleContent = ({
                     marginTop: "0",
                     marginBottom: "0",
                     color: "#0071bc",
-                  }}
+                    fontSize: !openNotes && !openAnnotate ? "20px" : undefined
+                    }}
                 >
                   {articleData.article.article_title}
                 </p>
+
                 <FontAwesomeIcon
                   icon={
                     isArticleBookmarked(id).isBookmarked
@@ -1333,10 +1328,10 @@ const ArticleContent = ({
           <div
             className="article-chat-query"
             style={{
-              width:
-                openAnnotate || openNotes
-                  ? contentWidth
-                  : `${parseInt(contentWidth) - 2}px`,
+              // width:
+              //   openAnnotate || openNotes
+              //     ? contentWidth
+              //     : `${parseInt(contentWidth) - 2}px`,
               cursor: isLoggedIn ? "" : "not-allowed",
               opacity: isLoggedIn ? 1 : 0.5,
             }}

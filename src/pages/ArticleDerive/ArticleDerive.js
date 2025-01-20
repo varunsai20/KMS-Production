@@ -227,12 +227,13 @@ const ArticleDerive = ({
         const lastRect = rects[rects.length - 1];
         if (lastRect) {
           selectedTextRef.current = selectedText;
-
-          const popupX = lastRect.right + window.scrollX;
-          const popupY = lastRect.bottom + window.scrollY;
-
-          popup.style.left = `${popupX}px`;
-          popup.style.top = `${popupY + 5}px`; // Add offset below the text
+      
+          // Use event.layerX and event.layerY for positioning
+          const lastX = e.layerX;
+          const lastY = e.layerY;
+      
+          popup.style.left = `${lastX}px`; // Set position using lastX
+          popup.style.top = `${lastY + 5}px`; // Set position using lastY with offset
           popup.style.display = "block";
         } else {
           popup.style.display = "none";
@@ -240,6 +241,7 @@ const ArticleDerive = ({
       } else {
         popup.style.display = "none";
       }
+      
     } else {
       popup.style.display = "none";
     }
@@ -265,16 +267,16 @@ const ArticleDerive = ({
     };
   }, [isModalOpen]);
 
-  useEffect(() => {
-    const content = contentRef.current;
-    if (!content) return;
+    useEffect(() => {
+      const content = contentRef.current;
+      if (!content) return;
 
-    content.addEventListener("mouseup", handleMouseUpInsideContent);
+      content.addEventListener("mouseup", handleMouseUpInsideContent);
 
-    return () => {
-      content.removeEventListener("mouseup", handleMouseUpInsideContent);
-    };
-  }, [contentRef]);
+      return () => {
+        content.removeEventListener("mouseup", handleMouseUpInsideContent);
+      };
+    }, [contentRef]);
 
   const handleSendToNotes = () => {
     if (selectedTextRef.current) {
@@ -472,7 +474,7 @@ const ArticleDerive = ({
         showErrorToast("Please enter a query or upload a file");
         return;
       }
-    
+      setIsStreamDone(false)
       removeUploadedFile();
       setQuery("");
       setLoading(true);
@@ -770,19 +772,163 @@ const ArticleDerive = ({
     <>
       <div
         className="derive-article-content"
-        style={{ width: widthIfLoggedIn, height: heightIfLoggedIn }}
+        style={{ width: widthIfLoggedIn, height: heightIfLoggedIn,border:!uploadedFile  && chatHistory.length==0 && "1px solid rgba(235, 235, 243, 1)" }}
         ref={contentRef}
         onMouseUp={handleMouseUpInsideContent}
       >
+        
+        {/* Display File, Query, and Response */}
+        {chatHistory.length > 0 ? (
+          <div className="streaming-section-derive">
+            
+            <div className="streaming-content" style={{paddingRight:"0"}}>
+              <div style={{ display: "flex" }} onClick={handleBackClick}>
+                <img
+                  src={Arrow}
+                  style={{ width: "14px" }}
+                  alt="arrow-icon"
+                ></img>
+                <button className="back-button">Back</button>
+              </div>
+              <div style={{overflowY:"auto"}}>
+                
+              {chatHistory.map((chat, index) => (
+                <div style={{paddingRight:"10px"}}>
+                <div key={index}>
+                  {chat.file_url ? (
+                    <div className="chat-file">
+                      <div>{getFileIcon(chat.file_url)}</div>
+                      <div style={{ display: "flex", flexDirection: "column" }}>
+                        <span>
+                          <strong>
+                            {decodeURIComponent(chat.file_url.split("/").pop())}
+                          </strong>
+                        </span>
+                      </div>
+                    </div>
+                  ) : (
+                    chat.file && (
+                      <div className="chat-file">
+                        <div>{getFileIcon(chat.file.name)}</div>
+                        <div
+                          style={{ display: "flex", flexDirection: "column" }}
+                        >
+                          <span>
+                            <strong>{chat.file.name}</strong>
+                          </span>
+                          <span>
+                            {chat.file.name.split(".").pop().toUpperCase()}
+                          </span>
+                        </div>
+                      </div>
+                    )
+                  )}
+                  {chat.query ? (
+                    <div className="derive-query-asked">
+                      <span>{chat.query}</span>
+                    </div>
+                  ) : (
+                    ""
+                  )}
+                  {chat.response && (
+                    <div className="response" style={{ textAlign: "left" }}>
+                      <span ref={endOfMessagesRef}>
+                        <ReactMarkdown>{chat.response.trim()}</ReactMarkdown>
+                      </span>
+                    </div>
+                  )}
+
+                  <div
+                    ref={popupRef}
+                    className="popup-button"
+                    style={{
+                      position: "absolute",
+                      display: "none",
+                      backgroundColor: "#afa7a7",
+                      color: "white",
+                      borderRadius: "5px",
+                      cursor: "pointer",
+                    }}
+                  >
+                    <button
+                      onClick={handleSendToNotes}
+                      className="Popup-buttons"
+                      title="Send to Notes"
+                    >
+                      <span className="send-to-notes">Send to notes</span>
+                      <LiaTelegramPlane size={20} color="black" />
+                    </button>
+                  </div>
+                </div>
+                </div>
+              ))}
+              </div>
+              {uploadedFile && uploadedFile.name.endsWith(".docx") && (
+                <div className="docx-preview">
+                  <h3>Preview</h3>
+                  <div
+                    id="docx-container"
+                    style={{
+                      maxHeight: "300px",
+                      overflow: "auto",
+                      border: "1px solid #ccc",
+                    }}
+                  ></div>
+                </div>
+              )}
+              {/* File Preview */}
+              {uploadedFile && uploadedFile.name.endsWith(".pdf") && (
+                <div className="iframe-preview">
+                  <iframe
+                    src={pdfURL}
+                    width="100%"
+                    height="350px"
+                    title="PDF Preview"
+                  ></iframe>
+                </div>
+              )}
+            </div>
+          </div>
+        ) : (
+          <>
+            {uploadedFile && uploadedFile.name.endsWith(".docx") && (
+              <div className="docx-preview">
+                <h3>Preview</h3>
+                <div
+                  ref={endOfMessagesRef}
+                  id="docx-container"
+                  style={{
+                    maxHeight: "300px",
+                    overflow: "auto",
+                    border: "1px solid #ccc",
+                  }}
+                ></div>
+              </div>
+            )}
+            {/* File Preview */}
+            {uploadedFile && uploadedFile.name.endsWith(".pdf") && (
+              <div className="iframe-preview" ref={endOfMessagesRef}>
+                <iframe
+                  src={pdfURL}
+                  width="100%"
+                  height="350px"
+                  title="PDF Preview"
+                ></iframe>
+              </div>
+            )}
+          </>
+        )}
+        
         <div
           className="derive-chat-query"
           style={{
             bottom: uploadedFile || chatHistory.length > 0 ? "0px" : "auto",
-            position: uploadedFile || chatHistory.length > 0 ? "absolute" : "",
-            width:
-              uploadedFile || chatHistory.length > 0 ? contentWidth : "95%",
+            // position: uploadedFile || chatHistory.length > 0 ? "absolute" : "",
+            width: uploadedFile || chatHistory.length > 0 
+            ? "100%"
+            : "95%",
             display: displayIfLoggedIn,
-            margin: "auto",
+            // margin: "auto",
           }}
         >
           <div className="prompts">
@@ -888,141 +1034,7 @@ const ArticleDerive = ({
             )}
           </div>
         </div>
-        {/* Display File, Query, and Response */}
-        {chatHistory.length > 0 ? (
-          <div className="streaming-section">
-            <div className="streaming-content">
-              <div style={{ display: "flex" }} onClick={handleBackClick}>
-                <img
-                  src={Arrow}
-                  style={{ width: "14px" }}
-                  alt="arrow-icon"
-                ></img>
-                <button className="back-button">Back</button>
-              </div>
-              {chatHistory.map((chat, index) => (
-                <div key={index}>
-                  {chat.file_url ? (
-                    <div className="chat-file">
-                      <div>{getFileIcon(chat.file_url)}</div>
-                      <div style={{ display: "flex", flexDirection: "column" }}>
-                        <span>
-                          <strong>
-                            {decodeURIComponent(chat.file_url.split("/").pop())}
-                          </strong>
-                        </span>
-                      </div>
-                    </div>
-                  ) : (
-                    chat.file && (
-                      <div className="chat-file">
-                        <div>{getFileIcon(chat.file.name)}</div>
-                        <div
-                          style={{ display: "flex", flexDirection: "column" }}
-                        >
-                          <span>
-                            <strong>{chat.file.name}</strong>
-                          </span>
-                          <span>
-                            {chat.file.name.split(".").pop().toUpperCase()}
-                          </span>
-                        </div>
-                      </div>
-                    )
-                  )}
-                  {chat.query ? (
-                    <div className="derive-query-asked">
-                      <span>{chat.query}</span>
-                    </div>
-                  ) : (
-                    ""
-                  )}
-                  {chat.response && (
-                    <div className="response" style={{ textAlign: "left" }}>
-                      <span ref={endOfMessagesRef}>
-                        <ReactMarkdown>{chat.response.trim()}</ReactMarkdown>
-                      </span>
-                    </div>
-                  )}
-
-                  <div
-                    ref={popupRef}
-                    className="popup-button"
-                    style={{
-                      position: "absolute",
-                      display: "none",
-                      backgroundColor: "#afa7a7",
-                      color: "white",
-                      borderRadius: "5px",
-                      cursor: "pointer",
-                    }}
-                  >
-                    <button
-                      onClick={handleSendToNotes}
-                      className="Popup-buttons"
-                      title="Send to Notes"
-                    >
-                      <span className="send-to-notes">Send to notes</span>
-                      <LiaTelegramPlane size={20} color="black" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-              {uploadedFile && uploadedFile.name.endsWith(".docx") && (
-                <div className="docx-preview">
-                  <h3>Preview</h3>
-                  <div
-                    id="docx-container"
-                    style={{
-                      maxHeight: "300px",
-                      overflow: "auto",
-                      border: "1px solid #ccc",
-                    }}
-                  ></div>
-                </div>
-              )}
-              {/* File Preview */}
-              {uploadedFile && uploadedFile.name.endsWith(".pdf") && (
-                <div className="iframe-preview">
-                  <iframe
-                    src={pdfURL}
-                    width="100%"
-                    height="350px"
-                    title="PDF Preview"
-                  ></iframe>
-                </div>
-              )}
-            </div>
-          </div>
-        ) : (
-          <>
-            {uploadedFile && uploadedFile.name.endsWith(".docx") && (
-              <div className="docx-preview">
-                <h3>Preview</h3>
-                <div
-                  ref={endOfMessagesRef}
-                  id="docx-container"
-                  style={{
-                    maxHeight: "300px",
-                    overflow: "auto",
-                    border: "1px solid #ccc",
-                  }}
-                ></div>
-              </div>
-            )}
-            {/* File Preview */}
-            {uploadedFile && uploadedFile.name.endsWith(".pdf") && (
-              <div className="iframe-preview" ref={endOfMessagesRef}>
-                <iframe
-                  src={pdfURL}
-                  width="100%"
-                  height="350px"
-                  title="PDF Preview"
-                ></iframe>
-              </div>
-            )}
-          </>
-        )}
+        
       </div>
       {isCitationsOpen && (
         <>

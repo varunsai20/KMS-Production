@@ -89,7 +89,7 @@ const ArticleLayout = () => {
       try {
         const response = await apiService.fetchSessions(user_id, token);
         if (response.data?.sessions) {
-          const sessionsData = response.data.sessions.reverse(); 
+          const sessionsData = response.data.sessions.reverse();
           setSessions(sessionsData); // Set the reversed sessions array to state
         }
       } catch (error) {
@@ -223,17 +223,10 @@ const ArticleLayout = () => {
     if (popupSessionId === sessionId) {
       setPopupSessionId(null);
     } else {
-      // Get the position and dimensions of the menu dots
       const menuDotsRect = event.target.getBoundingClientRect();
-
-      // Calculate the position for the popup
-      const popupX = menuDotsRect.right + 10; // Offset slightly to the right
+      const popupX = menuDotsRect.right + 10; 
       const popupY = menuDotsRect.top;
-
-      // Store the position dynamically
       setPopupPosition({ x: popupX, y: popupY });
-
-      // Set the active popup session
       setPopupSessionId(sessionId);
     }
   };
@@ -254,8 +247,8 @@ const ArticleLayout = () => {
     }
   };
   const handleSessionClick = async (session_id) => {
-    setIsStreamDone(true)
-    localStorage.removeItem("chatHistory")
+    setIsStreamDone(true);
+    localStorage.removeItem("chatHistory");
     localStorage.removeItem("session_id");
     try {
       // Fetch the conversation data
@@ -343,7 +336,6 @@ const ArticleLayout = () => {
     setAnnotateData("");
     setOpenAnnotate(false);
     setAnnotateFile(false);
-  
 
     if (prevPathRef.current !== location.pathname) {
     }
@@ -386,8 +378,8 @@ const ArticleLayout = () => {
   const [isCitationsOpen, setIsCitationsOpen] = useState(false);
 
   const handleOpenCitations = () => {
-    if(!uploadedFile){
-      return
+    if (!uploadedFile) {
+      return;
     }
     setIsCitationsOpen(true);
   };
@@ -531,8 +523,7 @@ const ArticleLayout = () => {
   return (
     <>
       <div className="container">
-              <SearchNavbar containerRef={null}/>
-
+        <SearchNavbar containerRef={null} />
 
         <div className="content">
           <div
@@ -593,7 +584,7 @@ const ArticleLayout = () => {
                             fontSize: "14px",
                             outline: "none",
                             // borderColor: editedTitle ? "" : "",
-                            border:"1px solid #007BFF"
+                            border: "1px solid #007BFF",
                           }}
                           value={editedTitle}
                           onChange={handleTitleChange}
@@ -625,7 +616,7 @@ const ArticleLayout = () => {
                           }}
                           id="menu-dots"
                           title="Options"
-                          style={{display:editedTitle?"none":"block"}}
+                          style={{ display: editedTitle ? "none" : "block" }}
                         >
                           ⋮
                         </button>
@@ -692,7 +683,7 @@ const ArticleLayout = () => {
               setIsCitationsOpen={setIsCitationsOpen}
               isStreamDone={isStreamDone}
               setIsStreamDone={setIsStreamDone}
-              isStreamDoneRef ={isStreamDoneRef }
+              isStreamDoneRef={isStreamDoneRef}
             />
           ) : (
             <ArticleContent
@@ -706,7 +697,7 @@ const ArticleLayout = () => {
               setAnnotateLoading={setAnnotateLoading}
               isStreamDone={isStreamDone}
               setIsStreamDone={setIsStreamDone}
-              isStreamDoneRef ={isStreamDoneRef }
+              isStreamDoneRef={isStreamDoneRef}
             />
           )}
 
@@ -829,6 +820,7 @@ const ArticleLayout = () => {
                   style={{
                     opacity: uploadedFile ? 1 : 0.5,
                   }}
+                  title={isLoggedIn ? "Citate the file": displayMessage}
                 >
                   <img src={citation_icon} alt="citation-icon" />
                 </div>

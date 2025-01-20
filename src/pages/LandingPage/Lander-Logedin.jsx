@@ -42,6 +42,7 @@ const Lander = () => {
   const { user } = useSelector((state) => state.auth);
   const token = useSelector((state) => state.auth.access_token);
   const user_id = user?.user_id;
+  const [hasBeenDragged, setHasBeenDragged] = useState(false);
   const navigate = useNavigate();
   useEffect(() => {
     if (termMissing) {
@@ -54,13 +55,7 @@ const Lander = () => {
       return () => clearTimeout(timer);
     }
   }, [termMissing]);
-  const handleOpenNotes = () => {
-    setIsLanderNotesOpen(true);
-  };
-
-  const handleCloseNotes = () => {
-    setIsLanderNotesOpen(false);
-  };
+  
   const handleOpenCollection = () => {
     setIsCollectionOpen(true);
   };
@@ -192,7 +187,7 @@ const Lander = () => {
   };
 
   useEffect(() => {
-    if (isLanderNotesOpen) {
+    if (isLanderNotesOpen && !hasBeenDragged) {
       const viewportWidth = window.innerWidth;
       const viewportHeight = window.innerHeight;
 
@@ -201,33 +196,41 @@ const Lander = () => {
 
       setPosition({ x: bottomRightX, y: bottomRightY });
     }
-  }, [isLanderNotesOpen, dimensions.height, dimensions.width]);
+  }, [isLanderNotesOpen, dimensions.width, dimensions.height, hasBeenDragged]);
+
   useEffect(() => {
     const handleResize = () => {
-      const viewportWidth = window.innerWidth;
-      const viewportHeight = window.innerHeight;
+      if (!hasBeenDragged) {
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
 
-      // Ensure the notes stay within the viewport bounds
-      const adjustedX = Math.min(position.x, viewportWidth - dimensions.width);
-      const adjustedY = Math.min(
-        position.y,
-        viewportHeight - dimensions.height
-      );
+        const bottomRightX = viewportWidth - dimensions.width - 20;
+        const bottomRightY = viewportHeight - dimensions.height - 20;
 
-      setPosition({
-        x: Math.max(0, adjustedX), // Ensure x is not negative
-        y: Math.max(0, adjustedY), // Ensure y is not negative
-      });
+        setPosition({ x: bottomRightX, y: bottomRightY });
+      }
     };
 
-    // Attach the resize event listener
     window.addEventListener("resize", handleResize);
 
-    // Cleanup the event listener on component unmount
     return () => {
       window.removeEventListener("resize", handleResize);
     };
-  }, [position, dimensions]);
+  }, [dimensions.width, dimensions.height, hasBeenDragged]);
+
+  const handleDragStop = (e, d) => {
+    setPosition({ x: d.x, y: d.y });
+    setHasBeenDragged(true); // Mark as dragged
+  };
+
+  const handleOpenNotes = () => {
+    setIsLanderNotesOpen(true);
+  };
+
+  const handleCloseNotes = () => {
+    setIsLanderNotesOpen(false);
+    setHasBeenDragged(false); // Reset drag state on close
+  };
 
   return (
     <div className="Landing-Container">

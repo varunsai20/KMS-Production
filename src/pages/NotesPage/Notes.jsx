@@ -44,7 +44,6 @@ const NotesManager = ({
     }
   }, [propSelectedText]);
 
-
   const fetchNotes = async () => {
     try {
       const response = await apiService.fetchNotes(user_id, token);
@@ -151,6 +150,7 @@ const NotesManager = ({
       )}
       {currentView === "edit" && selectedNote && (
         <Editnotes
+        notes={notes}
           note={selectedNote}
           textToSave={editTextToSave}
           setNotes={setNotes}

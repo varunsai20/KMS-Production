@@ -319,7 +319,8 @@
 }
 .predefined-prompts {
   display: flex;
-  gap: 20px;
+  flex-wrap: wrap;
+  gap: 10px;
   padding: 10px 10px 10px 10px;
 }
 .derive-predefined-prompts {
@@ -338,7 +339,7 @@
   background-color: #c4dad2;
 }
 .file-palcement {
-  position: absolute;
+  /* position: absolute; */
   right: 25px;
 }
 .file-showing {
@@ -908,6 +909,9 @@ td {
   .article-content {
     width: 50%;
   }
+  .ArticleTitle-Bookmark p {
+    font-size: 0.9rem;
+  }
   .history-pagination p {
     font-size: 12px;
   }
@@ -927,6 +931,9 @@ td {
     font-size: 12px;
   }
   .notes-height {
+    width: 28vw;
+  }
+  .annotate-height{
     width: 28vw;
   }
   @media (min-width: 1024px) {
@@ -985,6 +992,10 @@ td {
 @media (min-width: 900px) and (max-width: 1366px) {
   .content {
     width: 80%;
+  }
+  .ArticleTitle-Bookmark p {
+    font-size: 18px;
+    line-height: 17px;
   }
   .article-chat-query {
     /* padding: 5px;

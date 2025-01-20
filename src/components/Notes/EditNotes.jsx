@@ -21,6 +21,7 @@ import { showSuccessToast, showErrorToast } from "../../utils/toastHelper";
 import { useSelector } from "react-redux";
 const Editnotes = ({
   note,
+  notes,
   setNotes,
   onClose,
   notesHeight,
@@ -28,15 +29,20 @@ const Editnotes = ({
   height,
   textToSave,
 }) => {
+  console.log("notes in edit notes",notes);
   const { user } = useSelector((state) => state.auth);
 
   const user_id = user?.user_id;
   const token = useSelector((state) => state.auth.access_token);
   const [noteContent, setNoteContent] = useState("");
   const [title, setTitle] = useState(note.title);
-  const [titleError, setTitleError] = useState("");
+  //const [titleError, setTitleError] = useState("");
   const [note_id, setNote_id] = useState(note.note_id);
   const [isPlaceholderVisible, setIsPlaceholderVisible] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(false);
+  const [tooltipMessage, setTooltipMessage] = useState(""); 
+  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
+  const inputRef = useRef(null);
   const [activeFormats, setActiveFormats] = useState({
     bold: false,
     italic: false,
@@ -53,6 +59,15 @@ const Editnotes = ({
   const [showConfirmSave, setShowConfirmSave] = useState(false);
   const [unsavedChanges, setUnsavedChanges] = useState(false);
   const initialText = useRef("");
+
+  const calculateTooltipPosition = () => {
+    const inputBox = inputRef.current.getBoundingClientRect();
+    return {
+      x: inputBox.left,
+      y: inputBox.top + inputBox.height + window.scrollY, // Add height to position below
+    };
+  };
+
   useEffect(() => {
     const localUnsavedChanges = localStorage.getItem("unsavedChanges");
     if (localUnsavedChanges === "true") {
@@ -82,9 +97,12 @@ const Editnotes = ({
 
         editorRef.current.innerHTML = newContent;
         setNoteContent(newContent);
-        if (newContent !== initialText.current) {
-          localStorage.setItem("unsavedChanges", "true");
+        if (!newContent.trim() && !title.trim()) {
+          setUnsavedChanges(false);
+          localStorage.removeItem("unsavedChanges");
+        } else if (newContent !== initialText.current) {
           setUnsavedChanges(true);
+          localStorage.setItem("unsavedChanges", "true");
         }
       }
     }
@@ -97,9 +115,16 @@ const Editnotes = ({
   }, [note.content]);
 
   const handleInput = (e) => {
-    setNoteContent(e.target.innerText);
+    const content = e.target.innerText;
+  setNoteContent(content);
+
+  if (!title.trim() && !content.trim()) {
+    setUnsavedChanges(false);
+    localStorage.removeItem("unsavedChanges");
+  } else {
     setUnsavedChanges(true);
     localStorage.setItem("unsavedChanges", "true");
+  }
   };
 
   const handleCopy = () => {
@@ -178,7 +203,7 @@ const Editnotes = ({
   useEffect(() => {
     if (note.content?.trim() === "") {
       setIsPlaceholderVisible(true);
-      setTitle("");
+      //setTitle("");
     } else {
       setIsPlaceholderVisible(false);
       if (editorRef.current) {
@@ -218,11 +243,21 @@ const Editnotes = ({
     e.preventDefault();
     const noteDetails = editorRef.current.innerHTML;
     if (!title.trim()) {
-      setTitleError("Add title to save");
+      setTooltipMessage("⚠ Please add a title.")
+      setShowTooltip(true);
+      setTimeout =(()=>setShowTooltip(false))
+     
       return;
     } else {
-      setTitleError("");
+      //setTitleError("");
     }
+    const isTitleDuplicate = notes.some((note) => note.title === title.trim());
+  if (isTitleDuplicate) {
+    setTooltipMessage("⚠ Title already exists.Try another one.");
+    setShowTooltip(true);
+      setTimeout(() => setShowTooltip(false));
+      return;
+  }
 
     if (title && noteDetails && noteDetails !== "Take your note...") {
       const updatedNote = {
@@ -269,12 +304,23 @@ const Editnotes = ({
   };
   const handleCloseClick = () => {
     const localUnsavedChanges = localStorage.getItem("unsavedChanges");
+    
+    // Check if both title and noteContent are empty
+    if (!title.trim() && !noteContent.trim()) {
+      setUnsavedChanges(false);
+      localStorage.removeItem("unsavedChanges");
+      onClose();
+      return;
+    }
+  
+    // If there are unsaved changes, show the confirmation modal
     if (unsavedChanges || localUnsavedChanges === "true") {
       setShowConfirmSave(true);
     } else {
       onClose();
     }
   };
+  
 
   const handleEditorClick = () => {
     if (isPlaceholderVisible) {
@@ -363,23 +409,45 @@ const Editnotes = ({
         onSubmit={handleForm}
         // style={{ height: `${notesHeight - 13}vh` }}
       >
+        <div className="input-container">
+
         <input
-          type="text"
-          placeholder={titleError || "Title"}
-          value={title}
-          onChange={(e) => {
-            setTitle(e.target.value);
-            setTitleError("");
-            setUnsavedChanges(true);
-          }}
-          autoFocus
-          style={{
-            borderColor: titleError ? "red" : undefined,
-          }}
-          className={
-            isOpenNotes ? "lander-edit-note__title" : "edit-note__title"
-          }
-        />
+  type="text"
+  placeholder="Title"
+  onFocus={()=>setShowTooltip(false)}
+  value={title}
+  ref={inputRef}
+  onChange={(e) => {
+    const newTitle = e.target.value;
+    setTitle(newTitle);
+
+    if (!newTitle.trim() && !noteContent.trim()) {
+      setUnsavedChanges(false);
+      localStorage.removeItem("unsavedChanges");
+    } else {
+      setUnsavedChanges(true);
+      localStorage.setItem("unsavedChanges", "true");
+    }
+
+    //setTitleError("");
+  }}
+  autoFocus
+  // style={{
+  //   borderColor: titleError ? "red" : undefined,
+  // }}
+  className={
+    isOpenNotes ? "lander-edit-note__title" : "edit-note__title"
+  }
+/>
+        </div>
+{showTooltip && (
+            <div className="tooltip"
+            style={{
+              transform: `translate(${tooltipPosition.x}px, ${tooltipPosition.y}px)`,
+            }}>
+              {tooltipMessage}
+            </div>
+          )}
         <div
           className={
             isOpenNotes ? "lander-edit-note__details" : "edit-note__details"

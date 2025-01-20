@@ -16,6 +16,7 @@ const Header = () => {
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
   const { user, profileUpdated } = useSelector((state) => state.auth);
   const [currentProfileImage, setCurrentProfileImage] = useState(ProfileIcon);
+  const[confirmLogout,setConfirmLogout] = useState(false);
 
   useEffect(() => {
     setCurrentProfileImage(user?.profile_picture_url || ProfileIcon);
@@ -58,7 +59,18 @@ const Header = () => {
   const handleNavigateHome = () => {
     navigate("/");
   };
+const handleCancelLogout = (e)=>{
+  e.stopPropagation();
+  setConfirmLogout(false);
+}
+const initialLogout =()=>{
+  setConfirmLogout(true);
 
+}
+const finalLogout =()=>{
+  handleLogout();
+setConfirmLogout(false);
+}
   return (
     <div
       className="Navbar-Header"
@@ -110,12 +122,25 @@ const Header = () => {
             <Button
               text="Logout"
               className="logout-btn"
-              onClick={handleLogout}
+              //onClick={handleLogout}
+              onClick={initialLogout}
             />
           </>
         ) : (
           <Button text="Login" className="login-btn" onClick={handleLogin} />
         )}
+        {confirmLogout &&(
+          <div className="confirmlogout-overlay">
+            <div className="confirmlogout-popup">
+              <p>Are you sure to logout?</p>
+              <div className="confirmlogout-buttons">
+
+              <button className="cancel-logout" onClick={handleCancelLogout}>cancel</button>
+              <button className="confirm-logout" onClick={finalLogout}>Logout</button>
+              </div>
+            </div>
+          </div>
+        ) } 
       </section>
     </div>
   );
