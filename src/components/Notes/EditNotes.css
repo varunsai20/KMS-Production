@@ -55,6 +55,34 @@
   font-family: manrope;
   border: 1px solid #ebebf3;
 }
+.tooltip {
+  position: absolute;
+  /* transform-origin: top left; */
+  /* top: 70%;
+  left: 70px; */
+  background: #ffc03f;
+  color: #fff;
+  padding: 8px;
+  font-size: 14px;
+  border-radius: 4px;
+  margin-top: 5px;
+  white-space: nowrap;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+.input-container{
+  position: relative;
+  width: 100%;
+}
+.tooltip:before {
+  content: "";
+  position: absolute;
+  top: -6px;
+  left: 10px;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 6px solid #ffc107;
+}
 
 .edit-note__details {
   width: 100%;

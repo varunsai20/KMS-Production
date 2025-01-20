@@ -933,6 +933,9 @@ td {
   .notes-height {
     width: 28vw;
   }
+  .annotate-height{
+    width: 28vw;
+  }
   @media (min-width: 1024px) {
     .container {
       width: 95%;

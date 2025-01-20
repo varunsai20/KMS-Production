@@ -150,6 +150,7 @@ const NotesManager = ({
       )}
       {currentView === "edit" && selectedNote && (
         <Editnotes
+        notes={notes}
           note={selectedNote}
           textToSave={editTextToSave}
           setNotes={setNotes}

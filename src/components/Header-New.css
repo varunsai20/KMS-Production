@@ -80,6 +80,68 @@
   gap: 10px;
   padding: 20px 32px;
 }
+.confirmlogout-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1500; /* Higher than popup-menu */
+}
+
+/* Confirmation Popup */
+.confirmlogout-popup {
+  background-color: #fff;
+  padding: 20px 30px;
+  border-radius: 8px;
+  width: 80%;
+  max-width: 300px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  text-align: center;
+}
+
+.confirmlogout-popup p {
+  margin-bottom: 20px;
+  font-size: 14px;
+  color: #333;
+}
+
+.confirmlogout-buttons {
+  display: flex;
+  justify-content: space-around;
+}
+
+.confirm-logout,
+.cancel-logout {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+}
+
+.confirm-logout {
+  background-color: #dc3545; /* Bootstrap's danger color */
+  color: #fff;
+}
+
+.confirm-logout:hover {
+  background-color: #c82333;
+}
+
+.confirm-logout {
+  background-color: #6c757d; /* Bootstrap's secondary color */
+  color: #fff;
+}
+
+.cancel-logout:hover {
+  background-color: rgba(237, 237, 237, 1);
+}
 
 @media (min-width: 250px) and (max-width: 767px) {
   .Navbar-Header {

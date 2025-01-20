@@ -223,17 +223,10 @@ const ArticleLayout = () => {
     if (popupSessionId === sessionId) {
       setPopupSessionId(null);
     } else {
-      // Get the position and dimensions of the menu dots
       const menuDotsRect = event.target.getBoundingClientRect();
-
-      // Calculate the position for the popup
-      const popupX = menuDotsRect.right + 10; // Offset slightly to the right
+      const popupX = menuDotsRect.right + 10; 
       const popupY = menuDotsRect.top;
-
-      // Store the position dynamically
       setPopupPosition({ x: popupX, y: popupY });
-
-      // Set the active popup session
       setPopupSessionId(sessionId);
     }
   };
@@ -827,6 +820,7 @@ const ArticleLayout = () => {
                   style={{
                     opacity: uploadedFile ? 1 : 0.5,
                   }}
+                  title={isLoggedIn ? "Citate the file": displayMessage}
                 >
                   <img src={citation_icon} alt="citation-icon" />
                 </div>

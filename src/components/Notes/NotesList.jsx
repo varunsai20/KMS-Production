@@ -17,6 +17,7 @@ const NotesList = ({
   oncloseNotes,
   notesHeight,
 }) => {
+  console.log("text",notes);
   const [filteredNotes, setFilteredNotes] = useState(notes);
   console.log(height);
   useEffect(() => {
@@ -56,6 +57,7 @@ const NotesList = ({
             <img
               src={PlusSqaue}
               alt="plus"
+              size={30}
               className={isOpenNotes ? "lander-plusSqaure" : "plusSqaure"}
             />
           </button>
