@@ -181,3 +181,27 @@
   text-align: start;
   font-weight: 600;
 }
+/* For small screens (576px and below) */
+@media (max-width: 576px) {
+  .custom-table th,
+  .custom-table td {
+    text-align: center;
+    padding: 8px;
+  }
+
+  .custom-table th:not(:first-child),
+  .custom-table td:not(:first-child) {
+    display: none; /* Hide unnecessary columns */
+  }
+
+  .custom-table th:nth-child(2),
+  .custom-table td:nth-child(2),
+  .custom-table th:nth-child(3),
+  .custom-table td:nth-child(3) {
+    display: table-cell; /* Keep Status and Action columns visible */
+  }
+
+  .action-icon {
+    cursor: pointer;
+  }
+}

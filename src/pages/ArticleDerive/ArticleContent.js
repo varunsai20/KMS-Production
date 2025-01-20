@@ -1080,14 +1080,17 @@ const ArticleContent = ({
 
                 {isModalOpen && (
                   <div className="bookmark-modal-overlay">
-                    <button
+                    
+                    <div className="search-modal-content">
+                      <div style={{display:"flex",justifyContent:"space-between"}}> 
+                      <p>ADD TO COLLECTION</p>
+                      <button
                       id="close-collection-modal"
                       onClick={handleCloseCollectionModal}
                     >
                       <IoCloseOutline size={20} />
                     </button>
-                    <div className="search-modal-content">
-                      <p>ADD TO COLLECTION</p>
+                        </div>
                       {/* Radio buttons for collection action */}
                       <div className="radio-buttons">
                         <div className="radio1">

@@ -6,6 +6,14 @@ import "./Researcher.css";
 import SearchIcon from "../../assets/images/Search.svg";
 import { toast } from "react-toastify";
 
+
+const columns = [
+  { label: "Name", key: "fullname" },
+  { label: "Email ID", key: "email" },
+  { label: "Department", key: "department" },
+  { label: "Role", key: "role" },
+];
+
 const Researchers = () => {
   const [isOpen, setIsOpen] = useState(null);
   const [userData, setUserData] = useState([]);
@@ -14,10 +22,9 @@ const Researchers = () => {
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [userIdToDelete, setUserIdToDelete] = useState(null);
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
-
+  const [currentColumnIndex, setCurrentColumnIndex] = useState(0);
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
-
   // Access admin data from Redux
   const { user } = useSelector((state) => state.auth);
   const adminId = user?.user_id;
@@ -25,6 +32,18 @@ const Researchers = () => {
   const userRole = user?.role;
   const token = useSelector((state) => state.auth.access_token);
 
+  const handlePrevious = () => {
+    setCurrentColumnIndex((prevIndex) =>
+      prevIndex === 0 ? columns.length - 1 : prevIndex - 1
+    );
+  };
+  
+  const handleNext = () => {
+    setCurrentColumnIndex((prevIndex) =>
+      prevIndex === columns.length - 1 ? 0 : prevIndex + 1
+    );
+  };
+  
   // Redirect if not an Admin
   useEffect(() => {
     if (userRole !== "Admin") {
@@ -211,113 +230,156 @@ const Researchers = () => {
         </button>
       </div>
       <div className="Researcher-List">
-        <table className="custom-table">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Email ID</th>
-              <th>Department</th>
-              <th>Status</th>
-              <th>Role</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredData.map((user) => (
-              <tr key={user.email}>
-                <td>
-                  <a
-                    style={{ cursor: "pointer" }}
-                    onClick={() => handleEditClick(user.user_id)}
+  <table className="custom-table">
+    <thead>
+      <tr>
+        {window.innerWidth > 576 ? (
+          <>
+            <th>Name</th>
+            <th>Email ID</th>
+            <th>Department</th>
+            <th>Status</th>
+            <th>Role</th>
+            <th>Actions</th>
+          </>
+        ) : (
+          <>
+            <th>
+              <button onClick={handlePrevious}>←</button>
+              {columns[currentColumnIndex].label}
+              <button onClick={handleNext}>→</button>
+            </th>
+            <th>Status</th>
+            <th>Actions</th>
+          </>
+        )}
+      </tr>
+    </thead>
+    <tbody>
+      {filteredData.map((user) => (
+        <tr key={user.email}>
+          {window.innerWidth > 576 ? (
+            <>
+              <td>{user.fullname}</td>
+              <td>{user.email}</td>
+              <td>{user.department}</td>
+              <td>
+                <span className={`status-indicator ${user.user_status}`}>
+                  {user.user_status}
+                </span>
+              </td>
+              <td>{user.role}</td>
+              <td>
+                <div className="action-dropdown">
+                  <div
+                    className="action-icon"
+                    onClick={(e) => toggleDropdown(user.email, e)}
                   >
-                    {user.fullname}
-                  </a>
-                </td>
-                <td>{user.email}</td>
-                <td>{user.department}</td>
-                <td>
-                  <span className={`status-indicator ${user.user_status}`}>
-                    {user.user_status}
-                  </span>
-                </td>
-                <td>{user.role}</td>
-                <td>
-                  <div className="action-dropdown">
-                    <div
-                      className="action-icon"
-                      onClick={(e) => toggleDropdown(user.email, e)}
+                    ⋮
+                  </div>
+                  {isOpen === user.email && (
+                    <ul
+                      ref={dropdownRef}
+                      className="dropdown-menu"
+                      style={{
+                        transform: `translate(${popupPosition.x}px, ${popupPosition.y}px)`,
+                      }}
+                      onClick={(e) => e.stopPropagation()}
                     >
-                      ⋮
-                    </div>
-                    {isOpen === user.email && (
-                      <ul
-                        ref={dropdownRef}
-                        className="dropdown-menu"
-                        style={{
-                          transform: `translate(${popupPosition.x}px, ${popupPosition.y}px)`,
-                        }}
-                        onClick={(e) => e.stopPropagation()} // Prevents click inside from closing
+                      <li
+                        className="dropdown-item"
+                        onClick={() => handleEditClick(user.user_id)}
                       >
-                        <li
-                          className="dropdown-item"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleEditClick(user.user_id);
-                          }}
-                        >
-                          Edit
-                        </li>
-                        <li
-                          className={`dropdown-item delete ${
-                            user.user_status.toLowerCase() === "active" ? "suspend" : "activate"
-                          }`}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleSuspendClick(user.user_id, user.user_status);
-                          }}
-                        >
-                          {user.user_status.toLowerCase() === "active" ? "Suspend" : "Activate"}
-                        </li>
-
-                        <li
-                          className="dropdown-item delete"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            initialDelete(user.user_id);
-                          }}
-                        >
-                          Delete
-                        </li>
-                      </ul>
-                    )}
-                  </div>
-                </td>
-              </tr>
-            ))}
-            {showConfirmDelete && (
-              <div className="confirm-overlay">
-                <div className="confirm-popup">
-                  <p>Are you sure to delete this user?</p>
-                  <div className="confirm-buttons">
-                    <button
-                      className="confirm-keep-button"
-                      onClick={cancelDelete}
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      className="confirm-delete-button"
-                      onClick={confirmDelete}
-                    >
-                      Delete
-                    </button>
-                  </div>
+                        Edit
+                      </li>
+                      <li
+                        className={`dropdown-item ${
+                          user.user_status.toLowerCase() === "active"
+                            ? "suspend"
+                            : "activate"
+                        }`}
+                        onClick={() =>
+                          handleSuspendClick(user.user_id, user.user_status)
+                        }
+                      >
+                        {user.user_status.toLowerCase() === "active"
+                          ? "Suspend"
+                          : "Activate"}
+                      </li>
+                      <li
+                        className="dropdown-item delete"
+                        onClick={() => initialDelete(user.user_id)}
+                      >
+                        Delete
+                      </li>
+                    </ul>
+                  )}
                 </div>
-              </div>
-            )}
-          </tbody>
-        </table>
-      </div>
+              </td>
+            </>
+          ) : (
+            <>
+              <td>{user[columns[currentColumnIndex].key]}</td>
+              <td>
+                <span className={`status-indicator ${user.user_status}`}>
+                  {user.user_status}
+                </span>
+              </td>
+              <td>
+                <div className="action-dropdown">
+                  <div
+                    className="action-icon"
+                    onClick={(e) => toggleDropdown(user.email, e)}
+                  >
+                    ⋮
+                  </div>
+                  {isOpen === user.email && (
+                    <ul
+                      ref={dropdownRef}
+                      className="dropdown-menu"
+                      style={{
+                        transform: `translate(${popupPosition.x}px, ${popupPosition.y}px)`,
+                      }}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <li
+                        className="dropdown-item"
+                        onClick={() => handleEditClick(user.user_id)}
+                      >
+                        Edit
+                      </li>
+                      <li
+                        className={`dropdown-item ${
+                          user.user_status.toLowerCase() === "active"
+                            ? "suspend"
+                            : "activate"
+                        }`}
+                        onClick={() =>
+                          handleSuspendClick(user.user_id, user.user_status)
+                        }
+                      >
+                        {user.user_status.toLowerCase() === "active"
+                          ? "Suspend"
+                          : "Activate"}
+                      </li>
+                      <li
+                        className="dropdown-item delete"
+                        onClick={() => initialDelete(user.user_id)}
+                      >
+                        Delete
+                      </li>
+                    </ul>
+                  )}
+                </div>
+              </td>
+            </>
+          )}
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
+
     </div>
   );
 };

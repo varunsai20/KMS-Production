@@ -606,11 +606,16 @@ button {
   margin-bottom: 10px;
 }
 #close-collection-modal {
-  position: absolute;
-  top: 33%;
-  left: 64%;
+  padding: 0;
+  border: none;
+  background-color: white;
+  
+  border-radius: 5px;
+  cursor: pointer;
+  width: 0%;
+ 
   color: #000;
-  z-index: 10001;
+ 
 }
 .radio1 {
   display: flex;
@@ -1244,9 +1249,9 @@ button input {
   border: 1px solid #00000012;
   border-radius: 8px;
 }
-@media (min-width: 320px) and (max-width: 768px) {
+@media (min-width: 0px) and (max-width: 576px) {
   .inferai-logo {
-    width: 16vw;
+    width: 35vw;
   }
   .SearchHeader-Logo {
     width: 100%;

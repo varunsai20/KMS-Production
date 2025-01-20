@@ -244,7 +244,7 @@ const Lander = () => {
           <div className="search-bar-div" style={{ position: "relative" }}>
             <SearchBar
               className="Landingpage-SearchBar"
-              landingWidth="80%"
+              // landingWidth="auto"
               zIndex="0"
               setTermMissing={setTermMissing}
             ></SearchBar>
