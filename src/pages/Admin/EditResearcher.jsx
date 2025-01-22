@@ -131,7 +131,7 @@ const EditResearcher = () => {
   };
 
   return (
-    <div style={{ margin: '0 2%' }}>
+    <div className="Edit-Researcher" style={{ margin: '0 2%' }}>
       <div className="edit-researcher-header">
         <button className="back-button" onClick={handleBackClick}>
         <img

@@ -112,7 +112,9 @@
   position: relative;
   max-height: 55vh;
   border-radius: 20px;
-  flex: 1;
+  flex: 1;  
+  display: flex;
+  flex-direction: column;
   /* padding: 0 20px 20px 20px; */
   border: 1px solid rgba(235, 235, 243, 1);
 }
@@ -120,7 +122,7 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-  height: 22%;
+  flex: 0 0 auto;
   font-weight: 600;
   font-size: 16px;
   position: sticky;
@@ -137,7 +139,9 @@
 }
 .meta {
   height: 75%;
+  flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
   padding-left: 20px;
 }
 .article-content .meta p {
@@ -645,9 +649,9 @@ td {
   align-items: center;
   justify-content: space-between;
 }
-.ArticleTitle-Bookmark p {
+/* .ArticleTitle-Bookmark p {
   font-size: 20px;
-}
+} */
 @keyframes blink {
   0% {
     opacity: 0.2;

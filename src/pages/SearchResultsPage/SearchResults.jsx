@@ -77,7 +77,10 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   };
 
   const prevTotalArticlesRef = useRef(totalArticles);
-
+  useEffect(()=>{
+    console.log("exec")
+    localStorage.removeItem("sessionIds")
+  },[])
   useEffect(() => {
     if (handleAnnotateCall) {
       if (totalArticles.length > 1) {
@@ -1571,14 +1574,18 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                                   className="search-bookmark-modal-overlay"
                                   // onClick={handleCloseCollectionModal}
                                 >
-                                  <button
+                                  
+                                  <div className="search-modal-content">
+                                    <div style={{display:"flex",justifyContent:"space-between"}}>
+
+                                    <p>ADD TO COLLECTION</p>
+                                    <button
                                     id="close-collection-modal"
                                     onClick={handleCloseCollectionModal}
                                   >
                                     <IoCloseOutline size={20} />
                                   </button>
-                                  <div className="search-modal-content">
-                                    <p>ADD TO COLLECTION</p>
+                                    </div>
                                     {/* Radio buttons for collection action */}
                                     <div className="radio-buttons">
                                       <div className="radio1">

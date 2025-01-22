@@ -97,9 +97,12 @@ const Login = () => {
           showErrorToast("Session expired. Please login again.");
         }
         else if (error.response?.status === 403) {
-          if (error.response?.data.reason === "Inactive") {
+          if (error.response?.data.detail === "User account is not active") {
             showErrorToast("Your account is currently inactive.");
-          } else {
+          }else if (error.response?.data.detail === "User does not exist") {
+            showErrorToast("User email does not exist")
+          }
+          else {
             showErrorToast("Access denied. You are not authorized to log in.");
           }
         }

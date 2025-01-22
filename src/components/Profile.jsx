@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
+import { useLocation, useNavigate } from "react-router-dom";
 import { updateProfilePicture } from "../redux/reducers/LoginAuth";
 import "./Profile.css";
+import { RxHome } from "react-icons/rx";
 import profile from "../assets/images/Profile-start.svg";
 import upload from "../assets/images/Upload.svg";
 import Header from "./Header-New";
 import departments from "../assets/Data/Departments.json";
 import primaryResearchAreas from "../assets/Data/PrimaryResearchAreas.json";
 import researchInterests from "../assets/Data/ResearchInterests.json";
-import { useNavigate } from "react-router-dom";
 import { apiService } from "../assets/api/apiService";
 const Profile = () => {
   const { user } = useSelector((state) => state.auth);
@@ -17,6 +18,7 @@ const Profile = () => {
   const token = useSelector((state) => state.auth.access_token);
   const userRole = user?.role;
   const navigate = useNavigate();
+   const location = useLocation();
   const [profileImage, setProfileImage] = useState(profile);
   const [formData, setFormData] = useState({
     fullname: "",
@@ -122,10 +124,34 @@ const Profile = () => {
       console.error("Error updating user:", error);
     }
   };
+  const handleNavigateHome = () => {
+    navigate("/");
+  };
 
   return (
     <>
       {isUser && <Header />}
+      <div className="home-nav">
+        <div className="home-path">
+
+      {location.pathname.startsWith(`/users/profile/${user_id}`) && (
+              <span
+                onClick={handleNavigateHome}
+                style={{
+                  display:"flex",
+                  marginLeft: "10px",
+                  textDecoration: "none",
+                  fontWeight: "bold",
+                  cursor: "pointer",
+                }}
+              >
+                 <RxHome size={20} className="nav-icon" />
+                
+                Home
+              </span>
+            )}
+      </div>
+        </div>
       <div className="profile-container">
         {/* Render Header if the user role is User */}
 

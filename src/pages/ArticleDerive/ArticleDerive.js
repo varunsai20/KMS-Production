@@ -772,8 +772,18 @@ const ArticleDerive = ({
     <>
       <div
         className="derive-article-content"
-        style={{ width: widthIfLoggedIn, height: heightIfLoggedIn,border:!uploadedFile  && chatHistory.length==0 && "1px solid rgba(235, 235, 243, 1)" }}
-        ref={contentRef}
+        style={{
+          width: widthIfLoggedIn,
+          height: heightIfLoggedIn,
+          border:
+            !uploadedFile && chatHistory.length === 0
+              ? "1px solid rgba(235, 235, 243, 1)"
+              : undefined,
+          display: !uploadedFile && chatHistory.length === 0 ? "flex" : undefined,
+          flexDirection: !uploadedFile ? "column" : undefined,
+          justifyContent: !uploadedFile ? "center" : undefined,
+        }}
+                ref={contentRef}
         onMouseUp={handleMouseUpInsideContent}
       >
         
@@ -863,59 +873,58 @@ const ArticleDerive = ({
                 </div>
               ))}
               </div>
-              {uploadedFile && uploadedFile.name.endsWith(".docx") && (
-                <div className="docx-preview">
-                  <h3>Preview</h3>
-                  <div
-                    id="docx-container"
-                    style={{
-                      maxHeight: "300px",
-                      overflow: "auto",
-                      border: "1px solid #ccc",
-                    }}
-                  ></div>
-                </div>
-              )}
+              
               {/* File Preview */}
-              {uploadedFile && uploadedFile.name.endsWith(".pdf") && (
-                <div className="iframe-preview">
-                  <iframe
-                    src={pdfURL}
-                    width="100%"
-                    height="350px"
-                    title="PDF Preview"
-                  ></iframe>
-                </div>
-              )}
+              
             </div>
           </div>
         ) : (
           <>
-            {uploadedFile && uploadedFile.name.endsWith(".docx") && (
-              <div className="docx-preview">
-                <h3>Preview</h3>
-                <div
-                  ref={endOfMessagesRef}
-                  id="docx-container"
-                  style={{
-                    maxHeight: "300px",
-                    overflow: "auto",
-                    border: "1px solid #ccc",
-                  }}
-                ></div>
-              </div>
-            )}
-            {/* File Preview */}
-            {uploadedFile && uploadedFile.name.endsWith(".pdf") && (
-              <div className="iframe-preview" ref={endOfMessagesRef}>
-                <iframe
-                  src={pdfURL}
-                  width="100%"
-                  height="350px"
-                  title="PDF Preview"
-                ></iframe>
-              </div>
-            )}
+            {uploadedFile && (
+  <>
+    {uploadedFile.name.endsWith(".docx") && (
+      <div
+        className="docx-preview"
+        style={{
+          border: "1px solid rgb(235, 235, 243)",
+          borderRadius: "20px",
+        }}
+      >
+        <div
+          id="docx-container"
+          ref={endOfMessagesRef}
+          style={{
+            maxHeight: "55vh",
+            overflow: "auto",
+            overflowX: openNotes || openAnnotate ? "auto" : "hidden",
+            border: "1px solid #ccc",
+            borderRadius: "20px",
+          }}
+        ></div>
+      </div>
+    )}
+    {uploadedFile.name.endsWith(".pdf") && (
+      <div
+        className="iframe-preview"
+        style={{
+          maxHeight: "55vh",
+          overflow: "auto",
+          overflowX: openNotes || openAnnotate ? "auto" : "hidden",
+          border: "1px solid #ccc",
+          borderRadius: "20px",
+        }}
+      >
+        <iframe
+          src={pdfURL}
+          width="100%"
+          height="350px"
+          title="PDF Preview"
+        ></iframe>
+      </div>
+    )}
+  </>
+)}
+
           </>
         )}
         

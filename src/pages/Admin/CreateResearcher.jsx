@@ -121,7 +121,7 @@ const CreateResearcher = () => {
   };
     
   return (
-    <div style={{ margin: '0 2%' }}>
+    <div  className='Add-user'>
       <div className="create-researcher-header">
         <div className="back-button" onClick={handleBackClick}>
         <img
@@ -136,7 +136,7 @@ const CreateResearcher = () => {
       <form className="create-researcher-form" onSubmit={handleSubmit}>
         {/* Row 1 */}
         <div className='User-Form-Row'>
-          <div className='User-Form-Row-Items'>
+          <div className='create-User-Form-Row-Items'>
             <div style={{display:"flex",gap:"5px"}}>
 
             <label>Full Name</label>
@@ -152,7 +152,7 @@ const CreateResearcher = () => {
             />
           </div>
 
-          <div className='User-Form-Row-Items'>
+          <div className='create-User-Form-Row-Items'>
             <div style={{display:"flex",gap:"5px"}}><label>Email ID</label>
             <FontAwesomeIcon icon={faAsterisk} style={{fontSize:"10px",color:" red"}}/>
 
@@ -170,7 +170,7 @@ const CreateResearcher = () => {
 
         {/* Row 2 (New Role and Password Row) */}
         <div className='User-Form-Row'>
-          <div className='User-Form-Row-Items'>
+          <div className='create-User-Form-Row-Items'>
           <div style={{display:"flex",gap:"5px"}}>
             <label>Role</label>
             <FontAwesomeIcon icon={faAsterisk} style={{fontSize:"10px",color:" red"}}/>
@@ -187,7 +187,7 @@ const CreateResearcher = () => {
             </select>
           </div>
 
-          <div className='User-Form-Row-Items'>
+          <div className='create-User-Form-Row-Items'>
           <div style={{display:"flex",gap:"5px"}}>
             <label>Set Password</label>
             <FontAwesomeIcon icon={faAsterisk} style={{fontSize:"10px",color:" red"}}/>
@@ -214,7 +214,7 @@ const CreateResearcher = () => {
 
         {/* Row 3 */}
         <div className='User-Form-Row'>
-        <div className='User-Form-Row-Items'>
+        <div className='create-User-Form-Row-Items'>
         <div style={{display:"flex",gap:"5px"}}>
             <label>Department</label>
             <FontAwesomeIcon icon={faAsterisk} style={{fontSize:"10px",color:" red"}}/>
@@ -234,7 +234,7 @@ const CreateResearcher = () => {
             </select>
           </div>
 
-          <div className='User-Form-Row-Items'>
+          <div className='create-User-Form-Row-Items'>
             <label>Job Title</label>
             <input 
               type="text" 
@@ -249,7 +249,7 @@ const CreateResearcher = () => {
 
         {/* Row 4 */}
         <div className='User-Form-Row'>
-        <div className='User-Form-Row-Items'>
+        <div className='create-User-Form-Row-Items'>
         <div style={{display:"flex",gap:"5px"}}>
   <label>Organization</label>
   <FontAwesomeIcon icon={faAsterisk} style={{fontSize:"10px",color:" red"}}/>
@@ -269,7 +269,7 @@ const CreateResearcher = () => {
 </div>
 
 
-          <div className='User-Form-Row-Items'>
+          <div className='create-User-Form-Row-Items'>
           <div style={{display:"flex",gap:"5px"}}>
           <label>Primary Research Area</label>
           <FontAwesomeIcon icon={faAsterisk} style={{fontSize:"10px",color:" red"}}/>
@@ -292,7 +292,7 @@ const CreateResearcher = () => {
 
         {/* Row 5 */}
         <div className='User-Form-Row'>
-          <div className='User-Form-Row-Items'>
+          <div className='create-User-Form-Row-Items'>
             <label>Technical Skills</label>
             <input 
               type="text" 
@@ -304,7 +304,7 @@ const CreateResearcher = () => {
             />
           </div>
 
-          <div className='User-Form-Row-Items'>
+          <div className='create-User-Form-Row-Items'>
           <div style={{display:"flex",gap:"5px"}}>
           <label>Research Interests</label>
           <FontAwesomeIcon icon={faAsterisk} style={{fontSize:"10px",color:" red"}}/>
