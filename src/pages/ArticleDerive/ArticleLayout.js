@@ -39,7 +39,7 @@ const ArticleLayout = () => {
   const [termMissing, setTermMissing] = useState(false);
   const dropdownRef = useRef(null);
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
-
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [openAnnotate, setOpenAnnotate] = useState(false);
   const [annotateHeight, setAnnotateHeight] = useState(0);
   const [notesHeight, setNotesHeight] = useState(0);
@@ -536,7 +536,7 @@ const ArticleLayout = () => {
   return (
     <>
       <div className="container">
-        <SearchNavbar containerRef={null} />
+        <SearchNavbar containerRef={null} isModalOpen={isModalOpen} />
 
         <div className="content">
           <div
@@ -713,6 +713,8 @@ const ArticleLayout = () => {
               isStreamDoneRef={isStreamDoneRef}
               setClickedBack={setClickedBack}
               setActiveSessionId={setActiveSessionId}
+              isModalOpen={isModalOpen}
+              setIsModalOpen={setIsModalOpen}
             />
           )}
 

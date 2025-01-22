@@ -34,7 +34,9 @@ const ArticleContent = ({
   setIsStreamDone,
   isStreamDoneRef,
   setClickedBack,
-  setActiveSessionId
+  setActiveSessionId,
+  isModalOpen,
+  setIsModalOpen
 }) => {
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
   const deriveInsights = useSelector((state) => state.deriveInsights?.active);
@@ -136,7 +138,7 @@ const ArticleContent = ({
   }, [user_id, token]);
 
   const [currentid, setCurrentid] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  
   const [collectionAction, setCollectionAction] = useState("existing"); // Tracks which radio button is selected
   const [selectedCollection, setSelectedCollection] = useState("favorites");
   const [newCollectionName, setNewCollectionName] = useState("");
