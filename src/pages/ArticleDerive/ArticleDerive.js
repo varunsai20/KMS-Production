@@ -42,7 +42,8 @@ const ArticleDerive = ({
   setIsCitationsOpen,
   isStreamDone,
   setIsStreamDone,
-  isStreamDoneRef
+  isStreamDoneRef,
+  setClickedBack
 }) => {
 
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
@@ -67,6 +68,8 @@ const ArticleDerive = ({
   const [annotateData, setAnnotateData] = useState(
     location.state?.annotateData || ""
   );
+  const [autoScrollEnabled, setAutoScrollEnabled] = useState(false);
+  
   const endOfMessagesRef = useRef(null);
   const [chatHistory, setChatHistory] = useState(() => {
     const storedHistory = localStorage.getItem("chatHistory");
@@ -212,28 +215,53 @@ const ArticleDerive = ({
   };
   const handleMouseUpInsideContent = (e) => {
     if (!isLoggedIn) return;
+    console.log(e);
     const content = contentRef.current;
     const popup = popupRef.current;
-
+  
     if (!content || !popup) return;
-
+  
     const selection = window.getSelection();
     if (selection.rangeCount > 0) {
       const range = selection.getRangeAt(0);
       const selectedText = selection.toString().trim();
-
+  
       if (selectedText && content.contains(range.commonAncestorContainer)) {
         const rects = range.getClientRects();
         const lastRect = rects[rects.length - 1];
+  
         if (lastRect) {
           selectedTextRef.current = selectedText;
-      
-          // Use event.layerX and event.layerY for positioning
-          const lastX = e.layerX;
-          const lastY = e.layerY;
-      
-          popup.style.left = `${lastX}px`; // Set position using lastX
-          popup.style.top = `${lastY + 5}px`; // Set position using lastY with offset
+  
+          // Use getBoundingClientRect() for reliable positioning
+          const contentRect = content.getBoundingClientRect();
+          const popupWidth = popup.offsetWidth;
+          const popupHeight = popup.offsetHeight;
+  
+          // Calculate popup position relative to the container
+          let popupX = lastRect.left - contentRect.left; // Relative to the content
+          let popupY = lastRect.bottom - contentRect.top; // Below the selection
+  
+          // Adjust position to prevent the popup from overflowing the content boundaries
+          const contentWidth = contentRect.width;
+          const contentHeight = contentRect.height;
+  
+          if (popupX + popupWidth > contentWidth) {
+            popupX = contentWidth - popupWidth - 5; // Add margin
+          }
+          if (popupX < 0) {
+            popupX = 5; // Add margin
+          }
+          if (popupY + popupHeight > contentHeight) {
+            popupY = contentHeight - popupHeight - 5; // Add margin
+          }
+          if (popupY < 0) {
+            popupY = 5; // Add margin
+          }
+  
+          // Set popup position
+          popup.style.left = `${popupX}px`;
+          popup.style.top = `${popupY}px`;
           popup.style.display = "block";
         } else {
           popup.style.display = "none";
@@ -241,11 +269,12 @@ const ArticleDerive = ({
       } else {
         popup.style.display = "none";
       }
-      
     } else {
       popup.style.display = "none";
     }
   };
+  
+  
 
   const modalRef = useRef(null);
 
@@ -312,157 +341,162 @@ const ArticleDerive = ({
   });
 
   useEffect(() => {
-    // Scroll to the bottom whenever chat history is updated
-    if (endOfMessagesRef.current) {
+    // Auto-scroll to the bottom if enabled
+    if (autoScrollEnabled && endOfMessagesRef.current) {
       endOfMessagesRef.current.scrollIntoView({ behavior: "smooth" });
+      setAutoScrollEnabled(false);
     }
-  }, [chatHistory]); // This will trigger when chatHistory changes
+  }, [chatHistory, autoScrollEnabled]);
+  // const handleAskClick = async () => {
+  //   if (!query) {
+  //     showErrorToast("Please enter a query");
+  //     return;
+  //   }
 
-  const handleAskClick = async () => {
-    if (!query) {
-      showErrorToast("Please enter a query");
-      return;
-    }
+  //   setShowStreamingSection(true);
+  //   setLoading(true);
 
-    setShowStreamingSection(true);
-    setLoading(true);
+  //   const newChatEntry = { query, response: "", showDot: true };
+  //   setChatHistory((prevChatHistory) => [...prevChatHistory, newChatEntry]);
 
-    const newChatEntry = { query, response: "", showDot: true };
-    setChatHistory((prevChatHistory) => [...prevChatHistory, newChatEntry]);
+  //   // Create a unique key for the session based on the source and article id
+  //   const sessionKey = `${source}_${id}`;
+  //   const storedSessionId =
+  //     JSON.parse(sessionStorage.getItem("articleSessions"))?.[sessionKey] || "";
 
-    // Create a unique key for the session based on the source and article id
-    const sessionKey = `${source}_${id}`;
-    const storedSessionId =
-      JSON.parse(sessionStorage.getItem("articleSessions"))?.[sessionKey] || "";
+  //   const bodyData = JSON.stringify({
+  //     question: query,
+  //     user_id: user_id,
+  //     session_id: storedSessionId || undefined, // Use stored session_id if available
+  //     source: source,
+  //     article_id: Number(id),
+  //   });
 
-    const bodyData = JSON.stringify({
-      question: query,
-      user_id: user_id,
-      session_id: storedSessionId || undefined, // Use stored session_id if available
-      source: source,
-      article_id: Number(id),
-    });
+  //   try {
+  //     const response = await fetch(
+  //       "https://inferai.ai/api/view_article/generateanswer",
+  //       {
+  //         method: "POST",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //           Authorization: `Bearer ${token}`, // Add the Bearer token here
+  //         },
+  //         body: bodyData,
+  //       }
+  //     );
+  //     // console.log("API Response:", response);
 
-    try {
-      const response = await fetch(
-        "https://inferai.ai/api/view_article/generateanswer",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`, // Add the Bearer token here
-          },
-          body: bodyData,
-        }
-      );
-      // console.log("API Response:", response);
+  //     const reader = response.body.getReader();
+  //     const decoder = new TextDecoder();
+  //     let buffer = "";
+  //     setQuery("");
 
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = "";
-      setQuery("");
+  //     const readStream = async () => {
+  //       let done = false;
+  //       const delay = 100; // Delay between words
 
-      const readStream = async () => {
-        let done = false;
-        const delay = 100; // Delay between words
+  //       while (!done) {
+  //         const { value, done: streamDone } = await reader.read();
+  //         done = streamDone;
 
-        while (!done) {
-          const { value, done: streamDone } = await reader.read();
-          done = streamDone;
+  //         if (value) {
+  //           buffer += decoder.decode(value, { stream: true });
 
-          if (value) {
-            buffer += decoder.decode(value, { stream: true });
+  //           while (buffer.indexOf("{") !== -1 && buffer.indexOf("}") !== -1) {
+  //             let start = buffer.indexOf("{");
+  //             let end = buffer.indexOf("}", start);
+  //             if (start !== -1 && end !== -1) {
+  //               const jsonChunk = buffer.slice(start, end + 1);
+  //               buffer = buffer.slice(end + 1);
 
-            while (buffer.indexOf("{") !== -1 && buffer.indexOf("}") !== -1) {
-              let start = buffer.indexOf("{");
-              let end = buffer.indexOf("}", start);
-              if (start !== -1 && end !== -1) {
-                const jsonChunk = buffer.slice(start, end + 1);
-                buffer = buffer.slice(end + 1);
+  //               try {
+  //                 const parsedData = JSON.parse(jsonChunk);
+  //                 if (parsedData.session_id) {
+  //                   const articleSessions =
+  //                     JSON.parse(sessionStorage.getItem("articleSessions")) ||
+  //                     {};
+  //                   articleSessions[sessionKey] = parsedData.session_id; // Store session_id under source_id key
+  //                   sessionStorage.setItem(
+  //                     "articleSessions",
+  //                     JSON.stringify(articleSessions)
+  //                   );
+  //                 }
 
-                try {
-                  const parsedData = JSON.parse(jsonChunk);
-                  if (parsedData.session_id) {
-                    const articleSessions =
-                      JSON.parse(sessionStorage.getItem("articleSessions")) ||
-                      {};
-                    articleSessions[sessionKey] = parsedData.session_id; // Store session_id under source_id key
-                    sessionStorage.setItem(
-                      "articleSessions",
-                      JSON.stringify(articleSessions)
-                    );
-                  }
+  //                 const answer = parsedData.answer;
+  //                 const words = answer.split("");
 
-                  const answer = parsedData.answer;
-                  const words = answer.split("");
+  //                 for (const word of words) {
+  //                   await new Promise((resolve) => setTimeout(resolve, delay));
 
-                  for (const word of words) {
-                    await new Promise((resolve) => setTimeout(resolve, delay));
+  //                   setChatHistory((chatHistory) => {
+  //                     const updatedChatHistory = [...chatHistory];
+  //                     const lastEntryIndex = updatedChatHistory.length - 1;
 
-                    setChatHistory((chatHistory) => {
-                      const updatedChatHistory = [...chatHistory];
-                      const lastEntryIndex = updatedChatHistory.length - 1;
+  //                     if (lastEntryIndex >= 0) {
+  //                       updatedChatHistory[lastEntryIndex] = {
+  //                         ...updatedChatHistory[lastEntryIndex],
+  //                         response:
+  //                           (updatedChatHistory[lastEntryIndex].response ||
+  //                             "") +
+  //                           "" +
+  //                           word,
+  //                         showDot: true,
+  //                       };
+  //                     }
 
-                      if (lastEntryIndex >= 0) {
-                        updatedChatHistory[lastEntryIndex] = {
-                          ...updatedChatHistory[lastEntryIndex],
-                          response:
-                            (updatedChatHistory[lastEntryIndex].response ||
-                              "") +
-                            "" +
-                            word,
-                          showDot: true,
-                        };
-                      }
+  //                     return updatedChatHistory;
+  //                   });
 
-                      return updatedChatHistory;
-                    });
+  //                   setResponse((prev) => prev + "" + word);
 
-                    setResponse((prev) => prev + "" + word);
+  //                   if (endOfMessagesRef.current) {
+  //                     endOfMessagesRef.current.scrollIntoView({
+  //                       behavior: "smooth",
+  //                     });
+  //                   }
+  //                 }
+  //                 setChatHistory((chatHistory) => {
+  //                   const updatedChatHistory = [...chatHistory];
+  //                   const lastEntryIndex = updatedChatHistory.length - 1;
+  //                   if (lastEntryIndex >= 0) {
+  //                     updatedChatHistory[lastEntryIndex].showDot = false;
+  //                   }
+  //                   return updatedChatHistory;
+  //                 });
+  //               } catch (error) {
+  //                 console.error("Error parsing JSON chunk:", error);
+  //               }
+  //             }
+  //           }
+  //         }
+  //       }
+  //       setRefreshSessions((prev) => !prev);
+  //       setLoading(false);
+  //       localStorage.setItem("chatHistory", JSON.stringify(chatHistory));
+  //     };
 
-                    if (endOfMessagesRef.current) {
-                      endOfMessagesRef.current.scrollIntoView({
-                        behavior: "smooth",
-                      });
-                    }
-                  }
-                  setChatHistory((chatHistory) => {
-                    const updatedChatHistory = [...chatHistory];
-                    const lastEntryIndex = updatedChatHistory.length - 1;
-                    if (lastEntryIndex >= 0) {
-                      updatedChatHistory[lastEntryIndex].showDot = false;
-                    }
-                    return updatedChatHistory;
-                  });
-                } catch (error) {
-                  console.error("Error parsing JSON chunk:", error);
-                }
-              }
-            }
-          }
-        }
-        setRefreshSessions((prev) => !prev);
-        setLoading(false);
-        localStorage.setItem("chatHistory", JSON.stringify(chatHistory));
-      };
+  //     readStream();
+  //   } catch (error) {
+  //     console.error("Error fetching or reading stream:", error);
+  //     setLoading(false);
+  //   }
+  // };
 
-      readStream();
-    } catch (error) {
-      console.error("Error fetching or reading stream:", error);
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (triggerAskClick) {
-      handleAskClick();
-      setTriggerAskClick(false); // Reset the flag after handling the click
-    }
-  }, [query, triggerAskClick]);
+  // useEffect(() => {
+  //   if (triggerAskClick) {
+  //     handleAskClick();
+  //     setTriggerAskClick(false); // Reset the flag after handling the click
+  //   }
+  // }, [query, triggerAskClick]);
 
   const storedSessionId =
-    localStorage.getItem("sessionId") || localStorage.getItem("session_id");
-
+    sessionStorage.getItem("sessionId") || sessionStorage.getItem("session_id");
+  useEffect(()=>{
+    sessionStorage.removeItem("sessionId")
+    sessionStorage.removeItem("session_id")
+    sessionStorage.removeItem("articleSessions")
+    const storedSessionId=null
+  },[])
 
     useEffect(() => {
       isStreamDoneRef.current = isStreamDone; // Sync ref with state
@@ -474,7 +508,7 @@ const ArticleDerive = ({
         showErrorToast("Please enter a query or upload a file");
         return;
       }
-      setIsStreamDone(false)
+      setIsStreamDone(false);
       removeUploadedFile();
       setQuery("");
       setLoading(true);
@@ -486,6 +520,10 @@ const ArticleDerive = ({
         showDot: true,
       };
       setChatHistory((prevChatHistory) => [...prevChatHistory, newChatEntry]);
+    
+      const sessionKey = `${user.user_id}_${uploadedFile?.name || "query"}`;
+      const storedSessionId =
+        sessionStorage.getItem("session_id") || "";
     
       try {
         let url = "https://inferai.ai/api/insights/upload";
@@ -525,8 +563,9 @@ const ArticleDerive = ({
     
         const readStream = async () => {
           try {
+            let autoScrollSet = false;
             let done = false;
-            const delay = 1;
+            const delay = 0;
     
             while (!done) {
               if (isStreamDoneRef.current) break; // Stop streaming if flagged
@@ -545,6 +584,18 @@ const ArticleDerive = ({
     
                     try {
                       const parsedData = JSON.parse(jsonChunk);
+    
+                      if (parsedData.session_id) {
+                        const articleSessions =
+                          JSON.parse(sessionStorage.getItem("articleSessions")) || {};
+                        sessionStorage.setItem("session_id", parsedData.session_id);
+                        articleSessions[sessionKey] = parsedData.session_id;
+                        sessionStorage.setItem(
+                          "articleSessions",
+                          JSON.stringify(articleSessions)
+                        );
+                      }
+    
                       const answer = parsedData.answer;
                       const words = answer.split("");
     
@@ -561,7 +612,6 @@ const ArticleDerive = ({
                               ...updatedChatHistory[lastEntryIndex],
                               response:
                                 (updatedChatHistory[lastEntryIndex].response || "") +
-                                "" +
                                 word,
                               showDot: true,
                             };
@@ -570,10 +620,9 @@ const ArticleDerive = ({
                           return updatedChatHistory;
                         });
     
-                        if (endOfMessagesRef.current) {
-                          endOfMessagesRef.current.scrollIntoView({
-                            behavior: "smooth",
-                          });
+                        if (!autoScrollSet && endOfMessagesRef.current) {
+                          setAutoScrollEnabled(true);
+                          autoScrollSet = true;
                         }
                       }
                     } catch (error) {
@@ -600,6 +649,7 @@ const ArticleDerive = ({
       }
     }, [query, token, storedSessionId, user.user_id, uploadedFile]);
     
+    
 
   const handlePromptWithFile = (prompt) => {
     if (!uploadedFile && !storedSessionId) return; // Ensure either a file is selected or a session exists
@@ -620,11 +670,44 @@ const ArticleDerive = ({
   };
   const handleBackClick = () => {
     const unsavedChanges = localStorage.getItem("unsavedChanges");
+  
     if (unsavedChanges === "true") {
       setShowConfirmPopup(true);
-    } else {
-      navigate(-1);
+      return; // Do not proceed further if unsaved changes exist
     }
+  
+    // Retrieve session IDs from localStorage
+    const sessionIds = JSON.parse(localStorage.getItem("sessionIds")) || [];
+  
+    if (sessionIds.length > 1) {
+      // Remove the last session ID
+      const currentSessionId = sessionIds.pop();
+  
+      // Set the previous session ID (last after pop) in sessionStorage
+      const previousSessionId = sessionIds[sessionIds.length - 1];
+      sessionStorage.setItem("session_id", previousSessionId);
+  
+      // Update localStorage with the remaining session IDs
+      localStorage.setItem("sessionIds", JSON.stringify(sessionIds));
+  
+      console.log(`Navigated back. Current session ID removed: ${currentSessionId}`);
+      console.log(`New active session ID set: ${previousSessionId}`);
+    } else if (sessionIds.length === 1) {
+      // If there's only one session, clear sessionStorage and localStorage for session_id
+      sessionStorage.removeItem("session_id");
+      localStorage.removeItem("sessionIds");
+  
+      console.log("Last session ID removed. No more sessions available.");
+    } else {
+      // If there are no session IDs in localStorage
+      setActiveSessionId(null)
+      sessionStorage.removeItem("session_id");
+      console.log("No session IDs found. Cleared session storage.");
+    }
+  
+    setClickedBack(true);
+    // Navigate back
+    navigate(-1);
   };
 
   useEffect(() => {
@@ -670,22 +753,24 @@ const ArticleDerive = ({
     }
   }, [location.state]);
 
-  useEffect(() => {
-    const storedSessionId = localStorage.getItem("session_id");
-    if (storedSessionId) {
-      setActiveSessionId(storedSessionId);
-    }
-  }, [sessions]);
+  // useEffect(() => {
+  //   const storedSessionId = localStorage.getItem("session_id");
+  //   if (storedSessionId) {
+  //     setActiveSessionId(storedSessionId);
+  //   }
+  // }, [sessions]);
 
   useEffect(() => {
     const storedSessionId =
-      localStorage.getItem("sessionId") || localStorage.getItem("session_id");
-    if (storedSessionId || uploadedFile) {
+      sessionStorage.getItem("sessionId") || sessionStorage.getItem("session_id");
+  
+    if ((storedSessionId || uploadedFile) && !loading) {
       setIsPromptEnabled(true);
     } else {
       setIsPromptEnabled(false);
     }
-  }, [handleDeriveClick, uploadedFile]);
+  }, [handleDeriveClick, uploadedFile, loading]);
+  
 
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
@@ -772,8 +857,18 @@ const ArticleDerive = ({
     <>
       <div
         className="derive-article-content"
-        style={{ width: widthIfLoggedIn, height: heightIfLoggedIn,border:!uploadedFile  && chatHistory.length==0 && "1px solid rgba(235, 235, 243, 1)" }}
-        ref={contentRef}
+        style={{
+          width: widthIfLoggedIn,
+          height: heightIfLoggedIn,
+          border:
+            !uploadedFile && chatHistory.length === 0
+              ? "1px solid rgba(235, 235, 243, 1)"
+              : undefined,
+          display: !uploadedFile && chatHistory.length === 0 ? "flex" : undefined,
+          flexDirection: !uploadedFile ? "column" : undefined,
+          justifyContent: !uploadedFile ? "center" : undefined,
+        }}
+                ref={contentRef}
         onMouseUp={handleMouseUpInsideContent}
       >
         
@@ -863,59 +958,58 @@ const ArticleDerive = ({
                 </div>
               ))}
               </div>
-              {uploadedFile && uploadedFile.name.endsWith(".docx") && (
-                <div className="docx-preview">
-                  <h3>Preview</h3>
-                  <div
-                    id="docx-container"
-                    style={{
-                      maxHeight: "300px",
-                      overflow: "auto",
-                      border: "1px solid #ccc",
-                    }}
-                  ></div>
-                </div>
-              )}
+              
               {/* File Preview */}
-              {uploadedFile && uploadedFile.name.endsWith(".pdf") && (
-                <div className="iframe-preview">
-                  <iframe
-                    src={pdfURL}
-                    width="100%"
-                    height="350px"
-                    title="PDF Preview"
-                  ></iframe>
-                </div>
-              )}
+              
             </div>
           </div>
         ) : (
           <>
-            {uploadedFile && uploadedFile.name.endsWith(".docx") && (
-              <div className="docx-preview">
-                <h3>Preview</h3>
-                <div
-                  ref={endOfMessagesRef}
-                  id="docx-container"
-                  style={{
-                    maxHeight: "300px",
-                    overflow: "auto",
-                    border: "1px solid #ccc",
-                  }}
-                ></div>
-              </div>
-            )}
-            {/* File Preview */}
-            {uploadedFile && uploadedFile.name.endsWith(".pdf") && (
-              <div className="iframe-preview" ref={endOfMessagesRef}>
-                <iframe
-                  src={pdfURL}
-                  width="100%"
-                  height="350px"
-                  title="PDF Preview"
-                ></iframe>
-              </div>
-            )}
+            {uploadedFile && (
+  <>
+    {uploadedFile.name.endsWith(".docx") && (
+      <div
+        className="docx-preview"
+        style={{
+          border: "1px solid rgb(235, 235, 243)",
+          borderRadius: "20px",
+        }}
+      >
+        <div
+          id="docx-container"
+          // ref={endOfMessagesRef}
+          style={{
+            maxHeight: "55vh",
+            overflow: "auto",
+            overflowX: openNotes || openAnnotate ? "auto" : "hidden",
+            border: "1px solid #ccc",
+            borderRadius: "20px",
+          }}
+        ></div>
+      </div>
+    )}
+    {uploadedFile.name.endsWith(".pdf") && (
+      <div
+        className="iframe-preview"
+        style={{
+          maxHeight: "55vh",
+          overflow: "auto",
+          overflowX: openNotes || openAnnotate ? "auto" : "hidden",
+          border: "1px solid #ccc",
+          borderRadius: "20px",
+        }}
+      >
+        <iframe
+          src={pdfURL}
+          width="100%"
+          height="350px"
+          title="PDF Preview"
+        ></iframe>
+      </div>
+    )}
+  </>
+)}
+
           </>
         )}
         
