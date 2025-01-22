@@ -9,7 +9,9 @@ import { useSelector } from "react-redux";
 const NotesManager = ({
   selectedText: propSelectedText,
   notesHeight,
+  annotateHeight,
   isOpenNotes,
+  isOpenAnnotate,
   height,
   oncloseNotes,
 }) => {
@@ -143,7 +145,9 @@ const NotesManager = ({
           onClose={handleCloseCreate}
           onDelete={handleDeleteNote}
           notesHeight={notesHeight}
+          annotateHeight={annotateHeight}
           isOpenNotes={isOpenNotes}
+          isOpenAnnotate={isOpenAnnotate}
           height={height}
           fetchNotes={fetchNotes}
         />
@@ -155,6 +159,7 @@ const NotesManager = ({
           textToSave={editTextToSave}
           setNotes={setNotes}
           onClose={handleCloseEdit}
+          annotateHeight={annotateHeight}
           notesHeight={notesHeight}
           isOpenNotes={isOpenNotes}
           height={height}

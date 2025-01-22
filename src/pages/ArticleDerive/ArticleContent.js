@@ -266,7 +266,6 @@ const ArticleContent = ({
     }
   };
   const handleMouseUp = (event) => {
-    console.log(`Layer X: ${event.layerX}, Layer Y: ${event.layerY}`);
 
     if (!isLoggedIn) return;
 
@@ -292,6 +291,7 @@ const ArticleContent = ({
           if (popupRef.current) {
             popupRef.current.style.left = `${popupPositionRef.current.x}px`;
             popupRef.current.style.top = `${popupPositionRef.current.y + 5}px`;
+            // popupRef.current.style.transform = `translate(${popupPositionRef.current.x}px, ${popupPositionRef.current.y}px)`;
             popupRef.current.style.display = "block";
           }
         } else {
@@ -306,6 +306,7 @@ const ArticleContent = ({
       }
     }
   };
+  
 
   const handleCloseCollectionModal = () => {
     setCollectionAction("existing");
