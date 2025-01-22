@@ -39,6 +39,12 @@
   border-radius: 4px;
   cursor: pointer;
   transition: background-color 0.3s;
+  border: 1px solid #EBEBF3;
+  border-radius: 10px;
+}
+.collection-item-list p{
+  margin: 0;
+  padding: 0;
 }
 
 .collection-item:hover {
@@ -64,8 +70,6 @@
 }
 
 .collection-articles-header {
-  margin-bottom: 10px;
-  /* color: #1a82ff; */
   font-weight: bold;
   text-align: center;
 }
@@ -105,6 +109,7 @@
 .Search-collection-icon {
   position: absolute;
   padding: 5px;
+  width: 1.5vw;
 }
 
 .Search-collection-input {
@@ -159,6 +164,87 @@
 .bookmark-Source {
   width: 15%;
 }
+.collection-item-list{
+  display: flex;
+  justify-content: space-between;
+}
+@media (min-width: 0px) and (max-width: 576px){
+.collection-modal{
+  flex-direction: column;
+}
+.collections-list{
+  display: flex;
+  flex: none;
+  gap: 10px;
+  flex-wrap: wrap;
+  overflow-y: hidden;
+  border-right: none;
+}
+.collection-item-list{
+  gap: 5px;
+  flex-wrap: wrap;
+}
+.collection-heading{
+  display: flex;
+  justify-content: space-between;
+}
+.Search-Collection{
+  margin-bottom: 0px;
+}
+.collection-item{
+  padding: 0px;
+}
+.collection-item-list p{
+  margin: revert;
+  padding: revert;
+}
+.articles-list thead th {
+  color: white;
+  background: #1A82FF;
+  border-radius: 5px;
+}
+.Search-collection-icon {
+  width: 3vw;
+}
+}
+@media screen and (min-width: 576px) and (max-width: 992px){
+  .collection-modal{
+    flex-direction: column;
+  }
+  .collections-list{
+    display: flex;
+    flex: none;
+    gap: 10px;
+    flex-wrap: wrap;
+    overflow-y: hidden;
+    border-right: none;
+  }
+
+  .collection-heading{
+    display: flex;
+    justify-content: space-between;
+  }
+  .Search-Collection{
+    margin-bottom: 0px;
+  }
+  .collection-item{
+    padding: 0px;
+  }
+  .collection-item-list p{
+    margin:revert;
+    padding: revert;
+  }
+  .articles-list thead th {
+    color: white;
+    background: #1A82FF;
+    border-radius: 5px;
+  }
+  .Search-collection-icon {
+    width: 3vw;
+  }
+
+}
+/* @media (min-width: 992px) and (max-width: 1400px) */
 @media (min-width: 900px) and (max-width: 1366px) {
   .articles-list td {
     font-size: 14px;

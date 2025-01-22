@@ -1,7 +1,7 @@
 .search-container-content {
   position: sticky;
   top: 0;
-  /* z-index: 1; */
+  z-index: 1;
   background: white;
   width: 100%;
 }
@@ -606,7 +606,7 @@ button {
   margin-bottom: 10px;
 }
 #close-collection-modal {
-  padding: 0;
+  padding: 0px 10px 0px 0px;
   border: none;
   background-color: white;
   

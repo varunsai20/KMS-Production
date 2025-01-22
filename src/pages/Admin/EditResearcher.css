@@ -1,3 +1,7 @@
+.Edit-Researcher{
+  margin: 0 2%;
+
+}
 .edit-researcher-header {
     display: flex;
     align-items: center;
@@ -89,4 +93,53 @@
     padding: 10px 20px;
     border-radius: 5px;
   }
-  
+  @media (min-width: 0px) and (max-width: 576px){
+    .Edit-Researcher{
+    border-radius: 30px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: rgba(0, 0, 0, 0.08) 0px 10px 81px 0px;
+
+    }
+    .edit-researcher-form {
+      width:auto;
+  }
+  .edit-researcher-header{
+    padding: 15px;
+  }
+  .User-Form-Row {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+}
+.User-Form-Row-Items {
+  display: flex;
+  flex-direction: column;
+  width: 90%;
+  gap: 10px;
+}
+.form-actions {
+  margin: 20px;
+}
+}
+@media screen and (min-width: 576px) and (max-width: 992px){
+  .Edit-Researcher{
+  border-radius: 30px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: rgba(0, 0, 0, 0.08) 0px 10px 81px 0px;
+
+  }
+  .edit-researcher-header{
+    padding: 15px;
+  }
+  .edit-researcher-form {
+    width: 95%;
+    padding: 15px;
+
+  }
+  .form-actions {
+    margin: 20px;
+  }
+
+}

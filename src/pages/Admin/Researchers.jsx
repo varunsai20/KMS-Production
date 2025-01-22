@@ -5,6 +5,8 @@ import axios from "axios";
 import "./Researcher.css";
 import SearchIcon from "../../assets/images/Search.svg";
 import { toast } from "react-toastify";
+import { IoIosArrowBack,IoIosArrowForward } from "react-icons/io";
+
 
 
 const columns = [
@@ -214,7 +216,7 @@ const Researchers = () => {
   };
 
   return (
-    <div style={{ margin: "0 2%" }}>
+    <div className="users-list">
       <h2 className="ResearcherHeading">Manage Users</h2>
       <div className="Manage-Researchers">
         <div className="Manage-Researcher-Input">
@@ -244,10 +246,15 @@ const Researchers = () => {
           </>
         ) : (
           <>
-            <th>
-              <button onClick={handlePrevious}>←</button>
-              {columns[currentColumnIndex].label}
-              <button onClick={handleNext}>→</button>
+            <th style={{border: "1px solid #0000001A",borderRadius:"10px"}}>
+              <button onClick={handlePrevious}>
+                <IoIosArrowBack style={{marginTop:"1%"}}/>
+
+              </button>
+              <span style={{margin: "0px 20px",fontSize: "16px"}}>{columns[currentColumnIndex].label}</span>
+              <button onClick={handleNext}>
+              <IoIosArrowForward />
+              </button>
             </th>
             <th>Status</th>
             <th>Actions</th>
@@ -376,6 +383,27 @@ const Researchers = () => {
           )}
         </tr>
       ))}
+       {showConfirmDelete && (
+              <div className="confirm-overlay">
+                <div className="confirm-popup">
+                  <p>Are you sure to delete this user?</p>
+                  <div className="confirm-buttons">
+                    <button
+                      className="confirm-keep-button"
+                      onClick={cancelDelete}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      className="confirm-delete-button"
+                      onClick={confirmDelete}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
     </tbody>
   </table>
 </div>

@@ -190,6 +190,15 @@
   z-index: 1000;
   animation: fadein 0.5s, fadeout 0.5s 2.5s;
 }
+.tooltip{
+  background-color: #ffc03f;
+  color: white;
+  padding: 10px 10px;
+  border-radius: 5px;
+  font-size: 14px;
+  white-space: nowrap;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1),
+}
 
 @keyframes fadein {
   from {

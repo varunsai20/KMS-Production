@@ -86,6 +86,7 @@
 @media (min-width: 0px) and (max-width: 576px){
 .sidebar{
   width: 100%;
+  background: none;
 }
 .sidebar-components {
    
@@ -98,10 +99,15 @@
       width: auto;
       flex-direction: row;
 }
+.nav-item {
+  border: 1px solid #EBEBF3;
+  border-radius: 10px;
+}
 }
 @media screen and (min-width: 576px) and (max-width: 992px){
   .sidebar{
     width: 100%;
+    background: none;
   }
   .sidebar-components {
    
@@ -113,5 +119,9 @@
     display: flex;
         width: auto;
         flex-direction: row;
+  }
+  .nav-item {
+    border: 1px solid #EBEBF3;
+    border-radius: 10px;
   }
 }

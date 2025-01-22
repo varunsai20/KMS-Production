@@ -467,6 +467,8 @@ const Lander = () => {
         <>
           <div className="blur-overlay">
             <div className="collection-modal">
+        {/* <h3 className="collection-heading">My Collections</h3> */}
+
               <Collection setIsCollectionOpen={setIsCollectionOpen} />
             </div>
           </div>
