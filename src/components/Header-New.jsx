@@ -56,9 +56,6 @@ const Header = () => {
     }
   };
 
-  const handleNavigateHome = () => {
-    navigate("/");
-  };
 const handleCancelLogout = (e)=>{
   e.stopPropagation();
   setConfirmLogout(false);
@@ -94,19 +91,6 @@ setConfirmLogout(false);
       <section className="Search-nav-login">
         {isLoggedIn ? (
           <>
-            {location.pathname.startsWith(`/users/profile/${userId}`) && (
-              <span
-                onClick={handleNavigateHome}
-                style={{
-                  marginLeft: "10px",
-                  textDecoration: "none",
-                  fontWeight: "bold",
-                  cursor: "pointer",
-                }}
-              >
-                Home
-              </span>
-            )}
             <div
               onClick={handleProfileClick}
               style={{ cursor: "pointer", height: "35px" }}

@@ -267,9 +267,7 @@ const ArticleContent = ({
     }
   };
   const handleMouseUp = (event) => {
-    console.log(event);
-    console.log(`Layer X: ${event.layerX}, Layer Y: ${event.layerY}`);
-  
+
     if (!isLoggedIn) return;
   
     if (!contentRef.current || !contentRef.current.contains(event.target)) {
@@ -324,8 +322,7 @@ const ArticleContent = ({
       }
     }
   };
-  
-  
+
 
   const handleCloseCollectionModal = () => {
     setCollectionAction("existing");

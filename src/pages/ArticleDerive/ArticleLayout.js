@@ -794,7 +794,7 @@ if (id) {
                     height: `${notesHeight}vh`,
                   }}
                 >
-                  <Notes selectedText={savedText} notesHeight={notesHeight} />
+                  <Notes selectedText={savedText} notesHeight={notesHeight} annotateHeight={annotateHeight} isOpenAnnotate={openAnnotate}/>
                   <div
                     className="notes-line1"
                     onMouseDown={handleNotesResize}

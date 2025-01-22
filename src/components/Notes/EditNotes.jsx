@@ -28,8 +28,9 @@ const Editnotes = ({
   isOpenNotes,
   height,
   textToSave,
+  annotateHeight
 }) => {
-  console.log("notes in edit notes",notes);
+
   const { user } = useSelector((state) => state.auth);
 
   const user_id = user?.user_id;
@@ -41,8 +42,9 @@ const Editnotes = ({
   const [isPlaceholderVisible, setIsPlaceholderVisible] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
   const [tooltipMessage, setTooltipMessage] = useState(""); 
-  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
+  const [tooltipTimeout, setTooltipTimeout] = useState(null);
   const inputRef = useRef(null);
+  
   const [activeFormats, setActiveFormats] = useState({
     bold: false,
     italic: false,
@@ -60,13 +62,26 @@ const Editnotes = ({
   const [unsavedChanges, setUnsavedChanges] = useState(false);
   const initialText = useRef("");
 
-  const calculateTooltipPosition = () => {
-    const inputBox = inputRef.current.getBoundingClientRect();
-    return {
-      x: inputBox.left,
-      y: inputBox.top + inputBox.height + window.scrollY, // Add height to position below
-    };
+const calculateTooltipPosition = () => {
+  if (!inputRef.current) return { x: 0, y: 0 };
+  const inputBox = inputRef.current.getBoundingClientRect();
+  return {
+    x: inputBox.left + window.scrollX, // Adjust for page scroll
+    y: inputBox.bottom + window.scrollY + 45, // Position 5px below input
   };
+};
+
+useEffect(() => {
+  if (showTooltip) {
+    const timeout = setTimeout(() => {
+      setShowTooltip(false);
+    },100000); // Tooltip remains for 3 seconds
+    setTooltipTimeout(timeout);
+
+    return () => clearTimeout(timeout); // Clear on component unmount or tooltip change
+  }
+}, [showTooltip]);
+
 
   useEffect(() => {
     const localUnsavedChanges = localStorage.getItem("unsavedChanges");
@@ -243,21 +258,13 @@ const Editnotes = ({
     e.preventDefault();
     const noteDetails = editorRef.current.innerHTML;
     if (!title.trim()) {
-      setTooltipMessage("⚠ Please add a title.")
+      setTooltipMessage("⚠ Please add a title.");
       setShowTooltip(true);
-      setTimeout =(()=>setShowTooltip(false))
-     
       return;
-    } else {
-      //setTitleError("");
     }
-    const isTitleDuplicate = notes.some((note) => note.title === title.trim());
-  if (isTitleDuplicate) {
-    setTooltipMessage("⚠ Title already exists.Try another one.");
-    setShowTooltip(true);
-      setTimeout(() => setShowTooltip(false));
-      return;
-  }
+  
+   
+
 
     if (title && noteDetails && noteDetails !== "Take your note...") {
       const updatedNote = {
@@ -283,6 +290,14 @@ const Editnotes = ({
               n.note_id === updatedNote.note_id ? updatedNote : n
             )
           );
+          const isDuplicateTitle = notes.some(
+            (n) => n.title === title.trim() && n.note_id !== note_id
+          );
+          if (isDuplicateTitle) {
+            setTooltipMessage("⚠ Title already exists. Try another one.");
+            setShowTooltip(true);
+            return;
+          }
           showSuccessToast("Notes Saved Successfully");
           setUnsavedChanges(false); // Reset unsaved changes after saving
           initialText.current = updatedNote.content;
@@ -420,7 +435,7 @@ const Editnotes = ({
   onChange={(e) => {
     const newTitle = e.target.value;
     setTitle(newTitle);
-
+    setShowTooltip(false);
     if (!newTitle.trim() && !noteContent.trim()) {
       setUnsavedChanges(false);
       localStorage.removeItem("unsavedChanges");
@@ -440,19 +455,21 @@ const Editnotes = ({
   }
 />
         </div>
-{showTooltip && (
-            <div className="tooltip"
-            style={{
-              transform: `translate(${tooltipPosition.x}px, ${tooltipPosition.y}px)`,
-            }}>
-              {tooltipMessage}
-            </div>
-          )}
-        <div
+        {showTooltip && (
+    <div
+      className="tooltip"
+      style={{
+        left: calculateTooltipPosition().x - inputRef.current.getBoundingClientRect().left,
+        top: calculateTooltipPosition().y - inputRef.current.getBoundingClientRect().top, 
+      }}
+    >
+      {tooltipMessage}
+    </div>
+  )}        <div
           className={
             isOpenNotes ? "lander-edit-note__details" : "edit-note__details"
           }
-          style={isOpenNotes ? { height: `${height - 135}px` } : {}}
+          style={isOpenNotes ? { height: `${height - 135}px` } : {maxHeight: annotateHeight ===0?"35vh":`${annotateHeight+5}vh`}}
           ref={editorRef}
           contentEditable={true}
           suppressContentEditableWarning={true}

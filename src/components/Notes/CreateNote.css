@@ -31,11 +31,14 @@
   font-family: Manrope;
   overflow-y: auto;
   cursor: text;
+  margin-bottom: 4px;
+  text-align: start;
+  border-radius: 5px;
 }
 .create-note__form {
   display: flex;
   flex-direction: column;
-  max-height: 41vh;
+  /* max-height: 41vh; */
 }
 .note-input {
   width: 100%;
