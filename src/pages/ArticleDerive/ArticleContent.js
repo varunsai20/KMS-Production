@@ -267,32 +267,49 @@ const ArticleContent = ({
     }
   };
   const handleMouseUp = (event) => {
+    console.log(event);
     console.log(`Layer X: ${event.layerX}, Layer Y: ${event.layerY}`);
-
+  
     if (!isLoggedIn) return;
-
+  
     if (!contentRef.current || !contentRef.current.contains(event.target)) {
       return;
     }
-
+  
     const selection = window.getSelection();
     if (selection.rangeCount > 0) {
       const range = selection.getRangeAt(0);
       const selectedText = selection.toString().trim();
-
+  
       if (selectedText) {
         const rects = range.getClientRects();
         const lastRect = rects[rects.length - 1];
         if (lastRect) {
           selectedTextRef.current = selectedText;
-          popupPositionRef.current = {
-            x: event.layerX, // Use Layer X
-            y: event.layerY, // Use Layer Y
-          };
-
+  
+          // Calculate position based on layerX and layerY
+          let x = event.layerX;
+          let y = event.layerY;
+  
+          // Adjust position if it exceeds the target's boundaries
+          const targetWidth = event.target.offsetWidth;
+          const popupWidth = popupRef.current ? popupRef.current.offsetWidth : 0;
+  
+          // Ensure the popup stays within the horizontal bounds
+          if (x + popupWidth > targetWidth) {
+            x = targetWidth - popupWidth - 5; // Add a small margin
+          }
+  
+          // Ensure the popup doesn't exceed the left boundary
+          if (x < 0) {
+            x = 5; // Add a small margin
+          }
+  
+          popupPositionRef.current = { x, y };
+  
           if (popupRef.current) {
             popupRef.current.style.left = `${popupPositionRef.current.x}px`;
-            popupRef.current.style.top = `${popupPositionRef.current.y + 5}px`;
+            popupRef.current.style.top = `${popupPositionRef.current.y + 5}px`; // Adjust vertical positioning slightly
             popupRef.current.style.display = "block";
           }
         } else {
@@ -307,6 +324,8 @@ const ArticleContent = ({
       }
     }
   };
+  
+  
 
   const handleCloseCollectionModal = () => {
     setCollectionAction("existing");

@@ -215,28 +215,53 @@ const ArticleDerive = ({
   };
   const handleMouseUpInsideContent = (e) => {
     if (!isLoggedIn) return;
+    console.log(e);
     const content = contentRef.current;
     const popup = popupRef.current;
-
+  
     if (!content || !popup) return;
-
+  
     const selection = window.getSelection();
     if (selection.rangeCount > 0) {
       const range = selection.getRangeAt(0);
       const selectedText = selection.toString().trim();
-
+  
       if (selectedText && content.contains(range.commonAncestorContainer)) {
         const rects = range.getClientRects();
         const lastRect = rects[rects.length - 1];
+  
         if (lastRect) {
           selectedTextRef.current = selectedText;
-      
-          // Use event.layerX and event.layerY for positioning
-          const lastX = e.layerX;
-          const lastY = e.layerY;
-      
-          popup.style.left = `${lastX}px`; // Set position using lastX
-          popup.style.top = `${lastY + 5}px`; // Set position using lastY with offset
+  
+          // Use getBoundingClientRect() for reliable positioning
+          const contentRect = content.getBoundingClientRect();
+          const popupWidth = popup.offsetWidth;
+          const popupHeight = popup.offsetHeight;
+  
+          // Calculate popup position relative to the container
+          let popupX = lastRect.left - contentRect.left; // Relative to the content
+          let popupY = lastRect.bottom - contentRect.top; // Below the selection
+  
+          // Adjust position to prevent the popup from overflowing the content boundaries
+          const contentWidth = contentRect.width;
+          const contentHeight = contentRect.height;
+  
+          if (popupX + popupWidth > contentWidth) {
+            popupX = contentWidth - popupWidth - 5; // Add margin
+          }
+          if (popupX < 0) {
+            popupX = 5; // Add margin
+          }
+          if (popupY + popupHeight > contentHeight) {
+            popupY = contentHeight - popupHeight - 5; // Add margin
+          }
+          if (popupY < 0) {
+            popupY = 5; // Add margin
+          }
+  
+          // Set popup position
+          popup.style.left = `${popupX}px`;
+          popup.style.top = `${popupY}px`;
           popup.style.display = "block";
         } else {
           popup.style.display = "none";
@@ -244,11 +269,12 @@ const ArticleDerive = ({
       } else {
         popup.style.display = "none";
       }
-      
     } else {
       popup.style.display = "none";
     }
   };
+  
+  
 
   const modalRef = useRef(null);
 
