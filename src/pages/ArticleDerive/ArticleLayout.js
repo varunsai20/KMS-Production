@@ -62,8 +62,9 @@ const ArticleLayout = () => {
   const [refreshSessions, setRefreshSessions] = useState(false);
   const [editingSessionId, setEditingSessionId] = useState(null);
   const [activeSessionId, setActiveSessionId] = useState(
-    localStorage.getItem("session_id") || null
+    sessionStorage.getItem("session_id") || null
   );
+  console.log(activeSessionId)  
   const isStreamDoneRef = useRef(false);
   //const [isPromptEnabled, setIsPromptEnabled] = useState(false);
   const [editedTitle, setEditedTitle] = useState("");
@@ -77,13 +78,16 @@ const ArticleLayout = () => {
     localStorage.removeItem("session_id");
     setActiveSessionId(null);
   }, []);
+  const [clickedBack,setClickedBack]=useState(false)
+
   useEffect(() => {
-    const storedSessionId = localStorage.getItem("session_id");
+    const storedSessionId = sessionStorage.getItem("session_id");
     if (storedSessionId) {
       setActiveSessionId(storedSessionId);
+      setClickedBack(false)
     }
-  }, [sessions]);
-
+  }, [sessions,clickedBack]);
+  
   useEffect(() => {
     const fetchSessions = async () => {
       try {
@@ -250,6 +254,7 @@ const ArticleLayout = () => {
     setIsStreamDone(true);
     localStorage.removeItem("chatHistory");
     localStorage.removeItem("session_id");
+  
     try {
       // Fetch the conversation data
       const conversationResponse = await apiService.fetchChatConversation(
@@ -257,16 +262,21 @@ const ArticleLayout = () => {
         session_id,
         token
       );
-
+  
       // Save session ID in local and session storage
       localStorage.setItem("session_id", session_id);
       sessionStorage.setItem("session_id", session_id);
-      //setIsPromptEnabled(true);
+  
+      // Maintain a list of session IDs
+      const existingSessionIds = JSON.parse(localStorage.getItem("sessionIds")) || [];
+      existingSessionIds.push(session_id); // Allow duplicates
+      localStorage.setItem("sessionIds", JSON.stringify(existingSessionIds));
+  
       setActiveSessionId(session_id);
-
+  
       // Initialize chat history
       let formattedChatHistory = [];
-
+  
       // Format and store chat history only if data is present and valid
       if (conversationResponse.data.conversation?.length > 0) {
         formattedChatHistory = conversationResponse.data.conversation
@@ -278,7 +288,7 @@ const ArticleLayout = () => {
           .filter(
             (entry) => entry.query || entry.response || entry.file_url // Keep entries with at least one valid field
           );
-
+  
         if (formattedChatHistory.length > 0) {
           localStorage.setItem(
             "chatHistory",
@@ -286,21 +296,21 @@ const ArticleLayout = () => {
           );
         }
       }
-
+  
       // Extract and store other session details if they are present
       const { source, session_type, session_title } =
         conversationResponse.data || {};
-
+  
       // Define navigation path based on session type
       const navigatePath =
         session_type === "file_type"
           ? "/article/derive"
           : `/article/content/${source}:${conversationResponse.data?.article_id}`;
-
+  
       // Clear annotation data and update state
       setOpenAnnotate(false);
       setAnnotateData("");
-
+  
       // Navigate based on session type
       if (session_type === "file_type") {
         dispatch(setDeriveInsights(true));
@@ -330,6 +340,8 @@ const ArticleLayout = () => {
       console.error("Error fetching article or conversation data:", error);
     }
   };
+  
+  
 
   useEffect(() => {
     sessionStorage.removeItem("AnnotateData");
@@ -440,11 +452,12 @@ const ArticleLayout = () => {
   const handleAnnotateClick = async () => {
     // Define the request body according to source and id
     let requestBody = {};
-    if (type === "pmid" && id) {
+    console.log(type)
+    if (type === "pubmed" && id) {
       requestBody = { pubmed: [id] };
-    } else if (type === "bioRxiv_id" && id) {
+    } else if (type === "biorxiv" && id) {
       requestBody = { biorxiv: [id] };
-    } else if (type === "plos_id" && id) {
+    } else if (type === "plos" && id) {
       requestBody = { plos: [id] };
     }
 
@@ -698,6 +711,8 @@ const ArticleLayout = () => {
               isStreamDone={isStreamDone}
               setIsStreamDone={setIsStreamDone}
               isStreamDoneRef={isStreamDoneRef}
+              setClickedBack={setClickedBack}
+              setActiveSessionId={setActiveSessionId}
             />
           )}
 

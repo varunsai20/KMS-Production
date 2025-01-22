@@ -33,6 +33,8 @@ const ArticleContent = ({
   isStreamDone,
   setIsStreamDone,
   isStreamDoneRef,
+  setClickedBack,
+  setActiveSessionId
 }) => {
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
   const deriveInsights = useSelector((state) => state.deriveInsights?.active);
@@ -88,10 +90,7 @@ const ArticleContent = ({
     };
   }, [annotateLoading]);
   const [showStreamingSection, setShowStreamingSection] = useState(false);
-  //const [activeSection, setActiveSection] = useState("Title");
-  const [activeSessionId, setActiveSessionId] = useState(
-    sessionStorage.getItem("session_id") || null
-  );
+
   const contentRef = useRef(null); // Ref to target the content div
   const [contentWidth, setContentWidth] = useState(); // State for content width
   const [ratingsList, setRatingsList] = useState(() => {
@@ -592,7 +591,6 @@ const ArticleContent = ({
           body: bodyData,
         }
       );
-
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let buffer = "";
@@ -600,84 +598,72 @@ const ArticleContent = ({
 
       const readStream = async () => {
         try {
-          const delay = 1;
           let autoScrollSet = false;
-
+          const delay = 0; // Remove or reduce delay
+      
           while (true) {
-            if (isStreamDoneRef.current) break; // Check the ref value
-
+            if (isStreamDoneRef.current) break;
+      
             const { value, done: streamDone } = await reader.read();
             if (streamDone) break;
-
+      
             if (value) {
               buffer += decoder.decode(value, { stream: true });
-
+      
               while (buffer.indexOf("{") !== -1 && buffer.indexOf("}") !== -1) {
                 let start = buffer.indexOf("{");
                 let end = buffer.indexOf("}", start);
                 if (start !== -1 && end !== -1) {
                   const jsonChunk = buffer.slice(start, end + 1);
                   buffer = buffer.slice(end + 1);
-
+      
                   try {
                     const parsedData = JSON.parse(jsonChunk);
-
+      
                     if (parsedData.session_id) {
                       const articleSessions =
-                        JSON.parse(sessionStorage.getItem("articleSessions")) ||
-                        {};
-
+                        JSON.parse(sessionStorage.getItem("articleSessions")) || {};
+                      sessionStorage.setItem("session_id", parsedData.session_id);
                       articleSessions[sessionKey] = parsedData.session_id;
                       sessionStorage.setItem(
                         "articleSessions",
                         JSON.stringify(articleSessions)
                       );
                     }
-
+      
                     const answer = parsedData.answer;
-                    const words = answer.split("");
-
-                    for (const word of words) {
-                      if (isStreamDoneRef.current) break; // Check the ref value
-                      await new Promise((resolve) =>
-                        setTimeout(resolve, delay)
-                      );
-
+      
+                    // Process in larger chunks
+                    for (let i = 0; i < answer.length; i += 10) {
+                      if (isStreamDoneRef.current) break;
+      
+                      const chunk = answer.slice(i, i + 10); // 10 characters at a time
                       setChatHistory((chatHistory) => {
                         const updatedChatHistory = [...chatHistory];
                         const lastEntryIndex = updatedChatHistory.length - 1;
-
+      
                         if (lastEntryIndex >= 0) {
                           updatedChatHistory[lastEntryIndex] = {
                             ...updatedChatHistory[lastEntryIndex],
                             response:
-                              (updatedChatHistory[lastEntryIndex].response ||
-                                "") +
-                              "" +
-                              word,
+                              (updatedChatHistory[lastEntryIndex].response || "") +
+                              chunk,
                             showDot: true,
                           };
                         }
-
+      
                         return updatedChatHistory;
                       });
-
-                      setResponse((prev) => prev + "" + word);
-
+      
+                      setResponse((prev) => prev + chunk);
+      
                       if (!autoScrollSet && endOfMessagesRef.current) {
                         setAutoScrollEnabled(true);
                         autoScrollSet = true;
                       }
+      
+                      await new Promise((resolve) => setTimeout(resolve, delay));
                     }
-
-                    setChatHistory((chatHistory) => {
-                      const updatedChatHistory = [...chatHistory];
-                      const lastEntryIndex = updatedChatHistory.length - 1;
-                      if (lastEntryIndex >= 0) {
-                        updatedChatHistory[lastEntryIndex].showDot = false;
-                      }
-                      return updatedChatHistory;
-                    });
                   } catch (error) {
                     console.error("Error parsing JSON chunk:", error);
                   }
@@ -685,32 +671,32 @@ const ArticleContent = ({
               }
             }
           }
-
+      
           setRefreshSessions((prev) => !prev);
           setLoading(false);
           localStorage.setItem("chatHistory", JSON.stringify(chatHistory));
         } catch (error) {
           console.error("Error fetching or reading stream:", error);
-
+      
           setChatHistory((chatHistory) => {
             const updatedChatHistory = [...chatHistory];
             const lastEntryIndex = updatedChatHistory.length - 1;
-
+      
             if (lastEntryIndex >= 0) {
               updatedChatHistory[lastEntryIndex] = {
                 ...updatedChatHistory[lastEntryIndex],
-                response:
-                  "There is some error. Please try again after some time.",
+                response: "There is some error. Please try again after some time.",
                 showDot: false,
               };
             }
-
+      
             return updatedChatHistory;
           });
-
+      
           setLoading(false);
         }
       };
+      
 
       readStream();
     } catch (error) {
@@ -736,17 +722,50 @@ const ArticleContent = ({
   };
   const storedSessionId =
     sessionStorage.getItem("sessionId") || sessionStorage.getItem("session_id");
-  const handleBackClick = () => {
-    const unsavedChanges = localStorage.getItem("unsavedChanges");
-    if (unsavedChanges === "true") {
-      setShowConfirmPopup(true);
-      //navigate(-1);
-    } else {
+    const handleBackClick = () => {
+      const unsavedChanges = localStorage.getItem("unsavedChanges");
+    
+      if (unsavedChanges === "true") {
+        setShowConfirmPopup(true);
+        return; // Do not proceed further if unsaved changes exist
+      }
+    
+      // Retrieve session IDs from localStorage
+      const sessionIds = JSON.parse(localStorage.getItem("sessionIds")) || [];
+    
+      if (sessionIds.length > 1) {
+        // Remove the last session ID
+        const currentSessionId = sessionIds.pop();
+    
+        // Set the previous session ID (last after pop) in sessionStorage
+        const previousSessionId = sessionIds[sessionIds.length - 1];
+        sessionStorage.setItem("session_id", previousSessionId);
+    
+        // Update localStorage with the remaining session IDs
+        localStorage.setItem("sessionIds", JSON.stringify(sessionIds));
+    
+        console.log(`Navigated back. Current session ID removed: ${currentSessionId}`);
+        console.log(`New active session ID set: ${previousSessionId}`);
+      } else if (sessionIds.length === 1) {
+        // If there's only one session, clear sessionStorage and localStorage for session_id
+        sessionStorage.removeItem("session_id");
+        localStorage.removeItem("sessionIds");
+    
+        console.log("Last session ID removed. No more sessions available.");
+      } else {
+        // If there are no session IDs in localStorage
+        setActiveSessionId(null)
+        sessionStorage.removeItem("session_id");
+        console.log("No session IDs found. Cleared session storage.");
+      }
+    
+      setClickedBack(true);
+      // Navigate back
       navigate(-1);
-    }
-    //localStorage.removeItem("unsavedChanges");
-    //navigate(-1);
-  };
+    };
+    
+    
+    
 
   const handleCancelConfirm = () => {
     setShowConfirmPopup(false);
@@ -910,12 +929,12 @@ const ArticleContent = ({
     }
   }, [location.state]); // Add location.state as a dependency to re-run on navigation
   // console.log(source);
-  useEffect(() => {
-    const storedSessionId = sessionStorage.getItem("session_id");
-    if (storedSessionId) {
-      setActiveSessionId(storedSessionId);
-    }
-  }, [sessions]);
+  // useEffect(() => {
+  //   const storedSessionId = sessionStorage.getItem("session_id");
+  //   if (storedSessionId) {
+  //     setActiveSessionId(storedSessionId);
+  //   }
+  // }, [sessions]);
 
   const [uploadedFile, setUploadedFile] = useState(null);
   // useEffect(() => {

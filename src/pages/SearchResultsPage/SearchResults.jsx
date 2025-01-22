@@ -77,7 +77,10 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   };
 
   const prevTotalArticlesRef = useRef(totalArticles);
-
+  useEffect(()=>{
+    console.log("exec")
+    localStorage.removeItem("sessionIds")
+  },[])
   useEffect(() => {
     if (handleAnnotateCall) {
       if (totalArticles.length > 1) {

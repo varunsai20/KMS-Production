@@ -100,10 +100,19 @@
   flex: 1;
   /* padding: 0 10px 0 10px; */
   /* border: 1px solid rgba(235, 235, 243, 1); */
-  display: flex;
+  /* display: flex;
   flex-direction: column;
 
-  justify-content: center;
+  justify-content: center; */
+}
+.docx-wrapper{
+  background: none !important;
+  padding: 0 !important;
+}
+.docx-wrapper>section.docx{
+  padding: 2vw !important ;
+  width: fit-content !important;
+  margin-bottom: 0 !important;
 }
 .streaming-section-derive {
   /* width: 100%; */
