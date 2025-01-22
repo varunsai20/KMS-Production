@@ -523,7 +523,7 @@ const ArticleContent = ({
       setShowScrollDownButton(false); // Hide the down arrow button when at the bottom
     }
   };
-
+  
   const scrollToBottom = () => {
     if (endOfMessagesRef.current) {
       endOfMessagesRef.current.scrollIntoView({ behavior: "smooth" });
