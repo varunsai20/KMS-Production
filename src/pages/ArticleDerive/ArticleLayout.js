@@ -106,6 +106,7 @@ const ArticleLayout = () => {
   }, [user_id, token, refreshSessions]);
   const handleOpenChat = () => {
     localStorage.removeItem("session_id");
+    sessionStorage.removeItem("session_id");
     setAnnotateData("");
     setActiveSessionId(null);
     localStorage.setItem("chatHistory", JSON.stringify([]));
@@ -453,13 +454,27 @@ const ArticleLayout = () => {
     // Define the request body according to source and id
     let requestBody = {};
     console.log(type)
-    if (type === "pubmed" && id) {
+    console.log(type);
+if (id) {
+  switch (type) {
+    case "pubmed":
+    case "pmid":
       requestBody = { pubmed: [id] };
-    } else if (type === "biorxiv" && id) {
+      break;
+    case "biorxiv":
+    case "bioRxiv_id":
       requestBody = { biorxiv: [id] };
-    } else if (type === "plos" && id) {
+      break;
+    case "plos":
+    case "plos_id":
       requestBody = { plos: [id] };
-    }
+      break;
+    default:
+      console.warn("Unrecognized type:", type);
+      break;
+  }
+}
+
 
     setAnnotateLoading(true);
     try {
@@ -697,6 +712,8 @@ const ArticleLayout = () => {
               isStreamDone={isStreamDone}
               setIsStreamDone={setIsStreamDone}
               isStreamDoneRef={isStreamDoneRef}
+              setClickedBack={setClickedBack}
+
             />
           ) : (
             <ArticleContent
@@ -777,7 +794,7 @@ const ArticleLayout = () => {
                     height: `${notesHeight}vh`,
                   }}
                 >
-                  <Notes selectedText={savedText} notesHeight={notesHeight} />
+                  <Notes selectedText={savedText} notesHeight={notesHeight} annotateHeight={annotateHeight} isOpenAnnotate={openAnnotate}/>
                   <div
                     className="notes-line1"
                     onMouseDown={handleNotesResize}

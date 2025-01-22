@@ -25,10 +25,11 @@ const Createnotes = ({
   notes,
   note,
   isOpenNotes,
+  isOpenAnnotate,
   height,
   fetchNotes,
+  annotateHeight
 }) => {
-  console.log("Notes in create notes",notes)
   const [title, setTitle] = useState("");
   const [isOpenDropdown, setIsOpenDropdown] = useState(false);
   const headerRef = useRef(null);
@@ -56,7 +57,7 @@ const Createnotes = ({
   const [subject, setSubject] = useState("");
   const [showTooltip, setShowTooltip] = useState(false);
 const [tooltipMessage, setTooltipMessage] = useState(""); 
-const [tooltipTimeout, setTooltipTimeout] = useState(null); // Store timeout ID
+const [tooltipTimeout, setTooltipTimeout] = useState(null);
 
   //const [titleError, setTitleError] = useState("");
   const initialContent = useRef("");
@@ -427,7 +428,7 @@ useEffect(() => {
           onChange={(e) => {
             const newTitle = e.target.value
             setTitle(newTitle);
-      setShowTooltip(false);
+            setShowTooltip(false);
             if (!newTitle.trim() && !noteContent.trim()) {
               setUnsavedChanges(false);
               localStorage.removeItem("unsavedChanges");
@@ -458,16 +459,12 @@ useEffect(() => {
           onClick={handleEditorClick}
           onInput={handleInput}
           placeholder="Note details..."
-          
           style={{
-            padding: "10px",
-            marginBottom: "4px",
-            borderRadius: "5px",
-            fontSize: "14px",
-            textAlign: "start",
-            overflowY: "auto",
-            height:notesHeight
+            maxHeight: isOpenAnnotate 
+              ? `${annotateHeight === 0 ? "35vh" : `${annotateHeight + 4}vh`}` 
+              : "35vh",
           }}
+          
         ></div>
       </form>
       <div className="toolbar">
