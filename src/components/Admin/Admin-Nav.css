@@ -82,8 +82,46 @@
 .nav-item span {
   font-size: 16px;
 }
-@media screen and (min-width: 764px) and (max-width: 1080px) {
-  .sidebar {
-    width: 120px;
+
+@media (min-width: 0px) and (max-width: 576px){
+.sidebar{
+  width: 100%;
+  background: none;
+}
+.sidebar-components {
+   
+  flex-grow: 0;
+  margin-top: 0;
+  box-sizing: border-box;
+}
+.sidebar-nav{
+  display: flex;
+      width: auto;
+      flex-direction: row;
+}
+.nav-item {
+  border: 1px solid #EBEBF3;
+  border-radius: 10px;
+}
+}
+@media screen and (min-width: 576px) and (max-width: 992px){
+  .sidebar{
+    width: 100%;
+    background: none;
+  }
+  .sidebar-components {
+   
+    flex-grow: 0;
+    margin-top: 0;
+    box-sizing: border-box;
+  }
+  .sidebar-nav{
+    display: flex;
+        width: auto;
+        flex-direction: row;
+  }
+  .nav-item {
+    border: 1px solid #EBEBF3;
+    border-radius: 10px;
   }
 }

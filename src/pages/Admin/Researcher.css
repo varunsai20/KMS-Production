@@ -1,3 +1,6 @@
+.users-list{
+  margin: 0 2%;
+}
 .Admin-Researcher {
   width: -webkit-fill-available;
   margin: 0 2%;
@@ -18,17 +21,16 @@
   width: 25%;
 }
 .Manage-Researchers input {
-  width: 100%;
   padding: 13px 0 13px 30px;
   gap: 10px;
   border-radius: 38px;
-  border: 1px solid;
+  border: 1px solid #00000012 ;
   opacity: 0px;
 }
 .Manage-Researcher-Input img {
   position: absolute;
   top: 25%;
-  left: 2%;
+  left: 10%;
 }
 .Create-Researchers {
   padding: 13px 16px 13px 16px;
@@ -180,4 +182,54 @@
   margin: 0;
   text-align: start;
   font-weight: 600;
+}
+@media (min-width: 0px) and (max-width: 576px){
+  .users-list{
+    border: 1px solid #0000001A;
+    box-shadow: 0px 10px 81px 0px #00000014;
+    border-radius: 30px;
+  }
+  .Manage-Researchers{
+    padding: 0px 10px;
+  }
+  .ResearcherHeading {
+    padding: 5px 10px;
+  }
+}
+@media screen and (min-width: 576px) and (max-width: 992px){
+  .users-list{
+    border: 1px solid #0000001A;
+    box-shadow: 0px 10px 81px 0px #00000014;
+    border-radius: 30px;
+  }
+  .Manage-Researchers{
+    padding: 0px 10px;
+  }
+  .ResearcherHeading {
+    padding: 5px 10px;
+  }
+}
+/* For small screens (576px and below) */
+@media (max-width: 576px) {
+  .custom-table th,
+  .custom-table td {
+    text-align: center;
+    padding: 8px;
+  }
+
+  .custom-table th:not(:first-child),
+  .custom-table td:not(:first-child) {
+    display: none; /* Hide unnecessary columns */
+  }
+
+  .custom-table th:nth-child(2),
+  .custom-table td:nth-child(2),
+  .custom-table th:nth-child(3),
+  .custom-table td:nth-child(3) {
+    display: table-cell; /* Keep Status and Action columns visible */
+  }
+
+  .action-icon {
+    cursor: pointer;
+  }
 }

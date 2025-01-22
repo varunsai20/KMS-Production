@@ -18,6 +18,7 @@
   padding: 4% 0;
   grid-template-columns: 1fr 1fr;
   flex-grow: 1;
+  justify-content: space-between;
   position: relative;
 }
 
@@ -326,7 +327,7 @@
   top: 0;
   left: 0;
   width: 100vw;
-  height: 100vh;
+  height: 100%;
   background: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(1px);
   z-index: 998;
@@ -860,13 +861,17 @@
   margin: 0.5% 0%;
 }
 
-@media screen and (min-width: 768px) and (max-width: 1080px) {
-  .Landing-Container {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
+@media screen and (min-width: 576px) and (max-width: 992px) {
+  .inferai-logo{
+    width: 25vw;
+    margin: 0 auto;
+  }
+  .Landing-Welcome-desc {
+    width: 95%;
     text-align: center;
-    box-sizing: border-box;
+  }
+  .welcome-search{
+
   }
 
   .Landing-Header {
@@ -888,7 +893,9 @@
     width: 90%;
     flex-shrink: 0;
   }
-
+.Landingpage-SearchBar {
+  width: 100%;
+}
   .Feature-Item {
     display: flex;
     flex-direction: column;
@@ -951,7 +958,7 @@
   }
 }
 
-@media (min-width: 320px) and (max-width: 768px) {
+@media (min-width: 0px) and (max-width: 576px) {
   .inferai-logo {
     width: 35vw;
   }
@@ -961,7 +968,7 @@
     margin: 0 auto;
     align-items: center;
   }
-  .Landing-Container {
+  .Landing-Container {  
     display: flex;
     flex-direction: column;
     min-height: 100vh;
@@ -982,12 +989,12 @@
     align-items: center;
     flex-wrap: wrap;
   }
+  .Landingpage-SearchBar {
+    width: 90%;
+  }
   .search-bar-div {
     position: relative;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    width: 90%;
   }
   .Landing-Welcome-desc {
     width: 80%;
@@ -1066,7 +1073,7 @@
     padding: 4% 0%;
   }
 }
-@media (min-width: 1080px) and (max-width: 1366px) {
+/* @media (min-width: 992px) and (max-width: 1400px) {
   .Landing-Container {
     display: flex;
     flex-direction: column;
@@ -1086,4 +1093,4 @@
   .card-title {
     margin: 0;
   }
-}
+} */

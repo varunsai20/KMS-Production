@@ -54,8 +54,34 @@ const Createnotes = ({
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [subject, setSubject] = useState("");
-  const [titleError, setTitleError] = useState("");
+  const [showTooltip, setShowTooltip] = useState(false);
+const [tooltipMessage, setTooltipMessage] = useState(""); 
+const [tooltipTimeout, setTooltipTimeout] = useState(null); // Store timeout ID
+
+  //const [titleError, setTitleError] = useState("");
   const initialContent = useRef("");
+  const inputRef = useRef(null);
+
+const calculateTooltipPosition = () => {
+  if (!inputRef.current) return { x: 0, y: 0 };
+  const inputBox = inputRef.current.getBoundingClientRect();
+  return {
+    x: inputBox.left + window.scrollX, // Adjust for page scroll
+    y: inputBox.bottom + window.scrollY + 45, // Position 5px below input
+  };
+};
+
+useEffect(() => {
+  if (showTooltip) {
+    const timeout = setTimeout(() => {
+      setShowTooltip(false);
+    },100000); // Tooltip remains for 3 seconds
+    setTooltipTimeout(timeout);
+
+    return () => clearTimeout(timeout); // Clear on component unmount or tooltip change
+  }
+}, [showTooltip]);
+
 
   useEffect(() => {
     const localUnsavedChanges = localStorage.getItem("unsavedChanges");
@@ -209,17 +235,18 @@ const Createnotes = ({
     e.preventDefault();
     const noteContent = editorRef.current.innerHTML;
     if (!title.trim()) {
-      setTitleError("Add title to save");
+      setTooltipMessage("⚠ Please add a title.");
+      setShowTooltip(true);
       return;
-    } else {
-      setTitleError("");
     }
+  
     const isTitleDuplicate = notes.some((note) => note.title === title.trim());
-  if (isTitleDuplicate) {
-    setTitleError("Title already exists. Please try another one.");
-    return;
-  }
-  console.log("Error shown");
+    if (isTitleDuplicate) {
+      setTooltipMessage("⚠ Title already exists. Try another one.");
+      setShowTooltip(true);
+      return;
+    }
+  
     const note = {
       title: title || noteContent.slice(0, 25) || "Untitled Note",
       content: noteContent,
@@ -393,12 +420,14 @@ const Createnotes = ({
         <input
           className="note-input"
           type="text"
-          placeholder={titleError || "Title"}
+          ref={inputRef}
+          placeholder={"Title"}
           value={title}
           required
           onChange={(e) => {
             const newTitle = e.target.value
             setTitle(newTitle);
+      setShowTooltip(false);
             if (!newTitle.trim() && !noteContent.trim()) {
               setUnsavedChanges(false);
               localStorage.removeItem("unsavedChanges");
@@ -406,15 +435,21 @@ const Createnotes = ({
               setUnsavedChanges(true);
               localStorage.setItem("unsavedChanges", "true");
             }
-        
-            setTitleError("");
             setUnsavedChanges(true);
           }}
           autoFocus
-          style={{
-            borderColor: titleError ? "red" : undefined,
-          }}
         />
+         {showTooltip && (
+    <div
+      className="tooltip"
+      style={{
+        left: calculateTooltipPosition().x - inputRef.current.getBoundingClientRect().left,
+        top: calculateTooltipPosition().y - inputRef.current.getBoundingClientRect().top, 
+      }}
+    >
+      {tooltipMessage}
+    </div>
+  )}
         <div
           className="note-taking"
           ref={editorRef}

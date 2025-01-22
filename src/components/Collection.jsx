@@ -89,7 +89,7 @@ const Collection = ({ setIsCollectionOpen }) => {
   return (
     <>
       <div className="collections-list">
-        <h3 className="collection-heading">My Collections</h3>
+        <h3 className="collection-heading" style={{display:"block"}}>My Collections</h3>
 
         {Object.keys(collections).length > 0 ? (
           Object.keys(collections).map((collectionName) => (
@@ -100,9 +100,9 @@ const Collection = ({ setIsCollectionOpen }) => {
               }`}
               onClick={() => handleSelectCollection(collectionName)}
             >
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <p style={{ margin: "0", padding: "0" }}>{collectionName}</p>
-                <p style={{ margin: "0", padding: "0" }}>
+              <div className="collection-item-list">
+                <p >{collectionName}</p>
+                <p>
                   {collections[collectionName].length} articles
                 </p>
               </div>
@@ -115,6 +115,8 @@ const Collection = ({ setIsCollectionOpen }) => {
       <div className="articles-list">
         {selectedCollection ? (
           <>
+          <div className="collection-heading">
+
             <h3 className="collection-articles-header">
               Articles in {selectedCollection.name}
             </h3>
@@ -123,7 +125,7 @@ const Collection = ({ setIsCollectionOpen }) => {
                 src={SearchIcon}
                 alt="search"
                 className="Search-collection-icon"
-                style={{ width: "1.5vw" }}
+               
               />
               <input
                 type="text"
@@ -132,14 +134,15 @@ const Collection = ({ setIsCollectionOpen }) => {
                 placeholder="Search articles"
                 className="Search-collection-input"
               />
+          </div>
             </div>
             <table>
               <thead>
                 <tr className="heading-row">
-                  <th className="bookmark-articleId">ArticleId</th>
+                  <th className="bookmark-articleId" >ArticleId</th>
                   <th className="bookmark-Title">Title</th>
                   <th className="bookmark-Source">Source</th>
-                  <th style={{ width: "1%" }}></th>
+                  {/* <th style={{ width: "1%" }}></th> */}
                 </tr>
               </thead>
               <div className="scrollable-tbody">

@@ -244,7 +244,7 @@ const Lander = () => {
           <div className="search-bar-div" style={{ position: "relative" }}>
             <SearchBar
               className="Landingpage-SearchBar"
-              landingWidth="80%"
+              // landingWidth="auto"
               zIndex="0"
               setTermMissing={setTermMissing}
             ></SearchBar>
@@ -467,6 +467,8 @@ const Lander = () => {
         <>
           <div className="blur-overlay">
             <div className="collection-modal">
+        {/* <h3 className="collection-heading">My Collections</h3> */}
+
               <Collection setIsCollectionOpen={setIsCollectionOpen} />
             </div>
           </div>

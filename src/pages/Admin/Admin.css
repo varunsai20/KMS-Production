@@ -1,3 +1,17 @@
 .AdminPage .Navbar-Header {
   margin-bottom: 0;
 }
+.admin-navs{
+  display: flex;
+  flex-grow: 1;
+}
+@media (min-width: 0px) and (max-width: 576px){
+  .admin-navs{
+    flex-direction: column;
+  }
+}
+@media screen and (min-width: 576px) and (max-width: 992px){
+  .admin-navs{
+    flex-direction: column;
+  }
+}
