@@ -289,7 +289,7 @@ const Researchers = () => {
                       ref={dropdownRef}
                       className="dropdown-menu"
                       style={{
-                        transform: `translate(${popupPosition.x}px, ${popupPosition.y}px)`,
+                        transform: `translate(${popupPosition.x-10}px, ${popupPosition.y-50}px)`,
                       }}
                       onClick={(e) => e.stopPropagation()}
                     >

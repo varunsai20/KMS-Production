@@ -107,8 +107,8 @@
 .dropdown-menu {
   width: 85px;
   position: fixed;
-  top: -65px;
-  left: -40px;
+  top: 0;
+  left: 0;
   background-color: white;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   border-radius: 8px;

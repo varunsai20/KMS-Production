@@ -43,7 +43,8 @@ const ArticleDerive = ({
   isStreamDone,
   setIsStreamDone,
   isStreamDoneRef,
-  setClickedBack
+  setClickedBack,
+  setAnnotateData
 }) => {
 
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
@@ -65,9 +66,9 @@ const ArticleDerive = ({
   const [query, setQuery] = useState("");
   const [response, setResponse] = useState("");
   const [loading, setLoading] = useState(false);
-  const [annotateData, setAnnotateData] = useState(
-    location.state?.annotateData || ""
-  );
+  // const [annotateData, setAnnotateData] = useState(
+  //   location.state?.annotateData || ""
+  // );
   const [autoScrollEnabled, setAutoScrollEnabled] = useState(false);
   
   const endOfMessagesRef = useRef(null);
@@ -716,11 +717,11 @@ const ArticleDerive = ({
   }, []);
 
   // Optional: useEffect for clearing flag if needed, such as when sources change
-  useEffect(() => {
-    if (!annotateData) {
-      setHasFetchedAnnotateData(false);
-    }
-  }, [annotateData, source, id]);
+  // useEffect(() => {
+  //   if (!annotateData) {
+  //     setHasFetchedAnnotateData(false);
+  //   }
+  // }, [annotateData, source, id]);
 
   useEffect(() => {
     const fetchSessions = async () => {
@@ -816,6 +817,9 @@ const ArticleDerive = ({
   const removeUploadedFile = () => {
     setUploadedFile(null);
     setIsPromptEnabled(false);
+    setAnnotateData()
+    setAnnotateData(null)
+    setOpenAnnotate(false)
     // setDocxContent("");
     // setNumPages(null);
     // setPageNumber(1);
