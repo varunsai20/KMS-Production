@@ -289,7 +289,7 @@ const Researchers = () => {
                       ref={dropdownRef}
                       className="dropdown-menu"
                       style={{
-                        transform: `translate(${popupPosition.x}px, ${popupPosition.y}px)`,
+                        transform: `translate(${popupPosition.x-10}px, ${popupPosition.y-50}px)`,
                       }}
                       onClick={(e) => e.stopPropagation()}
                     >
@@ -300,11 +300,7 @@ const Researchers = () => {
                         Edit
                       </li>
                       <li
-                        className={`dropdown-item ${
-                          user.user_status.toLowerCase() === "active"
-                            ? "suspend"
-                            : "activate"
-                        }`}
+                        className="dropdown-item delete"
                         onClick={() =>
                           handleSuspendClick(user.user_id, user.user_status)
                         }

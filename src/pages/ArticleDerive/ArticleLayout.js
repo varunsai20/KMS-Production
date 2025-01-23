@@ -64,7 +64,6 @@ const ArticleLayout = () => {
   const [activeSessionId, setActiveSessionId] = useState(
     sessionStorage.getItem("session_id") || null
   );
-  console.log(activeSessionId)  
   const isStreamDoneRef = useRef(false);
   //const [isPromptEnabled, setIsPromptEnabled] = useState(false);
   const [editedTitle, setEditedTitle] = useState("");
@@ -298,6 +297,15 @@ const ArticleLayout = () => {
         }
       }
   
+      // Extract the latest file_url from chat history
+      const latestFileEntry = formattedChatHistory
+        .filter((entry) => entry.file_url)
+        .pop(); // Get the last entry with a file_url
+  
+      if (latestFileEntry) {
+        setFileUrl(latestFileEntry.file_url); // Set the fileUrl to the latest file_url
+      }
+  
       // Extract and store other session details if they are present
       const { source, session_type, session_title } =
         conversationResponse.data || {};
@@ -341,6 +349,7 @@ const ArticleLayout = () => {
       console.error("Error fetching article or conversation data:", error);
     }
   };
+  
   
   
 
@@ -389,7 +398,7 @@ const ArticleLayout = () => {
   const [fileUrl, setFileUrl] = useState("");
   const [annotateFile, setAnnotateFile] = useState(false);
   const [isCitationsOpen, setIsCitationsOpen] = useState(false);
-
+  console.log(fileUrl)
   const handleOpenCitations = () => {
     if (!uploadedFile) {
       return;
@@ -489,7 +498,10 @@ if (id) {
       setAnnotateLoading(false);
     }
   };
+  console.log("annoateData: ", annotateData)
+
   const handleAnnotateUploadedFile = async () => {
+    console.log(uploadedFile)
     if (!uploadedFile) return; // Ensure uploadedFile exists before proceeding
 
     setAnnotateLoading(true);
@@ -713,7 +725,7 @@ if (id) {
               setIsStreamDone={setIsStreamDone}
               isStreamDoneRef={isStreamDoneRef}
               setClickedBack={setClickedBack}
-
+              setAnnotateData={setAnnotateData}
             />
           ) : (
             <ArticleContent
