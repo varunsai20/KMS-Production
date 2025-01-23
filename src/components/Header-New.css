@@ -122,7 +122,10 @@
   border-radius: 5px;
   cursor: pointer;
   font-size: 14px;
+  border: 1px solid #00000012;
+  background: rgba(234, 234, 236, 1);
   transition: background-color 0.3s ease;
+
 }
 
 .confirm-logout {

@@ -1591,7 +1591,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                                       <div className="radio1">
                                         <input
                                           type="radio"
-                                          id="collectionAction"
+                                          id="collectionAction1"
                                           value="existing"
                                           checked={
                                             collectionAction === "existing"
@@ -1600,21 +1600,21 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                                             setCollectionAction("existing")
                                           }
                                         />
-                                        <label>
+                                        <label htmlFor="collectionAction1">
                                           Add to Existing Collection
                                         </label>
                                       </div>
                                       <div className="radio2">
                                         <input
                                           type="radio"
-                                          id="collectionAction"
+                                          id="collectionAction2"
                                           value="new"
                                           checked={collectionAction === "new"}
                                           onChange={() =>
                                             setCollectionAction("new")
                                           }
                                         />
-                                        <label>Create New Collection</label>
+                                        <label htmlFor="collectionAction2">Create New Collection</label>
                                       </div>
                                     </div>
 

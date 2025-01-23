@@ -573,7 +573,11 @@ button {
   justify-content: flex-start;
   align-items: center;
 }
-#collectionAction {
+#collectionAction1 {
+  width: 4%;
+  margin-bottom: 0px;
+}
+#collectionAction2 {
   width: 4%;
   margin-bottom: 0px;
 }

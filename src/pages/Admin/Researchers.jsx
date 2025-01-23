@@ -300,11 +300,7 @@ const Researchers = () => {
                         Edit
                       </li>
                       <li
-                        className={`dropdown-item ${
-                          user.user_status.toLowerCase() === "active"
-                            ? "suspend"
-                            : "activate"
-                        }`}
+                        className="dropdown-item delete"
                         onClick={() =>
                           handleSuspendClick(user.user_id, user.user_status)
                         }
