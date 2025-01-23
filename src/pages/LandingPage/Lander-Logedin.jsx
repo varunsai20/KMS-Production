@@ -385,7 +385,7 @@ const Lander = () => {
             <div className="Landing-Features-card">
               <div className="Landing-Features-card-Inner">
                 <div className="number number-4">
-                  <img src={"https://userprofilepicturess.s3.ap-south-1.amazonaws.com/Lander-Analytics.efd636a40676892e88d2f44a5821a8e7.svg"} alt="Icon 4" />
+                  <img src={points4} alt="Icon 4" />
                 </div>
                 <h3 className="card-title">Collaborative Tools</h3>
                 <p className="card-content">
