@@ -55,7 +55,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   const [selectedNote, setSelectedNote] = useState([]);
   const [notes, setNotes] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-
+ 
   const filteredNotes = notes.filter(
     (note) =>
       note.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -932,64 +932,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
     setEmailSubject("");
     setDecription("");
   };
-  // const handleAnnotateClick = async () => {
-  //   if (totalArticles.length > 0) {
-  //     sessionStorage.setItem("AnnotateData", "");
-  //     sessionStorage.setItem("AnnotateSource", "");
-  //     setAnnotateData([]);
-  //     setAnnotateLoading(true);
 
-  //     const extractIdType = (uniqueId) => {
-  //       return uniqueId.split("_")[1]; // This splits "source_idType" and returns only the idType
-  //     };
-  //     const extractIdSource = (uniqueId) => uniqueId.split("_")[0];
-
-  //     const annotatedArticles = totalArticles.map((id) => ({
-  //       source: extractIdSource(id),
-  //       idType: extractIdType(id),
-  //     }));
-
-  //     // Prepare the data by removing the "source_" part from uniqueId
-  //     const pubmedIds = selectedArticles.map((id) =>
-  //       parseInt(extractIdType(id), 10)
-  //     );
-  //     const biorxivIds = bioRxivArticles.map((id) =>
-  //       parseInt(extractIdType(id), 10)
-  //     );
-  //     const plosIds = plosArticles.map((id) => parseInt(extractIdType(id), 10));
-
-  //     axios
-  //       .post(
-  //         "https://inferai.ai/api/core_search/annotate",
-  //         {
-  //           pubmed: pubmedIds,
-  //           biorxiv: biorxivIds,
-  //           plos: plosIds,
-  //         },
-  //         {
-  //           headers: {
-  //             Authorization: `Bearer ${token}`, // Add the Bearer token here
-  //           },
-  //         }
-  //       )
-  //       .then((response) => {
-  //         const data = response.data;
-  //         sessionStorage.setItem("AnnotateData", JSON.stringify(data));
-  //         sessionStorage.setItem(
-  //           "AnnotateSource",
-  //           JSON.stringify(annotatedArticles)
-  //         );
-  //         setAnnotateData(data);
-  //         setAnnotateSource(annotatedArticles);
-  //         setOpenAnnotate(true);
-  //         setAnnotateLoading(false);
-  //       })
-  //       .catch((error) => {
-  //         console.error("Error fetching data from the API", error);
-  //         setAnnotateLoading(false);
-  //       });
-  //   }
-  // };
   const handleAnnotateClick = async () => {
     if (totalArticles.length > 0) {
       sessionStorage.setItem("AnnotateData", "");
@@ -1324,11 +1267,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                     >
                       Share
                     </button>
-                    {/* {!isLoggedIn && (
-    <p style={{ color: "gray", fontSize: "0.9rem", marginTop: "5px" }}>
-      {displayMessage}
-    </p>
-  )} */}
                   </div>
                 </div>
                 <div

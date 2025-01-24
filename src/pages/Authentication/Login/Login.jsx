@@ -180,7 +180,7 @@ const Login = () => {
             Login
           </button>
           <p class="p line">Or </p>
-          <div class="flex-row">
+          <div class="flex-row-social">
             <button class="btn google">
               <svg version="1.1" width="20" id="Layer_1" viewBox="0 0 512 512">
                 <path
@@ -200,7 +200,10 @@ const Login = () => {
                   d="M419.404,58.936l-82.933,67.896c-23.335-14.586-50.919-23.012-80.471-23.012c-66.729,0-123.429,42.957-143.965,102.724l-83.397-68.276h-0.014C71.23,56.123,157.06,0,256,0C318.115,0,375.068,22.126,419.404,58.936z"
                 ></path>
               </svg>
+              <span>
+
               Continue with Google
+              </span>
             </button>
             <button class="btn apple">
               {/* <SiFacebook /> */}
@@ -219,7 +222,10 @@ const Login = () => {
                   fill="#fff"
                 />
               </svg>
+              <span>
+
               Continue with Facebook
+              </span>
             </button>
           </div>
         </form>

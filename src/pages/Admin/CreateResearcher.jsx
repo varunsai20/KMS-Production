@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import './CreateResearcher.css';
 import { useSelector } from 'react-redux';
@@ -123,7 +122,7 @@ const CreateResearcher = () => {
   return (
     <div  className='Add-user'>
       <div className="create-researcher-header">
-        <div className="back-button" onClick={handleBackClick}>
+        <div className="add-user-back-button" onClick={handleBackClick}>
         <img
                       src={Arrow}
                       style={{ width: "14px" }}
