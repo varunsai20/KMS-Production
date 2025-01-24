@@ -15,10 +15,7 @@ import Help from "../../assets/images/Lander-Help.svg";
 import Utilities from "../../assets/images/Lander-Utilities.svg";
 import Analytics from "../../assets/images/Lander-Analytics.svg";
 import "./Lander-Logedin.css";
-import { FaXTwitter } from "react-icons/fa6";
-import { FaFacebookF, FaLinkedinIn } from "react-icons/fa";
-import { FaInstagramSquare } from "react-icons/fa";
-import { SlGlobe } from "react-icons/sl";
+
 import { apiService } from "../../assets/api/apiService";
 import Collection from "../../components/Collection";
 import Citations from "../../components/Citations";
@@ -237,166 +234,167 @@ const Lander = () => {
       <div className="Landing-Header">
         <Header />
       </div>
+      <div className="Landing-main-content">
+          <div className="Landing-Content">
+            <div className="welcome-search">
+              <img src={Logo} alt="inferAI-logo" className="inferai-logo" />
+              <div className="search-bar-div" style={{ position: "relative" }}>
+                <SearchBar
+                  className="Landingpage-SearchBar"
+                  // landingWidth="auto"
+                  zIndex="0"
+                  setTermMissing={setTermMissing}
+                ></SearchBar>
 
-      <div className="Landing-Content">
-        <div className="welcome-search">
-          <img src={Logo} alt="inferAI-logo" className="inferai-logo" />
-          <div className="search-bar-div" style={{ position: "relative" }}>
-            <SearchBar
-              className="Landingpage-SearchBar"
-              // landingWidth="auto"
-              zIndex="0"
-              setTermMissing={setTermMissing}
-            ></SearchBar>
-
-            {/* TermMissing Outbox */}
-            {/* {termMissing && (
-              <div className="search-term-missing-container">
-                <div className="search-term-missing-error">
-                  <div className="error-arrow"></div>
-                  <span>Search Term is Missing</span>
-                </div>
+                {/* TermMissing Outbox */}
+                {/* {termMissing && (
+                  <div className="search-term-missing-container">
+                    <div className="search-term-missing-error">
+                      <div className="error-arrow"></div>
+                      <span>Search Term is Missing</span>
+                    </div>
+                  </div>
+                )} */}
+                <SearchTermMissing
+                  termMissing={termMissing}
+                  setTermMissing={setTermMissing}
+                />
               </div>
-            )} */}
-            <SearchTermMissing
-              termMissing={termMissing}
-              setTermMissing={setTermMissing}
-            />
-          </div>
-          <p className="Landing-Welcome-desc">
-            <span className="highlight-context-infer-out">Infer</span>
-            <span className="highlight-context-ai-out">ai</span> (
-            <span className="highlight-context-infer">In</span>formation{" "}
-            <span className="highlight-context-infer">F</span>or{" "}
-            <span className="highlight-context-infer">E</span>xcellence in{" "}
-            <span className="highlight-context-infer">R</span>esearch using{" "}
-            <span className="highlight-context-ai">A</span>rtifical{" "}
-            <span className="highlight-context-ai">I</span>ntelligence) by Infer
-            Solutions, Inc, a cutting-edge product leveraging Artificial
-            Intelligence to revolutionize research in the life sciences
-            industry. This innovative platform streamlines research processes,
-            enhances data analysis, and uncovers new insights.
-          </p>
-        </div>
-      </div>
-
-      <div className="Landing-Features">
-        {isLoggedIn ? (
-          // Show this section if logged in
-          <div className="LoggedinFeatures">
-            <div className="Feature-Item">
-              <img
-                className="Landing-History-Icon"
-                src={History}
-                alt="Landing-History-Icon"
-              />
-              <h4>History</h4>
-
-              <span onClick={handleOpenCollection}>Bookmarks</span>
-              <span onClick={handleSessionClick}>Conversations</span>
-              <span onClick={handleOpenNotes}>Notes</span>
-            </div>
-            <div className="Feature-Item">
-              <img
-                className="Landing-Analytics-Icon"
-                src={Analytics}
-                alt="Landing-Analytics-Icon"
-              />
-              <h4>Analytics</h4>
-
-              <span style={{}} title="This feature will ">
-                Dashboard
-              </span>
-              <span>Reports</span>
-            </div>
-
-            <div className="Feature-Item">
-              <img
-                className="Landing-Utilities-Icon"
-                src={Utilities}
-                alt="Landing-Utilities-Icon"
-              />
-              <h4>Utilities</h4>
-              <span onClick={handleOpenInsights}>Derive Insights</span>
-              {/* <span onClick={handleOpenAnnotate}>Annotations</span> */}
-              {/* <span onClick={handleOpenCitations}>Citation</span> */}
-              <span>Job Scheduler</span>
-              <span>LifeSciHub</span>
-            </div>
-            <div className="Feature-Item">
-              <img
-                className="Landing-Help-Icon"
-                src={Help}
-                alt="Landing-Help-Icon"
-              />
-              <h4>Help</h4>
-              <span>User Guide</span>
-              {/* <span>About Infer</span> */}
-              <a
-                href="https://www.infersol.com/about-infer-solutions-inc/"
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ textDecoration: "none", color: "#007BFF" }}
-              >
-                About Infer
-              </a>
-              <span>FAQs</span>
+              <p className="Landing-Welcome-desc">
+                <span className="highlight-context-infer-out">Infer</span>
+                <span className="highlight-context-ai-out">ai</span> (
+                <span className="highlight-context-infer">In</span>formation{" "}
+                <span className="highlight-context-infer">F</span>or{" "}
+                <span className="highlight-context-infer">E</span>xcellence in{" "}
+                <span className="highlight-context-infer">R</span>esearch using{" "}
+                <span className="highlight-context-ai">A</span>rtifical{" "}
+                <span className="highlight-context-ai">I</span>ntelligence) by Infer
+                Solutions, Inc, a cutting-edge product leveraging Artificial
+                Intelligence to revolutionize research in the life sciences
+                industry. This innovative platform streamlines research processes,
+                enhances data analysis, and uncovers new insights.
+              </p>
             </div>
           </div>
-        ) : (
-          // Show this section if not logged in
-          <section className="WhyInfer-points">
-            <div className="Landing-Features-card">
-              <div className="Landing-Features-card-Inner">
-                <div className="number number-1">
-                  <img src={points1} alt="Icon 1" />
+
+          <div className="Landing-Features">
+            {isLoggedIn ? (
+              // Show this section if logged in
+              <div className="LoggedinFeatures">
+                <div className="Feature-Item">
+                  <img
+                    className="Landing-History-Icon"
+                    src={History}
+                    alt="Landing-History-Icon"
+                  />
+                  <h4>History</h4>
+
+                  <span onClick={handleOpenCollection}>Bookmarks</span>
+                  <span onClick={handleSessionClick}>Conversations</span>
+                  <span onClick={handleOpenNotes}>Notes</span>
                 </div>
-                <h3 className="card-title">AI-Driven Data Curation</h3>
-                <p className="card-content">
-                  Inferai helps speed up research by organizing data, making it
-                  easy to connect with different content sources.
-                </p>
-              </div>
-            </div>
-            <div className="Landing-Features-card">
-              <div className="Landing-Features-card-Inner">
-                <div className="number number-2">
-                  <img src={points2} alt="Icon 2" />
+                <div className="Feature-Item">
+                  <img
+                    className="Landing-Analytics-Icon"
+                    src={Analytics}
+                    alt="Landing-Analytics-Icon"
+                  />
+                  <h4>Analytics</h4>
+
+                  <span style={{}} title="This feature will ">
+                    Dashboard
+                  </span>
+                  <span>Reports</span>
                 </div>
-                <h3 className="card-title">Seamless Integration</h3>
-                <p className="card-content">
-                  Inferai seamlessly integrates with popular platforms, allowing
-                  real-time data sharing and automatic updates.
-                </p>
-              </div>
-            </div>
-            <div className="Landing-Features-card">
-              <div className="Landing-Features-card-Inner">
-                <div className="number number-3">
-                  <img src={points3} alt="Icon 3" />
+
+                <div className="Feature-Item">
+                  <img
+                    className="Landing-Utilities-Icon"
+                    src={Utilities}
+                    alt="Landing-Utilities-Icon"
+                  />
+                  <h4>Utilities</h4>
+                  <span onClick={handleOpenInsights}>Derive Insights</span>
+                  {/* <span onClick={handleOpenAnnotate}>Annotations</span> */}
+                  {/* <span onClick={handleOpenCitations}>Citation</span> */}
+                  <span>Job Scheduler</span>
+                  <span>LifeSciHub</span>
                 </div>
-                <h3 className="card-title">Advanced Analytics Engine</h3>
-                <p className="card-content">
-                  Inferai leverages Artificial Intelligence to provide insights
-                  through forecasts, live data displays, and in-depth analysis.
-                </p>
-              </div>
-            </div>
-            <div className="Landing-Features-card">
-              <div className="Landing-Features-card-Inner">
-                <div className="number number-4">
-                  <img src={points4} alt="Icon 4" />
+                <div className="Feature-Item">
+                  <img
+                    className="Landing-Help-Icon"
+                    src={Help}
+                    alt="Landing-Help-Icon"
+                  />
+                  <h4>Help</h4>
+                  <span>User Guide</span>
+                  {/* <span>About Infer</span> */}
+                  <a
+                    href="https://www.infersol.com/about-infer-solutions-inc/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ textDecoration: "none", color: "#007BFF" }}
+                  >
+                    About Infer
+                  </a>
+                  <span>FAQs</span>
                 </div>
-                <h3 className="card-title">Collaborative Tools</h3>
-                <p className="card-content">
-                  Inferai's collaborative tools make it easy for researchers to
-                  share data, rate content, make notes, & give feedback in real
-                  time.
-                </p>
               </div>
-            </div>
-          </section>
-        )}
+            ) : (
+              // Show this section if not logged in
+              <section className="WhyInfer-points">
+                <div className="Landing-Features-card">
+                  <div className="Landing-Features-card-Inner">
+                    <div className="number number-1">
+                      <img src={points1} alt="Icon 1" />
+                    </div>
+                    <h3 className="card-title">AI-Driven Data Curation</h3>
+                    <p className="card-content">
+                      Inferai helps speed up research by organizing data, making it
+                      easy to connect with different content sources.
+                    </p>
+                  </div>
+                </div>
+                <div className="Landing-Features-card">
+                  <div className="Landing-Features-card-Inner">
+                    <div className="number number-2">
+                      <img src={points2} alt="Icon 2" />
+                    </div>
+                    <h3 className="card-title">Seamless Integration</h3>
+                    <p className="card-content">
+                      Inferai seamlessly integrates with popular platforms, allowing
+                      real-time data sharing and automatic updates.
+                    </p>
+                  </div>
+                </div>
+                <div className="Landing-Features-card">
+                  <div className="Landing-Features-card-Inner">
+                    <div className="number number-3">
+                      <img src={points3} alt="Icon 3" />
+                    </div>
+                    <h3 className="card-title">Advanced Analytics Engine</h3>
+                    <p className="card-content">
+                      Inferai leverages Artificial Intelligence to provide insights
+                      through forecasts, live data displays, and in-depth analysis.
+                    </p>
+                  </div>
+                </div>
+                <div className="Landing-Features-card">
+                  <div className="Landing-Features-card-Inner">
+                    <div className="number number-4">
+                      <img src={points4} alt="Icon 4" />
+                    </div>
+                    <h3 className="card-title">Collaborative Tools</h3>
+                    <p className="card-content">
+                      Inferai's collaborative tools make it easy for researchers to
+                      share data, rate content, make notes, & give feedback in real
+                      time.
+                    </p>
+                  </div>
+                </div>
+              </section>
+            )}
+          </div>
       </div>
       {isLanderNotesOpen && (
         <Rnd
@@ -492,38 +490,7 @@ const Lander = () => {
           </div>
         </>
       )}
-      <div className="socials">
-        <div className="social-icons">
-          <a href="https://x.com/IncInfer" target="_blank" rel="noreferrer">
-            <FaXTwitter size={30} color="black" />
-          </a>
-
-          <a
-            href="https://www.facebook.com/infersol"
-            target="_blank"
-            rel="noreferrer"
-          >
-            <FaFacebookF size={30} color="black" />
-          </a>
-          <a
-            href="https://www.linkedin.com/company/infer-solutions/"
-            target="_blank"
-            rel="noreferrer"
-          >
-            <FaLinkedinIn size={30} color="black" />
-          </a>
-          <a
-            href="https://www.instagram.com/infersol/"
-            target="_blank"
-            rel="noreferrer"
-          >
-            <FaInstagramSquare size={32} color="black" />
-          </a>
-          <a href="https://www.infersol.com/" target="_blank" rel="noreferrer">
-            <SlGlobe size={27} color="black" />
-          </a>
-        </div>
-      </div>
+      
       <Footer />
     </div>
   );

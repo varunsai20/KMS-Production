@@ -12,12 +12,19 @@
   width: 100%;
   flex-shrink: 0;
 }
+.Landing-main-content{
+    display: flex;
+    width: 80%;
+    flex-grow: 1;
+    flex-direction: column;
+    justify-content: space-evenly;
+}
 .Landing-Content {
   display: flex;
-  width: 80%;
+  /* width: 80%; */
   padding: 4% 0;
   grid-template-columns: 1fr 1fr;
-  flex-grow: 1;
+  /* flex-grow: 1; */
   justify-content: space-between;
   position: relative;
 }
@@ -146,7 +153,7 @@
 
 .Landing-Features {
   display: flex;
-  width: 80%;
+  /* width: 80%; */
   padding: 0px 30px 0px 30px;
   border-radius: 24px;
   opacity: 0px;
@@ -868,7 +875,7 @@
   }
   .Landing-Welcome-desc {
     width: 95%;
-    text-align: center;
+    text-align: justify;
   }
   .welcome-search{
 
@@ -1083,5 +1090,8 @@
   }
   .card-title {
     margin: 0;
+  }
+  .welcome-search{
+    gap: 8%;
   }
 }
