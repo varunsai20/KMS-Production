@@ -984,14 +984,11 @@ td {
   padding-right: 10px;
 }
 .search-table-head th {
-  /*   
-  border-left: 1px solid #ddd; */
   border-top: 1px solid #ddd;
 }
 .search-table-body td {
   vertical-align: top;
   font-size: 12px;
-  /* border-left: 1px solid #ddd; */
   border-top: 1px solid #ddd;
 }
 .search-table-row td {
@@ -1024,9 +1021,8 @@ td {
 
 .search-stream-input input {
   flex-grow: 1;
-  padding: 15px 0; /* Add padding for the flag and button */
+  padding: 15px 0; 
   border-radius: 20px;
-  /* border: 1px solid #ccc; */
   margin-left: 1%;
   font-size: 14px;
   box-shadow: 500px;
@@ -1038,15 +1034,9 @@ td {
 .stream-flag-logo {
   top: 60%;
   margin-left: 1%;
-  /* transform: translateY(-50%);
-  height: 20px;
-  width: auto; */
 }
 .search-stream-input .button {
-  /* position: absolute; */
   height: 30px;
-  /* transform: translateY(-50%); */
-  /* padding: 5px 15px; */
   background-color: #fff;
   color: #007bff;
   border: none;
@@ -1100,13 +1090,9 @@ td {
   line-height: 20px;
   text-align: left;
   margin-left: 17px;
-
-  /* text-align: start; */
 }
 .search-notes-icon {
   border: 1px solid rgba(235, 235, 243, 1);
-  /* background-color: rgba(235, 244, 255, 1); */
-  /* border-radius: 8px; */
   padding: 10px;
 }
 .search-tables p {
@@ -1255,12 +1241,22 @@ button input {
 }
 @media (min-width: 0px) and (max-width: 576px) {
   .inferai-logo {
-    width: 35vw;
+    width: 25vw;
   }
   .SearchHeader-Logo {
-    width: 100%;
+    width: auto;
+  }
+  
+}
+@media (min-width: 576px) and (max-width: 992px) {
+  .inferai-logo {
+    width: 15vw;
+  }
+  .SearchHeader-Logo {
+    width: 85%;
   }
 }
+
 @media (min-width: 768px) and (max-width: 1042px) {
   .SearchResult-Option-Left {
     height: 4vh;
@@ -1364,3 +1360,4 @@ button input {
     font-size: 13px;
   }
 }
+

@@ -862,8 +862,9 @@
 }
 
 @media screen and (min-width: 576px) and (max-width: 992px) {
+  .sea
   .inferai-logo{
-    width: 25vw;
+    width: 15vw;
     margin: 0 auto;
   }
   .Landing-Welcome-desc {
@@ -976,7 +977,7 @@
   .Landing-Content {
     display: flex;
     justify-content: space-between;
-    width: 100%;
+    width: 95%;
     margin: 0 auto;
     align-items: center;
     flex-wrap: wrap;
@@ -1040,7 +1041,15 @@
   .Landing-Features-card:hover {
     transform: translateY(-5px);
   }
-
+  .citation-modal {
+    padding: 10px;
+    height: 40vh;
+    width: 85%;
+}
+.citation-close-collection {
+  top: calc(50% - 20vh);
+  right: calc(1% - 0px);
+}
   .card-title {
     font-size: 1rem;
     font-weight: bold;

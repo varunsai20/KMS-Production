@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import Header from "../../components/Header-New";
 import { useNavigate } from "react-router-dom";
 import { setDeriveInsights } from "../../redux/reducers/deriveInsights";
 import newChat from "../../assets/images/20px@2x.svg";
 import { apiService } from "../../assets/api/apiService";
 import pen from "../../assets/images/16px.svg";
 import { useRef } from "react";
-import { useLocation, useParams, Link } from "react-router-dom";
+import { useLocation, useParams} from "react-router-dom";
 import Annotation from "../../components/Annotaions";
 import Notes from "../NotesPage/Notes";
 import notesicon from "../../assets/images/note-2.svg";
@@ -20,9 +19,8 @@ import GenerateAnnotate from "../../components/DeriveAnnotations";
 import { faAnglesUp } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IoTrashOutline } from "react-icons/io5";
-import SearchBar from "../../components/SearchBar";
-import Logo from "../../assets/images/InfersolD17aR04aP01ZL-Polk4a 1.svg";
-import SearchTermMissing from "../../components/SearchTermMissing";
+import { AiOutlineMenu } from "react-icons/ai";
+import { CgClose } from "react-icons/cg";
 import SearchNavbar from "../../components/SearchNavbar";
 const ArticleLayout = () => {
   const [uploadedFile, setUploadedFile] = useState(null);
@@ -36,7 +34,6 @@ const ArticleLayout = () => {
   const navigate = useNavigate();
   const { pmid } = useParams();
   const prevPathRef = useRef(location.pathname);
-  const [termMissing, setTermMissing] = useState(false);
   const dropdownRef = useRef(null);
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -44,7 +41,6 @@ const ArticleLayout = () => {
   const [annotateHeight, setAnnotateHeight] = useState(0);
   const [notesHeight, setNotesHeight] = useState(0);
   const [hasFetchedAnnotateData, setHasFetchedAnnotateData] = useState(false);
-  //const [unsavedChanges, setUnsavedChanges] = useState(false);
   const [popupSessionId, setPopupSessionId] = useState(null);
   const [annotateLoading, setAnnotateLoading] = useState(false);
   const [showConfirmIcon, setShowConfirmIcon] = useState(false);
@@ -52,7 +48,6 @@ const ArticleLayout = () => {
   const [openNotes, setOpenNotes] = useState(false);
   const [type, id1] = pmid ? pmid.split(":") : "";
   const id = Number(id1);
-  //const [source, setSource] = useState();
   const displayMessage = isLoggedIn
     ? ""
     : "This feature is available for subscribed users.";
@@ -65,7 +60,6 @@ const ArticleLayout = () => {
     sessionStorage.getItem("session_id") || null
   );
   const isStreamDoneRef = useRef(false);
-  //const [isPromptEnabled, setIsPromptEnabled] = useState(false);
   const [editedTitle, setEditedTitle] = useState("");
   const [annotateData, setAnnotateData] = useState(
     location.state?.annotateData || ""
@@ -73,6 +67,13 @@ const ArticleLayout = () => {
   const annotateRef = useRef(null);
   const notesRef = useRef(null);
   const [isStreamDone, setIsStreamDone] = useState(false);
+  const[isHistoryOpen, setIsHistoryOpen] = useState(true);
+  const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth < 992);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 576);
+  const [isTablet, setIsTablet] = useState(window.innerWidth > 576 && window.innerWidth < 992);
+
+  
+
   useEffect(() => {
     localStorage.removeItem("session_id");
     setActiveSessionId(null);
@@ -103,6 +104,34 @@ const ArticleLayout = () => {
       fetchSessions();
     }
   }, [user_id, token, refreshSessions]);
+
+  // useEffect toggle history 
+  useEffect(() => {
+    const handleResize = () => {
+      const width = window.innerWidth;
+      setIsMobile(width <= 576);
+      setIsTablet(width > 576 && width < 992);
+      setIsSmallScreen(width < 992);
+  
+      if (width > 992) {
+        setIsHistoryOpen(true);
+      }
+    };
+  
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+
+  // Toggle History for small screens
+  const toggleHistory = () => {
+    if (isSmallScreen) {
+      setIsHistoryOpen((prev) => !prev);
+      setOpenAnnotate(false); // Close Annotate when History is opened
+      setOpenNotes(false); // Close Notes when History is opened
+    }
+  };
+
   const handleOpenChat = () => {
     localStorage.removeItem("session_id");
     sessionStorage.removeItem("session_id");
@@ -116,6 +145,9 @@ const ArticleLayout = () => {
         resetChatHistory: true,
       },
     });
+    if(isMobile === true){
+      setIsHistoryOpen(false);
+    }
   };
   const calculateContentHeight = (ref) => {
     if (ref.current) {
@@ -319,6 +351,9 @@ const ArticleLayout = () => {
       // Clear annotation data and update state
       setOpenAnnotate(false);
       setAnnotateData("");
+      if(isMobile === true){
+        setIsHistoryOpen(false);
+      }
   
       // Navigate based on session type
       if (session_type === "file_type") {
@@ -410,6 +445,11 @@ const ArticleLayout = () => {
     if (annotateData) {
       setOpenAnnotate((prevOpenAnnotate) => !prevOpenAnnotate);
       return;
+    }
+    if (isSmallScreen) {
+      console.log("open notes",openNotes);
+      setOpenNotes(false);
+      setIsHistoryOpen(false); // Close History only for small screens
     }
 
     const matchingIdExists =
@@ -541,6 +581,11 @@ if (id) {
     } else {
       setOpenNotes((prevOpenNotes) => !prevOpenNotes);
     }
+    if (isSmallScreen) {
+      console.log("open annotate",openAnnotate);
+      setOpenAnnotate(false);
+      setIsHistoryOpen(false); 
+    }
   };
   const handleCancelIcon = () => {
     setShowConfirmIcon(false);
@@ -565,7 +610,15 @@ if (id) {
       <div className="container">
         <SearchNavbar containerRef={null} isModalOpen={isModalOpen} />
 
-        <div className="content">
+         
+      <div className={`content ${isMobile ? 'mobile-view' : ''}`}>
+        {/* History Menu Button */}
+        {isTablet && (
+          <button className="toggle-history-btn" onClick={toggleHistory}>
+            {isHistoryOpen ? <CgClose color="#1A82FF" size={20}/> : <AiOutlineMenu color="#1A82FF" size={20}/>}
+          </button>
+        )}
+          {!isMobile &&  isHistoryOpen && (
           <div
             className="history-pagination"
             style={{
@@ -574,6 +627,185 @@ if (id) {
             }}
           >
             <div
+              className="history-pagination-header"
+              style={{ display: "flex", justifyContent: "space-between" }}
+            >
+              <p>Recent Interactions</p>
+              <button className="new-chat-button" onClick={handleOpenChat}>
+                <img src={newChat} alt="new-chat-icon" />
+              </button>
+            </div>
+            <ul>
+              {sessions.length > 0 ? (
+                sessions.map((session) => {
+                  // Trim quotes from session titles
+                  const sanitizedTitle = session.session_title.replace(
+                    /^"|"$/g,
+                    ""
+                  ); // Removes leading and trailing quotes
+
+                  const mappedTitle = sanitizedTitle.includes(
+                    "what are the key highlights from this article"
+                  )
+                    ? "Key Highlights"
+                    : sanitizedTitle.includes(
+                        "what can we conclude form this article"
+                      )
+                    ? "Conclusion"
+                    : sanitizedTitle.includes("Summarize this article")
+                    ? "Summarize"
+                    : sanitizedTitle;
+
+                  return (
+                    <li
+                      key={session.session_id}
+                      className={
+                        session.session_id === activeSessionId ? "active" : ""
+                      }
+                      onClick={() => {
+                        handleSessionClick(session.session_id);
+                      }}
+                      style={{ position: "relative" }}
+                    >
+                      {editingSessionId === session.session_id ? (
+                        <input
+                          type="text"
+                          style={{
+                            padding: "0",
+                            height: "20px",
+                            width: "100%",
+                            fontSize: "14px",
+                            outline: "none",
+                            // borderColor: editedTitle ? "" : "",
+                            border: "1px solid #007BFF",
+                          }}
+                          value={editedTitle}
+                          onChange={handleTitleChange}
+                          onBlur={() => handleSaveEdit(session.session_id)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              handleSaveEdit(session.session_id);
+                            }
+                          }}
+                          autoFocus
+                        />
+                      ) : (
+                        <span>
+                          {mappedTitle.slice(0, 25)}
+                          {mappedTitle.length > 25 ? "" : ""}
+                        </span>
+                      )}
+                      <div
+                        style={{
+                          display: "inline-block",
+                          position: "relative",
+                        }}
+                      >
+                        {/* Menu dots */}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation(); // Prevent click from reaching <li>
+                            togglePopup(session.session_id, e);
+                          }}
+                          id="menu-dots"
+                          title="Options"
+                          style={{ display: editedTitle ? "none" : "block" }}
+                        >
+                          ⋮
+                        </button>
+
+                        {popupSessionId === session.session_id && (
+                          <div
+                            ref={dropdownRef}
+                            className="popup-menu-renamedelete"
+                            style={isHistoryOpen ? {
+                              transform: `translate(${popupPosition.x-100}px, ${popupPosition.y+200}px)`,
+                            }:{ transform: `translate(${popupPosition.x-100}px, ${popupPosition.y+2000}px)`}}
+                          >
+                            <div
+                              className="popup-rename"
+                              onClick={() =>
+                                handleEditClick(session.session_id, mappedTitle)
+                              }
+                            >
+                              <img
+                                src={pen}
+                                alt="pen-icon"
+                                style={{ marginRight: "10px", width: "16px" }}
+                              />
+                              Rename
+                            </div>
+                            <div
+                              className="popup-delete"
+                              onClick={() =>
+                                handleDeleteSession(session.session_id)
+                              }
+                            >
+                              <IoTrashOutline
+                                size={15}
+                                style={{ marginRight: "10px" }}
+                              />
+                              Delete
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </li>
+                  );
+                })
+              ) : (
+                <li>No sessions available</li>
+              )}
+            </ul>
+          </div>
+           )}
+          {/* <ArticleContent/> */}
+          {annotateLoading ? <Loading /> : ""}
+          {deriveInsights ? (
+            <ArticleDerive
+              setRefreshSessions={setRefreshSessions}
+              openAnnotate={openAnnotate}
+              setOpenAnnotate={setOpenAnnotate}
+              setOpenNotes={setOpenNotes}
+              openNotes={openNotes}
+              setSavedText={setSavedText}
+              annotateLoading={annotateLoading}
+              setAnnotateLoading={setAnnotateLoading}
+              uploadedFile={uploadedFile}
+              setUploadedFile={setUploadedFile}
+              isCitationsOpen={isCitationsOpen}
+              setIsCitationsOpen={setIsCitationsOpen}
+              isStreamDone={isStreamDone}
+              setIsStreamDone={setIsStreamDone}
+              isStreamDoneRef={isStreamDoneRef}
+              setClickedBack={setClickedBack}
+              setAnnotateData={setAnnotateData}
+            />
+          ) : (
+            <ArticleContent
+              setSavedText={setSavedText}
+              setRefreshSessions={setRefreshSessions}
+              openAnnotate={openAnnotate}
+              setOpenAnnotate={setOpenAnnotate}
+              setOpenNotes={setOpenNotes}
+              openNotes={openNotes}
+              annotateLoading={annotateLoading}
+              setAnnotateLoading={setAnnotateLoading}
+              isStreamDone={isStreamDone}
+              setIsStreamDone={setIsStreamDone}
+              isStreamDoneRef={isStreamDoneRef}
+              setClickedBack={setClickedBack}
+              setActiveSessionId={setActiveSessionId}
+              isModalOpen={isModalOpen}
+              setIsModalOpen={setIsModalOpen}
+            />
+          )}
+           <div className={`bottom-section ${isMobile ? "mobile-bottom" : ""}`}>
+            {/* Mobile history panel */}
+           
+            {isMobile && isHistoryOpen && (
+              <div className="mobile-history-panel">
+                 <div
               className="history-pagination-header"
               style={{ display: "flex", justifyContent: "space-between" }}
             >
@@ -704,51 +936,14 @@ if (id) {
                 <li>No sessions available</li>
               )}
             </ul>
-          </div>
-          {/* <ArticleContent/> */}
-          {annotateLoading ? <Loading /> : ""}
-          {deriveInsights ? (
-            <ArticleDerive
-              setRefreshSessions={setRefreshSessions}
-              openAnnotate={openAnnotate}
-              setOpenAnnotate={setOpenAnnotate}
-              setOpenNotes={setOpenNotes}
-              openNotes={openNotes}
-              setSavedText={setSavedText}
-              annotateLoading={annotateLoading}
-              setAnnotateLoading={setAnnotateLoading}
-              uploadedFile={uploadedFile}
-              setUploadedFile={setUploadedFile}
-              isCitationsOpen={isCitationsOpen}
-              setIsCitationsOpen={setIsCitationsOpen}
-              isStreamDone={isStreamDone}
-              setIsStreamDone={setIsStreamDone}
-              isStreamDoneRef={isStreamDoneRef}
-              setClickedBack={setClickedBack}
-              setAnnotateData={setAnnotateData}
-            />
-          ) : (
-            <ArticleContent
-              setSavedText={setSavedText}
-              setRefreshSessions={setRefreshSessions}
-              openAnnotate={openAnnotate}
-              setOpenAnnotate={setOpenAnnotate}
-              setOpenNotes={setOpenNotes}
-              openNotes={openNotes}
-              annotateLoading={annotateLoading}
-              setAnnotateLoading={setAnnotateLoading}
-              isStreamDone={isStreamDone}
-              setIsStreamDone={setIsStreamDone}
-              isStreamDoneRef={isStreamDoneRef}
-              setClickedBack={setClickedBack}
-              setActiveSessionId={setActiveSessionId}
-              isModalOpen={isModalOpen}
-              setIsModalOpen={setIsModalOpen}
-            />
-          )}
+                
+              </div>
+            )}
 
+
+          </div>
           <div
-            className="right-aside"
+           className={`right-aside ${isMobile ? "mobile-aside" : ""}`}
             style={{
               cursor: isLoggedIn ? "" : "not-allowed",
               opacity: isLoggedIn ? 1 : 0.5,
@@ -802,9 +997,9 @@ if (id) {
                 <div
                   ref={notesRef}
                   className="notes-height"
-                  style={{
-                    height: `${notesHeight}vh`,
-                  }}
+                  // style={{
+                  //   height: `${notesHeight}vh`,
+                  // }}
                 >
                   <Notes selectedText={savedText} notesHeight={notesHeight} annotateHeight={annotateHeight} isOpenAnnotate={openAnnotate}/>
                   <div
@@ -823,6 +1018,11 @@ if (id) {
               )}
             </div>
             <div className="icons-group">
+              {isMobile &&(
+            <button className="botton-toggle-history-btn" onClick={toggleHistory}>
+            {isHistoryOpen ? <CgClose color="#1A82FF" size={20}/> : <AiOutlineMenu color="#1A82FF" size={20}/>}
+          </button>
+          )}
               <div
                 className={`search-annotate-icon ${
                   openAnnotate ? "open" : "closed"
@@ -892,6 +1092,7 @@ if (id) {
       <div className="ScrollTop">
         <button onClick={scrollToTop} id="scrollTopBtn" title="Go to top">
           <FontAwesomeIcon icon={faAnglesUp} />
+          Back to Top
         </button>
       </div>
     </>

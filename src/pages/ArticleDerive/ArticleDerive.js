@@ -508,6 +508,9 @@ const ArticleDerive = ({
       if (!query && !uploadedFile) {
         showErrorToast("Please enter a query or upload a file");
         return;
+      }else if(query && !uploadedFile){
+        showErrorToast("please upload your file to proceed");
+        return;
       }
       setIsStreamDone(false);
       removeUploadedFile();
@@ -1105,7 +1108,7 @@ const ArticleDerive = ({
             <div className="query-file-input">
               <input
                 type="text"
-                placeholder="Ask anything..."
+                placeholder="Upload here for insights..."
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyDown={handleDeriveKeyDown}

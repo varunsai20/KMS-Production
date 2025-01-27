@@ -10,7 +10,7 @@ const SearchNavbar = ({containerRef,isModalOpen}) => {
     <div className="search-container-content" ref={containerRef} style={{zIndex:isModalOpen?0:1}}>
     <Header />
     <div className="SearchHeader-Logo">
-      <div style={{display:"flex"}}>
+      <div style={{display:"flex",alignItems:"center"}}>
         <Link to="/">
         <img src={Logo} alt="inferAI-logo" className="inferai-logo" />
       </Link>
