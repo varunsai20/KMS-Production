@@ -1054,6 +1054,28 @@ console.log("mobile view is",isMobileView)
     setShowFilters(!showFilters);
   };
   console.log("Tablet view enabled",isTabletView  )
+  const mobileViewOptionsRef = useRef(null); // Reference for MobileView-Options
+  const [mobileViewHeight, setMobileViewHeight] = useState(0); // State to store height
+
+  useEffect(() => {
+    if (mobileViewOptionsRef.current) {
+      // Capture the height of MobileView-Options
+      setMobileViewHeight(mobileViewOptionsRef.current.offsetHeight);
+    }
+
+    const handleResize = () => {
+      if (mobileViewOptionsRef.current) {
+        setMobileViewHeight(mobileViewOptionsRef.current.offsetHeight);
+      }
+    };
+
+    // Add resize event listener
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
   return (
     <div className="Container" ref={contentRightRef}>
       <SearchNavbar containerRef={containerRef} isTabletView={isTabletView} isMobileView={isMobileView}/>
@@ -2224,7 +2246,7 @@ console.log("mobile view is",isMobileView)
                                     onClick={(e) => e.stopPropagation()}
                                     style={{
                                       background: "rgba(255, 255, 255, 1)",
-                                      width: "65%",
+                                      width: isMobileView?"90%":"65%",
                                     }}
                                   >
                                     <div className="email-modal-header">
@@ -2323,6 +2345,7 @@ console.log("mobile view is",isMobileView)
                                                   height: "4vh",
                                                   width: "100%",
                                                 }}
+                                                isMobileView={isMobileView}
                                               />
                                             </div>
                                           ))
@@ -2411,7 +2434,8 @@ console.log("mobile view is",isMobileView)
                                         onClick={handleSendEmail}
                                         style={{
                                           borderRadius: "30px",
-                                          width: "10%",
+                                          width: isMobileView?"":"10%",
+                                          padding: isMobileView&&"10px 20px"
                                           // margin: "auto",
                                         }}
                                         className="send-button"
@@ -2705,115 +2729,177 @@ console.log("mobile view is",isMobileView)
           <FontAwesomeIcon icon={faAnglesUp} />
         </button>
       </div>
-      {isMobileView&&<div className="MobileView-Options"> 
-        <div className="HomeIcon-MobileView" style={{width:"33.33%"}}>
-          <img src={homeIcon}/>
-          {/* Home */}
-          </div>
-        <div
-                      className="SearchResult-Option-Left"
-                      style={{
-                        width:"33.33%",
-                        cursor:
-                          isLoggedIn && selectedArticles.length > 0
-                            ? "pointer"
-                            : "not-allowed",
-                        opacity: isLoggedIn
-                          ? selectedArticles.length > 0
-                            ? 1
-                            : 1
-                          : 0.5, // Grayed out if not logged in1
-                          
+      {isMobileView&&
+      <div style={{position:"sticky",bottom:"0"}}>
+        <div ref={mobileViewOptionsRef} className="MobileView-Options"> 
+            <div className="HomeIcon-MobileView" style={{width:"33.33%"}}>
+            <img src={homeIcon} alt="Home"  style={{ cursor: "pointer" }}  onClick={() => navigate("/")} />              
+            {/* Home */}
+              </div>
+            <div
+                          className="SearchResult-Option-Left"
+                          style={{
+                            width:"33.33%",
+                            cursor:
+                              isLoggedIn && selectedArticles.length > 0
+                                ? "pointer"
+                                : "not-allowed",
+                            opacity: isLoggedIn
+                              ? selectedArticles.length > 0
+                                ? 1
+                                : 1
+                              : 0.5, // Grayed out if not logged in1
+                              
+                          }}
+                          title={
+                            isLoggedIn
+                              ? selectedArticles.length === 0
+                                ? "Select an article to share"
+                                : "Share selected articles"
+                              : displayMessage
+                          }
+                        >
+                          <button
+                            onClick={
+                              isLoggedIn && Object.keys(shareableLinks).length > 0
+                                ? handleShare
+                                : null
+                            }
+                            disabled={
+                              !isLoggedIn || Object.keys(shareableLinks).length === 0
+                            }
+                            style={{border:"none"}}
+                            className={`SearchResult-Share ${
+                              isLoggedIn && Object.keys(shareableLinks).length > 0
+                                ? "active"
+                                : "disabled"
+                            }`}
+                            title={
+                              isLoggedIn
+                                ? Object.keys(shareableLinks).length === 0
+                                  ? "Select an article to share"
+                                  : "Share selected articles"
+                                : displayMessage
+                            }
+                          >
+                            <img src={shareIcon}/>
+                            {/* Share */}
+                          </button>
+                          {/* {!isLoggedIn && (
+          <p style={{ color: "gray", fontSize: "0.9rem", marginTop: "5px" }}>
+            {displayMessage}
+          </p>
+        )} */}
+            </div>
+            <div className="search-icons-group" style={{width:"33.33%"}}>
+                  <>
+                    <div
+                      className={`search-annotate-icon ${
+                        openAnnotate ? "open" : "closed"
+                      }${
+                        isLoggedIn &&
+                        (!annotateData || Object.keys(annotateData).length === 0)
+                          ? "disabled"
+                          : ""
+                      } 
+                      
+                      `}
+                      onClick={() => {
+                        if (!isLoggedIn) {
+                          return; // Prevent action if not logged in
+                        }
+                        setHandleAnnotateCall(true);
+                        if (annotateData && Object.keys(annotateData).length > 0) {
+                          handleAnnotate();
+                        } else if (totalArticles.length > 0) {
+                          handleAnnotateClick();
+                        }
                       }}
-                      title={
-                        isLoggedIn
-                          ? selectedArticles.length === 0
-                            ? "Select an article to share"
-                            : "Share selected articles"
-                          : displayMessage
-                      }
+                      title={isLoggedIn ? "" : displayMessage}
+                      style={{
+                        cursor: isLoggedIn
+                          ? annotateData && Object.keys(annotateData).length > 0
+                            ? "pointer"
+                            : totalArticles.length > 0
+                            ? "pointer"
+                            : "default"
+                          : "not-allowed", // Disable interaction if not logged in
+                        opacity: isLoggedIn
+                          ? annotateData && Object.keys(annotateData).length > 0
+                            ? 1
+                            : totalArticles.length > 0
+                            ? 1
+                            : 0.5
+                          : 0.5, // Grayed out if not logged in
+                          background:"none"
+                      }}
                     >
-                      <button
-                        onClick={
-                          isLoggedIn && Object.keys(shareableLinks).length > 0
-                            ? handleShare
-                            : null
+                      <img src={annotate} alt="annotate-icon" />
+                    </div>
+                  </>
+              </div>
+              {isMobileView&&<div className="search-right-aside-mobile" style={{ position: "absolute",
+            bottom: `${mobileViewHeight + 10}px`,right:"2px",width:isTabletView?openAnnotate?"46%":"":"" }}>
+                {openAnnotate && (  
+                  <div className="search-annotate" style={{width:isMobileView?"99vw":"",margin:isMobileView ?"0":""}}>
+                    <Annotation
+                      openAnnotate={openAnnotate}
+                      annotateData={annotateData}
+                      source={annotateSource}
+                      isTabletView={isTabletView}
+                    />
+                  </div>
+                )}
+                {!isTabletView&&!isMobileView&&(<div className="search-icons-group">
+                  <>
+                    <div
+                      className={`search-annotate-icon ${
+                        openAnnotate ? "open" : "closed"
+                      }${
+                        isLoggedIn &&
+                        (!annotateData || Object.keys(annotateData).length === 0)
+                          ? "disabled"
+                          : ""
+                      } 
+                      
+                      `}
+                      onClick={() => {
+                        if (!isLoggedIn) {
+                          return; // Prevent action if not logged in
                         }
-                        disabled={
-                          !isLoggedIn || Object.keys(shareableLinks).length === 0
+                        setHandleAnnotateCall(true);
+                        if (annotateData && Object.keys(annotateData).length > 0) {
+                          handleAnnotate();
+                        } else if (totalArticles.length > 0) {
+                          handleAnnotateClick();
                         }
-                        style={{border:"none"}}
-                        className={`SearchResult-Share ${
-                          isLoggedIn && Object.keys(shareableLinks).length > 0
-                            ? "active"
-                            : "disabled"
-                        }`}
-                        title={
-                          isLoggedIn
-                            ? Object.keys(shareableLinks).length === 0
-                              ? "Select an article to share"
-                              : "Share selected articles"
-                            : displayMessage
-                        }
-                      >
-                        <img src={shareIcon}/>
-                        {/* Share */}
-                      </button>
-                      {/* {!isLoggedIn && (
-      <p style={{ color: "gray", fontSize: "0.9rem", marginTop: "5px" }}>
-        {displayMessage}
-      </p>
-    )} */}
-        </div>
-        <div className="search-icons-group" style={{width:"33.33%"}}>
-              <>
-                <div
-                  className={`search-annotate-icon ${
-                    openAnnotate ? "open" : "closed"
-                  }${
-                    isLoggedIn &&
-                    (!annotateData || Object.keys(annotateData).length === 0)
-                      ? "disabled"
-                      : ""
-                  } 
-                   
-                  `}
-                  onClick={() => {
-                    if (!isLoggedIn) {
-                      return; // Prevent action if not logged in
-                    }
-                    setHandleAnnotateCall(true);
-                    if (annotateData && Object.keys(annotateData).length > 0) {
-                      handleAnnotate();
-                    } else if (totalArticles.length > 0) {
-                      handleAnnotateClick();
-                    }
-                  }}
-                  title={isLoggedIn ? "" : displayMessage}
-                  style={{
-                    cursor: isLoggedIn
-                      ? annotateData && Object.keys(annotateData).length > 0
-                        ? "pointer"
-                        : totalArticles.length > 0
-                        ? "pointer"
-                        : "default"
-                      : "not-allowed", // Disable interaction if not logged in
-                    opacity: isLoggedIn
-                      ? annotateData && Object.keys(annotateData).length > 0
-                        ? 1
-                        : totalArticles.length > 0
-                        ? 1
-                        : 0.5
-                      : 0.5, // Grayed out if not logged in
-                      background:"none"
-                  }}
-                >
-                  <img src={annotate} alt="annotate-icon" />
-                </div>
-              </>
+                      }}
+                      title={isLoggedIn ? "" : displayMessage}
+                      style={{
+                        cursor: isLoggedIn
+                          ? annotateData && Object.keys(annotateData).length > 0
+                            ? "pointer"
+                            : totalArticles.length > 0
+                            ? "pointer"
+                            : "default"
+                          : "not-allowed", // Disable interaction if not logged in
+                        opacity: isLoggedIn
+                          ? annotateData && Object.keys(annotateData).length > 0
+                            ? 1
+                            : totalArticles.length > 0
+                            ? 1
+                            : 0.5
+                          : 0.5, // Grayed out if not logged in
+                      }}
+                    >
+                      <img src={annotate} alt="annotate-icon" />
+                    </div>
+                  </>
+                </div>)}
+              </div>}
           </div>
-      </div>}
-    </div>
+        </div>}
+      </div>
   );
 };
 

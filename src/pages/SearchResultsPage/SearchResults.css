@@ -1370,8 +1370,8 @@ button input {
 .MobileView-Options{
   background: #EBEBF3;
   display: flex;
-  position: sticky;
-  bottom: 0;
+  /* position: sticky;
+  bottom: 0; */
   /* justify-content: space-around; */
   align-items: center;
 }
@@ -1468,6 +1468,7 @@ button input {
     margin: 0;
   }
   .search-filters-container-ViewChange{
+    font-size: 12px;
     width: fit-content;
   }
 }
