@@ -4,13 +4,13 @@ import SearchBar from './SearchBar'
 import SearchTermMissing from './SearchTermMissing'
 import { Link } from 'react-router-dom'
 import Logo from "../assets/images/InfersolD17aR04aP01ZL-Polk4a 1.svg"
-const SearchNavbar = ({containerRef,isModalOpen}) => {
+const SearchNavbar = ({containerRef,isModalOpen,isTabletView,isMobileView}) => {
     const [termMissing, setTermMissing] = useState(false);
   return (
-    <div className="search-container-content" ref={containerRef} style={{zIndex:isModalOpen?0:1}}>
+    <div className="search-container-content" ref={containerRef} style={{zIndex:isModalOpen?0:1,position:(isTabletView||isMobileView)?"":"sticky"}}>
     <Header />
-    <div className="SearchHeader-Logo">
-      <div style={{display:"flex"}}>
+    <div className="SearchHeader-Logo" style={{width:isTabletView?"95%":"70%",border:isMobileView?"none":""}}>  
+      <div style={{display:"flex",alignItems:"center",flexDirection:isMobileView?"column":""}}>
         <Link to="/">
         <img src={Logo} alt="inferAI-logo" className="inferai-logo" />
       </Link>

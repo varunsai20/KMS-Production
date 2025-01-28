@@ -1,5 +1,5 @@
 .search-container-content {
-  position: sticky;
+  /* position: sticky; */
   top: 0;
   z-index: 1;
   background: white;
@@ -129,7 +129,7 @@ button {
   border: 1px solid #e0e0e0;
   border-radius: 8px;
   padding: 16px;
-  width: 15%;
+  /* width: 15%; */
   background-color: #fff;
   height: fit-content;
   flex-shrink: 0;
@@ -274,6 +274,7 @@ button {
   padding: 20px 0 10px 0;
   height: 40px;
   display: flex;
+  align-items: center;
   gap: 10px;
   justify-content: space-between;
   flex-direction: row;
@@ -284,7 +285,7 @@ button {
   display: flex;
   height: fit-content;
   gap: 8px;
-  height: 5vh;
+  /* height: 5vh; */
 }
 
 .SearchResult-Option-Left {
@@ -307,7 +308,7 @@ button {
 }
 
 .SearchResult-Share {
-  width: 75px;
+    /* width: 75px; */
   gap: 10px;
   border-radius: 40px;
   border: 1px solid;
@@ -702,6 +703,7 @@ button {
   min-height: 10%;
   width: 100%;
   display: flex;
+  flex-wrap: wrap;
   flex-direction: row;
   gap: 20px;
   align-items: center;
@@ -720,8 +722,9 @@ button {
   justify-content: center;
   align-items: center;
   padding: 0px;
-  height: 1vh;
-  width: 16vh;
+  height: 1vw;
+  margin-left: 17px;
+  /* width: 16vh; */
   transform: matrix(-1, 0, 0, 1, 0, 0);
 }
 .searchResult-rate:not(:checked) > input {
@@ -730,11 +733,11 @@ button {
 }
 .searchResult-rate:not(:checked) > label {
   float: right;
-  width: 1em;
+  /* width: 2vw; */
   overflow: hidden;
   white-space: nowrap;
   cursor: default;
-  font-size: 30px;
+  font-size: 2vw;
   color: rgb(205 205 205);
 }
 .searchResult-rate:not(:checked) > label:before {
@@ -1253,15 +1256,274 @@ button input {
   border: 1px solid #00000012;
   border-radius: 8px;
 }
-@media (min-width: 0px) and (max-width: 576px) {
+.SearchOptions-ViewChange{
+  position: relative;
+    display: flex;
+    width: 95%;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    margin: 0 auto;
+}
+.SearchResult-Count-Filters-ViewChange{
+  display: flex;
+  gap: 1vw;
+}
+.filters-container-ViewChange {
+  /* display: flex; */
+  flex-direction: column;
+
+}
+
+.toggle-filters-button-ViewChange {
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  /* height: 5vh; */
+    border-radius: 25px;
+}
+
+/* .toggle-filters-button-ViewChange:hover {
+  background-color: #0056b3;
+} */
+
+.search-filters-container-ViewChange {
+  position: absolute;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+  background-color: #f9f9f9;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  margin-top: 5px;
+}
+.HomeIcon-MobileView{
+  display: flex;
+      flex-wrap: wrap;
+      flex-direction: column;
+}
+.search-filters-container-ViewChange.mobileview{
+  width: undefined;
+  flex-direction: row;
+}
+.filters-header-ViewChange {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.filters-header-ViewChange h3 {
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: #1a1a1a;
+}
+
+.reset-button-ViewChange {
+  color: #007bff;
+  background: none;
+  border: none;
+  font-size: 0.9rem;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.filters-content-ViewChange {
+  display: flex;
+  /* flex-wrap: wrap; */
+  gap: 2rem;
+}
+
+.filter-group-ViewChange {
+  flex: 1 1 30%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.filter-group-ViewChange h4 {
+  width: fit-content;
+  font-size: 1rem;
+  font-weight: bold;
+  color: #007bff;
+}
+.filter-group-ViewChange label{
+  width: fit-content;
+}
+
+.custom-date-range-ViewChange {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.apply-button-ViewChange {
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.apply-button-ViewChange:hover {
+  background-color: #0056b3;
+}
+.MobileView-Options{
+  background: #EBEBF3;
+  display: flex;
+  position: sticky;
+  bottom: 0;
+  /* justify-content: space-around; */
+  align-items: center;
+}
+.MobileView-Options .SearchResult-Option-Left{
+  border-left: 1px solid #fff;
+  border-right: 1px solid #fff;
+  border-radius: 0;
+
+}
+@media (min-width: 768px) and (max-width: 1024px) {
+  
+}
+@media (min-width: 1024px) and (max-width: 1366px) {
+  .searchResult-rate {
+    /* width: 20vh; */
+  }
+  #Search-Content-Container {
+    width: 98%;
+  }
+  .search-annotate {
+    width: 22vw;
+  }
+  .searchContent-left {
+    /* width: 17%; */
+    padding: 10px;
+  }
+  .pagination {
+    margin-top: 10px;
+  }
+  .searchResults-Bar {
+    margin: 0%;
+  }
+  .search-table-body td {
+    font-size: 10px;
+    padding: 5px;
+  }
+  .search-tables p {
+    font-size: 16px;
+  }
+  #label-text {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 600px) {
   .inferai-logo {
-    width: 35vw;
+    min-width: 20vw;
   }
   .SearchHeader-Logo {
     width: 100%;
   }
+  .Article-Options{
+    gap: 10px;
+  }
+  .Article-Options-Left{
+    gap: 5px;
+  }
+  .searchResult-rate:not(:checked) > label{
+    font-size: 3vw;
+  }
+  .searchresult-similarity_score{
+    font-size: 2vw;
+  }
+  .search-table-body td
+  {
+    font-size: 10px;
+  }
+  .search-table-head th{
+    font-size: 10px;
+  }
+  .searchresult-title{
+    font-size: 2.5vw;
+  }
+  .searchContent-right {
+    border: none;
+    padding-left: 0;     
+  }
+  .search-tables p{
+    font-size: 2vw;
+  }
+  #scrollTopBtn{
+    right: 0;
+    bottom: 50px;
+  }
+  .SearchResult-Share{
+    margin: 0 auto;
+  }
+  .search-filters-container-ViewChange{
+    flex-direction: row;
+  }
+  .filters-content-ViewChange{
+    flex-direction: column;
+    gap: 10px;
+  }
+  .filter-group-ViewChange h4{
+    margin: 0;
+  }
+  .search-filters-container-ViewChange{
+    width: fit-content;
+  }
 }
-@media (min-width: 768px) and (max-width: 1042px) {
+@media (min-width: 600px) and (max-width: 768px) {
+  /* .searchresult-title{
+    font-size: 2.5vw;
+  } */
+  .SearchResult-Share{
+    margin: 0 auto;
+  }
+  .Article-Options{
+    gap: 10px;
+  }
+  .Article-Options-Left{
+    gap: 5px;
+  }
+  .searchResult-rate:not(:checked) > label{
+    font-size: 3vw;
+  }
+  .searchresult-similarity_score{
+    font-size: 2vw;
+  }
+  .search-table-body td{
+    font-size: 1.5vw;
+  }
+  .search-table-head th{
+    font-size: 1.5vw;
+  }
+  .searchContent-right{
+    border: none;
+    padding-left: 0;
+  }
+  .search-tables p{
+    font-size: 2vw;
+  }
+  /* #scrollTopBtn{
+    right: 0;
+    bottom: 50px;
+  } */
+  /* Styles for larger mobile devices */
+}
+@media (min-width: 769px) and (max-width: 1024px) {
   .SearchResult-Option-Left {
     height: 4vh;
   }
@@ -1275,7 +1537,7 @@ button input {
     margin: 0;
   }
   .searchContent-left {
-    width: 16%;
+    /* width: 16%; */
     font-size: 14px;
   }
   .searchResults-Bar .input-container {
@@ -1302,20 +1564,26 @@ button input {
   }
   .SearchResult-Count-Filters {
     padding: 20px 0 10px 0;
-    display: inline;
+    /* display: inline; */
     gap: 10px;
     background-color: #ffffff;
-    flex-wrap: wrap;
+    /* flex-wrap: wrap; */
   }
   .searchresult-title {
     font-size: 14px;
   }
   .search-table-body td {
-    font-size: 10px;
+    font-size: 1vw;
+  }
+  .Article-Options{
+    gap: 10px;
+  }
+  .searchResult-rate:not(:checked) > label{
+    font-size: 2.5vw;
   }
 }
 /* Surface Devices */
-@media screen and (min-width: 912px) and (max-width: 1080px) {
+/* @media screen and (min-width: 912px) and (max-width: 1080px) {
   .SearchResult-Option-Left {
     border-radius: 25px;
   }
@@ -1323,7 +1591,6 @@ button input {
     display: flex;
     flex-direction: row;
     justify-content: flex-end;
-    /* align-items: flex-end; */
     padding: 0px;
   }
   .Article-Options {
@@ -1333,34 +1600,9 @@ button input {
     align-items: center;
   }
 }
-@media (min-width: 900px) and (max-width: 1366px) {
-  .searchResult-rate {
-    width: 20vh;
-  }
-  #Search-Content-Container {
-    width: 70%;
-  }
-  .search-annotate {
-    width: 22vw;
-  }
-  .searchContent-left {
-    width: 17%;
-    padding: 10px;
-  }
-  .pagination {
-    margin-top: 10px;
-  }
-  .searchResults-Bar {
-    margin: 0%;
-  }
-  .search-table-body td {
-    font-size: 10px;
-    padding: 5px;
-  }
-  .search-tables p {
-    font-size: 16px;
-  }
-  #label-text {
-    font-size: 13px;
-  }
+@media (min-width: 992px) and (max-width: 1199px) {
 }
+*/
+/*
+@media (min-width: 1200px) and (max-width: 1399px) {
+} */

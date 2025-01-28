@@ -1043,3 +1043,15 @@ td {
     font-size: 13px;
   }
 }
+@media (max-width: 576px) {
+  #scrollTopBtn {
+      right: 0;
+      bottom: 50px;
+  }
+}
+/* @media (min-width: 577px) and (max-width: 768px) {
+  #scrollTopBtn {
+    right: 0;
+    bottom: 50px;
+  }
+} */

@@ -22,6 +22,9 @@ import Header from "../../components/Header-New";
 import Logo from "../../assets/images/InfersolD17aR04aP01ZL-Polk4a 1.svg";
 import NoteItem from "../../components/Notes/NoteItem";
 import SearchTermMissing from "../../components/SearchTermMissing";
+import filtersIcon from "../../assets/images/001-edit 1.svg"
+import homeIcon from "../../assets/images/homeIcon.svg"
+import shareIcon from "../../assets/images/ShareIcon.svg"
 import SearchNavbar from "../../components/SearchNavbar";
 const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   const ITEMS_PER_PAGE = 10;
@@ -541,6 +544,9 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       ...prevFilters,
       articleType: updatedArticleTypes,
     }));
+    if (!checked) {
+      setShowFilters((prevState) => !prevState);
+    }
     fetchFilteredResults({
       sourceTypes: filters.sourceType,
       dateRange: selectedDateRange,
@@ -628,7 +634,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
             articleTypes,
           })
         );
-
+        setShowFilters(!showFilters);
         navigate("/search", { state: { data: response.data, searchTerm } });
       })
       .catch((error) => {
@@ -750,7 +756,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
     setCustomEndDate("");
     localStorage.removeItem("filters");
     localStorage.removeItem("publicationDate");
-
+    setShowFilters(!showFilters);
     navigate("/search", { state: { data: searchResults, searchTerm } });
   };
   const getIdType = (article) => {
@@ -1073,12 +1079,550 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
       window.removeEventListener("resize", updateHeight);
     };
   }, []);
+  const [isTabletView, setIsTabletView] = useState(false);
+const [isMobileView, setIsMobileView] = useState(false);
+
+useEffect(() => {
+  const handleResize = () => {
+    const width = window.innerWidth;
+
+    // Update mobile view state
+    setIsMobileView(width < 600); // For screens smaller than 600px (mobile)
+
+    // Update tablet view state
+    setIsTabletView(width >= 600 && width < 769); // For screens between 600px and 768px (tablet)
+  };
+
+  // Set initial state
+  handleResize();
+
+  // Add event listener
+  window.addEventListener("resize", handleResize);
+
+  // Cleanup event listener
+  return () => window.removeEventListener("resize", handleResize);
+}, []);
+console.log("tab view is",isTabletView)
+console.log("mobile view is",isMobileView)
+
+  const [showFilters, setShowFilters] = useState(false);
+
+  const toggleFilters = () => {
+    setShowFilters(!showFilters);
+  };
+  console.log("Tablet view enabled",isTabletView  )
   return (
     <div className="Container" ref={contentRightRef}>
-      <SearchNavbar containerRef={containerRef}/>
+      <SearchNavbar containerRef={containerRef} isTabletView={isTabletView} isMobileView={isMobileView}/>
+      {isTabletView&&
+      <>
+        <div className="SearchOptions-ViewChange">
+          <div className="SearchResult-Count-Filters-ViewChange">
+              <div className="filters-container-ViewChange">
+      {/* Button to toggle filters */}
+      <button className="toggle-filters-button-ViewChange" onClick={toggleFilters}>
+        <img src={filtersIcon}></img>
+      </button>
 
-      <div id="Search-Content-Container">
-        <div className="searchContent-left" style={{ top: containerHeight }}>
+      {/* Filters section */}
+      {showFilters && (
+        <div className={`search-filters-container-ViewChange ${isTabletView && "tabletview"} ${ isMobileView && "mobileview"}`}>
+                    {/* <div className="filters-header-ViewChange">
+            <h3>Filters</h3>
+            
+          </div> */}
+
+          <div className="filters-content-ViewChange">
+            
+
+            {/* Article Type Section */}
+            <div className="filter-group-ViewChange">
+              <h4>Article type</h4>
+              <label>
+                <input
+                  type="checkbox"
+                  value="Books & Documents"
+                  checked={filters.articleType?.includes("Books & Documents")}
+                  onChange={handleArticleTypeFilter}
+                />{" "}
+                Books & Documents
+              </label>
+              <label>
+                <input
+                  type="checkbox"
+                  value="Clinical Trials"
+                  checked={filters.articleType?.includes("Clinical Trials")}
+                  onChange={handleArticleTypeFilter}
+                />{" "}
+                Clinical Trials
+              </label>
+              <label>
+                <input
+                  type="checkbox"
+                  value="Meta Analysis"
+                  checked={filters.articleType?.includes("Meta Analysis")}
+                  onChange={handleArticleTypeFilter}
+                />{" "}
+                Meta Analysis
+              </label>
+            </div>
+
+            {/* Publication Date Section */}
+            <div className="filter-group-ViewChange">
+              <h4>Publication date</h4>
+              <label>
+                <input
+                  type="radio"
+                  name="publicationDate"
+                  value="1"
+                  checked={selectedDateRange === "1"}
+                  onChange={() => handleDateFilter("1")}
+                />{" "}
+                1 year
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="publicationDate"
+                  value="5"
+                  checked={selectedDateRange === "5"}
+                  onChange={() => handleDateFilter("5")}
+                />{" "}
+                5 years
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="publicationDate"
+                  value="custom"
+                  checked={selectedDateRange === "custom"}
+                  onChange={() => setSelectedDateRange("custom")}
+                />{" "}
+                Custom range
+              </label>
+
+              {selectedDateRange === "custom" && (
+                <div className="custom-date-range-ViewChange">
+                  <label>
+                    Start Date:
+                    <input
+                      type="date"
+                      name="startDate"
+                      value={customStartDate}
+                      onChange={(e) => setCustomStartDate(e.target.value)}
+                    />
+                  </label>
+                  <label>
+                    End Date:
+                    <input
+                      type="date"
+                      name="endDate"
+                      value={customEndDate}
+                      onChange={(e) => setCustomEndDate(e.target.value)}
+                    />
+                  </label>
+                  <button
+                    className="apply-button-ViewChange"
+                    onClick={() =>
+                      handleDateFilter("custom", customStartDate, customEndDate)
+                    }
+                  >
+                    Apply
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Text Availability Section */}
+            <div className="filter-group-ViewChange">
+              <h4>Text availability</h4>
+              <label>
+                <input
+                  type="checkbox"
+                  value="Abstract"
+                  checked={filters.textAvailability?.includes("Abstract")}
+                  // onChange={handleTextAvailabilityChange}
+                />{" "}
+                Abstract
+              </label>
+              <label>
+                <input
+                  type="checkbox"
+                  value="Free full text"
+                  checked={filters.textAvailability?.includes("Free full text")}
+                  // onChange={handleTextAvailabilityChange}
+                />{" "}
+                Free full text
+              </label>
+              <label>
+                <input
+                  type="checkbox"
+                  value="Full Text"
+                  checked={filters.textAvailability?.includes("Full Text")}
+                  // onChange={handleTextAvailabilityChange}
+                />{" "}
+                Full Text
+              </label>
+            </div>
+          </div>
+          <div className="resetbutton-Filters" style={{display:"flex",justifyContent:"flex-end"}}>
+            <button className="reset-button-ViewChange" onClick={handleResetAll}>
+              Reset all
+            </button>
+          </div>
+        </div>
+      )}
+              </div>
+              <div className="SearchResult-Option-Buttons">
+                  <div
+                    className="SearchResult-Option-Left"
+                    style={{
+                      cursor:
+                        isLoggedIn && selectedArticles.length > 0
+                          ? "pointer"
+                          : "not-allowed",
+                      opacity: isLoggedIn
+                        ? selectedArticles.length > 0
+                          ? 1
+                          : 1
+                        : 0.5, // Grayed out if not logged in1
+                    }}
+                    title={
+                      isLoggedIn
+                        ? selectedArticles.length === 0
+                          ? "Select an article to share"
+                          : "Share selected articles"
+                        : displayMessage
+                    }
+                  >
+                    <button
+                      onClick={
+                        isLoggedIn && Object.keys(shareableLinks).length > 0
+                          ? handleShare
+                          : null
+                      }
+                      disabled={
+                        !isLoggedIn || Object.keys(shareableLinks).length === 0
+                      }
+                      className={`SearchResult-Share ${
+                        isLoggedIn && Object.keys(shareableLinks).length > 0
+                          ? "active"
+                          : "disabled"
+                      }`}
+                      title={
+                        isLoggedIn
+                          ? Object.keys(shareableLinks).length === 0
+                            ? "Select an article to share"
+                            : "Share selected articles"
+                          : displayMessage
+                      }
+                    >
+                      {/* <img src={shareIcon}/> */}
+                      Share
+                    </button>
+                    {/* {!isLoggedIn && (
+    <p style={{ color: "gray", fontSize: "0.9rem", marginTop: "5px" }}>
+      {displayMessage}
+    </p>
+  )} */}
+                  </div>
+              </div>
+              
+          </div>
+          <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "baseline",
+                  }}
+                >
+                  <div
+                    className="SearchResult-count"
+                    style={{ marginRight: "15px" }}
+                  >
+                    <span style={{ color: "blue" }}>
+                      {data.articles.length}
+                    </span>{" "}
+                    results
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "row",
+                      alignItems: "baseline",
+                      gap: "5px",
+                    }}
+                  >
+                    <span style={{ color: "black", fontSize: "14px" }}>
+                      Sort by:
+                    </span>
+                    <div className="SearchResult-dropdown-container">
+                      <select
+                        className="SearchResult-dropdown"
+                        onChange={handleSortChange}
+                        value={selectedSort}
+                      >
+                        <option value="best_match">Most Relevant</option>
+                        <option value="publication_date">
+                          Publication Date
+                        </option>
+                        <option value="Ratings">Rating</option>
+                      </select>
+                    </div>
+                  </div>
+          </div>   
+          <div className="search-icons-group">
+              <>
+                <div
+                  className={`search-annotate-icon ${
+                    openAnnotate ? "open" : "closed"
+                  }${
+                    isLoggedIn &&
+                    (!annotateData || Object.keys(annotateData).length === 0)
+                      ? "disabled"
+                      : ""
+                  } 
+                   
+                  `}
+                  onClick={() => {
+                    if (!isLoggedIn) {
+                      return; // Prevent action if not logged in
+                    }
+                    setHandleAnnotateCall(true);
+                    if (annotateData && Object.keys(annotateData).length > 0) {
+                      handleAnnotate();
+                    } else if (totalArticles.length > 0) {
+                      handleAnnotateClick();
+                    }
+                  }}
+                  title={isLoggedIn ? "" : displayMessage}
+                  style={{
+                    cursor: isLoggedIn
+                      ? annotateData && Object.keys(annotateData).length > 0
+                        ? "pointer"
+                        : totalArticles.length > 0
+                        ? "pointer"
+                        : "default"
+                      : "not-allowed", // Disable interaction if not logged in
+                    opacity: isLoggedIn
+                      ? annotateData && Object.keys(annotateData).length > 0
+                        ? 1
+                        : totalArticles.length > 0
+                        ? 1
+                        : 0.5
+                      : 0.5, // Grayed out if not logged in
+                  }}
+                >
+                  <img src={annotate} alt="annotate-icon" />
+                </div>
+              </>
+          </div>
+        </div>
+      </>}
+      {isMobileView&&
+      <>
+        <div className="SearchOptions-ViewChange">
+          <div className="SearchResult-Count-Filters-ViewChange" style={{width:"100%",justifyContent:"space-around"}}>
+              <div className="filters-container-ViewChange">
+                  <button className="toggle-filters-button-ViewChange" onClick={toggleFilters}>
+                    <img src={filtersIcon}></img>
+                  </button>
+                  {showFilters && (
+                    <div className="search-filters-container-ViewChange ">
+                      {/* <div className="filters-header-ViewChange">
+                        <h3>Filters</h3>
+                        
+                      </div> */}
+
+                      <div className="filters-content-ViewChange">
+                        
+
+                        {/* Article Type Section */}
+                        <div className="filter-group-ViewChange">
+                          <h4>Article type</h4>
+                          <label>
+                            <input
+                              type="checkbox"
+                              value="Books & Documents"
+                              checked={filters.articleType?.includes("Books & Documents")}
+                              onChange={handleArticleTypeFilter}
+                            />{" "}
+                            Books & Documents
+                          </label>
+                          <label>
+                            <input
+                              type="checkbox"
+                              value="Clinical Trials"
+                              checked={filters.articleType?.includes("Clinical Trials")}
+                              onChange={handleArticleTypeFilter}
+                            />{" "}
+                            Clinical Trials
+                          </label>
+                          <label>
+                            <input
+                              type="checkbox"
+                              value="Meta Analysis"
+                              checked={filters.articleType?.includes("Meta Analysis")}
+                              onChange={handleArticleTypeFilter}
+                            />{" "}
+                            Meta Analysis
+                          </label>
+                        </div>
+
+                        {/* Publication Date Section */}
+                        <div className="filter-group-ViewChange">
+                          <h4>Publication date</h4>
+                          <label>
+                            <input
+                              type="radio"
+                              name="publicationDate"
+                              value="1"
+                              checked={selectedDateRange === "1"}
+                              onChange={() => handleDateFilter("1")}
+                            />{" "}
+                            1 year
+                          </label>
+                          <label>
+                            <input
+                              type="radio"
+                              name="publicationDate"
+                              value="5"
+                              checked={selectedDateRange === "5"}
+                              onChange={() => handleDateFilter("5")}
+                            />{" "}
+                            5 years
+                          </label>
+                          <label>
+                            <input
+                              type="radio"
+                              name="publicationDate"
+                              value="custom"
+                              checked={selectedDateRange === "custom"}
+                              onChange={() => setSelectedDateRange("custom")}
+                            />{" "}
+                            Custom range
+                          </label>
+
+                          {selectedDateRange === "custom" && (
+                            <div className="custom-date-range-ViewChange">
+                              <label>
+                                Start Date:
+                                <input
+                                  type="date"
+                                  name="startDate"
+                                  value={customStartDate}
+                                  onChange={(e) => setCustomStartDate(e.target.value)}
+                                />
+                              </label>
+                              <label>
+                                End Date:
+                                <input
+                                  type="date"
+                                  name="endDate"
+                                  value={customEndDate}
+                                  onChange={(e) => setCustomEndDate(e.target.value)}
+                                />
+                              </label>
+                              <button
+                                className="apply-button-ViewChange"
+                                onClick={() =>
+                                  handleDateFilter("custom", customStartDate, customEndDate)
+                                }
+                              >
+                                Apply
+                              </button>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Text Availability Section */}
+                        <div className="filter-group-ViewChange">
+                          <h4>Text availability</h4>
+                          <label>
+                            <input
+                              type="checkbox"
+                              value="Abstract"
+                              checked={filters.textAvailability?.includes("Abstract")}
+                              // onChange={handleTextAvailabilityChange}
+                            />{" "}
+                            Abstract
+                          </label>
+                          <label>
+                            <input
+                              type="checkbox"
+                              value="Free full text"
+                              checked={filters.textAvailability?.includes("Free full text")}
+                              // onChange={handleTextAvailabilityChange}
+                            />{" "}
+                            Free full text
+                          </label>
+                          <label>
+                            <input
+                              type="checkbox"
+                              value="Full Text"
+                              checked={filters.textAvailability?.includes("Full Text")}
+                              // onChange={handleTextAvailabilityChange}
+                            />{" "}
+                            Full Text
+                          </label>
+                        </div>
+                      </div>
+                      <div style={{display:"flex",justifyContent:"flex-end"}}>
+                        <button className="reset-button-ViewChange" onClick={handleResetAll}>
+                          Reset all
+                        </button>
+                      </div>
+                    </div>
+                  )}
+              </div>
+              <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "baseline",
+                  }}
+                >
+                  <div
+                    className="SearchResult-count"
+                    style={{ marginRight: "15px" }}
+                  >
+                    <span style={{ color: "blue" }}>
+                      {data.articles.length}
+                    </span>{" "}
+                    results
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "row",
+                      alignItems: "baseline",
+                      gap: "5px",
+                    }}
+                  >
+                    <span style={{ color: "black", fontSize: "14px" }}>
+                      Sort by:
+                    </span>
+                    <div className="SearchResult-dropdown-container">
+                      <select
+                        className="SearchResult-dropdown"
+                        onChange={handleSortChange}
+                        value={selectedSort}
+                      >
+                        <option value="best_match">Most Relevant</option>
+                        <option value="publication_date">
+                          Publication Date
+                        </option>
+                        <option value="Ratings">Rating</option>
+                      </select>
+                    </div>
+                  </div>
+          </div>  
+          </div>
+        </div>
+      </>}
+      <div id="Search-Content-Container" style={{width:(isTabletView||isMobileView)?"95%":"",justifyContent:isTabletView?openAnnotate?"space-between":"":"" }}>
+      {!isTabletView && !isMobileView && (
+                <div className="searchContent-left" style={{ top: containerHeight }}>
           <div className="searchContent-left-header">
             <p className="title">Filters</p>
             <p className="Filters-ResetAll" onClick={handleResetAll}>
@@ -1272,12 +1816,18 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
             </div>
           </div>
         </div>
+)}
         {loading ? <Loading /> : ""}
 
-        <div className="searchContent-right">
+        <div className="searchContent-right"style={{width: (isTabletView)
+    ? openAnnotate
+      ? "50%"
+      : "100%"
+    : "100%",margin:isTabletView&&"0"}} >
           {data.articles && data.articles.length > 0 ? (
             <>
-              <div className="SearchResult-Count-Filters">
+            {!isTabletView && !isMobileView && (<>
+            <div className="SearchResult-Count-Filters">
                 <div className="SearchResult-Option-Buttons">
                   <div
                     className="SearchResult-Option-Left"
@@ -1437,6 +1987,8 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                   </button>
                 </div>
               </div>
+              </>
+              )}
 
               <div className="searchContent-articles">
                 <div className="searchresults-list">
@@ -2038,7 +2590,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                               {result.source ? result.source : "PubMed"}
                             </p>
                           </div>
-                          <div className="Article-Options-Right">
                             <div class="searchResult-rate">
                               {[5, 4, 3, 2, 1].map((value) => (
                                 <React.Fragment key={value}>
@@ -2063,7 +2614,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                                 </React.Fragment>
                               ))}
                             </div>
-                          </div>
+                          
                         </div>
                       </div>
                     );
@@ -2148,18 +2699,19 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
           )}
         </div>
 
-        <>
-          <div className="search-right-aside" style={{ top: containerHeight }}>
-            {openAnnotate && (
-              <div className="search-annotate">
+        
+          {!isMobileView&&<div className="search-right-aside" style={{ width:isTabletView?openAnnotate?"46%":"":"" ,top: containerHeight, position:isTabletView?openAnnotate?"unset":"":"" }}>
+            {openAnnotate && (  
+              <div className="search-annotate" style={{width:isTabletView?"100%":"",margin:isTabletView?"0":""}}>
                 <Annotation
                   openAnnotate={openAnnotate}
                   annotateData={annotateData}
                   source={annotateSource}
+                  isTabletView={isTabletView}
                 />
               </div>
             )}
-            <div className="search-icons-group">
+            {!isTabletView&&!isMobileView&&(<div className="search-icons-group">
               <>
                 <div
                   className={`search-annotate-icon ${
@@ -2204,9 +2756,9 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
                   <img src={annotate} alt="annotate-icon" />
                 </div>
               </>
-            </div>
-          </div>
-        </>
+            </div>)}
+          </div>}
+        
       </div>
 
       <Footer />
@@ -2215,6 +2767,114 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
           <FontAwesomeIcon icon={faAnglesUp} />
         </button>
       </div>
+      {isMobileView&&<div className="MobileView-Options"> 
+        <div className="HomeIcon-MobileView" style={{width:"33.33%"}}>
+          <img src={homeIcon}/>
+          {/* Home */}
+          </div>
+        <div
+                      className="SearchResult-Option-Left"
+                      style={{
+                        width:"33.33%",
+                        cursor:
+                          isLoggedIn && selectedArticles.length > 0
+                            ? "pointer"
+                            : "not-allowed",
+                        opacity: isLoggedIn
+                          ? selectedArticles.length > 0
+                            ? 1
+                            : 1
+                          : 0.5, // Grayed out if not logged in1
+                          
+                      }}
+                      title={
+                        isLoggedIn
+                          ? selectedArticles.length === 0
+                            ? "Select an article to share"
+                            : "Share selected articles"
+                          : displayMessage
+                      }
+                    >
+                      <button
+                        onClick={
+                          isLoggedIn && Object.keys(shareableLinks).length > 0
+                            ? handleShare
+                            : null
+                        }
+                        disabled={
+                          !isLoggedIn || Object.keys(shareableLinks).length === 0
+                        }
+                        style={{border:"none"}}
+                        className={`SearchResult-Share ${
+                          isLoggedIn && Object.keys(shareableLinks).length > 0
+                            ? "active"
+                            : "disabled"
+                        }`}
+                        title={
+                          isLoggedIn
+                            ? Object.keys(shareableLinks).length === 0
+                              ? "Select an article to share"
+                              : "Share selected articles"
+                            : displayMessage
+                        }
+                      >
+                        <img src={shareIcon}/>
+                        {/* Share */}
+                      </button>
+                      {/* {!isLoggedIn && (
+      <p style={{ color: "gray", fontSize: "0.9rem", marginTop: "5px" }}>
+        {displayMessage}
+      </p>
+    )} */}
+        </div>
+        <div className="search-icons-group" style={{width:"33.33%"}}>
+              <>
+                <div
+                  className={`search-annotate-icon ${
+                    openAnnotate ? "open" : "closed"
+                  }${
+                    isLoggedIn &&
+                    (!annotateData || Object.keys(annotateData).length === 0)
+                      ? "disabled"
+                      : ""
+                  } 
+                   
+                  `}
+                  onClick={() => {
+                    if (!isLoggedIn) {
+                      return; // Prevent action if not logged in
+                    }
+                    setHandleAnnotateCall(true);
+                    if (annotateData && Object.keys(annotateData).length > 0) {
+                      handleAnnotate();
+                    } else if (totalArticles.length > 0) {
+                      handleAnnotateClick();
+                    }
+                  }}
+                  title={isLoggedIn ? "" : displayMessage}
+                  style={{
+                    cursor: isLoggedIn
+                      ? annotateData && Object.keys(annotateData).length > 0
+                        ? "pointer"
+                        : totalArticles.length > 0
+                        ? "pointer"
+                        : "default"
+                      : "not-allowed", // Disable interaction if not logged in
+                    opacity: isLoggedIn
+                      ? annotateData && Object.keys(annotateData).length > 0
+                        ? 1
+                        : totalArticles.length > 0
+                        ? 1
+                        : 0.5
+                      : 0.5, // Grayed out if not logged in
+                      background:"none"
+                  }}
+                >
+                  <img src={annotate} alt="annotate-icon" />
+                </div>
+              </>
+          </div>
+      </div>}
     </div>
   );
 };

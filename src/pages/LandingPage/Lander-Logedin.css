@@ -870,7 +870,7 @@
 
 @media screen and (min-width: 576px) and (max-width: 992px) {
   .inferai-logo{
-    width: 25vw;
+    min-width: 20vw;
     margin: 0 auto;
   }
   .Landing-Welcome-desc {
@@ -967,7 +967,7 @@
 
 @media (min-width: 0px) and (max-width: 576px) {
   .inferai-logo {
-    width: 35vw;
+    /* width: 35vw; */
   }
   .welcome-search {
     gap: 8%;
