@@ -75,6 +75,10 @@ const ArticleLayout = () => {
   
 
   useEffect(() => {
+    if(isMobile || isTablet){
+      setIsHistoryOpen(false);
+      console.log("checking history");
+    }
     localStorage.removeItem("session_id");
     setActiveSessionId(null);
   }, []);
@@ -109,11 +113,16 @@ const ArticleLayout = () => {
   useEffect(() => {
     const handleResize = () => {
       const width = window.innerWidth;
-      setIsMobile(width <= 576);
-      setIsTablet(width > 576 && width < 992);
+      const isNowMobile = width <= 576;
+      const isNowTablet = width > 576 && width < 992;
       setIsSmallScreen(width < 992);
-  
-      if (width > 992) {
+      setIsMobile(isNowMobile);
+      setIsTablet(isNowTablet);
+      // Set `isHistoryOpen` to false for mobile or tablet views
+      if (isNowMobile || isNowTablet) {
+       
+        setIsHistoryOpen(false);
+      } else {
         setIsHistoryOpen(true);
       }
     };
@@ -121,6 +130,7 @@ const ArticleLayout = () => {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+  console.log("history open",isHistoryOpen);
 
 
   // Toggle History for small screens
@@ -442,9 +452,12 @@ const ArticleLayout = () => {
   };
   const handleAnnotate = () => {
     // If annotateData is present, set openAnnotate to false and return
-    if (annotateData) {
+    if (!isSmallScreen && annotateData) {
       setOpenAnnotate((prevOpenAnnotate) => !prevOpenAnnotate);
       return;
+    }
+    if(annotateData && isSmallScreen){
+      setOpenNotes(false);
     }
     if (isSmallScreen) {
       console.log("open notes",openNotes);

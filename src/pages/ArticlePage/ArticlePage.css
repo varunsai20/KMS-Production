@@ -523,7 +523,7 @@
 }
 
 .notes-icon.closed {
-  background-color: white;
+  /* background-color: white; */
 }
 /* Add custom border-bottom for each row */
 .table-row td {
@@ -731,20 +731,21 @@ td {
   display: none;
   position: fixed;
   bottom: 20px;
-  right: 30px;
+  right: 10px;
   z-index: 99;
   border: none;
   outline: none;
-  background-color: #000;
-  color: white;
+  background-color: white;
+  color: black;
   cursor: pointer;
   padding: 15px;
   border-radius: 10px;
-  font-size: 18px;
+  font-size: 14px;
+  box-shadow: 0px 18px 87px 38px #00000014;
 }
 
 #scrollTopBtn:hover {
-  background-color: #555; /* Add a dark-grey background on hover */
+  background-color: rgba(237, 237, 237, 1);; /* Add a dark-grey background on hover */
 }
 
 /* Styling for the message box */
@@ -922,6 +923,8 @@ td {
 @media (min-width: 0px) and (max-width: 576px){
   .container {
     flex-direction: column;
+    align-items: center;
+    justify-content: center;
     gap: 20px;
     height: 100vh;
   }
@@ -929,8 +932,6 @@ td {
   .content.mobile-view {
     flex-direction: column;
     height: calc(100% - 60px);
-    width: 95%;
-
   }
 
   .bottom-section {
@@ -980,13 +981,14 @@ td {
     flex-direction: row;
     justify-content: space-around;
     position: static;
+    background: #EBEBF3;
   }
   .article-content-inside{
     height: 70vh;
     max-height: 65vh;
   }
   .article-content {
-    width: auto;
+    width: 95%;
   }
   .notes-height {
     width: auto;
@@ -1118,6 +1120,9 @@ td {
     width: 100%;
     height: 1px;
   }
+  .notes-icon.closed {
+    background-color: none;
+  }
   #scrollTopBtn {
     width: 8%;
     bottom: 145px;
@@ -1129,38 +1134,12 @@ td {
     height: 15vh;
     box-shadow: 0px 18px 87px 38px #00000014;
 }
+#scrollTopBtn {
+  right: 0;
+  bottom: 140px;
+}
   
 }
-
-@media screen and (min-width: 576px) and (max-width: 992px){
-  .container {
-    flex-direction: row;
-  }
-
-  /* .history-pagination {
-    width: 280px;
-    position: fixed;
-    left: 0;
-    top: 60px;
-    bottom: 0;
-    transform: translateX(-100%);
-    transition: transform 0.3s ease;
-  }
-
-  .history-pagination.active {
-    transform: translateX(0);
-  } */
-
-  /* .right-aside {
-    right: 0;
-    width: 50px;
-  } */
-
-}
-@media (min-width: 992px) and (max-width: 1400px){
-
-}
-
 @media (min-width: 576px) and (max-width: 1024px) {
   .container {
     display: flex;
@@ -1273,16 +1252,4 @@ td {
   }
 
 }
-@media (max-width: 576px) {
-  #scrollTopBtn {
-      right: 0;
-      bottom: 50px;
-  }
-}
-/* @media (min-width: 577px) and (max-width: 768px) {
-  #scrollTopBtn {
-    right: 0;
-    bottom: 50px;
-  }
-} */
 

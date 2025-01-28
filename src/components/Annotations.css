@@ -32,9 +32,9 @@
   background-color: rgba(235, 244, 255, 1);
 }
 
-.search-annotate-icon.closed {
+/* .search-annotate-icon.closed {
   background-color: white;
-}
+} */
 
 .search-notes-icon.open {
   background-color: rgba(235, 244, 255, 1);
@@ -128,5 +128,10 @@ td {
 @media (min-width: 900px) and (max-width: 1366px) {
   .search-table-head th {
     font-size: 12px;
+  }
+}
+@media (min-width: 0px) and (max-width: 576px) {
+  .search-annotate-icon.closed {
+    background-color: none;
   }
 }
