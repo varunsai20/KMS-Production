@@ -7,8 +7,10 @@
     /* gap: 10px; */
     margin-bottom: 1rem;
   }
-  
-  .back-button {
+  .create-researcher-header h2{
+    font-size: 14px;
+  }
+  .add-user-back-button {
     background: none;
     border: none;
     font-size: 18px;
