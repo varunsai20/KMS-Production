@@ -16,6 +16,7 @@ const NoteItem = ({
   minimalView,
   customStyles,
   fiterText,
+  isMobileView,
   setFilterText,
 }) => {
   const [isHovered, setIsHovered] = useState(false);
@@ -134,8 +135,9 @@ const NoteItem = ({
         className="title-header"
         style={{
           display: "flex",
+          flexDirection:isMobileView&&"column",
           justifyContent: "space-between",
-          alignItems: "center",
+          alignItems:isMobileView?"left": "center",
         }}
       >
         <p id="title" style={{ fontWeight: "bold", margin: 0 }}>

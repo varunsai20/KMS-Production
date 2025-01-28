@@ -15,10 +15,11 @@
 .Manage-Researchers {
   display: flex;
   justify-content: space-between;
+  flex-wrap: wrap;
 }
 .Manage-Researcher-Input {
   position: relative;
-  width: 25%;
+  /* width: 25%; */
 }
 .Manage-Researchers input {
   width: 100%;
@@ -71,16 +72,14 @@
   font-size: 14px;
   color: #333;
 }
-
+.scroll-heading{
+  margin: 0px 20px;
+}
 /* Table rows */
 .custom-table tbody tr {
   background-color: #fff;
   border-bottom: 1px solid #e0e0e0;
   transition: background-color 0.3s ease;
-}
-
-.custom-table tbody tr:nth-child(even) {
-  background-color: #f7f7f7;
 }
 
 /* Hover effect on rows */
@@ -195,6 +194,13 @@
   }
   .ResearcherHeading {
     padding: 5px 10px;
+    font-size: 14px;
+  }
+  .Manage-Researchers input {
+    width: auto;
+  }
+  .scroll-heading{
+    margin: 0px 10px;
   }
 }
 @media screen and (min-width: 576px) and (max-width: 992px){
@@ -209,6 +215,13 @@
   .ResearcherHeading {
     padding: 5px 10px;
   }
+  .custom-table th,
+.custom-table td {
+  padding: 12px 13px;
+}
+.Manage-Researchers input {
+  width: auto;
+}
 }
 /* For small screens (576px and below) */
 @media (max-width: 576px) {

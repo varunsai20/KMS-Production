@@ -146,7 +146,7 @@
   background-color: rgba(237, 237, 237, 1);
 }
 
-@media (min-width: 250px) and (max-width: 767px) {
+@media (min-width: 250px) and (max-width: 768px) {
   .Navbar-Header {
     margin: 0px;
   }
@@ -178,12 +178,12 @@
   }
 }
 
-@media (min-width: 768px) and (max-width: 1366px) {
+@media (min-width: 769px) and (max-width: 1366px) {
   .Navbar-Header {
     margin: 0px;
   }
   .Search-nav-logo {
-    height: 50px;
+    height: 45px;
     display: flex;
   }
   .logo-descreption p {

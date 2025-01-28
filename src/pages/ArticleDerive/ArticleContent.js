@@ -1027,7 +1027,7 @@ const ArticleContent = ({
                   className="Rate-Article"
                   // style={{ display: displayIfLoggedIn }}
                 >
-                  <div>
+                  <div className="rate-article-div">
                     <span>Rate the article </span>
                   </div>
                   <div className="rate">

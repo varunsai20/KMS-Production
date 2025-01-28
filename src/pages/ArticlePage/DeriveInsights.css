@@ -91,19 +91,10 @@
 }
 .derive-article-content {
   width: 43.61%;
-  /* overflow-y: auto; */
   text-align: start;
   margin: 0% 1%;
-  /* max-height: 55vh; */
-  /* gap: 28px; */
   border-radius: 20px;
   flex: 1;
-  /* padding: 0 10px 0 10px; */
-  /* border: 1px solid rgba(235, 235, 243, 1); */
-  /* display: flex;
-  flex-direction: column;
-
-  justify-content: center; */
 }
 .docx-wrapper{
   background: none !important;
@@ -115,16 +106,12 @@
   margin-bottom: 0 !important;
 }
 .streaming-section-derive {
-  /* width: 100%; */
-  /* overflow-y: auto; */
   display: flex;
-  /* margin: 2% 0% 2% 0%; */
   height: 55vh;
   position: relative;
   max-height: 55vh;
   border-radius: 20px;
   flex: 1 1;
-  /* padding: 0 20px 20px 20px; */
   border: 1px solid rgba(235, 235, 243, 1);
 }
 .iframe-preview {
@@ -426,11 +413,19 @@ li:hover #menu-dots {
 #derive-scrollTopBtn:hover {
   background-color: #555;
 }
+@media (min-width: 0px) and (max-width:576px){
+  .derive-predefined-prompts button {
+    font-size: 10px;
+  }
+  .derive-article-content {
+    width: auto;
+  }
+}
 @media (min-width: 900px) and (max-width: 1366px) {
   .derive-chat-query {
     padding: 5px;
     left: 28%;
-    /* width: 72%; */
+
   }
   .derive-predefined-prompts {
     padding: 5px 10px 5px 10px;
@@ -438,9 +433,6 @@ li:hover #menu-dots {
   .derive-stream-input input {
     padding: 10px 0px;
   }
-  /* .derive-article-content {
-    max-height: 55vh;
-  } */
   .response {
     font-size: 13px;
   }

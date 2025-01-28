@@ -103,6 +103,10 @@
   border: 1px solid #EBEBF3;
   border-radius: 10px;
 }
+.nav-item span {
+  font-size: 14px;
+}
+
 }
 @media screen and (min-width: 576px) and (max-width: 992px){
   .sidebar{
@@ -124,4 +128,8 @@
     border: 1px solid #EBEBF3;
     border-radius: 10px;
   }
+  .nav-item span {
+    font-size: 14px;
+  }
+  
 }

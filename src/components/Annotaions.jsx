@@ -10,6 +10,7 @@ const Annotation = ({
   annotateData,
   source: passedSource,
   annotateHeight,
+  isTabletView
 }) => {
   const [expandedPmids, setExpandedPmids] = useState({});
   const [expandedTexts, setExpandedTexts] = useState({});
@@ -123,11 +124,7 @@ const Annotation = ({
                 display: index === 0 || isExpanded ? "table-row" : "none",
               }}
             >
-              <td
-                style={{
-                  paddingLeft: index === 0 ? 0 : 30,
-                }}
-              >
+              <td style={{ paddingLeft: index === 0 ? 0 : 30,}} >
                 <div style={{ display: "flex", alignItems: "center" }}>
                   {index === 0 && (
                     <button onClick={() => toggleExpandPmid(pmid)}>
@@ -185,7 +182,7 @@ const Annotation = ({
   };
 
   return (
-    <div className="search-tables">
+    <div className="search-tables" style={{}}>
       <div
         style={{
           background:
@@ -206,7 +203,7 @@ const Annotation = ({
             height: openNotes && openAnnotate ? `${annotateHeight - 7}vh` : "",
             maxHeight: openAnnotate && openNotes ? "33vh" : "48vh",
             overflowY: "auto",
-            overflowX: "hidden",
+            overflowX: "auto",
           }}
         >
           <table>

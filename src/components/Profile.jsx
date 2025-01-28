@@ -131,8 +131,8 @@ const Profile = () => {
   return (
     <>
       {isUser && <Header />}
-      <div className="home-nav">
-        <div className="home-path">
+      <div className="home-nav" >
+      <div className="home-path" style={isUser ? {} : { display: "none" }}>
 
       {location.pathname.startsWith(`/users/profile/${user_id}`) && (
               <span

@@ -32,6 +32,9 @@
   border-right: 1px solid #e0e0e0;
   padding-right: 15px;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
 }
 
 .collection-item {
@@ -58,7 +61,6 @@
 }
 .articles-list {
   flex: 2;
-  padding-left: 15px;
 }
 .articles-list li {
   list-style: none;
@@ -94,6 +96,8 @@
 }
 
 .collection-heading {
+  display: flex;
+  justify-content: space-between;
   font-size: 20px;
   font-weight: 700;
   margin-bottom: 20px;
@@ -103,7 +107,6 @@
   display: flex;
   align-items: center;
   position: relative;
-  margin-bottom: 20px;
 }
 
 .Search-collection-icon {
@@ -151,7 +154,10 @@
   table-layout: fixed;
   width: 100%;
 }
-
+.articles-list tr th {
+  border-radius: 20px;
+  border: 1px solid #EBEBF3;
+}
 .articles-list th,
 .articles-list td {
   padding: 10px;
@@ -167,6 +173,7 @@
 .collection-item-list{
   display: flex;
   justify-content: space-between;
+  gap: 5px;
 }
 @media (min-width: 0px) and (max-width: 576px){
 .collection-modal{
@@ -174,6 +181,7 @@
 }
 .collections-list{
   display: flex;
+  flex-direction: row;
   flex: none;
   gap: 10px;
   flex-wrap: wrap;
@@ -185,8 +193,13 @@
   flex-wrap: wrap;
 }
 .collection-heading{
+  width: 100%;
   display: flex;
   justify-content: space-between;
+  font-size: 14px;
+}
+.collection-articles-header{
+  font-size: 12px;
 }
 .Search-Collection{
   margin-bottom: 0px;
@@ -195,6 +208,7 @@
   padding: 0px;
 }
 .collection-item-list p{
+  font-size: 14px;
   margin: revert;
   padding: revert;
 }
@@ -206,6 +220,9 @@
 .Search-collection-icon {
   width: 3vw;
 }
+.articles-list {
+  padding-left: 0px;
+}
 }
 @media screen and (min-width: 576px) and (max-width: 992px){
   .collection-modal{
@@ -213,6 +230,7 @@
   }
   .collections-list{
     display: flex;
+    flex-direction: row;
     flex: none;
     gap: 10px;
     flex-wrap: wrap;
@@ -221,8 +239,10 @@
   }
 
   .collection-heading{
+    width: 100%;
     display: flex;
     justify-content: space-between;
+    font-size: 14px;
   }
   .Search-Collection{
     margin-bottom: 0px;
@@ -240,7 +260,10 @@
     border-radius: 5px;
   }
   .Search-collection-icon {
-    width: 3vw;
+    width: 2vw;
+  }
+  .collection-articles-header{
+    font-size: 14px;
   }
 
 }

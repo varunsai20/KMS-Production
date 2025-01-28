@@ -251,7 +251,7 @@ const Researchers = () => {
                 <IoIosArrowBack style={{marginTop:"1%"}}/>
 
               </button>
-              <span style={{margin: "0px 20px",fontSize: "16px"}}>{columns[currentColumnIndex].label}</span>
+              <span className="scroll-heading">{columns[currentColumnIndex].label}</span>
               <button onClick={handleNext}>
               <IoIosArrowForward />
               </button>
@@ -341,7 +341,7 @@ const Researchers = () => {
                       ref={dropdownRef}
                       className="dropdown-menu"
                       style={{
-                        transform: `translate(${popupPosition.x}px, ${popupPosition.y}px)`,
+                        transform: `translate(${popupPosition.x-140}px, ${popupPosition.y}px)`,
                       }}
                       onClick={(e) => e.stopPropagation()}
                     >
@@ -352,11 +352,7 @@ const Researchers = () => {
                         Edit
                       </li>
                       <li
-                        className={`dropdown-item ${
-                          user.user_status.toLowerCase() === "active"
-                            ? "suspend"
-                            : "activate"
-                        }`}
+                          className="dropdown-item delete"
                         onClick={() =>
                           handleSuspendClick(user.user_id, user.user_status)
                         }
