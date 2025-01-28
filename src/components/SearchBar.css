@@ -335,3 +335,11 @@
     min-height: 40px;
   }
 }
+@media (max-width: 600px) {
+  .search-button {
+    padding: revert;
+  }
+  .custom-input {
+    padding-right: 70px !important; /* Override padding-right for smaller screens */
+  }
+}
