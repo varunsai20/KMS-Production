@@ -18,13 +18,10 @@ import { IoCloseOutline } from "react-icons/io5";
 import downarrow from "../../assets/images/downarrow.svg";
 import axios from "axios";
 import { showSuccessToast, showErrorToast } from "../../utils/toastHelper";
-import Header from "../../components/Header-New";
-import Logo from "../../assets/images/InfersolD17aR04aP01ZL-Polk4a 1.svg";
 import NoteItem from "../../components/Notes/NoteItem";
-import SearchTermMissing from "../../components/SearchTermMissing";
 import filtersIcon from "../../assets/images/001-edit 1.svg"
 import homeIcon from "../../assets/images/homeIcon.svg"
-import shareIcon from "../../assets/images/ShareIcon.svg"
+import { PiShareNetwork } from "react-icons/pi";
 import SearchNavbar from "../../components/SearchNavbar";
 const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   const ITEMS_PER_PAGE = 10;
@@ -2727,6 +2724,7 @@ console.log("mobile view is",isMobileView)
       <div className="ScrollTop">
         <button onClick={scrollToTop} id="scrollTopBtn" title="Go to top">
           <FontAwesomeIcon icon={faAnglesUp} />
+          Back To Top
         </button>
       </div>
       {isMobileView&&
@@ -2873,30 +2871,64 @@ console.log("mobile view is",isMobileView)
                         } else if (totalArticles.length > 0) {
                           handleAnnotateClick();
                         }
-                      }}
-                      title={isLoggedIn ? "" : displayMessage}
-                      style={{
-                        cursor: isLoggedIn
-                          ? annotateData && Object.keys(annotateData).length > 0
-                            ? "pointer"
-                            : totalArticles.length > 0
-                            ? "pointer"
-                            : "default"
-                          : "not-allowed", // Disable interaction if not logged in
-                        opacity: isLoggedIn
-                          ? annotateData && Object.keys(annotateData).length > 0
-                            ? 1
-                            : totalArticles.length > 0
-                            ? 1
-                            : 0.5
-                          : 0.5, // Grayed out if not logged in
-                      }}
-                    >
-                      <img src={annotate} alt="annotate-icon" />
-                    </div>
-                  </>
-                </div>)}
-              </div>}
+
+                      >
+                       <PiShareNetwork color="#007bff" size={23}/>
+
+                        {/* Share */}
+                      </button>
+                      {/* {!isLoggedIn && (
+      <p style={{ color: "gray", fontSize: "0.9rem", marginTop: "5px" }}>
+        {displayMessage}
+      </p>
+    )} */}
+        </div>
+        <div className="search-icons-group" style={{width:"33.33%"}}>
+              <>
+                <div
+                  className={`search-annotate-icon ${
+                    openAnnotate ? "open" : "closed"
+                  }${
+                    isLoggedIn &&
+                    (!annotateData || Object.keys(annotateData).length === 0)
+                      ? "disabled"
+                      : ""
+                  } 
+                   
+                  `}
+                  onClick={() => {
+                    if (!isLoggedIn) {
+                      return; // Prevent action if not logged in
+                    }
+                    setHandleAnnotateCall(true);
+                    if (annotateData && Object.keys(annotateData).length > 0) {
+                      handleAnnotate();
+                    } else if (totalArticles.length > 0) {
+                      handleAnnotateClick();
+                    }
+                  }}
+                  title={isLoggedIn ? "" : displayMessage}
+                  style={{
+                    cursor: isLoggedIn
+                      ? annotateData && Object.keys(annotateData).length > 0
+                        ? "pointer"
+                        : totalArticles.length > 0
+                        ? "pointer"
+                        : "default"
+                      : "not-allowed", // Disable interaction if not logged in
+                    opacity: isLoggedIn
+                      ? annotateData && Object.keys(annotateData).length > 0
+                        ? 1
+                        : totalArticles.length > 0
+                        ? 1
+                        : 0.5
+                      : 0.5, // Grayed out if not logged in
+                      background:"none"
+                  }}
+                >
+                  <img src={annotate} alt="annotate-icon" />
+                </div>
+              </>
           </div>
         </div>}
       </div>

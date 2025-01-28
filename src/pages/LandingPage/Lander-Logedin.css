@@ -896,7 +896,7 @@
 
   .Landing-Features {
     /* display: grid; */
-    width: 90%;
+    /* width: 90%; */
     flex-shrink: 0;
   }
 .Landingpage-SearchBar {
@@ -920,7 +920,7 @@
   .WhyInfer-points {
     display: flex;
     gap: 10px;
-    width: 85%;
+    /* width: 85%; */
     margin: 20px auto;
   }
   .LoggedinFeatures {
@@ -1002,7 +1002,7 @@
     width: 80%;
   }
   .Landing-Features {
-    width: 90%;
+    /* width: 90%; */
     flex-shrink: 0;
   }
   .Landing-Welcome-desc {
