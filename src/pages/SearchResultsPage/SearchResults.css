@@ -1281,7 +1281,7 @@ button input {
   flex-direction: column;
 }
 .toggle-filters-button-ViewChange {
-  background-color: #007bff;
+  background-color: #1A82FF;
   color: #fff;
   border: none;
   padding: 0.5rem 1rem;
@@ -1428,21 +1428,23 @@ button input {
   .SearchHeader-Logo {
     width: 95%;
     border: none;
+    margin: 0;
   }
   .SearchHeader-links{
     flex-direction: column;
   }
   .Article-Options{
     gap: 10px;
+    flex-wrap: nowrap;
   }
   .Article-Options-Left{
     gap: 5px;
   }
   .searchResult-rate:not(:checked) > label{
-    font-size: 3vw;
+    font-size: 25px;
   }
   .searchresult-similarity_score{
-    font-size: 2vw;
+    font-size: 14px;
   }
   .search-table-body td
   {
@@ -1452,14 +1454,14 @@ button input {
     font-size: 10px;
   }
   .searchresult-title{
-    font-size: 2.5vw;
+    font-size: 16px;
   }
   .searchContent-right {
     border: none;
     padding-left: 0;     
   }
   .search-tables p{
-    font-size: 2vw;
+    font-size: 4vw;
   }
   #scrollTopBtn{
     right: 0;

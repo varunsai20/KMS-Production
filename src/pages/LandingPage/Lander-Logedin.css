@@ -927,6 +927,7 @@
     display: grid;
     width: 100%;
     grid-template-columns: repeat(4, 1fr);
+    justify-content: center;
     gap: 20px;
   }
 
@@ -1019,6 +1020,12 @@
     padding: 20px;
     transition: transform 0.3s ease-in-out;
   }
+  .Feature-Item h4{
+    font-size: 14px;
+  }
+  .Feature-Item span{
+    font-size: 12px;
+  }
 
   .Feature-Item:hover {
     transform: translateY(-5px);
@@ -1035,6 +1042,7 @@
     display: grid;
     width: 100%;
     grid-template-columns: repeat(2, 1fr);
+    justify-content: center;
     gap: 20px;
   }
 

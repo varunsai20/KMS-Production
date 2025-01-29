@@ -4,10 +4,10 @@ import SearchBar from './SearchBar'
 import SearchTermMissing from './SearchTermMissing'
 import { Link } from 'react-router-dom'
 import Logo from "../assets/images/InfersolD17aR04aP01ZL-Polk4a 1.svg"
-const SearchNavbar = ({containerRef,isModalOpen,isTabletView,isMobileView}) => {
+const SearchNavbar = ({containerRef,isModalOverlay,isTabletView,isMobileView}) => {
     const [termMissing, setTermMissing] = useState(false);
   return (
-    <div className="search-container-content" ref={containerRef} style={{zIndex:isModalOpen?0:1,position:(isTabletView||isMobileView)?"":"sticky"}}>
+    <div className="search-container-content" ref={containerRef} style={{zIndex:isModalOverlay?0:1,position:(isTabletView||isMobileView)?"":"sticky"}}>
     <Header />
 
     <div className="SearchHeader-Logo" >  

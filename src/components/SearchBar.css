@@ -221,6 +221,9 @@
 #LandingHeader-custom-textfield .MuiInputBase-input {
   padding-left: 30px; /* Adjust this value to increase padding */
 }
+.css-gdh49b-MuiAutocomplete-listbox .MuiAutocomplete-option {
+  min-height: 0px;
+}
 .MuiAutocomplete-root .MuiOutlinedInput-root .MuiAutocomplete-endAdornment {
   margin-right: 13% !important;
 }

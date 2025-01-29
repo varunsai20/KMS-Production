@@ -46,6 +46,7 @@ const ArticleLayout = () => {
   const [showConfirmIcon, setShowConfirmIcon] = useState(false);
   const [savedText, setSavedText] = useState("");
   const [openNotes, setOpenNotes] = useState(false);
+  const[isModalOverlay,setIsModalOverlay] = useState(false);
   const [type, id1] = pmid ? pmid.split(":") : "";
   const id = Number(id1);
   const displayMessage = isLoggedIn
@@ -66,6 +67,8 @@ const ArticleLayout = () => {
   );
   const annotateRef = useRef(null);
   const notesRef = useRef(null);
+  const metaRef = useRef(null);
+  const [query,setQuery] = useState("");
   const [isStreamDone, setIsStreamDone] = useState(false);
   const[isHistoryOpen, setIsHistoryOpen] = useState(true);
   const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth < 992);
@@ -144,6 +147,7 @@ const ArticleLayout = () => {
     localStorage.removeItem("session_id");
     sessionStorage.removeItem("session_id");
     setAnnotateData("");
+    setQuery("")
     setActiveSessionId(null);
     localStorage.setItem("chatHistory", JSON.stringify([]));
     dispatch(setDeriveInsights(true)); // Set deriveInsights state in Redux
@@ -294,6 +298,7 @@ const ArticleLayout = () => {
     setIsStreamDone(true);
     localStorage.removeItem("chatHistory");
     localStorage.removeItem("session_id");
+    setQuery("");
   
     try {
       // Fetch the conversation data
@@ -458,9 +463,8 @@ const ArticleLayout = () => {
     }
     if (isSmallScreen) {
       setOpenNotes(false);
-      setIsHistoryOpen(false); // Close History only for small screens
+      setIsHistoryOpen(false); 
     }
-
     const matchingIdExists =
       annotateData && Object.prototype.hasOwnProperty.call(annotateData, id);
     let chatHistory = [];
@@ -600,19 +604,27 @@ if (id) {
     localStorage.removeItem("unsavedChanges");
   };
 
+  // function scrollToTop() {
+  //   const articleContent = document.querySelector(".meta");
+  //   if (articleContent) {
+  //     articleContent.scrollTo({
+  //       top: 0,
+  //       behavior: "smooth", // This will create the smooth scrolling effect
+  //     });
+  //   }
+  // }
   function scrollToTop() {
-    const articleContent = document.querySelector(".meta");
-    if (articleContent) {
-      articleContent.scrollTo({
+    if (metaRef.current) {
+      metaRef.current.scrollTo({
         top: 0,
-        behavior: "smooth", // This will create the smooth scrolling effect
+        behavior: "smooth",
       });
     }
   }
   return (
     <>
       <div className="container">
-        <SearchNavbar containerRef={null} isModalOpen={isModalOpen} />
+        <SearchNavbar  containerRef={null} isModalOverlay={isModalOverlay} />
 
          
       <div className={`content ${isMobile ? 'mobile-view' : ''}`}>
@@ -722,9 +734,8 @@ if (id) {
                           <div
                             ref={dropdownRef}
                             className="popup-menu-renamedelete"
-                            style={isHistoryOpen ? {
-                              transform: `translate(${popupPosition.x-100}px, ${popupPosition.y+200}px)`,
-                            }:{ transform: `translate(${popupPosition.x-100}px, ${popupPosition.y+2000}px)`}}
+                            style={ {
+                              transform: `translate(${popupPosition.x}px, ${popupPosition.y}px)`}}
                           >
                             <div
                               className="popup-rename"
@@ -784,6 +795,8 @@ if (id) {
               isStreamDoneRef={isStreamDoneRef}
               setClickedBack={setClickedBack}
               setAnnotateData={setAnnotateData}
+              query={query}
+              setQuery={setQuery}
             />
           ) : (
             <ArticleContent
@@ -900,10 +913,8 @@ if (id) {
                         {popupSessionId === session.session_id && (
                           <div
                             ref={dropdownRef}
-                            className="popup-menu-renamedelete"
-                            style={{
-                              transform: `translate(${popupPosition.x}px, ${popupPosition.y}px)`,
-                            }}
+                            className="mobile-popup-menu-renamedelete"
+                            onClick={(e)=>e.stopPropagation()}
                           >
                             <div
                               className="popup-rename"
@@ -1005,7 +1016,8 @@ if (id) {
                   //   height: `${notesHeight}vh`,
                   // }}
                 >
-                  <Notes selectedText={savedText} notesHeight={notesHeight} annotateHeight={annotateHeight} isOpenAnnotate={openAnnotate}/>
+                  <Notes selectedText={savedText} notesHeight={notesHeight} annotateHeight={annotateHeight} isOpenAnnotate={openAnnotate}
+                  isModalOverlay={isModalOverlay} setIsModalOverlay={setIsModalOverlay}/>
                   <div
                     className="notes-line1"
                     onMouseDown={handleNotesResize}
@@ -1093,7 +1105,7 @@ if (id) {
           </div>
         </div>
       </div>
-      <div className="ScrollTop">
+      <div className="ScrollTop" style={{display: isMobile && (openAnnotate || openNotes) ? "none" : undefined}}>
         <button onClick={scrollToTop} id="scrollTopBtn" title="Go to top">
           <FontAwesomeIcon icon={faAnglesUp} />
           

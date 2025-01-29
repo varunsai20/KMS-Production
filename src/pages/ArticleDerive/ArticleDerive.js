@@ -44,7 +44,9 @@ const ArticleDerive = ({
   setIsStreamDone,
   isStreamDoneRef,
   setClickedBack,
-  setAnnotateData
+  setAnnotateData,
+  query,
+  setQuery
 }) => {
 
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
@@ -63,7 +65,7 @@ const ArticleDerive = ({
   const [searchTerm, setSearchTerm] = useState("");
   const [articleData, setArticleData] = useState(null);
   const navigate = useNavigate();
-  const [query, setQuery] = useState("");
+  //const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [autoScrollEnabled, setAutoScrollEnabled] = useState(false);
   
