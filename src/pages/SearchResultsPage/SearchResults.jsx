@@ -1533,7 +1533,7 @@ console.log("mobile view is",isMobileView)
                           </label>
                         </div>
                       </div>
-                      <div style={{display:"flex",justifyContent:"flex-end"}}>
+                      <div>
                         <button className="reset-button-ViewChange" onClick={handleResetAll}>
                           Reset all
                         </button>

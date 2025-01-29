@@ -103,7 +103,7 @@ const Collection = ({ setIsCollectionOpen }) => {
               <div className="collection-item-list">
                 <p >{collectionName}</p>
                 <p>
-                  {collections[collectionName].length} articles
+                {`${collections[collectionName].length} (articles)`}
                 </p>
               </div>
             </div>
@@ -167,7 +167,7 @@ const Collection = ({ setIsCollectionOpen }) => {
                       <td className="bookmark-Source">
                         {article.article_source}
                       </td>
-                      <td style={{ width: "1%" }}></td>
+                      {/* <td style={{ width: "1%" }}></td> */}
                     </tr>
                   ))}
                 </tbody>

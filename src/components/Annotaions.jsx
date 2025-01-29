@@ -184,13 +184,7 @@ const Annotation = ({
   return (
     <div className="search-tables" style={{}}>
       <div
-        style={{
-          background:
-            "linear-gradient(90deg,rgba(254, 118, 117, 0.7) -21.07%,rgba(204, 129, 185, 0.7) 37.85%,rgba(26, 168, 210, 0.7) 97.5%,rgba(76, 210, 217, 0.7) 151.24%)",
-          borderRadius: "16px 16px 0 0",
-          padding: "5px",
-        }}
-      >
+      className="search-tables-header">
         <p style={{ textAlign: "start" }}>Annotations</p>
       </div>
       {annotateData &&

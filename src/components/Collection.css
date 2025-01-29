@@ -210,12 +210,19 @@
 .collection-item-list p{
   font-size: 14px;
   margin: revert;
-  padding: revert;
+  padding: 0px 10px;
+}
+.articles-list th,
+.articles-list td {
+  padding: 10px;
+  text-align: left;
+  font-size: 12px;
 }
 .articles-list thead th {
   color: white;
   background: #1A82FF;
-  border-radius: 5px;
+  border-radius: 0px;
+  font-size: 12px;
 }
 .Search-collection-icon {
   width: 3vw;

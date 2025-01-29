@@ -14,6 +14,8 @@ const NotesManager = ({
   isOpenAnnotate,
   height,
   oncloseNotes,
+  isModalOverlay,
+  setIsModalOverlay
 }) => {
   const { user } = useSelector((state) => state.auth);
   const user_id = user?.user_id;
@@ -125,6 +127,8 @@ const NotesManager = ({
       {currentView === "list" && (
         <NotesList
           notes={notes}
+          isModalOverlay={isModalOverlay}
+          setIsModalOverlay={setIsModalOverlay}
           filterText={filterText}
           setFilterText={setFilterText}
           onAddNewNote={handleAddNewNote}
@@ -154,7 +158,9 @@ const NotesManager = ({
       )}
       {currentView === "edit" && selectedNote && (
         <Editnotes
-        notes={notes}
+          isModalOverlay={isModalOverlay}
+          setIsModalOverlay={setIsModalOverlay}
+          notes={notes}
           note={selectedNote}
           textToSave={editTextToSave}
           setNotes={setNotes}
