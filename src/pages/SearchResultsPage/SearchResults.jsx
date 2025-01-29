@@ -82,7 +82,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
 
   const prevTotalArticlesRef = useRef(totalArticles);
   useEffect(()=>{
-    console.log("exec")
     localStorage.removeItem("sessionIds")
   },[])
   useEffect(() => {
@@ -1046,15 +1045,12 @@ useEffect(() => {
   // Cleanup event listener
   return () => window.removeEventListener("resize", handleResize);
 }, []);
-console.log("tab view is",isTabletView)
-console.log("mobile view is",isMobileView)
 
   const [showFilters, setShowFilters] = useState(false);
 
   const toggleFilters = () => {
     setShowFilters(!showFilters);
   };
-  console.log("Tablet view enabled",isTabletView  )
   const mobileViewOptionsRef = useRef(null); // Reference for MobileView-Options
   const [mobileViewHeight, setMobileViewHeight] = useState(0); // State to store height
 
@@ -1105,14 +1101,16 @@ console.log("mobile view is",isMobileView)
             <div className="filter-group-ViewChange">
               <h4>Article type</h4>
               <label>
-                <input
-                  type="checkbox"
-                  value="Books & Documents"
-                  checked={filters.articleType?.includes("Books & Documents")}
-                  onChange={handleArticleTypeFilter}
-                />{" "}
-                Books & Documents
-              </label>
+                    <input
+                      type="checkbox"
+                      value="Books and Documents"
+                      checked={filters.articleType?.includes(
+                        "Books and Documents"
+                      )}
+                      onChange={handleArticleTypeFilter}
+                    />{" "}
+                    Books & Documents
+                  </label>
               <label>
                 <input
                   type="checkbox"
@@ -1407,14 +1405,16 @@ console.log("mobile view is",isMobileView)
                         <div className="filter-group-ViewChange">
                           <h4>Article type</h4>
                           <label>
-                            <input
-                              type="checkbox"
-                              value="Books & Documents"
-                              checked={filters.articleType?.includes("Books & Documents")}
-                              onChange={handleArticleTypeFilter}
-                            />{" "}
-                            Books & Documents
-                          </label>
+                    <input
+                      type="checkbox"
+                      value="Books and Documents"
+                      checked={filters.articleType?.includes(
+                        "Books and Documents"
+                      )}
+                      onChange={handleArticleTypeFilter}
+                    />{" "}
+                    Books and Documents
+                  </label>
                           <label>
                             <input
                               type="checkbox"
@@ -1618,7 +1618,7 @@ console.log("mobile view is",isMobileView)
                       )}
                       onChange={handleArticleTypeFilter}
                     />{" "}
-                    Books & Documents
+                    Books and Documents
                   </label>
                   <label>
                     <input
@@ -2728,7 +2728,7 @@ console.log("mobile view is",isMobileView)
       <div className="ScrollTop">
         <button onClick={scrollToTop} id="scrollTopBtn" title="Go to top">
           <FontAwesomeIcon icon={faAnglesUp} />
-          Back to top
+          
         </button>
       </div>
       {isMobileView&&
@@ -2770,7 +2770,7 @@ console.log("mobile view is",isMobileView)
                             disabled={
                               !isLoggedIn || Object.keys(shareableLinks).length === 0
                             }
-                            style={{border:"none"}}
+                            style={{border:"none",background:"none"}}
                             className={`SearchResult-Share ${
                               isLoggedIn && Object.keys(shareableLinks).length > 0
                                 ? "active"

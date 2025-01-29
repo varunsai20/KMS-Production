@@ -1124,20 +1124,17 @@ td {
     background-color: none;
   }
   #scrollTopBtn {
-    width: 8%;
-    bottom: 145px;
-    background-color: white;
-    color: black;
-    right: 0px;
-    cursor: pointer;
-    padding: 5px;
-    height: 15vh;
-    box-shadow: 0px 18px 87px 38px #00000014;
+        width: 8%;
+        bottom: 145px;
+        background-color: white;
+        color: black;
+        /* right: 0px; */
+        cursor: pointer;
+        padding: 10px 0;
+        /* height: 15vh; */
+        box-shadow: 0px 18px 87px 38px #00000014;
 }
-#scrollTopBtn {
-  right: 0;
-  bottom: 140px;
-}
+
   
 }
 @media (min-width: 576px) and (max-width: 1024px) {
