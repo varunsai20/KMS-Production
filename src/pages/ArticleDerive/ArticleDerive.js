@@ -359,11 +359,10 @@ const ArticleDerive = ({
     const handleDeriveClick = useCallback(async () => {
       if(chatHistory&&chatHistory.length === 0){
       if ((!query && !uploadedFile)||(query&&!uploadedFile)) {
-        showErrorToast("Please enter a query or upload a file");
+        showErrorToast("Please upload a file");
         return;
       }
     }
-    else if(chatHistory){
       setIsStreamDone(false);
       removeUploadedFile();
       setQuery("");
@@ -503,7 +502,7 @@ const ArticleDerive = ({
         console.error("Error during fetch or reading stream:", error);
         setLoading(false);
       }
-    }
+    
     }, [query, token, storedSessionId, user.user_id, uploadedFile]);
     
     
@@ -615,7 +614,7 @@ const ArticleDerive = ({
     const file = e.target.files[0];
     if (!file) return; // Exit if no file was selected
     if (file.size > 5 * 1024 * 1024) {
-      showErrorToast("try uploading files 5MB or less", {
+      showErrorToast("Try uploading files 5MB or less", {
         position: "top-center",
       });
     }
@@ -625,7 +624,7 @@ const ArticleDerive = ({
 
     if (!allowedExtensions.includes(fileExtension)) {
       //alert("Please upload a PDF or DOCX file.");
-      showErrorToast("try uploading .pdf,.docx");
+      showErrorToast("Try uploading .pdf,.docx");
       return;
     }
 

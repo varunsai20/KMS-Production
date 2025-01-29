@@ -19,7 +19,8 @@ const NoteItem = ({
   isMobileView,
   setFilterText,
   isModalOverlay,
-  setIsModalOverlay
+  setIsModalOverlay,
+  divHeight
 }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -305,6 +306,7 @@ const NoteItem = ({
               ? "noteItem-email-modal-overlay"
               : "noteItem-modal-overlay"
           }
+          style={isOpenNotes ? { height: divHeight } : {}}
           onClick={handleCloseEmailModal}
         >
           <div

@@ -784,6 +784,7 @@
   height: 46%;
 }
 .noteItem-email-modal-overlay {
+  background: rgba(58, 58, 64, 0.6);
   position: fixed;
   width: 100%;
   top: 30%;

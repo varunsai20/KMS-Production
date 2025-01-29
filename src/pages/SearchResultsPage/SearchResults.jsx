@@ -31,10 +31,8 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   const location = useLocation(); // Access the passed state
   const ITEMS_PER_PAGE = 10;
   const navigate = useNavigate();
-  console.log(location.state)
   useEffect(()=>{
     if(location.state===null){
-    console.log("access");
     navigate("/")
   }
 },[])
@@ -1206,36 +1204,7 @@ useEffect(() => {
             </div>
 
             {/* Text Availability Section */}
-            <div className="filter-group-ViewChange">
-              <h4>Text availability</h4>
-              <label>
-                <input
-                  type="checkbox"
-                  value="Abstract"
-                  checked={filters.textAvailability?.includes("Abstract")}
-                  // onChange={handleTextAvailabilityChange}
-                />{" "}
-                Abstract
-              </label>
-              <label>
-                <input
-                  type="checkbox"
-                  value="Free full text"
-                  checked={filters.textAvailability?.includes("Free full text")}
-                  // onChange={handleTextAvailabilityChange}
-                />{" "}
-                Free full text
-              </label>
-              <label>
-                <input
-                  type="checkbox"
-                  value="Full Text"
-                  checked={filters.textAvailability?.includes("Full Text")}
-                  // onChange={handleTextAvailabilityChange}
-                />{" "}
-                Full Text
-              </label>
-            </div>
+            
           </div>
           <div className="resetbutton-Filters" style={{display:"flex",justifyContent:"flex-end"}}>
             <button className="reset-button-ViewChange" onClick={handleResetAll}>
@@ -1510,36 +1479,7 @@ useEffect(() => {
                         </div>
 
                         {/* Text Availability Section */}
-                        <div className="filter-group-ViewChange">
-                          <h4>Text availability</h4>
-                          <label>
-                            <input
-                              type="checkbox"
-                              value="Abstract"
-                              checked={filters.textAvailability?.includes("Abstract")}
-                              // onChange={handleTextAvailabilityChange}
-                            />{" "}
-                            Abstract
-                          </label>
-                          <label>
-                            <input
-                              type="checkbox"
-                              value="Free full text"
-                              checked={filters.textAvailability?.includes("Free full text")}
-                              // onChange={handleTextAvailabilityChange}
-                            />{" "}
-                            Free full text
-                          </label>
-                          <label>
-                            <input
-                              type="checkbox"
-                              value="Full Text"
-                              checked={filters.textAvailability?.includes("Full Text")}
-                              // onChange={handleTextAvailabilityChange}
-                            />{" "}
-                            Full Text
-                          </label>
-                        </div>
+                        
                       </div>
                       <div>
                         <button className="reset-button-ViewChange" onClick={handleResetAll}>
