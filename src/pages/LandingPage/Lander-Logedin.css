@@ -909,7 +909,6 @@
     text-align: center;
     background: #fff;
     border-radius: 16px;
-    padding: 20px;
     transition: transform 0.3s ease-in-out;
   }
 
@@ -953,6 +952,10 @@
     font-size: 0.9rem;
     color: #666;
   }
+  .citation-modal {
+    height: 50vh;
+    width: 60%;
+}
 
   .Footer {
     width: 100%;
@@ -1017,7 +1020,6 @@
     text-align: center;
     background: #fff;
     border-radius: 16px;
-    padding: 20px;
     transition: transform 0.3s ease-in-out;
   }
   .Feature-Item h4{
@@ -1026,7 +1028,9 @@
   .Feature-Item span{
     font-size: 12px;
   }
-
+  .Feature-Item a{
+    font-size: 12px;
+  }
   .Feature-Item:hover {
     transform: translateY(-5px);
   }

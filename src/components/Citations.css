@@ -92,3 +92,24 @@
   color: white;
   border: none;
 }
+@media (min-width:0px) and (max-width:600px){
+  .citation-close-collection {
+    top: calc(50% - 20vh);
+    right: calc(1% - 0px);
+}
+}
+@media (min-width:600px) and (max-width:1024px) {
+  .citation-annotations{
+    padding: 0px;
+  }
+  .citation-close-collection {
+    padding: 0;
+    position: absolute;
+    top: calc(50% - 28vh);
+    right: calc(1% - 0px);
+    border: none;
+    cursor: pointer;
+    z-index: 1001;
+}
+  
+}

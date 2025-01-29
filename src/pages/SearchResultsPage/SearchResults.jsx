@@ -28,8 +28,16 @@ import shareIcon from "../../assets/images/ShareIcon.svg"
 import { PiShareNetwork } from "react-icons/pi";
 import SearchNavbar from "../../components/SearchNavbar";
 const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
-  const ITEMS_PER_PAGE = 10;
   const location = useLocation(); // Access the passed state
+  const ITEMS_PER_PAGE = 10;
+  const navigate = useNavigate();
+  console.log(location.state)
+  useEffect(()=>{
+    if(location.state===null){
+    console.log("access");
+    navigate("/")
+  }
+},[])
   const { data } = location.state || { data: [] };
   const { user } = useSelector((state) => state.auth);
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
@@ -40,7 +48,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   const user_id = user?.user_id;
   const token = useSelector((state) => state.auth.access_token);
   const searchTerm = sessionStorage.getItem("SearchTerm");
-  const navigate = useNavigate();
+  //const navigate = useNavigate();
   const contentRightRef = useRef(null);
   const [result, setResults] = useState();
   const [loading, setLoading] = useState(false);

@@ -1434,7 +1434,7 @@ button input {
     flex-direction: column;
   }
   .Article-Options{
-    gap: 10px;
+    gap: 0px;
     flex-wrap: nowrap;
   }
   .Article-Options-Left{

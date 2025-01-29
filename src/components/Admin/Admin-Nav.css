@@ -55,8 +55,10 @@
   color: #007bff;
   font-weight: bold;
   border-radius: 7px;
+  outline: auto;
+
 }
-.nav-item.active::before {
+/* .nav-item.active::before {
   content: "";
   position: absolute;
   right: 0;
@@ -68,7 +70,7 @@
   padding: 10px 0;
   background-color: #007bff;
   border-radius: 0 5px 5px 0;
-}
+} */
 
 .nav-icon {
   width: 20px;

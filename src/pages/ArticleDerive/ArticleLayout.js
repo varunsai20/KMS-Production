@@ -67,7 +67,6 @@ const ArticleLayout = () => {
   );
   const annotateRef = useRef(null);
   const notesRef = useRef(null);
-  const metaRef = useRef(null);
   const [query,setQuery] = useState("");
   const [isStreamDone, setIsStreamDone] = useState(false);
   const[isHistoryOpen, setIsHistoryOpen] = useState(true);
@@ -604,23 +603,16 @@ if (id) {
     localStorage.removeItem("unsavedChanges");
   };
 
-  // function scrollToTop() {
-  //   const articleContent = document.querySelector(".meta");
-  //   if (articleContent) {
-  //     articleContent.scrollTo({
-  //       top: 0,
-  //       behavior: "smooth", // This will create the smooth scrolling effect
-  //     });
-  //   }
-  // }
   function scrollToTop() {
-    if (metaRef.current) {
-      metaRef.current.scrollTo({
+    const articleContent = document.querySelector(".meta");
+    if (articleContent) {
+      articleContent.scrollTo({
         top: 0,
-        behavior: "smooth",
+        behavior: "smooth", // This will create the smooth scrolling effect
       });
     }
   }
+ 
   return (
     <>
       <div className="container">

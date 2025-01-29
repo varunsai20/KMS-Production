@@ -78,6 +78,7 @@
   left: 0;
   width: 100%;
   height: 100%;
+  background: rgba(58, 58, 64, 0.6);
   /* background-color: rgba(0, 0, 0, 0.5); */
   display: flex;
   justify-content: center;
@@ -207,6 +208,9 @@
 @media (min-width:0px) and (max-width:600px){
   .noteItem-modal-content {
     width: 85%;
+  }
+  .noteItem-modal-overlay {
+    background: rgba(58, 58, 64, 0.6);
   }
 }
 @media (min-width:600px) and (max-width:1000px){
