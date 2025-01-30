@@ -918,7 +918,7 @@
   }
 
   .WhyInfer-points {
-    display: flex;
+    display: grid;
     gap: 10px;
     /* width: 85%; */
     margin: 20px auto;
@@ -966,6 +966,9 @@
 }
 
 @media (min-width: 0px) and (max-width: 576px) {
+  .Landing-main-content{
+    width: 100%;
+  }
   .inferai-logo {
     /* width: 35vw; */
   }
@@ -986,7 +989,9 @@
   .Landing-Header {
     width: 100%;
     flex-shrink: 0;
+    margin-top: 1%;
   }
+
 
   .Landing-Content {
     display: flex;
@@ -1009,6 +1014,7 @@
   .Landing-Features {
     /* width: 90%; */
     flex-shrink: 0;
+    padding: 0;
   }
   .Landing-Welcome-desc {
     font-size: 0.7rem;
@@ -1085,7 +1091,7 @@
   .social-icons {
     display: flex;
     justify-content: space-evenly;
-    margin: 4% 0%;
+    margin: 1% 0%;
   }
 
   .Footer {

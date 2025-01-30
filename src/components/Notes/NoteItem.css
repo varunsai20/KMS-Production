@@ -234,6 +234,7 @@
   }
   .noteItem-email-modal-content{
     width: 85%;
+    font-size: 14px;
   }
   .noteItem-email-modal-overlay{
     background: rgba(58, 58, 64, 0.6);

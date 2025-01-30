@@ -232,6 +232,7 @@
 }
 .articles-list tbody {
   max-height: 30vh;
+  padding: 0;
 }
 
 }

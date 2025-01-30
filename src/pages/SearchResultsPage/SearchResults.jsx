@@ -1501,7 +1501,7 @@ useEffect(() => {
                     style={{ marginRight: "15px" }}
                   >
                     <span style={{ color: "blue" }}>
-                      {data.articles.length}
+                      {data.articles?.length}
                     </span>{" "}
                     results
                   </div>

@@ -1281,7 +1281,7 @@ button input {
   flex-direction: column;
 }
 .toggle-filters-button-ViewChange {
-  background-color: #1A82FF;
+  background:rgba(26, 130, 255, 1);
   color: #fff;
   border: none;
   padding: 0.5rem 1rem;

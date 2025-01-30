@@ -700,7 +700,7 @@ if (id) {
                       ) : (
                         <span>
                           {mappedTitle.slice(0, 25)}
-                          {mappedTitle.length > 25 ? "" : ""}
+                          {mappedTitle.length > 25 ? "..." : ""}
                         </span>
                       )}
                       <div
@@ -809,7 +809,7 @@ if (id) {
               setIsModalOpen={setIsModalOpen}
             />
           )}
-           <div className={`bottom-section ${isMobile ? "mobile-bottom" : ""}`}>
+           <div className={`${isHistoryOpen&&"bottom-section"} ${isMobile&&isHistoryOpen && "mobile-bottom"}`}>
             {/* Mobile history panel */}
            
             {isMobile && isHistoryOpen && (
@@ -880,7 +880,7 @@ if (id) {
                       ) : (
                         <span>
                           {mappedTitle.slice(0, 25)}
-                          {mappedTitle.length > 25 ? "" : ""}
+                          {mappedTitle.length > 25 ? "..." : ""}
                         </span>
                       )}
                       <div
@@ -1025,7 +1025,7 @@ if (id) {
                 </div>
               )}
             </div>
-            <div className="icons-group">
+            <div className="icons-group" style={{opacity:isMobile&&isLoggedIn?1:0.5}}>
               {isMobile &&(
             <button className="botton-toggle-history-btn" onClick={toggleHistory}>
             {isHistoryOpen ? <CgClose color="#1A82FF" size={20}/> : <AiOutlineMenu color="#1A82FF" size={20}/>}
