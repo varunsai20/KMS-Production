@@ -2317,6 +2317,7 @@ useEffect(() => {
                                         >
                                           Email ID
                                         </label>
+                                        
                                         <input
                                           type="email"
                                           value={email}
@@ -2697,7 +2698,7 @@ useEffect(() => {
                             opacity: isLoggedIn
                               ? selectedArticles.length > 0
                                 ? 1
-                                : 1
+                                : 0.5
                               : 0.5, // Grayed out if not logged in1
                               
                           }}

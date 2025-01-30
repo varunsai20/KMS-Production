@@ -996,7 +996,7 @@ td {
     justify-content: space-around;
     position: static;
     /* background: #EBEBF3; */
-    opacity: 0.5;
+    /* opacity: 0.5; */
   }
   .article-content-inside{
     height: 60vh;
