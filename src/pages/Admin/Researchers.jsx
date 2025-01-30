@@ -246,7 +246,7 @@ const Researchers = () => {
           </>
         ) : (
           <>
-            <th style={{border: "1px solid #0000001A",borderRadius:"10px"}}>
+            <th style={{borderRadius:"10px"}}>
               <button onClick={handlePrevious}>
                 <IoIosArrowBack style={{marginTop:"1%"}}/>
 

@@ -17,7 +17,8 @@ const NotesList = ({
   oncloseNotes,
   notesHeight,
   isModalOverlay,
-  setIsModalOverlay
+  setIsModalOverlay,
+  divHeight
 }) => {
 
   const [filteredNotes, setFilteredNotes] = useState(notes);
@@ -105,6 +106,7 @@ const NotesList = ({
             onEdit={onEditNote}
             onDelete={onDeleteNote}
             isOpenNotes={isOpenNotes}
+            divHeight={divHeight}
           />
         ))}
       </div>

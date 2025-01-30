@@ -345,4 +345,8 @@
   .custom-input {
     padding-right: 70px !important; /* Override padding-right for smaller screens */
   }
+  .MuiAutocomplete-option {
+    font-size: 0.9rem;
+    min-height: 20px !important;
+  }
 }

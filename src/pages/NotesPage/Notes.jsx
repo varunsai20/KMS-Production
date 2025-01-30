@@ -15,7 +15,8 @@ const NotesManager = ({
   height,
   oncloseNotes,
   isModalOverlay,
-  setIsModalOverlay
+  setIsModalOverlay,
+  
 }) => {
   const { user } = useSelector((state) => state.auth);
   const user_id = user?.user_id;
@@ -28,7 +29,25 @@ const NotesManager = ({
   const [selectedNote, setSelectedNote] = useState(null);
   const [lastOpenView, setLastOpenView] = useState("list");
   const hasFetchedNotes = useRef(false);
+  const divRef = useRef(null);
+  const [divHeight, setDivHeight] = useState(0);
 
+  useEffect(() => {
+    const updateHeight = () => {
+      if (divRef.current) {
+        setDivHeight(divRef.current.getBoundingClientRect().height);
+      }
+    };
+
+    // Initial height calculation
+    updateHeight();
+
+    // Recalculate height on window resize
+    window.addEventListener("resize", updateHeight);
+
+    // Cleanup event listener on unmount
+    return () => window.removeEventListener("resize", updateHeight);
+  }, []);
   useEffect(() => {
     if (propSelectedText) {
       setTextToSave((prevText) => {
@@ -123,7 +142,7 @@ const NotesManager = ({
   };
 
   return (
-    <div className={isOpenNotes ? "Lander-manager" : "notes-manager-content"}>
+    <div className={isOpenNotes ? "Lander-manager" : "notes-manager-content"} ref={divRef}>
       {currentView === "list" && (
         <NotesList
           notes={notes}
@@ -139,6 +158,7 @@ const NotesManager = ({
           notesHeight={notesHeight}
           oncloseNotes={oncloseNotes}
           fetchNotes={fetchNotes}
+          divHeight={divHeight}
         />
       )}
       {currentView === "create" && (

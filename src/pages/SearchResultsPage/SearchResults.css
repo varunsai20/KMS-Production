@@ -56,6 +56,7 @@ button {
   cursor: pointer;
 }
 .Container {
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
 }
@@ -1433,7 +1434,7 @@ button input {
     flex-direction: column;
   }
   .Article-Options{
-    gap: 10px;
+    gap: 0px;
     flex-wrap: nowrap;
   }
   .Article-Options-Left{
@@ -1530,7 +1531,7 @@ button input {
     right: 10px;
     cursor: pointer;
     padding: 5px;
-    height: 15vh;
+    /* height: 15vh; */
     box-shadow: 0px 18px 87px 38px #00000014;
 }
   /* #scrollTopBtn{

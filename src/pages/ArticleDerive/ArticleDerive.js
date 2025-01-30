@@ -210,7 +210,6 @@ const ArticleDerive = ({
   };
   const handleMouseUpInsideContent = (e) => {
     if (!isLoggedIn) return;
-    console.log(e);
     const content = contentRef.current;
     const popup = popupRef.current;
   
@@ -355,17 +354,15 @@ const ArticleDerive = ({
 
     useEffect(() => {
       isStreamDoneRef.current = isStreamDone; // Sync ref with state
-      console.log(`isStreamDone changed: ${isStreamDone}`);
     }, [isStreamDone]);
     
     const handleDeriveClick = useCallback(async () => {
-      if (!query && !uploadedFile) {
-        showErrorToast("Please enter a query or upload a file");
-        return;
-      }else if(query && !uploadedFile){
-        showErrorToast("please upload your file to proceed");
+      if(chatHistory&&chatHistory.length === 0){
+      if ((!query && !uploadedFile)||(query&&!uploadedFile)) {
+        showErrorToast("Please upload a file");
         return;
       }
+    }
       setIsStreamDone(false);
       removeUploadedFile();
       setQuery("");
@@ -505,6 +502,7 @@ const ArticleDerive = ({
         console.error("Error during fetch or reading stream:", error);
         setLoading(false);
       }
+    
     }, [query, token, storedSessionId, user.user_id, uploadedFile]);
     
     
@@ -548,19 +546,15 @@ const ArticleDerive = ({
       // Update localStorage with the remaining session IDs
       localStorage.setItem("sessionIds", JSON.stringify(sessionIds));
   
-      console.log(`Navigated back. Current session ID removed: ${currentSessionId}`);
-      console.log(`New active session ID set: ${previousSessionId}`);
     } else if (sessionIds.length === 1) {
       // If there's only one session, clear sessionStorage and localStorage for session_id
       sessionStorage.removeItem("session_id");
       localStorage.removeItem("sessionIds");
   
-      console.log("Last session ID removed. No more sessions available.");
     } else {
       // If there are no session IDs in localStorage
       setActiveSessionId(null)
       sessionStorage.removeItem("session_id");
-      console.log("No session IDs found. Cleared session storage.");
     }
   
     setClickedBack(true);
@@ -620,7 +614,7 @@ const ArticleDerive = ({
     const file = e.target.files[0];
     if (!file) return; // Exit if no file was selected
     if (file.size > 5 * 1024 * 1024) {
-      showErrorToast("try uploading files 5MB or less", {
+      showErrorToast("Try uploading files 5MB or less", {
         position: "top-center",
       });
     }
@@ -630,7 +624,7 @@ const ArticleDerive = ({
 
     if (!allowedExtensions.includes(fileExtension)) {
       //alert("Please upload a PDF or DOCX file.");
-      showErrorToast("try uploading .pdf,.docx");
+      showErrorToast("Try uploading .pdf,.docx");
       return;
     }
 
@@ -850,6 +844,7 @@ const ArticleDerive = ({
           src={pdfURL}
           width="100%"
           height="350px"
+          allowFullScreen
           title="PDF Preview"
         ></iframe>
       </div>

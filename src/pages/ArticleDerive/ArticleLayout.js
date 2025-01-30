@@ -67,7 +67,6 @@ const ArticleLayout = () => {
   );
   const annotateRef = useRef(null);
   const notesRef = useRef(null);
-  const metaRef = useRef(null);
   const [query,setQuery] = useState("");
   const [isStreamDone, setIsStreamDone] = useState(false);
   const[isHistoryOpen, setIsHistoryOpen] = useState(true);
@@ -80,7 +79,6 @@ const ArticleLayout = () => {
   useEffect(() => {
     if(isMobile || isTablet){
       setIsHistoryOpen(false);
-      console.log("checking history");
     }
     localStorage.removeItem("session_id");
     setActiveSessionId(null);
@@ -133,7 +131,6 @@ const ArticleLayout = () => {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
-  console.log("history open",isHistoryOpen);
 
 
   // Toggle History for small screens
@@ -448,7 +445,6 @@ const ArticleLayout = () => {
   const [fileUrl, setFileUrl] = useState("");
   const [annotateFile, setAnnotateFile] = useState(false);
   const [isCitationsOpen, setIsCitationsOpen] = useState(false);
-  console.log(fileUrl)
   const handleOpenCitations = () => {
     if (!uploadedFile) {
       return;
@@ -465,7 +461,6 @@ const ArticleLayout = () => {
       setOpenNotes(false);
     }
     if (isSmallScreen) {
-      console.log("open notes",openNotes);
       setOpenNotes(false);
       setIsHistoryOpen(false); 
     }
@@ -519,8 +514,6 @@ const ArticleLayout = () => {
   const handleAnnotateClick = async () => {
     // Define the request body according to source and id
     let requestBody = {};
-    console.log(type)
-    console.log(type);
 if (id) {
   switch (type) {
     case "pubmed":
@@ -555,10 +548,8 @@ if (id) {
       setAnnotateLoading(false);
     }
   };
-  console.log("annoateData: ", annotateData)
 
   const handleAnnotateUploadedFile = async () => {
-    console.log(uploadedFile)
     if (!uploadedFile) return; // Ensure uploadedFile exists before proceeding
 
     setAnnotateLoading(true);
@@ -599,7 +590,6 @@ if (id) {
       setOpenNotes((prevOpenNotes) => !prevOpenNotes);
     }
     if (isSmallScreen) {
-      console.log("open annotate",openAnnotate);
       setOpenAnnotate(false);
       setIsHistoryOpen(false); 
     }
@@ -613,23 +603,16 @@ if (id) {
     localStorage.removeItem("unsavedChanges");
   };
 
-  // function scrollToTop() {
-  //   const articleContent = document.querySelector(".meta");
-  //   if (articleContent) {
-  //     articleContent.scrollTo({
-  //       top: 0,
-  //       behavior: "smooth", // This will create the smooth scrolling effect
-  //     });
-  //   }
-  // }
   function scrollToTop() {
-    if (metaRef.current) {
-      metaRef.current.scrollTo({
+    const articleContent = document.querySelector(".meta");
+    if (articleContent) {
+      articleContent.scrollTo({
         top: 0,
-        behavior: "smooth",
+        behavior: "smooth", // This will create the smooth scrolling effect
       });
     }
   }
+ 
   return (
     <>
       <div className="container">
@@ -1117,7 +1100,7 @@ if (id) {
       <div className="ScrollTop" style={{display: isMobile && (openAnnotate || openNotes) ? "none" : undefined}}>
         <button onClick={scrollToTop} id="scrollTopBtn" title="Go to top">
           <FontAwesomeIcon icon={faAnglesUp} />
-          Back to Top
+          
         </button>
       </div>
     </>

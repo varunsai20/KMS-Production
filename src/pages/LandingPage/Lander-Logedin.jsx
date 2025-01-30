@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect,useRef } from "react";
 import { Rnd } from "react-rnd";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -41,6 +41,8 @@ const Lander = () => {
   const user_id = user?.user_id;
   const [hasBeenDragged, setHasBeenDragged] = useState(false);
   const navigate = useNavigate();
+  const[isModalOverlay,setIsModalOverlay] = useState(false);
+  
   useEffect(() => {
     if (termMissing) {
       // Set a timeout to hide the error message after 5 seconds
@@ -228,7 +230,6 @@ const Lander = () => {
     setIsLanderNotesOpen(false);
     setHasBeenDragged(false); // Reset drag state on close
   };
-
   return (
     <div className="Landing-Container">
       <div className="Landing-Header">
@@ -398,6 +399,7 @@ const Lander = () => {
       </div>
       {isLanderNotesOpen && (
         <Rnd
+          
           size={{ width: dimensions.width, height: dimensions.height }}
           position={{ x: position.x, y: position.y }}
           onDragStop={(e, d) => {
@@ -440,6 +442,7 @@ const Lander = () => {
             }}
           >
             <div
+            
               className="draggable-header"
               style={{
                 cursor: "move",
@@ -450,11 +453,13 @@ const Lander = () => {
               }}
             ></div>
 
-            <div style={{ flex: 1 }}>
+            <div  style={{ flex: 1 }}>
               <Notes
                 isOpenNotes={isLanderNotesOpen}
                 height={dimensions.height}
                 oncloseNotes={handleCloseNotes}
+                isModalOverlay={isModalOverlay}
+                setIsModalOverlay={setIsModalOverlay}
               />
             </div>
           </div>

@@ -48,7 +48,7 @@
   height: 50px;
   display: flex;
   align-items: center;
-  /* padding-left: 10px; */
+  padding-left: 10px;
   transition: 0.2s ease-in-out;
 }
 
@@ -155,7 +155,8 @@
   background-color: #ddd;
   cursor: not-allowed;
 }
-@media screen and (max-width: 768px) {
+
+@media (min-width:600px) and (max-width: 768px) {
   .Login-Form {
     gap: 15px;
   }
@@ -192,45 +193,8 @@
     font-size: 12px;
   }
 }
-@media screen and (max-width: 768px) {
-  .Login-Form {
-    gap: 15px;
-  }
 
-  .logo-in-login {
-    width: 20vw;
-    max-width: 100px;
-  }
-
-  .form {
-    padding: 20px;
-    width: 100%;
-  }
-
-  .flex-column > label {
-    font-size: 14px;
-  }
-
-  .inputForm {
-    height: 45px;
-  }
-
-  .button-submit {
-    height: 45px;
-    font-size: 14px;
-  }
-
-  .btn {
-    height: 45px;
-    font-size: 14px;
-  }
-
-  .span {
-    font-size: 12px;
-  }
-}
-
-@media screen and (max-width: 480px) {
+@media screen and (max-width: 600pxpx) {
   .logo-in-login {
     width: 30vw;
     max-width: 80px;
@@ -242,6 +206,7 @@
 
   .inputForm {
     height: 40px;
+    /* padding-left: 10p; */
   }
 
   .button-submit {

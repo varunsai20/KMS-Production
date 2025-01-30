@@ -19,12 +19,13 @@ const NoteItem = ({
   isMobileView,
   setFilterText,
   isModalOverlay,
-  setIsModalOverlay
+  setIsModalOverlay,
+  divHeight
 }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  //const [showConfirmDelete, setShowConfirmDelete] = useState(false); // Track confirmation popup visibility
-  //const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false); // Track confirmation popup visibility
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [email, setEmail] = useState("");
   const menuRef = useRef(null); // Reference to the popup menu
   const { user } = useSelector((state) => state.auth);
@@ -34,11 +35,13 @@ const NoteItem = ({
   const handleEmailClick = (e) => {
     e.stopPropagation(); // Prevent triggering onEdit
     setIsModalOverlay(true);
+    setIsEmailModalOpen(true);
   };
 
   const handleCloseEmailModal = () => {
     setIsModalOverlay(false);
     setEmail(""); // Reset email input when modal is closed
+    setIsEmailModalOpen(false);
   };
 
   // Email sending logic
@@ -100,6 +103,7 @@ const NoteItem = ({
     e.stopPropagation(); // Prevent triggering onEdit
     setIsMenuOpen(false); // Close the menu
     setIsModalOverlay(true); // Show confirmation popup
+    setShowConfirmDelete(true);
   };
 
   // Handle confirming the deletion
@@ -107,11 +111,13 @@ const NoteItem = ({
     e.stopPropagation();
     onDelete(note.note_id);
     setIsModalOverlay(false);
+    setShowConfirmDelete(false);
   };
   // Handle cancelling the deletion
   const cancelDelete = (e) => {
     e.stopPropagation();
     setIsModalOverlay(false);
+    setShowConfirmDelete(false);
   };
   // Handle opening the note
   const handleOpen = () => {
@@ -277,7 +283,7 @@ const NoteItem = ({
           </ul>
         </div>
       )}
-      {isModalOverlay && (
+      {isModalOverlay && showConfirmDelete && (
         <div className="confirm-overlay">
           <div className="confirm-popup">
             <p className="Saving-note">Delete Notes</p>
@@ -293,13 +299,14 @@ const NoteItem = ({
           </div>
         </div>
       )}
-      {isModalOverlay && (
+      {isModalOverlay && isEmailModalOpen && (
         <div
           className={
             isOpenNotes
               ? "noteItem-email-modal-overlay"
               : "noteItem-modal-overlay"
           }
+          style={isOpenNotes ? { height: divHeight } : {}}
           onClick={handleCloseEmailModal}
         >
           <div
