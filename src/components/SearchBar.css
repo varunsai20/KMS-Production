@@ -328,7 +328,7 @@
   letter-spacing: 0.02em;
   text-align: center;
 }
-@media (min-width: 250px) and (max-width: 767px) {
+@media (min-width: px) and (max-width: 767px) {
   .MuiPaper-root {
     border-radius: 10px !important;
     text-align: justify;

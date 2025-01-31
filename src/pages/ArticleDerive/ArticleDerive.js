@@ -661,6 +661,9 @@ const ArticleDerive = ({
     // setNumPages(null);
     // setPageNumber(1);
   };
+  useEffect(()=>{
+    setUploadedFile(null)
+  },[])
 
   const getFileIcon = (filename) => {
     const fileExtension = filename.split(".").pop().toLowerCase();

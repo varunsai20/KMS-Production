@@ -61,6 +61,7 @@
 }
 .articles-list {
   flex: 2;
+  padding-left: 15px;
 }
 .articles-list li {
   list-style: none;
@@ -232,6 +233,7 @@
 }
 .articles-list tbody {
   max-height: 30vh;
+  padding: 0;
 }
 
 }
@@ -264,6 +266,9 @@
   .collection-item-list p{
     margin:revert;
     padding: revert;
+  }
+  .articles-list{
+    padding-left: 0;
   }
   .articles-list thead th {
     color: white;
