@@ -12,7 +12,9 @@ const Admin = () => {
 
   return (
     <div className='AdminPage' style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      <div className="Landing-Header">
       <Header />
+      </div>
       <div className='admin-navs' style={{ display: 'flex', flexGrow: 1 }}>
         <AdminNav />
         <div style={{ flexGrow: 1, padding: '20px', overflowY: 'auto' }}>

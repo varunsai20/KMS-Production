@@ -25,10 +25,17 @@ import SearchTermMissing from "../../components/SearchTermMissing";
 import filtersIcon from "../../assets/images/001-edit 1.svg"
 import homeIcon from "../../assets/images/homeIcon.svg"
 import shareIcon from "../../assets/images/ShareIcon.svg"
+import { PiShareNetwork } from "react-icons/pi";
 import SearchNavbar from "../../components/SearchNavbar";
 const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
-  const ITEMS_PER_PAGE = 10;
   const location = useLocation(); // Access the passed state
+  const ITEMS_PER_PAGE = 10;
+  const navigate = useNavigate();
+  useEffect(()=>{
+    if(location.state===null){
+    navigate("/")
+  }
+},[])
   const { data } = location.state || { data: [] };
   const { user } = useSelector((state) => state.auth);
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
@@ -39,7 +46,7 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   const user_id = user?.user_id;
   const token = useSelector((state) => state.auth.access_token);
   const searchTerm = sessionStorage.getItem("SearchTerm");
-  const navigate = useNavigate();
+  //const navigate = useNavigate();
   const contentRightRef = useRef(null);
   const [result, setResults] = useState();
   const [loading, setLoading] = useState(false);
@@ -81,7 +88,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
 
   const prevTotalArticlesRef = useRef(totalArticles);
   useEffect(()=>{
-    console.log("exec")
     localStorage.removeItem("sessionIds")
   },[])
   useEffect(() => {
@@ -1045,15 +1051,12 @@ useEffect(() => {
   // Cleanup event listener
   return () => window.removeEventListener("resize", handleResize);
 }, []);
-console.log("tab view is",isTabletView)
-console.log("mobile view is",isMobileView)
 
   const [showFilters, setShowFilters] = useState(false);
 
   const toggleFilters = () => {
     setShowFilters(!showFilters);
   };
-  console.log("Tablet view enabled",isTabletView  )
   const mobileViewOptionsRef = useRef(null); // Reference for MobileView-Options
   const [mobileViewHeight, setMobileViewHeight] = useState(0); // State to store height
 
@@ -1104,14 +1107,16 @@ console.log("mobile view is",isMobileView)
             <div className="filter-group-ViewChange">
               <h4>Article type</h4>
               <label>
-                <input
-                  type="checkbox"
-                  value="Books & Documents"
-                  checked={filters.articleType?.includes("Books & Documents")}
-                  onChange={handleArticleTypeFilter}
-                />{" "}
-                Books & Documents
-              </label>
+                    <input
+                      type="checkbox"
+                      value="Books and Documents"
+                      checked={filters.articleType?.includes(
+                        "Books and Documents"
+                      )}
+                      onChange={handleArticleTypeFilter}
+                    />{" "}
+                    Books & Documents
+                  </label>
               <label>
                 <input
                   type="checkbox"
@@ -1199,36 +1204,7 @@ console.log("mobile view is",isMobileView)
             </div>
 
             {/* Text Availability Section */}
-            <div className="filter-group-ViewChange">
-              <h4>Text availability</h4>
-              <label>
-                <input
-                  type="checkbox"
-                  value="Abstract"
-                  checked={filters.textAvailability?.includes("Abstract")}
-                  // onChange={handleTextAvailabilityChange}
-                />{" "}
-                Abstract
-              </label>
-              <label>
-                <input
-                  type="checkbox"
-                  value="Free full text"
-                  checked={filters.textAvailability?.includes("Free full text")}
-                  // onChange={handleTextAvailabilityChange}
-                />{" "}
-                Free full text
-              </label>
-              <label>
-                <input
-                  type="checkbox"
-                  value="Full Text"
-                  checked={filters.textAvailability?.includes("Full Text")}
-                  // onChange={handleTextAvailabilityChange}
-                />{" "}
-                Full Text
-              </label>
-            </div>
+            
           </div>
           <div className="resetbutton-Filters" style={{display:"flex",justifyContent:"flex-end"}}>
             <button className="reset-button-ViewChange" onClick={handleResetAll}>
@@ -1406,14 +1382,16 @@ console.log("mobile view is",isMobileView)
                         <div className="filter-group-ViewChange">
                           <h4>Article type</h4>
                           <label>
-                            <input
-                              type="checkbox"
-                              value="Books & Documents"
-                              checked={filters.articleType?.includes("Books & Documents")}
-                              onChange={handleArticleTypeFilter}
-                            />{" "}
-                            Books & Documents
-                          </label>
+                    <input
+                      type="checkbox"
+                      value="Books and Documents"
+                      checked={filters.articleType?.includes(
+                        "Books and Documents"
+                      )}
+                      onChange={handleArticleTypeFilter}
+                    />{" "}
+                    Books and Documents
+                  </label>
                           <label>
                             <input
                               type="checkbox"
@@ -1501,38 +1479,9 @@ console.log("mobile view is",isMobileView)
                         </div>
 
                         {/* Text Availability Section */}
-                        <div className="filter-group-ViewChange">
-                          <h4>Text availability</h4>
-                          <label>
-                            <input
-                              type="checkbox"
-                              value="Abstract"
-                              checked={filters.textAvailability?.includes("Abstract")}
-                              // onChange={handleTextAvailabilityChange}
-                            />{" "}
-                            Abstract
-                          </label>
-                          <label>
-                            <input
-                              type="checkbox"
-                              value="Free full text"
-                              checked={filters.textAvailability?.includes("Free full text")}
-                              // onChange={handleTextAvailabilityChange}
-                            />{" "}
-                            Free full text
-                          </label>
-                          <label>
-                            <input
-                              type="checkbox"
-                              value="Full Text"
-                              checked={filters.textAvailability?.includes("Full Text")}
-                              // onChange={handleTextAvailabilityChange}
-                            />{" "}
-                            Full Text
-                          </label>
-                        </div>
+                        
                       </div>
-                      <div style={{display:"flex",justifyContent:"flex-end"}}>
+                      <div>
                         <button className="reset-button-ViewChange" onClick={handleResetAll}>
                           Reset all
                         </button>
@@ -1552,7 +1501,7 @@ console.log("mobile view is",isMobileView)
                     style={{ marginRight: "15px" }}
                   >
                     <span style={{ color: "blue" }}>
-                      {data.articles.length}
+                      {data.articles?.length}
                     </span>{" "}
                     results
                   </div>
@@ -1617,7 +1566,7 @@ console.log("mobile view is",isMobileView)
                       )}
                       onChange={handleArticleTypeFilter}
                     />{" "}
-                    Books & Documents
+                    Books and Documents
                   </label>
                   <label>
                     <input
@@ -2368,6 +2317,7 @@ console.log("mobile view is",isMobileView)
                                         >
                                           Email ID
                                         </label>
+                                        
                                         <input
                                           type="email"
                                           value={email}
@@ -2727,6 +2677,7 @@ console.log("mobile view is",isMobileView)
       <div className="ScrollTop">
         <button onClick={scrollToTop} id="scrollTopBtn" title="Go to top">
           <FontAwesomeIcon icon={faAnglesUp} />
+          
         </button>
       </div>
       {isMobileView&&
@@ -2747,7 +2698,7 @@ console.log("mobile view is",isMobileView)
                             opacity: isLoggedIn
                               ? selectedArticles.length > 0
                                 ? 1
-                                : 1
+                                : 0.5
                               : 0.5, // Grayed out if not logged in1
                               
                           }}
@@ -2768,7 +2719,7 @@ console.log("mobile view is",isMobileView)
                             disabled={
                               !isLoggedIn || Object.keys(shareableLinks).length === 0
                             }
-                            style={{border:"none"}}
+                            style={{border:"none",background:"none"}}
                             className={`SearchResult-Share ${
                               isLoggedIn && Object.keys(shareableLinks).length > 0
                                 ? "active"
@@ -2782,8 +2733,7 @@ console.log("mobile view is",isMobileView)
                                 : displayMessage
                             }
                           >
-                            <img src={shareIcon}/>
-                            {/* Share */}
+<PiShareNetwork color="#007bff" size={23}/>                            {/* Share */}
                           </button>
                           {/* {!isLoggedIn && (
           <p style={{ color: "gray", fontSize: "0.9rem", marginTop: "5px" }}>

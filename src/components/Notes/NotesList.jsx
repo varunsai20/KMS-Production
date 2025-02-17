@@ -16,6 +16,9 @@ const NotesList = ({
   height,
   oncloseNotes,
   notesHeight,
+  isModalOverlay,
+  setIsModalOverlay,
+  divHeight
 }) => {
 
   const [filteredNotes, setFilteredNotes] = useState(notes);
@@ -96,11 +99,14 @@ const NotesList = ({
         )}
         {filteredNotes.map((note) => (
           <NoteItem
+          isModalOverlay={isModalOverlay}
+          setIsModalOverlay={setIsModalOverlay}
             key={note.note_id}
             note={note}
             onEdit={onEditNote}
             onDelete={onDeleteNote}
             isOpenNotes={isOpenNotes}
+            divHeight={divHeight}
           />
         ))}
       </div>

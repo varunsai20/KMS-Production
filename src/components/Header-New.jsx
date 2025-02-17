@@ -93,11 +93,11 @@ setConfirmLogout(false);
           <>
             <div
               onClick={handleProfileClick}
-              style={{ cursor: "pointer", height: "35px" }}
+              style={{ cursor: "pointer", height: "25px" }}
             >
               <img
                 src={currentProfileImage}
-                style={{ width: "35px", height: "35px", borderRadius: "50%" }}
+                style={{ width: "25px", height: "25px", borderRadius: "50%" }}
                 alt="Profile"
                 className="profile-icon"
               />

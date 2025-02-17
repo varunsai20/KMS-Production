@@ -28,7 +28,9 @@ const Editnotes = ({
   isOpenNotes,
   height,
   textToSave,
-  annotateHeight
+  annotateHeight,
+  isModalOverlay,
+  setIsModalOverlay
 }) => {
 
   const { user } = useSelector((state) => state.auth);
@@ -91,7 +93,8 @@ useEffect(() => {
   }, []);
 
   const handleShare = () => {
-    setIsShareModalOpen(true);
+    setIsModalOverlay(true);
+    setIsShareModalOpen(true)
   };
   useEffect(() => {
     if (textToSave && editorRef.current) {
@@ -162,7 +165,7 @@ useEffect(() => {
     }
 
     setTimeout(() => setShareMessage(""), 3000);
-    setIsShareModalOpen(false);
+    setIsModalOverlay(false);
   };
 
   const fallbackCopyToClipboard = (text) => {
@@ -208,9 +211,15 @@ useEffect(() => {
     }
   };
 
-  const handleEmailClick = () => setIsEmailModalOpen(true);
-  const handleCloseModal = () => setIsShareModalOpen(false);
-  const handleCloseEmailModal = () => setIsEmailModalOpen(false);
+  const handleEmailClick = () => {
+    setIsModalOverlay(true);
+    setIsEmailModalOpen(true)
+  }
+  const handleCloseModal = () => setIsModalOverlay(false);
+  const handleCloseEmailModal = () =>{
+     setIsModalOverlay(false);
+     setIsEmailModalOpen(false);
+  }
   const handleCancel = () => {
     setShowConfirmSave(false);
   };
@@ -546,7 +555,7 @@ useEffect(() => {
           <IoShareSocial size={20} />
         </button>
       </div>
-      {isShareModalOpen && (
+      {isModalOverlay &&isShareModalOpen && (
         <div
           className={
             isOpenNotes
@@ -609,7 +618,7 @@ useEffect(() => {
         </div>
       )}
 
-      {isEmailModalOpen && (
+      {isModalOverlay && isEmailModalOpen&& (
         <div
           className={
             isOpenNotes ? "lander-email-modal-overlay" : "email-modal-overlay"

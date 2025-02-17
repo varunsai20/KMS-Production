@@ -218,7 +218,7 @@ border: 1px solid #EBEBF3;
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -347,4 +347,15 @@ border: 1px solid #EBEBF3;
 .edit-note__details {
   border-radius: 5px;
   padding: 10px;
+}
+@media (max-width:600px){
+  .email-modal-content{
+    width: 100%;
+  }
+}
+@media (min-width:600px) and (max-width:900px){
+  .email-modal-content{
+
+    width: 50%;
+  }
 }

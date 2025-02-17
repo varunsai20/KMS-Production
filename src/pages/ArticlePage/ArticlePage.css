@@ -1,5 +1,6 @@
 .container {
   /* width: 100%; */
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   /* place-items: center; */
@@ -523,7 +524,7 @@
 }
 
 .notes-icon.closed {
-  background-color: white;
+  /* background-color: white; */
 }
 /* Add custom border-bottom for each row */
 .table-row td {
@@ -690,7 +691,7 @@ td {
   /* gap: 10px; */
   /* width: 235px; */
   height: 1vh;
-  width: 17vh;
+  width: auto;
   transform: matrix(-1, 0, 0, 1, 0, 0);
 }
 .rate:not(:checked) > input {
@@ -731,20 +732,21 @@ td {
   display: none;
   position: fixed;
   bottom: 20px;
-  right: 30px;
+  right: 10px;
   z-index: 99;
   border: none;
   outline: none;
-  background-color: #000;
-  color: white;
+  background-color: white;
+  color: black;
   cursor: pointer;
   padding: 15px;
   border-radius: 10px;
-  font-size: 18px;
+  font-size: 14px;
+  box-shadow: 0px 18px 87px 38px #00000014;
 }
 
 #scrollTopBtn:hover {
-  background-color: #555; /* Add a dark-grey background on hover */
+  background-color: rgba(237, 237, 237, 1);; /* Add a dark-grey background on hover */
 }
 
 /* Styling for the message box */
@@ -922,6 +924,8 @@ td {
 @media (min-width: 0px) and (max-width: 576px){
   .container {
     flex-direction: column;
+    align-items: center;
+    justify-content: center;
     gap: 20px;
     height: 100vh;
   }
@@ -929,8 +933,9 @@ td {
   .content.mobile-view {
     flex-direction: column;
     height: calc(100% - 60px);
-    width: 95%;
-
+    display: flex;
+    align-items: center;
+    gap: 10px;
   }
 
   .bottom-section {
@@ -940,10 +945,16 @@ td {
     left: 10px;
     right: 0;
     background: white;
+    border: 1px solid rgb(204, 204, 204);
+    border-radius: 25px;
     z-index: 1000;
     box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
   }
-
+  .history-pagination-header{
+    width: 90%;
+    margin: auto;
+    border-bottom: 1px solid rgb(204, 204, 204);
+  }
   .bottom-row {
     display: flex;
     justify-content: space-between;
@@ -959,10 +970,14 @@ td {
   }
 
   .right-aside.mobile-aside {
+    opacity: 1 !important;
     width: 100%;
-    position: static;
+    position: sticky;
+    bottom: 0px;
     height: auto;
     display: grid;
+    background: #EBEBF3;
+
   }
 
   .annotate-note {
@@ -980,13 +995,15 @@ td {
     flex-direction: row;
     justify-content: space-around;
     position: static;
+    /* background: #EBEBF3; */
+    /* opacity: 0.5; */
   }
   .article-content-inside{
-    height: 70vh;
+    height: 60vh;
     max-height: 65vh;
   }
   .article-content {
-    width: auto;
+    width: 95%;
   }
   .notes-height {
     width: auto;
@@ -1035,6 +1052,7 @@ td {
   }
   .rate-article-div {
     text-align: center;
+    display: none;
   }
   .rate {
     width: auto;
@@ -1057,7 +1075,7 @@ td {
     list-style: none;
     padding: 0px 15px 0px 15px;
     justify-content: start;
-    margin-top: 5%;
+    margin-top: 1%;
     height: 25vh;
     overflow: auto;
   }
@@ -1118,49 +1136,35 @@ td {
     width: 100%;
     height: 1px;
   }
+  .mobile-popup-menu-renamedelete{
+    position: absolute;
+    gap: 5px;
+    top: 30px;
+    right: 10px;
+    background-color: rgb(255, 255, 255);
+    border: 1px solid rgb(204, 204, 204);
+    border-radius: 5px;
+    box-shadow: rgba(0, 0, 0, 0.2) 0px 2px 8px;
+    z-index: 1000;
+
+  }
+  .notes-icon.closed {
+    background-color: none;
+  }
   #scrollTopBtn {
-    width: 8%;
-    bottom: 145px;
-    background-color: white;
-    color: black;
-    right: 0px;
-    cursor: pointer;
-    padding: 5px;
-    height: 15vh;
-    box-shadow: 0px 18px 87px 38px #00000014;
+        width: 8%;
+        bottom: 145px;
+        background-color: white;
+        color: black;
+        /* right: 0px; */
+        cursor: pointer;
+        padding: 10px 0;
+        /* height: 15vh; */
+        box-shadow: 0px 18px 87px 38px #00000014;
 }
+
   
 }
-
-@media screen and (min-width: 576px) and (max-width: 992px){
-  .container {
-    flex-direction: row;
-  }
-
-  /* .history-pagination {
-    width: 280px;
-    position: fixed;
-    left: 0;
-    top: 60px;
-    bottom: 0;
-    transform: translateX(-100%);
-    transition: transform 0.3s ease;
-  }
-
-  .history-pagination.active {
-    transform: translateX(0);
-  } */
-
-  /* .right-aside {
-    right: 0;
-    width: 50px;
-  } */
-
-}
-@media (min-width: 992px) and (max-width: 1400px){
-
-}
-
 @media (min-width: 576px) and (max-width: 1024px) {
   .container {
     display: flex;
@@ -1174,6 +1178,10 @@ td {
   }
   .article-content {
     width: 100%;
+  }
+  .article-content-inside{
+    height: 70vh;
+    max-height: 70vh;
   }
   .ArticleTitle-Bookmark p {
     font-size: 0.9rem;
@@ -1242,7 +1250,7 @@ td {
     padding: 10px 0px;
   }
   .rate {
-    width: 18vh;
+    width: auto;
   }
   .file-showing {
     height: 6vh;
@@ -1273,16 +1281,4 @@ td {
   }
 
 }
-@media (max-width: 576px) {
-  #scrollTopBtn {
-      right: 0;
-      bottom: 50px;
-  }
-}
-/* @media (min-width: 577px) and (max-width: 768px) {
-  #scrollTopBtn {
-    right: 0;
-    bottom: 50px;
-  }
-} */
 

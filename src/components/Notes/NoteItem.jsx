@@ -18,6 +18,9 @@ const NoteItem = ({
   fiterText,
   isMobileView,
   setFilterText,
+  isModalOverlay,
+  setIsModalOverlay,
+  divHeight
 }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -31,12 +34,14 @@ const NoteItem = ({
 
   const handleEmailClick = (e) => {
     e.stopPropagation(); // Prevent triggering onEdit
+    setIsModalOverlay(true);
     setIsEmailModalOpen(true);
   };
 
   const handleCloseEmailModal = () => {
-    setIsEmailModalOpen(false);
+    setIsModalOverlay(false);
     setEmail(""); // Reset email input when modal is closed
+    setIsEmailModalOpen(false);
   };
 
   // Email sending logic
@@ -97,18 +102,21 @@ const NoteItem = ({
   const initiateDelete = (e) => {
     e.stopPropagation(); // Prevent triggering onEdit
     setIsMenuOpen(false); // Close the menu
-    setShowConfirmDelete(true); // Show confirmation popup
+    setIsModalOverlay(true); // Show confirmation popup
+    setShowConfirmDelete(true);
   };
 
   // Handle confirming the deletion
   const confirmDelete = (e) => {
     e.stopPropagation();
     onDelete(note.note_id);
+    setIsModalOverlay(false);
     setShowConfirmDelete(false);
   };
   // Handle cancelling the deletion
   const cancelDelete = (e) => {
     e.stopPropagation();
+    setIsModalOverlay(false);
     setShowConfirmDelete(false);
   };
   // Handle opening the note
@@ -275,7 +283,7 @@ const NoteItem = ({
           </ul>
         </div>
       )}
-      {showConfirmDelete && (
+      {isModalOverlay && showConfirmDelete && (
         <div className="confirm-overlay">
           <div className="confirm-popup">
             <p className="Saving-note">Delete Notes</p>
@@ -291,13 +299,14 @@ const NoteItem = ({
           </div>
         </div>
       )}
-      {isEmailModalOpen && (
+      {isModalOverlay && isEmailModalOpen && (
         <div
           className={
             isOpenNotes
               ? "noteItem-email-modal-overlay"
               : "noteItem-modal-overlay"
           }
+          style={isOpenNotes ? { height: divHeight } : {}}
           onClick={handleCloseEmailModal}
         >
           <div

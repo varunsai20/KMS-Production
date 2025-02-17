@@ -221,6 +221,9 @@
 #LandingHeader-custom-textfield .MuiInputBase-input {
   padding-left: 30px; /* Adjust this value to increase padding */
 }
+.css-gdh49b-MuiAutocomplete-listbox .MuiAutocomplete-option {
+  min-height: 0px;
+}
 .MuiAutocomplete-root .MuiOutlinedInput-root .MuiAutocomplete-endAdornment {
   margin-right: 13% !important;
 }
@@ -325,7 +328,7 @@
   letter-spacing: 0.02em;
   text-align: center;
 }
-@media (min-width: 250px) and (max-width: 767px) {
+@media (min-width: px) and (max-width: 767px) {
   .MuiPaper-root {
     border-radius: 10px !important;
     text-align: justify;
@@ -341,5 +344,9 @@
   }
   .custom-input {
     padding-right: 70px !important; /* Override padding-right for smaller screens */
+  }
+  .MuiAutocomplete-option {
+    font-size: 0.9rem;
+    min-height: 20px !important;
   }
 }

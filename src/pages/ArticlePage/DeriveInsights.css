@@ -418,7 +418,17 @@ li:hover #menu-dots {
     font-size: 10px;
   }
   .derive-article-content {
-    width: auto;
+    width: 95%;
+  }
+  .streaming-section-derive{
+    height: 60vh;
+    max-height: 60vh;
+  }
+}
+@media (min-width:576px) and (max-width: 1024px){
+  .streaming-section-derive{
+    height: 70vh;
+    max-height: 70vh;
   }
 }
 @media (min-width: 900px) and (max-width: 1366px) {

@@ -2,6 +2,12 @@
   border: 1px solid rgba(235, 235, 243, 1);
   border-radius: 16px 16px 0px 0px;
 }
+.search-tables-header{
+  background: linear-gradient(90deg,rgba(254, 118, 117, 0.7) -21.07%,rgba(204, 129, 185, 0.7) 37.85%,rgba(26, 168, 210, 0.7) 97.5%,rgba(76, 210, 217, 0.7) 151.24%);
+  background-color: white;
+  border-radius: 16px 16px 0 0;
+  padding: 5px;
+}
 .search-tables p {
   font-family: Manrope;
   font-size: 14px;
@@ -32,9 +38,9 @@
   background-color: rgba(235, 244, 255, 1);
 }
 
-.search-annotate-icon.closed {
+/* .search-annotate-icon.closed {
   background-color: white;
-}
+} */
 
 .search-notes-icon.open {
   background-color: rgba(235, 244, 255, 1);
@@ -128,5 +134,10 @@ td {
 @media (min-width: 900px) and (max-width: 1366px) {
   .search-table-head th {
     font-size: 12px;
+  }
+}
+@media (min-width: 0px) and (max-width: 576px) {
+  .search-annotate-icon.closed {
+    background-color: none;
   }
 }

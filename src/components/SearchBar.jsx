@@ -10,6 +10,7 @@ import { useDispatch } from "react-redux";
 import { setSearchResults, clearSearchResults } from "../redux/actions/actions";
 import { apiService } from "../assets/api/apiService";
 
+
 const SearchBar = ({
   renderInputContainer,
   className,
@@ -129,107 +130,6 @@ const SearchBar = ({
   };
   return (
     <>
-      {/* {renderInputContainer ? (
-        <div style={{display:"none"}}>
-
-        <div className="input-container" style={{ outline: "none" }}>
-          <img src={Search} alt="search-icon" className="search-icon" />
-        </div>
-          <Autocomplete
-            freeSolo
-            open
-            Open
-            options={filteredResults} // Show filtered suggestions
-            onInputChange={handleInputChange} // Update input value dynamically as the user types
-            onChange={handleOptionSelect}
-            inputValue={searchTerm} // Reflect the search term (typed or selected)
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                placeholder="Type to Search"
-                variant="outlined"
-                fullWidth
-                onKeyDown={handleKeyDown} // Handle Enter key press inside the text field
-                id="LandingHeader-custom-textfield"
-                style={{ marginLeft: "3%" }}
-                sx={{
-                  // Customize input styles using sx prop
-                  "& .MuiOutlinedInput-root": {
-                    borderRadius: "54px",
-                    background: "#fff",
-                    fontFamily: "Axiforma !important",
-                    fontSize: "16px !important",
-                    fontWeight: "500 !important",
-                    marginLeft: "3%",
-                    // Remove outline and shadow on focus or hover
-                    "& fieldset": {
-                      borderColor: "transparent",
-                    },
-                    "&:hover fieldset": {
-                      borderColor: "transparent",
-                    },
-                    "&.Mui-focused fieldset": {
-                      borderColor: "transparent",
-                    },
-                  },
-                  // Remove input outline on hover and focus
-                  "& .MuiOutlinedInput-input": {
-                    padding: "8px 100px 8px 40px", // Customize padding
-                    outline: "none",
-                  },
-                }}
-                InputProps={{
-                  ...params.InputProps,
-                  className: "custom-input",
-                  style: {
-                    padding: "8px 100px 8px 40px",
-                    borderRadius: "54px",
-                    background: "#fff",
-                    fontFamily: "Axiforma !important",
-                    fontSize: "16px !important",
-                    fontWeight: "500 !important",
-                  },
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      {searchTerm && (
-                        <span
-                          onClick={handleClear}
-                          style={{ fontWeight: 600, cursor: "pointer" }}
-                        >
-                          <svg
-                            style={{
-                              width: "20px",
-                              height: "20px",
-                              display: "block",
-                              cursor: "pointer",
-                            }}
-                            focusable="false"
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 24 24"
-                          >
-                            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path>
-                          </svg>
-                        </span>
-                      )}
-                    </InputAdornment>
-                  ),
-                }}
-                InputLabelProps={{
-                  style: { left: "30px" },
-                }}
-              />
-            )}
-            className="autocomplete"
-          />
-
-          <Button
-            className="search-button"
-            onClick={handleButtonClick}
-            loading={loading}
-            text="Search"
-          />
-        </div>
-      ) : ( */}
         <div
           className={`Search-Bar ${className}`}
           style={{ width: `${landingWidth}`, zIndex: `${zIndex}` }}

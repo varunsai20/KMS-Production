@@ -570,7 +570,6 @@ const ArticleContent = ({
 
   useEffect(() => {
     isStreamDoneRef.current = isStreamDone; // Sync the ref with the state
-    console.log(`isStreamDone changed: ${isStreamDone}`);
   }, [isStreamDone]);
 
   const handleAskClick = async () => {
@@ -762,19 +761,15 @@ const ArticleContent = ({
         // Update localStorage with the remaining session IDs
         localStorage.setItem("sessionIds", JSON.stringify(sessionIds));
     
-        console.log(`Navigated back. Current session ID removed: ${currentSessionId}`);
-        console.log(`New active session ID set: ${previousSessionId}`);
-      } else if (sessionIds.length === 1) {
+              } else if (sessionIds.length === 1) {
         // If there's only one session, clear sessionStorage and localStorage for session_id
         sessionStorage.removeItem("session_id");
         localStorage.removeItem("sessionIds");
     
-        console.log("Last session ID removed. No more sessions available.");
       } else {
         // If there are no session IDs in localStorage
         setActiveSessionId(null)
         sessionStorage.removeItem("session_id");
-        console.log("No session IDs found. Cleared session storage.");
       }
     
       setClickedBack(true);

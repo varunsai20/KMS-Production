@@ -784,6 +784,7 @@
   height: 46%;
 }
 .noteItem-email-modal-overlay {
+  background: rgba(58, 58, 64, 0.6);
   position: fixed;
   width: 100%;
   top: 30%;
@@ -896,7 +897,7 @@
 
   .Landing-Features {
     /* display: grid; */
-    width: 90%;
+    /* width: 90%; */
     flex-shrink: 0;
   }
 .Landingpage-SearchBar {
@@ -909,7 +910,6 @@
     text-align: center;
     background: #fff;
     border-radius: 16px;
-    padding: 20px;
     transition: transform 0.3s ease-in-out;
   }
 
@@ -918,15 +918,16 @@
   }
 
   .WhyInfer-points {
-    display: flex;
+    display: grid;
     gap: 10px;
-    width: 85%;
+    /* width: 85%; */
     margin: 20px auto;
   }
   .LoggedinFeatures {
     display: grid;
     width: 100%;
     grid-template-columns: repeat(4, 1fr);
+    justify-content: center;
     gap: 20px;
   }
 
@@ -952,6 +953,10 @@
     font-size: 0.9rem;
     color: #666;
   }
+  .citation-modal {
+    height: 50vh;
+    width: 60%;
+}
 
   .Footer {
     width: 100%;
@@ -961,6 +966,9 @@
 }
 
 @media (min-width: 0px) and (max-width: 576px) {
+  .Landing-main-content{
+    width: 100%;
+  }
   .inferai-logo {
     /* width: 35vw; */
   }
@@ -981,7 +989,9 @@
   .Landing-Header {
     width: 100%;
     flex-shrink: 0;
+    margin-top: 1%;
   }
+
 
   .Landing-Content {
     display: flex;
@@ -1002,8 +1012,9 @@
     width: 80%;
   }
   .Landing-Features {
-    width: 90%;
+    /* width: 90%; */
     flex-shrink: 0;
+    padding: 0;
   }
   .Landing-Welcome-desc {
     font-size: 0.7rem;
@@ -1016,10 +1027,17 @@
     text-align: center;
     background: #fff;
     border-radius: 16px;
-    padding: 20px;
     transition: transform 0.3s ease-in-out;
   }
-
+  .Feature-Item h4{
+    font-size: 14px;
+  }
+  .Feature-Item span{
+    font-size: 12px;
+  }
+  .Feature-Item a{
+    font-size: 12px;
+  }
   .Feature-Item:hover {
     transform: translateY(-5px);
   }
@@ -1035,6 +1053,7 @@
     display: grid;
     width: 100%;
     grid-template-columns: repeat(2, 1fr);
+    justify-content: center;
     gap: 20px;
   }
 
@@ -1072,7 +1091,7 @@
   .social-icons {
     display: flex;
     justify-content: space-evenly;
-    margin: 4% 0%;
+    margin: 1% 0%;
   }
 
   .Footer {

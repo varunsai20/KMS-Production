@@ -81,7 +81,7 @@
     transform: rotate(1turn);
   }
 }
-@media (min-width: 250px) and (max-width: 767px) {
+@media (min-width: 0px) and (max-width: 767px) {
   .login-btn,
   .logout-btn {
     padding: 5px 10px;

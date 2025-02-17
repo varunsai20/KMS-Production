@@ -34,6 +34,18 @@ const ArticleLayout = () => {
   const navigate = useNavigate();
   const { pmid } = useParams();
   const prevPathRef = useRef(location.pathname);
+  const [isArticlePage, setIsArticlePage] = useState(false);
+  console.log(isArticlePage)
+  useEffect(() => {
+    // Regular Expression to match "/article/{source:id}"
+    const articlePattern = /^\/article\/content\/[^/]+:[^/]+$/;
+  
+    if (articlePattern.test(location.pathname)) {
+      setIsArticlePage(true);
+    } else {
+      setIsArticlePage(false);
+    }
+  }, [location.pathname]); 
   const dropdownRef = useRef(null);
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -46,6 +58,7 @@ const ArticleLayout = () => {
   const [showConfirmIcon, setShowConfirmIcon] = useState(false);
   const [savedText, setSavedText] = useState("");
   const [openNotes, setOpenNotes] = useState(false);
+  const[isModalOverlay,setIsModalOverlay] = useState(false);
   const [type, id1] = pmid ? pmid.split(":") : "";
   const id = Number(id1);
   const displayMessage = isLoggedIn
@@ -66,6 +79,7 @@ const ArticleLayout = () => {
   );
   const annotateRef = useRef(null);
   const notesRef = useRef(null);
+  const [query,setQuery] = useState("");
   const [isStreamDone, setIsStreamDone] = useState(false);
   const[isHistoryOpen, setIsHistoryOpen] = useState(true);
   const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth < 992);
@@ -75,6 +89,9 @@ const ArticleLayout = () => {
   
 
   useEffect(() => {
+    if(isMobile || isTablet){
+      setIsHistoryOpen(false);
+    }
     localStorage.removeItem("session_id");
     setActiveSessionId(null);
   }, []);
@@ -109,11 +126,16 @@ const ArticleLayout = () => {
   useEffect(() => {
     const handleResize = () => {
       const width = window.innerWidth;
-      setIsMobile(width <= 576);
-      setIsTablet(width > 576 && width < 992);
+      const isNowMobile = width <= 576;
+      const isNowTablet = width > 576 && width < 992;
       setIsSmallScreen(width < 992);
-  
-      if (width > 992) {
+      setIsMobile(isNowMobile);
+      setIsTablet(isNowTablet);
+      // Set `isHistoryOpen` to false for mobile or tablet views
+      if (isNowMobile || isNowTablet) {
+       
+        setIsHistoryOpen(false);
+      } else {
         setIsHistoryOpen(true);
       }
     };
@@ -133,9 +155,11 @@ const ArticleLayout = () => {
   };
 
   const handleOpenChat = () => {
+    setUploadedFile(null)
     localStorage.removeItem("session_id");
     sessionStorage.removeItem("session_id");
     setAnnotateData("");
+    setQuery("")
     setActiveSessionId(null);
     localStorage.setItem("chatHistory", JSON.stringify([]));
     dispatch(setDeriveInsights(true)); // Set deriveInsights state in Redux
@@ -286,7 +310,8 @@ const ArticleLayout = () => {
     setIsStreamDone(true);
     localStorage.removeItem("chatHistory");
     localStorage.removeItem("session_id");
-  
+    setQuery("");
+    setUploadedFile(null)
     try {
       // Fetch the conversation data
       const conversationResponse = await apiService.fetchChatConversation(
@@ -433,7 +458,6 @@ const ArticleLayout = () => {
   const [fileUrl, setFileUrl] = useState("");
   const [annotateFile, setAnnotateFile] = useState(false);
   const [isCitationsOpen, setIsCitationsOpen] = useState(false);
-  console.log(fileUrl)
   const handleOpenCitations = () => {
     if (!uploadedFile) {
       return;
@@ -442,23 +466,16 @@ const ArticleLayout = () => {
   };
   const handleAnnotate = () => {
     // If annotateData is present, set openAnnotate to false and return
-    if (annotateData) {
-      setOpenAnnotate((prevOpenAnnotate) => !prevOpenAnnotate);
-      return;
-    }
-    if (isSmallScreen) {
-      console.log("open notes",openNotes);
-      setOpenNotes(false);
-      setIsHistoryOpen(false); // Close History only for small screens
-    }
+    const isOnArticleDerive = location.pathname === "/article/derive"; // Check if user is on /article/derive
 
-    const matchingIdExists =
-      annotateData && Object.prototype.hasOwnProperty.call(annotateData, id);
-    let chatHistory = [];
-    const chatHistoryRaw = localStorage.getItem("chatHistory");
-    chatHistory = chatHistoryRaw ? JSON.parse(chatHistoryRaw) : [];
-    const latestFileEntry = chatHistory.filter((entry) => entry.file_url).pop();
+  // Retrieve chat history to find the latest file entry
+  let chatHistory = [];
+  const chatHistoryRaw = localStorage.getItem("chatHistory");
+  chatHistory = chatHistoryRaw ? JSON.parse(chatHistoryRaw) : [];
+  const latestFileEntry = chatHistory.filter((entry) => entry.file_url).pop(); // Find latest file entry
 
+  if (isOnArticleDerive) {
+    // If on /article/derive, check uploaded file conditions
     if (uploadedFile) {
       handleAnnotateUploadedFile(); // Handle uploaded file annotation
       return;
@@ -469,6 +486,25 @@ const ArticleLayout = () => {
       handleAnnotateFile(latestFileEntry.file_url);
       return;
     }
+  } else {
+    // If NOT on /article/derive, check normal annotation behavior
+
+    if (!isSmallScreen && annotateData) {
+      setOpenAnnotate((prevOpenAnnotate) => !prevOpenAnnotate);
+      return;
+    }
+
+    if (annotateData && isSmallScreen) {
+      setOpenNotes(false);
+    }
+
+    if (isSmallScreen) {
+      setOpenNotes(false);
+      setIsHistoryOpen(false);
+    }
+
+    const matchingIdExists =
+      annotateData && Object.prototype.hasOwnProperty.call(annotateData, id);
 
     if (annotateData && annotateData.length > 0) {
       setOpenAnnotate(true);
@@ -480,6 +516,7 @@ const ArticleLayout = () => {
     } else {
       setOpenAnnotate((prevOpenAnnotate) => !prevOpenAnnotate);
     }
+  }
   };
 
   const handleAnnotateFile = async () => {
@@ -502,8 +539,6 @@ const ArticleLayout = () => {
   const handleAnnotateClick = async () => {
     // Define the request body according to source and id
     let requestBody = {};
-    console.log(type)
-    console.log(type);
 if (id) {
   switch (type) {
     case "pubmed":
@@ -538,10 +573,8 @@ if (id) {
       setAnnotateLoading(false);
     }
   };
-  console.log("annoateData: ", annotateData)
 
   const handleAnnotateUploadedFile = async () => {
-    console.log(uploadedFile)
     if (!uploadedFile) return; // Ensure uploadedFile exists before proceeding
 
     setAnnotateLoading(true);
@@ -582,7 +615,6 @@ if (id) {
       setOpenNotes((prevOpenNotes) => !prevOpenNotes);
     }
     if (isSmallScreen) {
-      console.log("open annotate",openAnnotate);
       setOpenAnnotate(false);
       setIsHistoryOpen(false); 
     }
@@ -605,10 +637,11 @@ if (id) {
       });
     }
   }
+ 
   return (
     <>
       <div className="container">
-        <SearchNavbar containerRef={null} isModalOpen={isModalOpen} />
+        <SearchNavbar  containerRef={null} isModalOverlay={isModalOverlay} />
 
          
       <div className={`content ${isMobile ? 'mobile-view' : ''}`}>
@@ -692,7 +725,7 @@ if (id) {
                       ) : (
                         <span>
                           {mappedTitle.slice(0, 25)}
-                          {mappedTitle.length > 25 ? "" : ""}
+                          {mappedTitle.length > 25 ? "..." : ""}
                         </span>
                       )}
                       <div
@@ -718,9 +751,8 @@ if (id) {
                           <div
                             ref={dropdownRef}
                             className="popup-menu-renamedelete"
-                            style={isHistoryOpen ? {
-                              transform: `translate(${popupPosition.x-100}px, ${popupPosition.y+200}px)`,
-                            }:{ transform: `translate(${popupPosition.x-100}px, ${popupPosition.y+2000}px)`}}
+                            style={ {
+                              transform: `translate(${popupPosition.x}px, ${popupPosition.y}px)`}}
                           >
                             <div
                               className="popup-rename"
@@ -780,6 +812,8 @@ if (id) {
               isStreamDoneRef={isStreamDoneRef}
               setClickedBack={setClickedBack}
               setAnnotateData={setAnnotateData}
+              query={query}
+              setQuery={setQuery}
             />
           ) : (
             <ArticleContent
@@ -800,7 +834,7 @@ if (id) {
               setIsModalOpen={setIsModalOpen}
             />
           )}
-           <div className={`bottom-section ${isMobile ? "mobile-bottom" : ""}`}>
+           <div className={`${isHistoryOpen&&"bottom-section"} ${isMobile&&isHistoryOpen && "mobile-bottom"}`}>
             {/* Mobile history panel */}
            
             {isMobile && isHistoryOpen && (
@@ -871,7 +905,7 @@ if (id) {
                       ) : (
                         <span>
                           {mappedTitle.slice(0, 25)}
-                          {mappedTitle.length > 25 ? "" : ""}
+                          {mappedTitle.length > 25 ? "..." : ""}
                         </span>
                       )}
                       <div
@@ -896,10 +930,8 @@ if (id) {
                         {popupSessionId === session.session_id && (
                           <div
                             ref={dropdownRef}
-                            className="popup-menu-renamedelete"
-                            style={{
-                              transform: `translate(${popupPosition.x}px, ${popupPosition.y}px)`,
-                            }}
+                            className="mobile-popup-menu-renamedelete"
+                            onClick={(e)=>e.stopPropagation()}
                           >
                             <div
                               className="popup-rename"
@@ -954,7 +986,7 @@ if (id) {
               style={{
                 height: "55vh",
                 overflowY: "hidden",
-
+                
                 borderRadius:
                   openAnnotate && openNotes ? "0px 0px 16px 16px" : "20px",
               }}
@@ -1001,7 +1033,8 @@ if (id) {
                   //   height: `${notesHeight}vh`,
                   // }}
                 >
-                  <Notes selectedText={savedText} notesHeight={notesHeight} annotateHeight={annotateHeight} isOpenAnnotate={openAnnotate}/>
+                  <Notes selectedText={savedText} notesHeight={notesHeight} annotateHeight={annotateHeight} isOpenAnnotate={openAnnotate}
+                  isModalOverlay={isModalOverlay} setIsModalOverlay={setIsModalOverlay}/>
                   <div
                     className="notes-line1"
                     onMouseDown={handleNotesResize}
@@ -1017,7 +1050,7 @@ if (id) {
                 </div>
               )}
             </div>
-            <div className="icons-group">
+            <div className="icons-group" >
               {isMobile &&(
             <button className="botton-toggle-history-btn" onClick={toggleHistory}>
             {isHistoryOpen ? <CgClose color="#1A82FF" size={20}/> : <AiOutlineMenu color="#1A82FF" size={20}/>}
@@ -1035,9 +1068,9 @@ if (id) {
                   opacity:
                     (uploadedFile && deriveInsights) ||
                     (annotateData && annotateData.length > 0) ||
-                    activeSessionId
+                    activeSessionId || isArticlePage
                       ? 1
-                      : 1,
+                      : 0.5,
                   borderRadius: !deriveInsights ? "8px 8px 0 0" : "8px 8px 0 0",
                 }}
                 title={isLoggedIn ? "annotate the article" : displayMessage}
@@ -1089,10 +1122,10 @@ if (id) {
           </div>
         </div>
       </div>
-      <div className="ScrollTop">
+      <div className="ScrollTop" style={{display: isMobile && (openAnnotate || openNotes) ? "none" : undefined}}>
         <button onClick={scrollToTop} id="scrollTopBtn" title="Go to top">
           <FontAwesomeIcon icon={faAnglesUp} />
-          Back to Top
+          
         </button>
       </div>
     </>

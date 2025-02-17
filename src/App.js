@@ -24,10 +24,7 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
 import { setNavigate } from "./helpers/navigationHelper";
-
 import Error500 from "./utils/Error500";
-// import ErrorBoundary from "./utils/ErrorBoundry";
-
 import ArticleLayout from "./pages/ArticleDerive/ArticleLayout";
 import ArticleContent from "./pages/ArticleDerive/ArticleContent";
 import ArticleDerive from "./pages/ArticleDerive/ArticleDerive";
@@ -57,7 +54,7 @@ function AppRoutes() {
         <Route path="/" element={<Lander />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUpForm />} />
-        <Route path="/search" element={<SearchResults />} />
+        <Route path="/search" element={location.state ? <SearchResults /> : <Navigate to="/" replace />} />
         <Route path="/server-error" element={<Error500 />} />
 
         {/* Restricted Routes */}
