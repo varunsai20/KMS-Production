@@ -693,9 +693,25 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   }, []);
 
   const searchResults = useSelector((state) => state.search.searchResults);
-  useEffect(() => {
-    if (searchResults) {
-      const pmidList = searchResults.articles.map((article) => {
+
+useEffect(() => {
+  if (searchResults) {
+    let articles = [];
+
+    try {
+      // Check if searchResults.body exists and is a string (needs parsing)
+      if (searchResults.body && typeof searchResults.body === "string") {
+        const parsedBody = JSON.parse(searchResults.body);
+        articles = parsedBody.articles || [];
+      } else {
+        articles = searchResults.articles || [];
+      }
+    } catch (error) {
+      console.error("Error parsing searchResults body:", error);
+    }
+
+    if (Array.isArray(articles)) {
+      const pmidList = articles.map((article) => {
         if (article.source === "BioRxiv") {
           return `BioRxiv_${article.bioRxiv_id}`;
         } else if (article.source === "Public Library of Science (PLOS)") {
@@ -704,17 +720,23 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
           return `PubMed_${article.pmid}`;
         }
       });
+
       sessionStorage.setItem("completePMID", JSON.stringify(pmidList));
       setCompletePMID(pmidList);
     } else {
-      const storedData = sessionStorage.getItem("completePMID");
-
-      if (storedData) {
-        const parsedData = JSON.parse(storedData);
-        setCompletePMID(parsedData);
-      }
+      console.warn("Articles is not an array:", articles);
     }
-  }, [searchResults]);
+  } else {
+    const storedData = sessionStorage.getItem("completePMID");
+
+    if (storedData) {
+      const parsedData = JSON.parse(storedData);
+      setCompletePMID(parsedData);
+    }
+  }
+}, [searchResults]);
+
+console.log("searchResults", searchResults);
 
   useEffect(() => {
     // Clear session storage for chatHistory when the location changes
@@ -899,8 +921,13 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
     }
   };
   const handleSendEmail = async () => {
+    const mailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (!email) {
       showErrorToast("Please enter an email address.");
+      return;
+    }
+    if(!mailRegex.test(email)){
+      showErrorToast("Please enter a valid email address.");
       return;
     }
 
@@ -2384,7 +2411,7 @@ useEffect(() => {
                                         onClick={handleSendEmail}
                                         style={{
                                           borderRadius: "30px",
-                                          width: isMobileView?"":"10%",
+                                          width: isMobileView?"":"",
                                           padding: isMobileView&&"10px 20px"
                                           // margin: "auto",
                                         }}

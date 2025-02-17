@@ -92,9 +92,10 @@ const SearchBar = ({
       }, 60000); // 60 seconds
 
       apiService
-        .searchTerm(searchQuery, token)
+        .searchTerm(searchQuery,1)
         .then((response) => {
           const data = response.data;
+          console.log("article data",data);
           setResults(data);
           dispatch(setSearchResults(data));
           clearTimeout(timeoutId);
