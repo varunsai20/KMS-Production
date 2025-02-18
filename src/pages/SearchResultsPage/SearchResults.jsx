@@ -37,7 +37,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   const params = new URLSearchParams(location.search);
   const searchTerm = params.get("query");
   useEffect(()=>{
-    console.log("called")
     if(location.state===null){
     // navigate("/")
   }
@@ -45,7 +44,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
 const { data } = location.state || { data: [] };
 const page = params.get("page");
 useEffect(() => {
-  console.log("called");
 
   if (!searchTerm) {
     navigate("/"); // Redirect if no search term
@@ -53,7 +51,6 @@ useEffect(() => {
   }
 
   if (!location.state) {
-    console.log("handled");
     handleFetchResults(searchTerm, page);
   }
 }, [searchTerm, location.state]); // ✅ Runs only when `searchTerm` or `location.state` changes
@@ -96,9 +93,7 @@ const handleFetchResults = (query, pageNumber) => {
     });
 };
 const searchResults = useSelector((state) => state.search.searchResults);
-  console.log(location.state)
-  console.log(data)
-  console.log(typeof(data))
+  console.log(searchResults)
   const { user } = useSelector((state) => state.auth);
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
   const displayIfLoggedIn = isLoggedIn ? null : "none";
@@ -203,8 +198,7 @@ const searchResults = useSelector((state) => state.search.searchResults);
   const [collectionAction, setCollectionAction] = useState("existing"); // Tracks which radio button is selected
   const [selectedCollection, setSelectedCollection] = useState("favorites");
   const [newCollectionName, setNewCollectionName] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageInput, setPageInput] = useState(1);
+
   const [selectedDateRange, setSelectedDateRange] = useState("");
   const [customStartDate, setCustomStartDate] = useState("");
   const [customEndDate, setCustomEndDate] = useState("");
@@ -390,7 +384,7 @@ const searchResults = useSelector((state) => state.search.searchResults);
     // Initialize with original data on component load
     setSortedData(searchResults?.body.articles || []);
   }, [searchResults]);
-
+  console.log(sortedData)
   let sessionDataCache = null; // Cache for session storage data
 
   // Utility function to get similarity score from article or session storage
@@ -429,36 +423,59 @@ const searchResults = useSelector((state) => state.search.searchResults);
   }, [data?.body?.articles, getSimilarityScore]); // ✅ Corrected dependency array
   
 
-  useEffect(() => {
-    // Check for updates in sortedData and reset pagination if there's a change
-    setCurrentPage(1);
-    setPageInput(1);
-    // sessionStorage.setItem("currentPage", 1);
-  }, [location.state?.data]); // Reset pagination only when sortedData changes
+  const initialPage = parseInt(params.get("page")) || 1;
 
+  const [currentPage, setCurrentPage] = useState(initialPage);
+  const [pageInput, setPageInput] = useState(initialPage);
+
+  // Fetch stored page from session storage (if exists)
   useEffect(() => {
-    // Retrieve the stored page number from sessionStorage when the component first loads
     const storedPage = sessionStorage.getItem("currentPage");
     if (storedPage) {
-      setCurrentPage(Number(storedPage));
-      setPageInput(Number(storedPage));
+      setCurrentPage(parseInt(storedPage));
+      setPageInput(parseInt(storedPage));
     }
-  }, []); // This effect runs only once on component mount
+  }, []);
 
+  // Fetch articles dynamically when `currentPage` changes
+  useEffect(() => {
+    if (currentPage >= 1) {
+      fetchMoreArticles(currentPage);
+    }
+  }, [currentPage]);
+
+  // Compute pagination indices
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
-  const paginatedArticles = sortedData.slice(startIndex, endIndex);
-
+  const paginatedArticles = sortedData;
+  console.log(paginatedArticles)
   const handlePageChange = (newPage) => {
-    if (
-      newPage > 0 &&
-      newPage <= Math.ceil(sortedData.length / ITEMS_PER_PAGE)
-    ) {
+    const totalPages = 1000;
+
+    if (newPage > 0 && newPage <= totalPages) {
       setCurrentPage(newPage);
       setPageInput(newPage);
       sessionStorage.setItem("currentPage", newPage);
+      navigate(`/search?query=${encodeURIComponent(searchTerm)}&page=${newPage}`); // ✅ Update URL Parameter
       scrollToTop();
     }
+  };
+
+  const fetchMoreArticles = (newPage) => {
+    apiService
+      .searchTerm(searchTerm, newPage) // ✅ Pass the updated page number to the API
+      .then((response) => {
+        const newArticles = response.data.articles;
+        if (newArticles.length > 0) {
+          setSortedData((prevData) => [...prevData, ...newArticles]); // Append new articles
+          setCurrentPage(newPage); // ✅ Update the page state
+          sessionStorage.setItem("currentPage", newPage); // ✅ Store updated page in session
+          navigate(`/search?query=${encodeURIComponent(searchTerm)}&page=${newPage}`); // ✅ Update URL
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching more articles:", error);
+      });
   };
 
   const handleAnnotate = () => {
@@ -904,7 +921,7 @@ const searchResults = useSelector((state) => state.search.searchResults);
   // Calculate total pages
   //const totalPages = Math.ceil(data.articles.length / ITEMS_PER_PAGE);
   const totalPages =
-    10000
+    1000
 
   const handleCheckboxChange = (pmid) => {
     setSelectedArticles(
@@ -2003,10 +2020,8 @@ useEffect(() => {
                 <div className="searchresults-list">
                   {paginatedArticles.map((result, index) => {
                     let similarityScore = result.final_score;
-                    console.log(similarityScore)
                     if (!similarityScore && searchResults) {
                       const articles = searchResults.body.articles;
-                      console.log(articles)
                       // Find the article with the matching pmid in Redux store and get similarity score
                       const matchingArticle = articles.find(
                         (article) => article.pmid === result.pmid
