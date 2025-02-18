@@ -5,7 +5,7 @@ import Footer from "../../components/Footer-New";
 import SearchBar from "../../components/SearchBar";
 import SearchIcon from "../../assets/images/Search.svg";
 import Loading from "../../components/Loading";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import Annotation from "../../components/Annotaions";
 import { useLocation, useNavigate, Link } from "react-router-dom";
 import annotate from "../../assets/images/task-square.svg";
@@ -26,17 +26,79 @@ import filtersIcon from "../../assets/images/001-edit 1.svg"
 import homeIcon from "../../assets/images/homeIcon.svg"
 import shareIcon from "../../assets/images/ShareIcon.svg"
 import { PiShareNetwork } from "react-icons/pi";
+import { setSearchResults, clearSearchResults } from "../../redux/actions/actions";
+
 import SearchNavbar from "../../components/SearchNavbar";
 const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   const location = useLocation(); // Access the passed state
-  const ITEMS_PER_PAGE = 10;
+  const dispatch = useDispatch();
+  const ITEMS_PER_PAGE = 35;
   const navigate = useNavigate();
+  const params = new URLSearchParams(location.search);
+  const searchTerm = params.get("query");
   useEffect(()=>{
+    console.log("called")
     if(location.state===null){
-    navigate("/")
+    // navigate("/")
   }
 },[])
-  const { data } = location.state || { data: [] };
+const { data } = location.state || { data: [] };
+const page = params.get("page");
+useEffect(() => {
+  console.log("called");
+
+  if (!searchTerm) {
+    navigate("/"); // Redirect if no search term
+    return;
+  }
+
+  if (!location.state) {
+    console.log("handled");
+    handleFetchResults(searchTerm, page);
+  }
+}, [searchTerm, location.state]); // ✅ Runs only when `searchTerm` or `location.state` changes
+
+const handleFetchResults = (query, pageNumber) => {
+  dispatch(clearSearchResults());
+  sessionStorage.removeItem("ResultData");
+
+  if (!query) {
+    return;
+  }
+
+  setLoading(true);
+  const timeoutId = setTimeout(() => {
+    setLoading(false);
+    navigate(`/search?query=${encodeURIComponent(query)}&page=${pageNumber}`, { state: { data: [] } });
+  }, 60000); // 60 seconds timeout
+
+  apiService
+    .searchTerm(query, pageNumber)
+    .then((response) => {
+      const data = response.data;
+      setLoading(false);
+      dispatch(setSearchResults(data));
+      clearTimeout(timeoutId);
+
+      navigate(`/search?query=${encodeURIComponent(query)}&page=${pageNumber}`, { state: { data } });
+    })
+    .catch((error) => {
+      clearTimeout(timeoutId);
+      setLoading(false);
+
+      if (error.response && [500, 404, 422].includes(error.response.status)) {
+        navigate("/server-error");
+      } else {
+        navigate(`/search?query=${encodeURIComponent(query)}&page=${pageNumber}`, { state: { data: [] } });
+      }
+
+      console.error("Error fetching data from the API", error);
+    });
+};
+const searchResults = useSelector((state) => state.search.searchResults);
+  console.log(location.state)
+  console.log(data)
+  console.log(typeof(data))
   const { user } = useSelector((state) => state.auth);
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
   const displayIfLoggedIn = isLoggedIn ? null : "none";
@@ -45,7 +107,6 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
     : "This feature is available for subscribed users.";
   const user_id = user?.user_id;
   const token = useSelector((state) => state.auth.access_token);
-  const searchTerm = sessionStorage.getItem("SearchTerm");
   //const navigate = useNavigate();
   const contentRightRef = useRef(null);
   const [result, setResults] = useState();
@@ -238,9 +299,18 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   const [sortedData, setSortedData] = useState([]); // State to store sorted data
   const [selectedSort, setSelectedSort] = useState("best_match");
   const parseDate = (dateString) => {
+    if (!dateString) return new Date(0); // Fallback for missing date (earliest possible date)
+  
     const [day, month, year] = dateString.split("-");
-    const monthIndex = new Date(Date.parse(`${month} 1, ${year}`)).getMonth(); // Get month index from the string (e.g., "Jun" -> 5)
-    return new Date(year, monthIndex, day); // Return a Date object
+    
+    if (!day || !month || !year) {
+      console.warn("Invalid date format:", dateString);
+      return new Date(0); // Return earliest date if format is incorrect
+    }
+  
+    const monthIndex = new Date(Date.parse(`${month} 1, ${year}`)).getMonth(); // Get month index (e.g., "Jan" -> 0)
+  
+    return new Date(year, monthIndex, day); // Convert to a Date object
   };
 
   const scrollToTop = () => {
@@ -270,13 +340,15 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   }, []);
 
   const sortedPublicationData =
-    data && data.articles
-      ? [...data.articles].sort((a, b) => {
-          const dateA = parseDate(a.publication_date);
-          const dateB = parseDate(b.publication_date);
+  data?.body?.articles
+    ? [...data.body.articles]
+        .filter((article) => article.date) // Filter out articles with null/undefined dates
+        .sort((a, b) => {
+          const dateA = parseDate(a.date);
+          const dateB = parseDate(b.date);
           return dateB - dateA; // Sort in descending order (newest first)
         })
-      : [];
+    : [];
 
   useEffect(() => {
     // If the selected sort is neither "publication_date" nor "Ratings", default to "best_match"
@@ -286,16 +358,18 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
   }, [selectedSort]);
 
   const sortedRatingData = useMemo(() => {
-    if (!data || !data.articles || !Array.isArray(data.articles)) {
-      return []; // Return an empty array if data or data.articles is missing or not an array
+    if (!data?.body?.articles || !Array.isArray(data.body.articles)) {
+      return []; // ✅ Return an empty array if data or articles is missing
     }
-
-    return [...data.articles].sort((a, b) => {
-      const ratingA = getRatingForArticle(a.bioRxiv_id);
-      const ratingB = getRatingForArticle(b.bioRxiv_id);
-      return ratingB - ratingA; // Sort in descending order by rating
+  
+    return [...data.body.articles].sort((a, b) => {
+      const ratingA = getRatingForArticle(a.bioRxiv_id || a.plos_id || a.pmid || 0);
+      const ratingB = getRatingForArticle(b.bioRxiv_id || b.plos_id || b.pmid || 0);
+      return ratingB - ratingA; // ✅ Sort in descending order by rating
     });
-  }, [data?.articles, getRatingForArticle]);
+  }, [data?.body?.articles, getRatingForArticle]); // ✅ Corrected dependency
+  
+  
 
   // Function to handle sorting based on selected option
   const handleSortChange = (e) => {
@@ -314,14 +388,14 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
 
   useEffect(() => {
     // Initialize with original data on component load
-    setSortedData(data.articles || []);
-  }, [data]);
+    setSortedData(searchResults?.body.articles || []);
+  }, [searchResults]);
 
   let sessionDataCache = null; // Cache for session storage data
 
   // Utility function to get similarity score from article or session storage
   const getSimilarityScore = (article) => {
-    let similarityScore = article.similarity_score;
+    let similarityScore = article.final_score;
 
     // If similarity score is not present in the article, try to retrieve it from session storage
     if (!similarityScore) {
@@ -344,22 +418,23 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
 
   // Memoized sorting based on similarity score
   const sortedSimilarityData = useMemo(() => {
-    if (!data || !data.articles || !Array.isArray(data.articles)) {
-      return []; // Return an empty array if data or data.articles is invalid
+    if (!data?.body?.articles || !Array.isArray(data.body.articles)) {
+      return []; // ✅ Return an empty array if data or articles is missing
     }
-
-    // Sort the data in descending order by similarity score
-    return [...data.articles].sort(
+  
+    // ✅ Sort the data in descending order by similarity score
+    return [...data.body.articles].sort(
       (a, b) => getSimilarityScore(b) - getSimilarityScore(a)
     );
-  }, [data?.articles, getSimilarityScore]);
+  }, [data?.body?.articles, getSimilarityScore]); // ✅ Corrected dependency array
+  
 
   useEffect(() => {
     // Check for updates in sortedData and reset pagination if there's a change
     setCurrentPage(1);
     setPageInput(1);
     // sessionStorage.setItem("currentPage", 1);
-  }, [location.state.data]); // Reset pagination only when sortedData changes
+  }, [location.state?.data]); // Reset pagination only when sortedData changes
 
   useEffect(() => {
     // Retrieve the stored page number from sessionStorage when the component first loads
@@ -692,51 +767,50 @@ const SearchResults = ({ open, onClose, applyFilters, dateloading }) => {
     setOpenAnnotate(false);
   }, []);
 
-  const searchResults = useSelector((state) => state.search.searchResults);
 
-useEffect(() => {
-  if (searchResults) {
-    let articles = [];
-
-    try {
-      // Check if searchResults.body exists and is a string (needs parsing)
-      if (searchResults.body && typeof searchResults.body === "string") {
-        const parsedBody = JSON.parse(searchResults.body);
-        articles = parsedBody.articles || [];
-      } else {
-        articles = searchResults.articles || [];
-      }
-    } catch (error) {
-      console.error("Error parsing searchResults body:", error);
-    }
-
-    if (Array.isArray(articles)) {
-      const pmidList = articles.map((article) => {
-        if (article.source === "BioRxiv") {
-          return `BioRxiv_${article.bioRxiv_id}`;
-        } else if (article.source === "Public Library of Science (PLOS)") {
-          return `Public Library of Science (PLOS)_${article.plos_id}`;
+  useEffect(() => {
+    if (searchResults) {
+      let articles = [];
+  
+      try {
+        // If searchResults.body is an object, use it directly
+        if (searchResults.body && typeof searchResults.body === "object") {
+          articles = searchResults.body.articles || [];
         } else {
-          return `PubMed_${article.pmid}`;
+          articles = searchResults.articles || [];
         }
-      });
-
-      sessionStorage.setItem("completePMID", JSON.stringify(pmidList));
-      setCompletePMID(pmidList);
+      } catch (error) {
+        console.error("Error processing searchResults body:", error);
+      }
+  
+      if (Array.isArray(articles)) {
+        const pmidList = articles.map((article) => {
+          if (article.source === "BioRxiv") {
+            const bioRxiv_id = article.doi ? article.doi.split(".").pop() : "N/A";
+            return `BioRxiv_${bioRxiv_id}`;
+          } else if (article.source === "PLOS") {
+            const plosId = article.doi ? article.doi.split(".").pop() : "N/A";
+            return `PLOS_${plosId}`;
+          } else if(article.source == "PubMed"){ 
+            return `PubMed_${article.pmid}`;
+          }
+        });
+  
+        sessionStorage.setItem("completePMID", JSON.stringify(pmidList));
+        setCompletePMID(pmidList);
+      } else {
+        console.warn("Articles is not an array:", articles);
+      }
     } else {
-      console.warn("Articles is not an array:", articles);
+      const storedData = sessionStorage.getItem("completePMID");
+  
+      if (storedData) {
+        const parsedData = JSON.parse(storedData);
+        setCompletePMID(parsedData);
+      }
     }
-  } else {
-    const storedData = sessionStorage.getItem("completePMID");
-
-    if (storedData) {
-      const parsedData = JSON.parse(storedData);
-      setCompletePMID(parsedData);
-    }
-  }
-}, [searchResults]);
-
-console.log("searchResults", searchResults);
+  }, [searchResults]);
+  
 
   useEffect(() => {
     // Clear session storage for chatHistory when the location changes
@@ -789,9 +863,9 @@ console.log("searchResults", searchResults);
   };
   const getIdType = (article) => {
     return article.source === "BioRxiv"
-      ? article.bioRxiv_id
-      : article.source === "Public Library of Science (PLOS)"
-      ? article.plos_id
+      ? article.doi ? article.doi.split(".").pop() : "N/A"
+      : article.source === "PLOS"
+      ? article.doi ? article.doi.split(".").pop() : "N/A"
       : article.pmid;
   };
   const handleNavigate = (article) => {
@@ -830,9 +904,7 @@ console.log("searchResults", searchResults);
   // Calculate total pages
   //const totalPages = Math.ceil(data.articles.length / ITEMS_PER_PAGE);
   const totalPages =
-    data && data.articles
-      ? Math.ceil(data.articles.length / ITEMS_PER_PAGE)
-      : 0;
+    10000
 
   const handleCheckboxChange = (pmid) => {
     setSelectedArticles(
@@ -1309,7 +1381,7 @@ useEffect(() => {
                     style={{ marginRight: "15px" }}
                   >
                     <span style={{ color: "blue" }}>
-                      {data.articles.length}
+                    {data.body.articles[0].results}
                     </span>{" "}
                     results
                   </div>
@@ -1528,7 +1600,7 @@ useEffect(() => {
                     style={{ marginRight: "15px" }}
                   >
                     <span style={{ color: "blue" }}>
-                      {data.articles?.length}
+                    {data.body.articles[0].results}
                     </span>{" "}
                     results
                   </div>
@@ -1765,8 +1837,7 @@ useEffect(() => {
       ? "50%"
       : "100%"
     : "100%",margin:isTabletView&&"0"}} >
-          {data.articles && data.articles.length > 0 ? (
-            <>
+{data?.body?.articles && Array.isArray(data.body.articles) ? (            <>
             {!isTabletView && !isMobileView && (<>
             <div className="SearchResult-Count-Filters">
                 <div className="SearchResult-Option-Buttons">
@@ -1829,7 +1900,9 @@ useEffect(() => {
                     style={{ marginRight: "15px" }}
                   >
                     <span style={{ color: "blue" }}>
-                      {data.articles.length}
+                    {data?.body?.articles?.find(
+  (article) => ["PubMed", "BioRxiv"].includes(article.source) && article.results
+)?.results || ""}
                     </span>{" "}
                     results
                   </div>
@@ -1929,11 +2002,11 @@ useEffect(() => {
               <div className="searchContent-articles">
                 <div className="searchresults-list">
                   {paginatedArticles.map((result, index) => {
-                    let similarityScore = result.similarity_score;
-
+                    let similarityScore = result.final_score;
+                    console.log(similarityScore)
                     if (!similarityScore && searchResults) {
-                      const articles = searchResults.articles;
-
+                      const articles = searchResults.body.articles;
+                      console.log(articles)
                       // Find the article with the matching pmid in Redux store and get similarity score
                       const matchingArticle = articles.find(
                         (article) => article.pmid === result.pmid
@@ -1947,23 +2020,7 @@ useEffect(() => {
 
                     const idType = getIdType(result);
                     // Safely handle abstract_content based on its type
-                    let abstractContent = "";
-                    if (result.abstract_content) {
-                      if (Array.isArray(result.abstract_content)) {
-                        // If abstract_content is an array, join its elements (assuming they are strings)
-                        abstractContent = result.abstract_content.join(" ");
-                      } else if (typeof result.abstract_content === "string") {
-                        // If it's already a string, use it directly
-                        abstractContent = result.abstract_content;
-                      } else if (typeof result.abstract_content === "object") {
-                        // If it's an object, access specific keys or values
-                        abstractContent = Object.values(
-                          result.abstract_content
-                        ).join(" ");
-                      }
-                    } else {
-                      abstractContent = "No abstract available";
-                    }
+                    
 
                     return (
                       <div key={index} className="searchresult-item">
@@ -2013,11 +2070,11 @@ useEffect(() => {
                                     {italicizeTerm(
                                       capitalizeFirstLetter(
                                         openAnnotate
-                                          ? result.article_title.slice(0, 100) +
-                                              (result.article_title.length > 100
+                                          ? result.title.slice(0, 100) +
+                                              (result.title.length > 100
                                                 ? "..."
                                                 : "")
-                                          : result.article_title
+                                          : result.title
                                       )
                                     )}
                                   </span>
@@ -2424,91 +2481,14 @@ useEffect(() => {
                                 </div>
                               )}
                             </div>
-                            <p className="searchresult-authors">{`Published on: ${result.publication_date}`}</p>
-                            <div className="searchresult-ID">
-                              <p className="searchresult-pmid">{`ID: ${idType}`}</p>
+                            <div className="searchresult-authors">
+                                <span>{result.authors}</span>
                             </div>
-                            <p
-                              className="searchresult-description"
-                              style={{ textAlign: "justify" }}
-                            >
-                              {result.source === "BioRxiv"
-                                ? italicizeTerm(
-                                    abstractContent.slice(
-                                      0,
-                                      openAnnotate || openNotes ? 100 : 400
-                                    )
-                                  )
-                                : result.source ===
-                                  "Public Library of Science (PLOS)"
-                                ? result.abstract_content?.Abstract?.[1]
-                                  ? italicizeTerm(
-                                      Object.values(
-                                        result.abstract_content.Abstract[1] ||
-                                          result.abstract_content[0]
-                                      )
-                                        .join("")
-                                        .slice(
-                                          0,
-                                          openAnnotate || openNotes ? 100 : 400
-                                        )
-                                    )
-                                  : Object.keys(result.abstract_content || {})
-                                      .length > 0
-                                  ? italicizeTerm(
-                                      Object.values(result.abstract_content)
-                                        .map((section) =>
-                                          Object.values(section).join(" ")
-                                        )
-                                        .join(" ")
-                                        .slice(
-                                          0,
-                                          openAnnotate || openNotes ? 100 : 400
-                                        )
-                                    )
-                                  : "No abstract available"
-                                : result.abstract_content?.[1]
-                                ? italicizeTerm(
-                                    Object.values(result.abstract_content[1])
-                                      .join(" ")
-                                      .slice(
-                                        0,
-                                        openAnnotate || openNotes ? 100 : 400
-                                      )
-                                  )
-                                : "No abstract available"}
-
-                              {result.source === "BioRxiv"
-                                ? abstractContent.length > 300
-                                  ? "..."
-                                  : ""
-                                : result.source ===
-                                  "Public Library of Science (PLOS)"
-                                ? result.abstract_content?.Abstract?.[1]
-                                  ? Object.values(
-                                      result.abstract_content.Abstract[1] ||
-                                        result.abstract_content[1]
-                                    ).join("").length > 300
-                                    ? "..."
-                                    : ""
-                                  : Object.keys(result.abstract_content || {})
-                                      .length > 0
-                                  ? Object.values(result.abstract_content)
-                                      .map((section) =>
-                                        Object.values(section).join(" ")
-                                      )
-                                      .join(" ").length > 300
-                                    ? "..."
-                                    : ""
-                                  : ""
-                                : result.abstract_content?.[1]
-                                ? Object.values(
-                                    result.abstract_content[1]
-                                  ).join(" ").length > 300
-                                  ? "..."
-                                  : ""
-                                : ""}
-                            </p>
+                            <p className="searchresult-published"><span style={{color:"rgb(192, 86, 0)"}}>Published on: </span> {result.date}</p>
+                            <div className="searchresult-ID">
+                              <p className="searchresult-pmid"><span style={{color:"rgb(192, 86, 0)"}}>ID: </span>{idType}</p>
+                            </div>
+                            
                           </div>
                         </div>
                         <div
@@ -2521,7 +2501,7 @@ useEffect(() => {
                                 Relevancy Score:{" "}
                               </span>
                               {similarityScore
-                                ? `${similarityScore.toFixed(2)} %`
+                                ? `${similarityScore.toFixed(2)*100}%`
                                 : "N/A"}
                             </p>
                             <p className="searchresult-similarity_score">
@@ -2626,7 +2606,7 @@ useEffect(() => {
               </div>
             </>
           ) : (
-            <div className="data-not-found-container">
+           !loading && <div className="data-not-found-container">
               <div className="data-not-found">
                 <h2>Data Not Found</h2>
                 <p>

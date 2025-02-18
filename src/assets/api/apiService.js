@@ -128,7 +128,7 @@ export const apiService = {
     }),
   searchTerm: (searchQuery, page) =>
     apiClient.get(
-      `https://djzi3guvmay3xhugyrz5qj5lty0mdnxf.lambda-url.ap-south-1.on.aws`,
+      `https://q8c5emukzh.execute-api.ap-south-1.amazonaws.com/source`,
       {
         params: {
           query: searchQuery,
