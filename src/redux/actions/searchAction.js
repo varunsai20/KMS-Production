@@ -1,8 +1,8 @@
-import axios from 'axios';
+import axios from "axios";
 
-export const FETCH_SEARCH_RESULTS_REQUEST = 'FETCH_SEARCH_RESULTS_REQUEST';
-export const FETCH_SEARCH_RESULTS_SUCCESS = 'FETCH_SEARCH_RESULTS_SUCCESS';
-export const FETCH_SEARCH_RESULTS_FAILURE = 'FETCH_SEARCH_RESULTS_FAILURE';
+export const FETCH_SEARCH_RESULTS_REQUEST = "FETCH_SEARCH_RESULTS_REQUEST";
+export const FETCH_SEARCH_RESULTS_SUCCESS = "FETCH_SEARCH_RESULTS_SUCCESS";
+export const FETCH_SEARCH_RESULTS_FAILURE = "FETCH_SEARCH_RESULTS_FAILURE";
 
 // Action to request search results
 export const fetchSearchResultsRequest = () => ({
@@ -26,7 +26,9 @@ export const fetchSearchResults = (searchTerm) => {
   return async (dispatch) => {
     dispatch(fetchSearchResultsRequest());
     try {
-      const response = await axios.post('https://inferai.ai/api/query', { query: searchTerm });
+      const response = await axios.post("https://inferai.ai/api/query", {
+        query: searchTerm,
+      });
       dispatch(fetchSearchResultsSuccess(response.data));
     } catch (error) {
       dispatch(fetchSearchResultsFailure(error.message));

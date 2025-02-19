@@ -36,7 +36,7 @@ const ArticleContent = ({
   setClickedBack,
   setActiveSessionId,
   isModalOpen,
-  setIsModalOpen
+  setIsModalOpen,
 }) => {
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
   const deriveInsights = useSelector((state) => state.deriveInsights?.active);
@@ -138,7 +138,7 @@ const ArticleContent = ({
   }, [user_id, token]);
 
   const [currentid, setCurrentid] = useState(null);
-  
+
   const [collectionAction, setCollectionAction] = useState("existing"); // Tracks which radio button is selected
   const [selectedCollection, setSelectedCollection] = useState("favorites");
   const [newCollectionName, setNewCollectionName] = useState("");
@@ -267,44 +267,45 @@ const ArticleContent = ({
     }
   };
   const handleMouseUp = (event) => {
-
     if (!isLoggedIn) return;
-  
+
     if (!contentRef.current || !contentRef.current.contains(event.target)) {
       return;
     }
-  
+
     const selection = window.getSelection();
     if (selection.rangeCount > 0) {
       const range = selection.getRangeAt(0);
       const selectedText = selection.toString().trim();
-  
+
       if (selectedText) {
         const rects = range.getClientRects();
         const lastRect = rects[rects.length - 1];
         if (lastRect) {
           selectedTextRef.current = selectedText;
-  
+
           // Calculate position based on layerX and layerY
           let x = event.layerX;
           let y = event.layerY;
-  
+
           // Adjust position if it exceeds the target's boundaries
           const targetWidth = event.target.offsetWidth;
-          const popupWidth = popupRef.current ? popupRef.current.offsetWidth : 0;
-  
+          const popupWidth = popupRef.current
+            ? popupRef.current.offsetWidth
+            : 0;
+
           // Ensure the popup stays within the horizontal bounds
           if (x + popupWidth > targetWidth) {
             x = targetWidth - popupWidth - 5; // Add a small margin
           }
-  
+
           // Ensure the popup doesn't exceed the left boundary
           if (x < 0) {
             x = 5; // Add a small margin
           }
-  
+
           popupPositionRef.current = { x, y };
-  
+
           if (popupRef.current) {
             popupRef.current.style.left = `${popupPositionRef.current.x}px`;
             popupRef.current.style.top = `${popupPositionRef.current.y + 5}px`; // Adjust vertical positioning slightly
@@ -322,7 +323,6 @@ const ArticleContent = ({
       }
     }
   };
-
 
   const handleCloseCollectionModal = () => {
     setCollectionAction("existing");
@@ -539,7 +539,7 @@ const ArticleContent = ({
       setShowScrollDownButton(false); // Hide the down arrow button when at the bottom
     }
   };
-  
+
   const scrollToBottom = () => {
     if (endOfMessagesRef.current) {
       endOfMessagesRef.current.scrollIntoView({ behavior: "smooth" });
@@ -617,69 +617,75 @@ const ArticleContent = ({
         try {
           let autoScrollSet = false;
           const delay = 0; // Remove or reduce delay
-      
+
           while (true) {
             if (isStreamDoneRef.current) break;
-      
+
             const { value, done: streamDone } = await reader.read();
             if (streamDone) break;
-      
+
             if (value) {
               buffer += decoder.decode(value, { stream: true });
-      
+
               while (buffer.indexOf("{") !== -1 && buffer.indexOf("}") !== -1) {
                 let start = buffer.indexOf("{");
                 let end = buffer.indexOf("}", start);
                 if (start !== -1 && end !== -1) {
                   const jsonChunk = buffer.slice(start, end + 1);
                   buffer = buffer.slice(end + 1);
-      
+
                   try {
                     const parsedData = JSON.parse(jsonChunk);
-      
+
                     if (parsedData.session_id) {
                       const articleSessions =
-                        JSON.parse(sessionStorage.getItem("articleSessions")) || {};
-                      sessionStorage.setItem("session_id", parsedData.session_id);
+                        JSON.parse(sessionStorage.getItem("articleSessions")) ||
+                        {};
+                      sessionStorage.setItem(
+                        "session_id",
+                        parsedData.session_id
+                      );
                       articleSessions[sessionKey] = parsedData.session_id;
                       sessionStorage.setItem(
                         "articleSessions",
                         JSON.stringify(articleSessions)
                       );
                     }
-      
+
                     const answer = parsedData.answer;
-      
+
                     // Process in larger chunks
                     for (let i = 0; i < answer.length; i += 10) {
                       if (isStreamDoneRef.current) break;
-      
+
                       const chunk = answer.slice(i, i + 10); // 10 characters at a time
                       setChatHistory((chatHistory) => {
                         const updatedChatHistory = [...chatHistory];
                         const lastEntryIndex = updatedChatHistory.length - 1;
-      
+
                         if (lastEntryIndex >= 0) {
                           updatedChatHistory[lastEntryIndex] = {
                             ...updatedChatHistory[lastEntryIndex],
                             response:
-                              (updatedChatHistory[lastEntryIndex].response || "") +
-                              chunk,
+                              (updatedChatHistory[lastEntryIndex].response ||
+                                "") + chunk,
                             showDot: true,
                           };
                         }
-      
+
                         return updatedChatHistory;
                       });
-      
+
                       setResponse((prev) => prev + chunk);
-      
+
                       if (!autoScrollSet && endOfMessagesRef.current) {
                         setAutoScrollEnabled(true);
                         autoScrollSet = true;
                       }
-      
-                      await new Promise((resolve) => setTimeout(resolve, delay));
+
+                      await new Promise((resolve) =>
+                        setTimeout(resolve, delay)
+                      );
                     }
                   } catch (error) {
                     console.error("Error parsing JSON chunk:", error);
@@ -688,32 +694,32 @@ const ArticleContent = ({
               }
             }
           }
-      
+
           setRefreshSessions((prev) => !prev);
           setLoading(false);
           localStorage.setItem("chatHistory", JSON.stringify(chatHistory));
         } catch (error) {
           console.error("Error fetching or reading stream:", error);
-      
+
           setChatHistory((chatHistory) => {
             const updatedChatHistory = [...chatHistory];
             const lastEntryIndex = updatedChatHistory.length - 1;
-      
+
             if (lastEntryIndex >= 0) {
               updatedChatHistory[lastEntryIndex] = {
                 ...updatedChatHistory[lastEntryIndex],
-                response: "There is some error. Please try again after some time.",
+                response:
+                  "There is some error. Please try again after some time.",
                 showDot: false,
               };
             }
-      
+
             return updatedChatHistory;
           });
-      
+
           setLoading(false);
         }
       };
-      
 
       readStream();
     } catch (error) {
@@ -739,46 +745,41 @@ const ArticleContent = ({
   };
   const storedSessionId =
     sessionStorage.getItem("sessionId") || sessionStorage.getItem("session_id");
-    const handleBackClick = () => {
-      const unsavedChanges = localStorage.getItem("unsavedChanges");
-    
-      if (unsavedChanges === "true") {
-        setShowConfirmPopup(true);
-        return; // Do not proceed further if unsaved changes exist
-      }
-    
-      // Retrieve session IDs from localStorage
-      const sessionIds = JSON.parse(localStorage.getItem("sessionIds")) || [];
-    
-      if (sessionIds.length > 1) {
-        // Remove the last session ID
-        const currentSessionId = sessionIds.pop();
-    
-        // Set the previous session ID (last after pop) in sessionStorage
-        const previousSessionId = sessionIds[sessionIds.length - 1];
-        sessionStorage.setItem("session_id", previousSessionId);
-    
-        // Update localStorage with the remaining session IDs
-        localStorage.setItem("sessionIds", JSON.stringify(sessionIds));
-    
-              } else if (sessionIds.length === 1) {
-        // If there's only one session, clear sessionStorage and localStorage for session_id
-        sessionStorage.removeItem("session_id");
-        localStorage.removeItem("sessionIds");
-    
-      } else {
-        // If there are no session IDs in localStorage
-        setActiveSessionId(null)
-        sessionStorage.removeItem("session_id");
-      }
-    
-      setClickedBack(true);
-      // Navigate back
-      navigate(-1);
-    };
-    
-    
-    
+  const handleBackClick = () => {
+    const unsavedChanges = localStorage.getItem("unsavedChanges");
+
+    if (unsavedChanges === "true") {
+      setShowConfirmPopup(true);
+      return; // Do not proceed further if unsaved changes exist
+    }
+
+    // Retrieve session IDs from localStorage
+    const sessionIds = JSON.parse(localStorage.getItem("sessionIds")) || [];
+
+    if (sessionIds.length > 1) {
+      // Remove the last session ID
+      const currentSessionId = sessionIds.pop();
+
+      // Set the previous session ID (last after pop) in sessionStorage
+      const previousSessionId = sessionIds[sessionIds.length - 1];
+      sessionStorage.setItem("session_id", previousSessionId);
+
+      // Update localStorage with the remaining session IDs
+      localStorage.setItem("sessionIds", JSON.stringify(sessionIds));
+    } else if (sessionIds.length === 1) {
+      // If there's only one session, clear sessionStorage and localStorage for session_id
+      sessionStorage.removeItem("session_id");
+      localStorage.removeItem("sessionIds");
+    } else {
+      // If there are no session IDs in localStorage
+      setActiveSessionId(null);
+      sessionStorage.removeItem("session_id");
+    }
+
+    setClickedBack(true);
+    // Navigate back
+    navigate(-1);
+  };
 
   const handleCancelConfirm = () => {
     setShowConfirmPopup(false);
@@ -1072,8 +1073,8 @@ const ArticleContent = ({
                     marginTop: "0",
                     marginBottom: "0",
                     color: "#0071bc",
-                    fontSize: !openNotes && !openAnnotate ? "20px" : undefined
-                    }}
+                    fontSize: !openNotes && !openAnnotate ? "20px" : undefined,
+                  }}
                 >
                   {articleData.article.article_title}
                 </p>
@@ -1112,17 +1113,21 @@ const ArticleContent = ({
 
                 {isModalOpen && (
                   <div className="bookmark-modal-overlay">
-                    
                     <div className="search-modal-content">
-                      <div style={{display:"flex",justifyContent:"space-between"}}> 
-                      <p>ADD TO COLLECTION</p>
-                      <button
-                      id="close-collection-modal"
-                      onClick={handleCloseCollectionModal}
-                    >
-                      <IoCloseOutline size={20} />
-                    </button>
-                        </div>
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                        }}
+                      >
+                        <p>ADD TO COLLECTION</p>
+                        <button
+                          id="close-collection-modal"
+                          onClick={handleCloseCollectionModal}
+                        >
+                          <IoCloseOutline size={20} />
+                        </button>
+                      </div>
                       {/* Radio buttons for collection action */}
                       <div className="radio-buttons">
                         <div className="radio1">
@@ -1133,7 +1138,9 @@ const ArticleContent = ({
                             checked={collectionAction === "existing"}
                             onChange={() => setCollectionAction("existing")}
                           />
-                          <label htmlFor="collectionAction1">Add to Existing Collection</label>
+                          <label htmlFor="collectionAction1">
+                            Add to Existing Collection
+                          </label>
                         </div>
                         <div className="radio2">
                           <input
@@ -1143,7 +1150,9 @@ const ArticleContent = ({
                             checked={collectionAction === "new"}
                             onChange={() => setCollectionAction("new")}
                           />
-                          <label htmlFor="collectionAction2">Create New Collection</label>
+                          <label htmlFor="collectionAction2">
+                            Create New Collection
+                          </label>
                         </div>
                       </div>
 

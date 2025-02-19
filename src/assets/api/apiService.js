@@ -126,12 +126,20 @@ export const apiService = {
         Authorization: `Bearer ${token}`,
       },
     }),
-  searchTerm: (searchQuery, token) =>
-    apiClient.get(`core_search/?term=${searchQuery}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }),
+  searchTerm: (searchQuery, page) =>
+    apiClient.get(
+      `https://q8c5emukzh.execute-api.ap-south-1.amazonaws.com/source`,
+      {
+        params: {
+          query: searchQuery,
+          page: page,
+        },
+        headers: {
+          "Content-Type": "application/json",
+          //Authorization: `Bearer ${token}`,
+        },
+      }
+    ),
   fetchUserDetails: (user_id, token) =>
     apiClient.get(`user/profile/${user_id}`, {
       headers: {

@@ -15,12 +15,11 @@ import { MdEmail } from "react-icons/md";
 import "./CreateNote.css";
 import ConfirmSave from "../../utils/ConfirmSave";
 import { BiSave } from "react-icons/bi";
-import { contextType } from "react-quill";
+
 const Createnotes = ({
   setNotes,
   onClose,
   textToSave,
-  notesHeight,
   onDelete,
   notes,
   note,
@@ -30,6 +29,7 @@ const Createnotes = ({
   fetchNotes,
   annotateHeight
 }) => {
+  console.log("note content", textToSave);
   const [title, setTitle] = useState("");
   const [isOpenDropdown, setIsOpenDropdown] = useState(false);
   const headerRef = useRef(null);
@@ -58,6 +58,8 @@ const Createnotes = ({
   const [showTooltip, setShowTooltip] = useState(false);
 const [tooltipMessage, setTooltipMessage] = useState(""); 
 const [tooltipTimeout, setTooltipTimeout] = useState(null);
+const [updatedTextToSave, setUpdatedTextToSave] = useState(textToSave || []);
+const [removedText, setRemovedText] = useState([]); 
 
   //const [titleError, setTitleError] = useState("");
   const initialContent = useRef("");
@@ -139,53 +141,124 @@ useEffect(() => {
     };
   }, []);
 
+  // useEffect(() => {
+  //   if (textToSave && editorRef.current) {
+  //     const sanitizedTexts = textToSave.map((text) =>
+  //       DOMPurify.sanitize(text.trim())
+  //     );
+  //     const currentContent = editorRef.current.innerHTML.trim();
+
+  //     const textsToAdd = sanitizedTexts.filter(
+  //       (text) => !currentContent.includes(text)
+  //     );
+
+  //     if (textsToAdd.length > 0) {
+  //       const newContent = [currentContent, ...textsToAdd]
+  //         .filter(Boolean)
+  //         .join(" <br>");
+  //       // .trim();
+  //       editorRef.current.innerHTML = newContent;
+  //       setNoteContent(newContent);
+  //       console.log("note content", newContent);
+
+  //       if (!newContent.trim() && !title.trim()) {
+  //         setUnsavedChanges(false);
+  //         localStorage.removeItem("unsavedChanges");
+  //       } else if (newContent !== initialContent.current) {
+  //         setUnsavedChanges(true);
+  //         localStorage.setItem("unsavedChanges", "true");
+  //       }
+  //     }
+  //   }
+  // }, [textToSave]);
+  // console.log("text to save", noteContent);
+  //console.log("note content", textToSave);
   useEffect(() => {
-    if (textToSave && editorRef.current) {
-      const sanitizedTexts = textToSave.map((text) =>
-        DOMPurify.sanitize(text.trim())
-      );
-      const currentContent = editorRef.current.innerHTML.trim();
-
-      const textsToAdd = sanitizedTexts.filter(
-        (text) => !currentContent.includes(text)
-      );
-
-      if (textsToAdd.length > 0) {
-        const newContent = [currentContent, ...textsToAdd]
-          .filter(Boolean)
-          .join(" <br>");
-        // .trim();
-        editorRef.current.innerHTML = newContent;
-        setNoteContent(newContent);
-
-        if (!newContent.trim() && !title.trim()) {
-          setUnsavedChanges(false);
-          localStorage.removeItem("unsavedChanges");
-        } else if (newContent !== initialContent.current) {
+    if (textToSave?.length) {
+      setUpdatedTextToSave((prevText) => {
+        const newTexts = textToSave.filter(
+          (text) => !prevText.includes(text) && !removedText.includes(text)
+        );
+        if (newTexts.length > 0) {
           setUnsavedChanges(true);
           localStorage.setItem("unsavedChanges", "true");
         }
+        return [...prevText, ...newTexts];
       }
+    ); 
     }
   }, [textToSave]);
+
   useEffect(() => {
-    // Store initial content for comparison
-    initialContent.current = editorRef.current?.innerHTML || "";
-  }, []);
+    if (editorRef.current) {
+      const sanitizedTexts = updatedTextToSave.map((text) => DOMPurify.sanitize(text.trim()));
+      let newContent = sanitizedTexts.join(" <br>");
+      
+      if (!newContent.trim()) {
+        newContent = "<span class='placeholder'>Take a note...</span>";
+      }
+      
+      if (editorRef.current.innerHTML !== newContent) {
+        editorRef.current.innerHTML = newContent;
+      }
+      if (!title.trim() && !newContent.trim()) {
+        setUnsavedChanges(false);
+        localStorage.removeItem("unsavedChanges");
+      } else {
+        setUnsavedChanges(true);
+        localStorage.setItem("unsavedChanges", "true");
+      }
+    }
+    
+  }, [updatedTextToSave]);
 
   const handleInput = (e) => {
-    const content = e.target.innerText;
-  setNoteContent(content);
-
-  if (!title.trim() && !content.trim()) {
-    setUnsavedChanges(false);
-    localStorage.removeItem("unsavedChanges");
-  } else {
-    setUnsavedChanges(true);
-    localStorage.setItem("unsavedChanges", "true");
-  }
+    const content = e.target.innerHTML.trim().replace(/<span class=['"]placeholder['"]>.*?<\/span>/g, "");
+    setNoteContent(content);
+    
+    setUpdatedTextToSave((prevText) => {
+      const contentArray = content.split(" <br>").filter(Boolean);
+      const removedItems = prevText.filter((text) => !contentArray.includes(text));
+      setRemovedText((prevRemoved) => [...prevRemoved, ...removedItems]);
+      
+      return [...new Set([...contentArray, ...prevText.filter((text) => !removedItems.includes(text))])];
+    });
+    if (!title.trim() && !content.trim()) {
+      setUnsavedChanges(false);
+      localStorage.removeItem("unsavedChanges");
+    } else {
+      setUnsavedChanges(true);
+      localStorage.setItem("unsavedChanges", "true");
+    }
   };
 
+  const handleFocus = () => {
+    if (editorRef.current.innerHTML.includes("placeholder")) {
+      editorRef.current.innerHTML = "";
+    }
+  };
+
+  const handleBlur = () => {
+    if (!editorRef.current.innerText.trim()) {
+      editorRef.current.innerHTML = "<span class='placeholder'>Take a note...</span>";
+    }
+  };
+
+  // const handleInput = (e) => {
+  //   const content = e.target.innerText;
+  //  // console.log("note content", content);
+  //   //setNoteContent(content);
+  //   textToSave = content;
+  //   console.log("text to save", textToSave);
+  // if (!title.trim() && !content.trim()) {
+  //   setUnsavedChanges(false);
+  //   localStorage.removeItem("unsavedChanges");
+  // } else {
+  //   setUnsavedChanges(true);
+  //   localStorage.setItem("unsavedChanges", "true");
+  // }
+  // };
+  
   const handleEditorClick = () => {
     editorRef.current.focus();
   };
@@ -271,7 +344,10 @@ useEffect(() => {
 
       setNoteContent("");
       setTitle("");
-      editorRef.current.innerHTML = "";
+      // editorRef.current.innerHTML = "";
+      editorRef.current.innerHTML = "<span class='placeholder'>Take a note...</span>";
+      setUpdatedTextToSave([]);
+      setRemovedText([]);
       setUnsavedChanges(false);
       localStorage.removeItem("unsavedChanges");
     } catch (error) {
@@ -281,13 +357,16 @@ useEffect(() => {
   };
   const handleCloseClick = () => {
     const localUnsavedChanges = localStorage.getItem("unsavedChanges");
-    if (!title.trim() && !noteContent.trim()) {
-      setUnsavedChanges(false);
-      localStorage.removeItem("unsavedChanges");
-      onClose();
-      return;
-    }
+    console.log("local unsaved changes", localUnsavedChanges);
+    // if (!title.trim() && !noteContent.trim()) {
+    //   setUnsavedChanges(false);
+    //   localStorage.removeItem("unsavedChanges");
+    //   onClose();
+    //   return;
+    // }
     if (unsavedChanges || localUnsavedChanges === "true") {
+      console.log("unsaved changes", unsavedChanges);
+      console.log("local unsaved changes", localUnsavedChanges);
       setShowConfirm(true);
     } else {
       onClose();
@@ -458,7 +537,9 @@ useEffect(() => {
           suppressContentEditableWarning={true}
           onClick={handleEditorClick}
           onInput={handleInput}
-          placeholder="Note details..."
+          onFocus={handleFocus}
+          onBlur={handleBlur}
+          placeholder="Take a note..."
           style={{
             maxHeight: isOpenAnnotate 
               ? `${annotateHeight === 0 ? "35vh" : `${annotateHeight + 4}vh`}` 

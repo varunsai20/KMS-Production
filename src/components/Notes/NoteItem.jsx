@@ -46,6 +46,11 @@ const NoteItem = ({
 
   // Email sending logic
   const handleSendEmail = async () => {
+    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+    if (!emailRegex.test(email)) {
+      showErrorToast("Please enter a valid email address");
+      return
+    }
     const requestData = {
       user_id: user_id,
       note_id: note.note_id,

@@ -45,6 +45,8 @@ const Editnotes = ({
   const [showTooltip, setShowTooltip] = useState(false);
   const [tooltipMessage, setTooltipMessage] = useState(""); 
   const [tooltipTimeout, setTooltipTimeout] = useState(null);
+  const [updatedTextToSave, setUpdatedTextToSave] = useState(textToSave || []);
+  const [removedText, setRemovedText] = useState([]);
   const inputRef = useRef(null);
   
   const [activeFormats, setActiveFormats] = useState({
@@ -85,65 +87,124 @@ useEffect(() => {
 }, [showTooltip]);
 
 
-  useEffect(() => {
-    const localUnsavedChanges = localStorage.getItem("unsavedChanges");
-    if (localUnsavedChanges === "true") {
-      setUnsavedChanges(true);
-    }
-  }, []);
+  // useEffect(() => {
+  //   const localUnsavedChanges = localStorage.getItem("unsavedChanges");
+  //   if (localUnsavedChanges === "true") {
+  //     setUnsavedChanges(true);
+  //   }
+  // }, []);
 
   const handleShare = () => {
     setIsModalOverlay(true);
     setIsShareModalOpen(true)
   };
-  useEffect(() => {
-    if (textToSave && editorRef.current) {
-      const sanitizedTexts = textToSave.map((text) =>
-        DOMPurify.sanitize(text.trim())
-      );
-      const currentContent = editorRef.current.innerHTML.trim();
+  // useEffect(() => {
+  //   if (textToSave && editorRef.current) {
+  //     const sanitizedTexts = textToSave.map((text) =>
+  //       DOMPurify.sanitize(text.trim())
+  //     );
+  //     const currentContent = editorRef.current.innerHTML.trim();
 
-      const textsToAdd = sanitizedTexts.filter(
-        (text) => !currentContent.includes(text)
-      );
+  //     const textsToAdd = sanitizedTexts.filter(
+  //       (text) => !currentContent.includes(text)
+  //     );
 
-      if (textsToAdd.length > 0) {
-        const newContent = [currentContent, ...textsToAdd]
-          .filter(Boolean)
-          .join("<br> ");
-        //.trim();
+  //     if (textsToAdd.length > 0) {
+  //       const newContent = [currentContent, ...textsToAdd]
+  //         .filter(Boolean)
+  //         .join("<br> ");
+  //       //.trim();
 
-        editorRef.current.innerHTML = newContent;
-        setNoteContent(newContent);
-        if (!newContent.trim() && !title.trim()) {
-          setUnsavedChanges(false);
-          localStorage.removeItem("unsavedChanges");
-        } else if (newContent !== initialText.current) {
-          setUnsavedChanges(true);
-          localStorage.setItem("unsavedChanges", "true");
-        }
-      }
-    }
-  }, [textToSave]);
+  //       editorRef.current.innerHTML = newContent;
+  //       setNoteContent(newContent);
+  //       if (!newContent.trim() && !title.trim()) {
+  //         setUnsavedChanges(false);
+  //         localStorage.removeItem("unsavedChanges");
+  //       } else if (newContent !== initialText.current) {
+  //         setUnsavedChanges(true);
+  //         localStorage.setItem("unsavedChanges", "true");
+  //       }
+  //     }
+  //   }
+  // }, [textToSave]);
   useEffect(() => {
     if (note.content) {
       setNoteContent(note.content);
       initialText.current = note.content; // Store initial content for comparison
     }
   }, [note.content]);
+  useEffect(() => {
+    if (!textToSave?.length || !editorRef.current) return;
+
+    setUpdatedTextToSave((prevText) => {
+      const newTexts = textToSave.filter(
+        (text) => !prevText.includes(text) && !removedText.includes(text)
+      );
+
+      if (newTexts.length > 0) {
+        setUnsavedChanges(true);
+        localStorage.setItem("unsavedChanges", "true");
+      }
+
+      return [...prevText, ...newTexts];
+    });
+  }, [textToSave]);
+
+
+  useEffect(() => {
+    if (!editorRef.current) return;
+
+    let existingContent = editorRef.current.innerHTML.trim();
+    const sanitizedTexts = updatedTextToSave.map((text) =>
+      DOMPurify.sanitize(text.trim())
+    );
+
+    sanitizedTexts.forEach((newText) => {
+      if (!existingContent.includes(newText)) {
+        existingContent += `<br>${newText}`; // Append new text instead of replacing
+      }
+    });
+
+    if (editorRef.current.innerHTML !== existingContent) {
+      editorRef.current.innerHTML = existingContent;
+    }
+  }, [updatedTextToSave]);
 
   const handleInput = (e) => {
-    const content = e.target.innerText;
-  setNoteContent(content);
+    const content = e.target.innerHTML
+      .trim()
+      .replace(/<span class=['"]placeholder['"]>.*?<\/span>/g, ""); 
 
-  if (!title.trim() && !content.trim()) {
-    setUnsavedChanges(false);
-    localStorage.removeItem("unsavedChanges");
-  } else {
-    setUnsavedChanges(true);
-    localStorage.setItem("unsavedChanges", "true");
-  }
+    setNoteContent(content);
+
+    setUpdatedTextToSave((prevText) => {
+      const contentArray = content.split("<br>").filter(Boolean);
+      const removedItems = prevText.filter((text) => !contentArray.includes(text));
+      setRemovedText((prevRemoved) => [...prevRemoved, ...removedItems]);
+
+      return [...new Set([...contentArray, ...prevText.filter((text) => !removedItems.includes(text))])];
+    });
+
+    if (!title.trim() && !content.trim()) {
+      setUnsavedChanges(false);
+      localStorage.removeItem("unsavedChanges");
+    } else {
+      setUnsavedChanges(true);
+      localStorage.setItem("unsavedChanges", "true");
+    }
   };
+  // const handleInput = (e) => {
+  //   const content = e.target.innerText;
+  // setNoteContent(content);
+
+  // if (!title.trim() && !content.trim()) {
+  //   setUnsavedChanges(false);
+  //   localStorage.removeItem("unsavedChanges");
+  // } else {
+  //   setUnsavedChanges(true);
+  //   localStorage.setItem("unsavedChanges", "true");
+  // }
+  // };
 
   const handleCopy = () => {
     const noteDetails = editorRef.current.innerHTML;
@@ -189,6 +250,11 @@ useEffect(() => {
   };
 
   const handleSendEmail = async () => {
+    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+        if (!emailRegex.test(email)) {
+          showErrorToast("Please enter a valid email address");
+          return
+        }
     const requestData = {
       user_id: user_id,
       note_id: note_id,
@@ -271,9 +337,6 @@ useEffect(() => {
       setShowTooltip(true);
       return;
     }
-  
-   
-
 
     if (title && noteDetails && noteDetails !== "Take your note...") {
       const updatedNote = {

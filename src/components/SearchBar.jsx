@@ -92,14 +92,15 @@ const SearchBar = ({
       }, 60000); // 60 seconds
 
       apiService
-        .searchTerm(searchQuery, token)
+        .searchTerm(searchQuery,1)
         .then((response) => {
           const data = response.data;
           setResults(data);
           dispatch(setSearchResults(data));
           clearTimeout(timeoutId);
           setLoading(false);
-          navigate("/search", { state: { data, searchQuery } });
+          navigate(`/search?query=${encodeURIComponent(searchQuery)}&page=1`, { state: { data } });
+          // navigate("/search", { state: { data, searchQuery } });
         })
         .catch((error) => {
           console.log(error);
