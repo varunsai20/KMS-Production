@@ -95,12 +95,12 @@ const SearchBar = ({
         .searchTerm(searchQuery,1)
         .then((response) => {
           const data = response.data;
-          console.log("article data",data);
           setResults(data);
           dispatch(setSearchResults(data));
           clearTimeout(timeoutId);
           setLoading(false);
-          navigate("/search", { state: { data, searchQuery } });
+          navigate(`/search?query=${encodeURIComponent(searchQuery)}&page=1`, { state: { data } });
+          // navigate("/search", { state: { data, searchQuery } });
         })
         .catch((error) => {
           console.log(error);
