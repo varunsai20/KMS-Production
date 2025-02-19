@@ -19,6 +19,7 @@ import { faTelegram } from "@fortawesome/free-brands-svg-icons";
 import { LiaTelegramPlane } from "react-icons/lia";
 import { showErrorToast, showSuccessToast } from "../../utils/toastHelper";
 import { faArrowDown } from "@fortawesome/free-solid-svg-icons";
+import Ratings from "../../components/Ratings/Ratings";
 
 const ArticleContent = ({
   setRefreshSessions,
@@ -1023,7 +1024,7 @@ const ArticleContent = ({
                   className="Rate-Article"
                   // style={{ display: displayIfLoggedIn }}
                 >
-                  <div className="rate-article-div">
+                  {/* <div className="rate-article-div">
                     <span>Rate the article </span>
                   </div>
                   <div className="rate">
@@ -1063,7 +1064,13 @@ const ArticleContent = ({
                         </React.Fragment>
                       );
                     })}
-                  </div>
+                  </div> */}
+                  <Ratings
+                    uniqueId={uniqueId}
+                    isLoggedIn={isLoggedIn}
+                    token={token}
+                    user_id={user_id}
+                  />
                 </div>
               </div>
 

@@ -143,9 +143,10 @@ const Profile = () => {
                   textDecoration: "none",
                   fontWeight: "bold",
                   cursor: "pointer",
+                  color: "#007bff",
                 }}
               >
-                 <RxHome size={20} className="nav-icon" />
+                 <RxHome size={20} color="#007bff;" className="nav-icon" />
                 
                 Home
               </span>

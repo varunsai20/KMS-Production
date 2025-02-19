@@ -1,0 +1,62 @@
+.Rate-Article {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+}
+
+.rate-article-div {
+    width: 100%;
+    text-align: end;
+}
+
+.rate {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    padding: 0px;
+    height: 1vh;
+    width: auto;
+    transform: scaleX(-1);
+}
+
+.star {
+    float: right;
+    width: 1em;
+    overflow: hidden;
+    white-space: nowrap;
+    cursor: pointer;
+    font-size: 30px;
+    color: rgb(205 205 205);
+    position: relative;
+}
+
+.star.full {
+    color: #ffc700;
+}
+
+.star.half {
+    background: linear-gradient(90deg, #ffc700 50%, rgb(205, 205, 205) 50%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.rate > .star:hover,
+.rate > .star:hover ~ .star {
+    color: #ffc700;
+}
+
+.rate > input:checked ~ .star {
+    color: #ffc700;
+}
+
+.rate > input:disabled ~ .star {
+    cursor: default;
+}
+
+.average-rating {
+    font-size: 16px;
+    color: #333;
+    margin-top: 5px;
+}

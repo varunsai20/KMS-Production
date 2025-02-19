@@ -126,20 +126,12 @@ export const apiService = {
         Authorization: `Bearer ${token}`,
       },
     }),
-  searchTerm: (searchQuery, page) =>
-    apiClient.get(
-      `https://djzi3guvmay3xhugyrz5qj5lty0mdnxf.lambda-url.ap-south-1.on.aws`,
-      {
-        params: {
-          query: searchQuery,
-          page: page,
-        },
+    searchTerm: (searchQuery, token) =>
+      apiClient.get(`core_search/?term=${searchQuery}`, {
         headers: {
-          "Content-Type": "application/json",
-          //Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
-      }
-    ),
+      }),
   fetchUserDetails: (user_id, token) =>
     apiClient.get(`user/profile/${user_id}`, {
       headers: {

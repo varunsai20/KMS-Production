@@ -132,14 +132,14 @@
   }
   .home-path{
     width: 100px;
-height: 36px;
-padding: 10px 0px 0px 0px;
-gap: 6px;
-border-radius: 6px 0px 0px 0px;
-border: 1px 0px 0px 0px;
-opacity: 0px;
-background: #FFFFFF;
-border: 1px solid #EBEBF3
+    height: 36px;
+    padding: 10px 0px 0px 0px;  
+    gap: 6px;
+    border-radius: 6px;
+    border: 1px solid #007bff;
+    opacity: 0px;
+    background: #FFFFFF;
+    /* border: 1px solid #EBEBF3; */
   }
   @media (min-width: 0px) and (max-width: 576px){
     .profile-body{
