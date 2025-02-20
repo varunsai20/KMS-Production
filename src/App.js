@@ -54,7 +54,7 @@ function AppRoutes() {
         <Route path="/" element={<Lander />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUpForm />} />
-        <Route path="/search" element={<SearchResults />}  />
+        <Route path="/search" element={location.state ? <SearchResults /> : <Navigate to="/" replace />} />
         <Route path="/server-error" element={<Error500 />} />
 
         {/* Restricted Routes */}
@@ -68,7 +68,7 @@ function AppRoutes() {
         />
         <Route path="/article" element={<ArticleLayout />}>
           <Route path="derive" element={<ArticleDerive />} />
-          <Route path="content/:pmid" element={<ArticleContent />} />
+          <Route path="content/" element={<ArticleContent />} />
         </Route>
         <Route
           path="/admin"
