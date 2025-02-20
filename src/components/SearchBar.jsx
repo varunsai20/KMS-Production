@@ -76,7 +76,6 @@ const SearchBar = ({
     setFilteredResults([]);
   };
   const handleButtonClick = () => {
-    dispatch(clearSearchResults());
     sessionStorage.removeItem("ResultData");
     if (!searchTerm) {
       setTermMissing(true);
@@ -85,15 +84,16 @@ const SearchBar = ({
       setTermMissing(false);
       let searchQuery = sessionStorage.getItem("SearchTerm");
       setLoading(true);
-
+      
       const timeoutId = setTimeout(() => {
         setLoading(false);
         navigate("/search", { state: { data: [], searchTerm } });
       }, 60000); // 60 seconds
-
+      
       apiService
-        .searchTerm(searchQuery,1)
-        .then((response) => {
+      .searchTerm(searchQuery,1)
+      .then((response) => {
+          dispatch(clearSearchResults());
           const data = response.data;
           setResults(data);
           dispatch(setSearchResults(data));

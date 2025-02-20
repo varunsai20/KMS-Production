@@ -682,6 +682,7 @@ button {
 .search-modal-content ul li:hover {
   background-color: #dddddd70;
 }
+
 .searchresult-authors {
 
   display: flex;

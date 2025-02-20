@@ -52,8 +52,9 @@ useEffect(() => {
 
   if (!location.state) {
     handleFetchResults(searchTerm, page);
+    console.log("called")
   }
-}, [searchTerm, location.state]); // ✅ Runs only when `searchTerm` or `location.state` changes
+}, [location.state,searchTerm]); // ✅ Runs only when `searchTerm` or `location.state` changes
 
 const handleFetchResults = (query, pageNumber) => {
   dispatch(clearSearchResults());
@@ -93,7 +94,6 @@ const handleFetchResults = (query, pageNumber) => {
     });
 };
 const searchResults = useSelector((state) => state.search.searchResults);
-  console.log(searchResults)
   const { user } = useSelector((state) => state.auth);
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
   const displayIfLoggedIn = isLoggedIn ? null : "none";
@@ -384,7 +384,6 @@ const searchResults = useSelector((state) => state.search.searchResults);
     // Initialize with original data on component load
     setSortedData(searchResults?.body.articles || []);
   }, [searchResults]);
-  console.log(sortedData)
   let sessionDataCache = null; // Cache for session storage data
 
   // Utility function to get similarity score from article or session storage
@@ -435,20 +434,25 @@ const searchResults = useSelector((state) => state.search.searchResults);
       setCurrentPage(parseInt(storedPage));
       setPageInput(parseInt(storedPage));
     }
-  }, []);
-
+  }, [page]);
+  const [pageChanged,setPageChanged]=useState(false)
   // Fetch articles dynamically when `currentPage` changes
   useEffect(() => {
-    if (currentPage >= 1) {
+    if (pageChanged) {
+      console.log("more")
       fetchMoreArticles(currentPage);
     }
-  }, [currentPage]);
-
+  }, [pageChanged]);
+  useEffect(() => {
+    console.log("page")
+    if (initialPage === 1) {
+      sessionStorage.setItem("currentPage", "1"); // ✅ Set currentPage to 1 in sessionStorage
+    }
+  }, []);
   // Compute pagination indices
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
   const paginatedArticles = sortedData;
-  console.log(paginatedArticles)
   const handlePageChange = (newPage) => {
     const totalPages = 1000;
 
@@ -456,28 +460,39 @@ const searchResults = useSelector((state) => state.search.searchResults);
       setCurrentPage(newPage);
       setPageInput(newPage);
       sessionStorage.setItem("currentPage", newPage);
-      navigate(`/search?query=${encodeURIComponent(searchTerm)}&page=${newPage}`); // ✅ Update URL Parameter
+      setPageChanged(true)
       scrollToTop();
     }
   };
 
   const fetchMoreArticles = (newPage) => {
+    console.log("loading")
+    // sessionStorage.removeItem("ResultData");
+    setLoading(true)
     apiService
-      .searchTerm(searchTerm, newPage) // ✅ Pass the updated page number to the API
-      .then((response) => {
-        const newArticles = response.data.articles;
-        if (newArticles.length > 0) {
-          setSortedData((prevData) => [...prevData, ...newArticles]); // Append new articles
-          setCurrentPage(newPage); // ✅ Update the page state
-          sessionStorage.setItem("currentPage", newPage); // ✅ Store updated page in session
-          navigate(`/search?query=${encodeURIComponent(searchTerm)}&page=${newPage}`); // ✅ Update URL
-        }
+    .searchTerm(searchTerm, newPage) // ✅ Pass the updated page number to the API
+    .then((response) => {
+        dispatch(clearSearchResults());
+        const data = response.data;
+        console.log("data",data);
+        // if (data.length>0) {
+          
+        //   setSortedData((prevData) => [...prevData, ...data]); // Append new articles
+        //   // ✅ Store updated page in session
+        //   console.log("uptohere");
+        // }
+        dispatch(setSearchResults(data));
+        sessionStorage.setItem("currentPage", newPage);
+        setCurrentPage(newPage); // ✅ Update the page state
+          setPageChanged(false)
+        setLoading(false)
+        navigate(`/search?query=${encodeURIComponent(searchTerm)}&page=${newPage}`,{ state: { data }}); // ✅ Update URL
       })
       .catch((error) => {
+        setLoading(false)
         console.error("Error fetching more articles:", error);
       });
   };
-
   const handleAnnotate = () => {
     if (openAnnotate) {
       setOpenAnnotate(false);
@@ -710,7 +725,6 @@ const searchResults = useSelector((state) => state.search.searchResults);
         apiUrl += `&date_filter=${filterType}`;
       }
     }
-
     setLoading(true);
 
     axios
@@ -885,15 +899,16 @@ const searchResults = useSelector((state) => state.search.searchResults);
       ? article.doi ? article.doi.split(".").pop() : "N/A"
       : article.pmid;
   };
-  const handleNavigate = (article) => {
-    const idType = getIdType(article); // Determine whether it's pmid or bioRxiv_id
-    const type =
-      article.source === "BioRxiv"
-        ? "bioRxiv_id"
-        : article.source === "Public Library of Science (PLOS)"
-        ? "plos_id"
-        : "pmid"; // Pass the type explicitly
-    navigate(`/article/content/${type}:${idType}`, {
+  const handleNavigate = (source,url) => {
+    console.log(source)
+    // const idType = getIdType(article); // Determine whether it's pmid or bioRxiv_id
+    // const type =
+    //   source === "BioRxiv"
+    //     ? "bioRxiv_id"
+    //     : source === "Public Library of Science (PLOS)"
+    //     ? "plos_id"
+    //     : "pmid"; // Pass the type explicitly
+    navigate(`/article/content/?query=${encodeURIComponent(searchTerm)}&source=${source}&url=${url}`, {
       state: { data: data, searchTerm, annotateData: annotateData },
     });
   };
@@ -2079,7 +2094,7 @@ useEffect(() => {
                                 <h3 className="searchresult-title">
                                   <span
                                     className="gradient-text"
-                                    onClick={() => handleNavigate(result)}
+                                    onClick={() => handleNavigate(result.source,result.url)}
                                     style={{ cursor: "pointer" }}
                                   >
                                     {italicizeTerm(
@@ -2497,7 +2512,8 @@ useEffect(() => {
                               )}
                             </div>
                             <div className="searchresult-authors">
-                                <span>{result.authors}</span>
+                              
+                                <span className="author-name">{result.authors}</span>
                             </div>
                             <p className="searchresult-published"><span style={{color:"rgb(192, 86, 0)"}}>Published on: </span> {result.date}</p>
                             <div className="searchresult-ID">

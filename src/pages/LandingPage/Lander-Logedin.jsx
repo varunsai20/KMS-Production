@@ -42,7 +42,9 @@ const Lander = () => {
   const [hasBeenDragged, setHasBeenDragged] = useState(false);
   const navigate = useNavigate();
   const[isModalOverlay,setIsModalOverlay] = useState(false);
-  
+  // useEffect(()=>{
+  //   sessionStorage.removeItem("currentPage")
+  // })
   useEffect(() => {
     if (termMissing) {
       // Set a timeout to hide the error message after 5 seconds

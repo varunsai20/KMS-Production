@@ -891,7 +891,18 @@ td {
   padding-left: 0;
   margin-top: 0;
 }
-
+.article-abstract h2{
+  margin-top: 0;
+}
+.article-abstract h3{
+  margin-top: 0;
+}
+.article-abstract h4{
+  margin-top: 0;
+}
+.article-abstract p{
+  margin: 0 0 5px 0 !important;
+}
 .modal-content ul li {
   margin: 10px 0;
   display: flex;

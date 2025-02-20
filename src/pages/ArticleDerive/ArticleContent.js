@@ -50,8 +50,15 @@ const ArticleContent = ({
   const user_id = user?.user_id;
   const [type, id1] = pmid ? pmid.split(":") : "";
   const id = Number(id1);
-  const [source, setSource] = useState();
+  // const [source, setSource] = useState();
   const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const source=params.get("source")
+  const url = params.get("url")
+  console.log(url);
+  console.log((source));
+  
+  
   const [searchTerm, setSearchTerm] = useState("");
   const [articleData, setArticleData] = useState(null);
   const navigate = useNavigate();
@@ -156,32 +163,32 @@ const ArticleContent = ({
     }
   }, [openNotes]);
 
-  useEffect(() => {
-    if (type === "bioRxiv_id") {
-      setSource("biorxiv");
-    } else if (type === "pmid") {
-      setSource("pubmed");
-    } else if (type === "plos_id") {
-      setSource("plos");
-    }
-    if (type === "biorxiv" || type === "pubmed" || type === "plos") {
-      setSource(type);
-    }
-    if (type === "biorxiv" || type === "pubmed" || type === "plos") {
-      setSource(type);
-    }
-  }, [type]);
+  // useEffect(() => {
+  //   if (type === "bioRxiv_id") {
+  //     setSource("biorxiv");
+  //   } else if (type === "pmid") {
+  //     setSource("pubmed");
+  //   } else if (type === "plos_id") {
+  //     setSource("plos");
+  //   }
+  //   if (type === "biorxiv" || type === "pubmed" || type === "plos") {
+  //     setSource(type);
+  //   }
+  //   if (type === "biorxiv" || type === "pubmed" || type === "plos") {
+  //     setSource(type);
+  //   }
+  // }, [type]);
 
   useEffect(() => {
-    if (source && id && !deriveInsights) {
+    if (source && url && !deriveInsights) {
       setAnnotateLoading(true);
       const fetchArticleData = async () => {
         try {
           const response = await axios.get(
-            `https://inferai.ai/api/view_article/get_article/${id}?source=${source}`,
+            `https://q8c5emukzh.execute-api.ap-south-1.amazonaws.com/source/get_abstract?url=${url}&source=${source}`,
             {
               headers: {
-                Authorization: `Bearer ${token}`,
+                // Authorization: `Bearer ${token}`,
               },
             }
           );
@@ -380,7 +387,7 @@ const ArticleContent = ({
     } else {
       setCurrentid(idType);
       setArticleTitle(title);
-      setSource(source);
+      // setSource(source);
       setIsModalOpen(true);
     }
   };
@@ -826,83 +833,40 @@ const ArticleContent = ({
     );
   };
 
-  const renderContentInOrder = (content, isAbstract = false) => {
-    const sortedKeys = Object.keys(content).sort(
-      (a, b) => parseInt(a) - parseInt(b)
-    );
-
-    return sortedKeys.map((sectionKey) => {
-      const sectionData = content[sectionKey];
-
-      // Remove numbers from the section key
-      const cleanedSectionKey = sectionKey.replace(/^\d+[:.]?\s*/, "");
-
-      // Skip Images Section
-      if (cleanedSectionKey.toLowerCase() === "images") {
-        return null;
-      }
-
-      // Handle paragraphs
-      if (cleanedSectionKey.toLowerCase() === "paragraph") {
-        const textContent =
-          typeof sectionData === "string"
-            ? sectionData
-            : JSON.stringify(sectionData);
-        const boldtextContent = boldTerm(textContent);
-
+  const renderContentInOrder = (contentArray) => {
+    return contentArray.map((section, index) => {
+      if (!section.type || !section.content) return null; // Skip invalid entries
+  
+      if (section.type.includes("subsubsubheading")) {
         return (
-          <div key={sectionKey} style={{ marginBottom: "10px" }}>
-            <MyMarkdownComponent markdownContent={boldtextContent} />
-          </div>
+          <h3 key={index} style={{ fontSize: "14px", fontWeight: "bold", marginBottom: "5px" }}>
+            {section.content}
+          </h3>
+        );
+      } else if (section.type.includes("subsubheading")) {
+        return (
+          <h2 key={index} style={{ fontSize: "18px", fontWeight: "bold", marginBottom: "10px" }}>
+            {section.content}
+          </h2>
+        );
+      } else if (section.type.includes("subheading")) {
+        return (
+          <h2 key={index} style={{ fontSize: "20px", fontWeight: "bold", marginBottom: "15px" }}>
+            {section.content}
+          </h2>
+        );
+      } else if (section.type === "text") {
+        return (
+          <p key={index} style={{ marginBottom: "10px", lineHeight: "1.5" }}>
+            <MyMarkdownComponent markdownContent={section.content} />
+          </p>
         );
       }
-
-      // Handle keywords
-      if (cleanedSectionKey.toLowerCase() === "keywords") {
-        let keywords = Array.isArray(sectionData)
-          ? sectionData.join(", ")
-          : sectionData;
-        keywords = capitalizeFirstLetter(keywords);
-        const boldKeywords = boldTerm(keywords);
-
-        return (
-          <div key={sectionKey} style={{ marginBottom: "10px" }}>
-            <Typography variant="h6" style={{ fontSize: "18px" }}>
-              Keywords
-            </Typography>
-            <Typography variant="body1">{boldKeywords}</Typography>
-          </div>
-        );
-      }
-
-      // Handle nested objects or other content
-      if (typeof sectionData === "object") {
-        return (
-          <div key={sectionKey} style={{ marginBottom: "20px" }}>
-            <Typography variant="h6" style={{ fontSize: "18px" }}>
-              {capitalizeFirstLetter(cleanedSectionKey)}
-            </Typography>
-            {renderContentInOrder(sectionData)}
-          </div>
-        );
-      } else {
-        const textContent =
-          typeof sectionData === "string"
-            ? sectionData
-            : JSON.stringify(sectionData);
-        const boldtextContent = boldTerm(textContent);
-
-        return (
-          <div key={sectionKey} style={{ marginBottom: "10px" }}>
-            <Typography variant="h6" style={{ fontSize: "18px" }}>
-              {capitalizeFirstLetter(cleanedSectionKey)}
-            </Typography>
-            <MyMarkdownComponent markdownContent={boldtextContent} />
-          </div>
-        );
-      }
+  
+      return null;
     });
   };
+  
 
   useEffect(() => {
     const fetchSessions = async () => {
@@ -1076,7 +1040,7 @@ const ArticleContent = ({
                     fontSize: !openNotes && !openAnnotate ? "20px" : undefined,
                   }}
                 >
-                  {articleData.article.article_title}
+                  {articleData.title}
                 </p>
 
                 <FontAwesomeIcon
@@ -1255,48 +1219,40 @@ const ArticleContent = ({
                   marginBottom: "5px",
                 }}
               >
-                {articleData.article.publication_type ? (
-                  <span>
-                    Publication Type :
-                    <strong style={{ color: "black" }}>
-                      {articleData.article.publication_type.join(", ")}
-                    </strong>
-                  </span>
-                ) : (
-                  ""
-                )}
-                <span style={{ color: "#2b9247" }}>
-                  {(type === "bioRxiv_id" || type === "biorxiv") &&
-                    "BioRxiv ID"}
-                  {(type === "pmid" || type === "pubmed") && "PMID"}
-                  {(type === "plos_id" || type === "plos") && "PLOS ID"} : {id}
-                </span>{" "}
+                <p className="Article-Authors" style={{marginBottom:"0"}}>
+    <span style={{color:"#2b9247"}}>Authors: </span>
+    {(articleData.authors || '') // Ensure it's a valid string
+        .toString() // Convert to string if it's not
+        .split(/\s*,\s*/) // Split by commas, handling spaces
+        .map((author, index, arr) => (
+            <span key={index}>
+                {author}
+                {index < arr.length - 1 ? ', ' : ''} {/* Add comma except for last */}
+            </span>
+        ))}
+</p>
+
+
               </div>
 
-              {articleData.article.abstract_content && (
+              {articleData.abstract&& (
                 <>
-                  <Typography
-                    variant="h4"
-                    gutterBottom
-                    style={{
-                      fontSize: "18px",
-                      marginBottom: "0 ",
-                      marginTop: "1%",
-                    }}
-                  >
-                    Abstract
-                  </Typography>
-                  <p>
-                    {renderContentInOrder(
-                      articleData.article.abstract_content,
+                  <p className="article-abstract">                   
+                  {renderContentInOrder(
+                      articleData.abstract,
                       true
                     )}
                   </p>
                 </>
               )}
+              {articleData.keywords&&<div>
+                <p className="article-keywords">
+                    <span style={{color:"#2b9247"}}> Keywords : </span>{articleData.keywords}
+                </p>
+              </div>}
               {/* <div className="content-brake"></div>  */}
-              {articleData.article.body_content &&
-                renderContentInOrder(articleData.article.body_content, true)}
+              {/* {articleData.article.body_content &&
+                renderContentInOrder(articleData.article.body_content, true)} */}
 
               {showStreamingSection && (
                 <div className="streaming-section">
