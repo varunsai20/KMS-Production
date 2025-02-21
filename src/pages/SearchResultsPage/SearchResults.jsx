@@ -1413,8 +1413,9 @@ useEffect(() => {
                     style={{ marginRight: "15px" }}
                   >
                     <span style={{ color: "blue" }}>
-                    {data.body.articles[0].results}
-                    </span>{" "}
+                    {data?.body?.articles?.find(
+  (article) => ["PubMed", "MedRxiv"].includes(article.source) && article.results
+)?.results || ""}                    </span>{" "}
                     results
                   </div>
                   <div
@@ -1632,8 +1633,9 @@ useEffect(() => {
                     style={{ marginRight: "15px" }}
                   >
                     <span style={{ color: "blue" }}>
-                    {data.body.articles[0].results}
-                    </span>{" "}
+                    {data?.body?.articles?.find(
+  (article) => ["PubMed", "MedRxiv"].includes(article.source) && article.results
+)?.results || ""}                    </span>{" "}
                     results
                   </div>
                   <div
@@ -1933,7 +1935,7 @@ useEffect(() => {
                   >
                     <span style={{ color: "blue" }}>
                     {data?.body?.articles?.find(
-  (article) => ["PubMed", "BioRxiv"].includes(article.source) && article.results
+  (article) => ["PubMed", "MedRxiv"].includes(article.source) && article.results
 )?.results || ""}
                     </span>{" "}
                     results
@@ -2389,30 +2391,33 @@ useEffect(() => {
                               {result.source ? result.source : "PubMed"}
                             </p>
                           </div>
-                            <div class="searchResult-rate">
-                              {[5, 4, 3, 2, 1].map((value) => (
-                                <React.Fragment key={value}>
-                                  <input
-                                    type="radio"
-                                    id={`star${value}-${idType}`}
-                                    name={`rate_${idType}`}
-                                    style={{ cursor: "default" }}
-                                    value={value}
-                                    checked={
-                                      getRatingForArticle(
-                                        idType,
-                                        result.source ? result.source : "PubMed"
-                                      ) === value
-                                    }
-                                    disabled // Disable the input as we don't want to modify it
-                                  />
-                                  <label
-                                    htmlFor={`star${value}-${idType}`}
-                                    title={`${value} star`}
-                                  />
-                                </React.Fragment>
-                              ))}
-                            </div>
+                          <div className="searchResult-rate rate-tooltip">
+  {[1, 2, 3, 4, 5].map((value) => {
+    const fullStars = Math.floor(result.average_rating); // Fully filled stars
+    const partialStar = result.average_rating - fullStars; // Decimal part (e.g., 0.3 for 4.3)
+
+    return (
+      <span key={value} className="star-container">
+        {/* Full star */}
+        {value <= fullStars ? (
+          <span className="full-star">★</span>
+        ) : value === fullStars + 1 && partialStar > 0 ? (
+          // Partial star (fill based on decimal)
+          <span className="partial-star">
+            <span className="filled" style={{ width: `${partialStar * 100}%` }}>★</span>
+            <span className="empty">★</span>
+          </span>
+        ) : (
+          // Empty star
+          <span className="rating-empty">★</span>
+        )}
+      </span>
+    );
+  })}
+  <span className="tooltip-text">{result.average_rating.toFixed(1)} out of 5</span>
+</div>
+
+
                           
                         </div>
                       </div>
