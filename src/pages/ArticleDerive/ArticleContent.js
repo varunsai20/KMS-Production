@@ -1,11 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { useSelector } from "react-redux";
-//import { setDeriveInsights } from "../../redux/reducers/deriveInsights";
 import { useParams, useLocation } from "react-router-dom";
 import "../ArticlePage/ArticlePage.css";
 import { IoCloseOutline } from "react-icons/io5";
-import { Typography } from "@mui/material";
 import flag from "../../assets/images/flash.svg";
 import Arrow from "../../assets/images/back-arrow.svg";
 import { useNavigate } from "react-router-dom";
@@ -19,6 +17,7 @@ import { faTelegram } from "@fortawesome/free-brands-svg-icons";
 import { LiaTelegramPlane } from "react-icons/lia";
 import { showErrorToast, showSuccessToast } from "../../utils/toastHelper";
 import { faArrowDown } from "@fortawesome/free-solid-svg-icons";
+//import Ratings from "../../components/Ratings/Ratings";
 
 const ArticleContent = ({
   setRefreshSessions,
@@ -46,19 +45,13 @@ const ArticleContent = ({
   const { pmid } = useParams();
   const { user } = useSelector((state) => state.auth);
   const token = useSelector((state) => state.auth.access_token);
-  //const dispatch = useDispatch();
   const user_id = user?.user_id;
   const [type, id1] = pmid ? pmid.split(":") : "";
   const id = Number(id1);
-  // const [source, setSource] = useState();
   const location = useLocation();
   const params = new URLSearchParams(location.search);
-  const source=params.get("source")
-  const url = params.get("url")
-  console.log(url);
-  console.log((source));
-  
-  
+  const source = params.get("source");
+  const url = params.get("url");
   const [searchTerm, setSearchTerm] = useState("");
   const [articleData, setArticleData] = useState(null);
   const navigate = useNavigate();
@@ -102,9 +95,7 @@ const ArticleContent = ({
 
   const contentRef = useRef(null); // Ref to target the content div
   const [contentWidth, setContentWidth] = useState(); // State for content width
-  const [ratingsList, setRatingsList] = useState(() => {
-    return JSON.parse(sessionStorage.getItem("ratingsGiven")) || [];
-  });
+  const [ratingsList, setRatingsList] = useState([]);
   const [triggerAskClick, setTriggerAskClick] = useState(false);
   const [triggerDeriveClick, setTriggerDeriveClick] = useState(false);
   //const [editedTitle, setEditedTitle] = useState("");
@@ -151,7 +142,6 @@ const ArticleContent = ({
   const [newCollectionName, setNewCollectionName] = useState("");
   const [hasFetchedAnnotateData, setHasFetchedAnnotateData] = useState(false);
   const [sessions, setSessions] = useState([]);
-  //const [editingSessionId, setEditingSessionId] = useState(null);
 
   const selectedTextRef = useRef("");
   const popupRef = useRef(null);
@@ -162,22 +152,6 @@ const ArticleContent = ({
       setSavedText(""); // Reset savedText when notes are closed
     }
   }, [openNotes]);
-
-  // useEffect(() => {
-  //   if (type === "bioRxiv_id") {
-  //     setSource("biorxiv");
-  //   } else if (type === "pmid") {
-  //     setSource("pubmed");
-  //   } else if (type === "plos_id") {
-  //     setSource("plos");
-  //   }
-  //   if (type === "biorxiv" || type === "pubmed" || type === "plos") {
-  //     setSource(type);
-  //   }
-  //   if (type === "biorxiv" || type === "pubmed" || type === "plos") {
-  //     setSource(type);
-  //   }
-  // }, [type]);
 
   useEffect(() => {
     if (source && url && !deriveInsights) {
@@ -215,6 +189,23 @@ const ArticleContent = ({
   }, [id, source, token, deriveInsights]);
 
   useEffect(() => {
+    const fetchRatedArticle = async () => {
+      try {
+        const response = await axios.get(
+          `https://q8c5emukzh.execute-api.ap-south-1.amazonaws.com/source/rating?user_id=${user_id}&url=${encodeURIComponent(
+            url
+          )}`
+        );
+        const ratings = response.data.data.rating;
+        setRatingsList(ratings);
+      } catch (error) {
+        console.log("error", error);
+      }
+    };
+    fetchRatedArticle();
+  }, []);
+  console.log(ratingsList);
+  useEffect(() => {
     // Access the computed width of the content div
     if (contentRef.current) {
       const width = contentRef.current.offsetWidth;
@@ -231,44 +222,47 @@ const ArticleContent = ({
 
   const handleRatingChange = async (uniqueId, newRating) => {
     // Ensure ratingsList is an array
-    const currentRatings = Array.isArray(ratingsList) ? ratingsList : [];
+    // const currentRatings = Array.isArray(ratingsList) ? ratingsList : [];
 
-    // Create a copy of ratingsList
-    const updatedRatings = [...currentRatings];
+    // // Create a copy of ratingsList
+    // const updatedRatings = [...currentRatings];
 
-    const existingRatingIndex = updatedRatings.findIndex(
-      (item) => item.uniqueId === uniqueId
-    );
+    // const existingRatingIndex = updatedRatings.findIndex(
+    //   (item) => item.uniqueId === uniqueId
+    // );
 
-    if (existingRatingIndex !== -1) {
-      updatedRatings[existingRatingIndex].rating = newRating;
-    } else {
-      updatedRatings.push({ uniqueId, rating: newRating });
-    }
+    // if (existingRatingIndex !== -1) {
+    //   updatedRatings[existingRatingIndex].rating = newRating;
+    // } else {
+    //   updatedRatings.push({ uniqueId, rating: newRating });
+    // }
 
-    setRatingsList(updatedRatings);
-    sessionStorage.setItem("ratingsGiven", JSON.stringify(updatedRatings));
+    // setRatingsList(updatedRatings);
+    //sessionStorage.setItem("ratingsGiven", JSON.stringify(updatedRatings));
 
     // Extract source and article_id from uniqueId
     const [article_source, article_id] = uniqueId.split("_");
 
     try {
-      await axios.post(
-        "https://inferai.ai/api/rating/rate",
-        {
-          user_id, // Assuming `user_id` is available in the component's state or props
-          rating_data: {
-            article_id,
+      await axios
+        .post(
+          "https://q8c5emukzh.execute-api.ap-south-1.amazonaws.com/source/rating",
+          {
+            user_id,
+            url,
             rating: newRating,
             article_source,
           },
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`, // Bearer token authorization
-          },
-        }
-      );
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        )
+        .then((response) => {
+          setRatingsList(newRating);
+          showSuccessToast("Rating saved successfully");
+        });
     } catch (error) {
       console.error("Error saving rating:", error);
     }
@@ -836,22 +830,43 @@ const ArticleContent = ({
   const renderContentInOrder = (contentArray) => {
     return contentArray.map((section, index) => {
       if (!section.type || !section.content) return null; // Skip invalid entries
-  
+
       if (section.type.includes("subsubsubheading")) {
         return (
-          <h3 key={index} style={{ fontSize: "14px", fontWeight: "bold", marginBottom: "5px" }}>
+          <h3
+            key={index}
+            style={{
+              fontSize: "14px",
+              fontWeight: "bold",
+              marginBottom: "5px",
+            }}
+          >
             {section.content}
           </h3>
         );
       } else if (section.type.includes("subsubheading")) {
         return (
-          <h2 key={index} style={{ fontSize: "18px", fontWeight: "bold", marginBottom: "10px" }}>
+          <h2
+            key={index}
+            style={{
+              fontSize: "18px",
+              fontWeight: "bold",
+              marginBottom: "10px",
+            }}
+          >
             {section.content}
           </h2>
         );
       } else if (section.type.includes("subheading")) {
         return (
-          <h2 key={index} style={{ fontSize: "20px", fontWeight: "bold", marginBottom: "15px" }}>
+          <h2
+            key={index}
+            style={{
+              fontSize: "20px",
+              fontWeight: "bold",
+              marginBottom: "15px",
+            }}
+          >
             {section.content}
           </h2>
         );
@@ -862,11 +877,10 @@ const ArticleContent = ({
           </p>
         );
       }
-  
+
       return null;
     });
   };
-  
 
   useEffect(() => {
     const fetchSessions = async () => {
@@ -990,12 +1004,12 @@ const ArticleContent = ({
                   <div className="rate-article-div">
                     <span>Rate the article </span>
                   </div>
-                  <div className="rate">
+                  <div className="rate" key={ratingsList}>
                     {[5, 4, 3, 2, 1].map((value) => {
-                      const existingRating =
-                        Array.isArray(ratingsList) &&
-                        ratingsList.find((item) => item.uniqueId === uniqueId)
-                          ?.rating;
+                      // const existingRating =
+                      //   Array.isArray(ratingsList) &&
+                      //   ratingsList.find((item) => item.uniqueId === uniqueId)
+                      //     ?.rating;
 
                       return (
                         <React.Fragment key={value}>
@@ -1004,7 +1018,7 @@ const ArticleContent = ({
                             id={`star${value}-${uniqueId}`}
                             name={`rate_${uniqueId}`}
                             value={isLoggedIn ? value : ""}
-                            checked={isLoggedIn ? existingRating === value : ""}
+                            checked={isLoggedIn ? ratingsList === value : ""}
                             onChange={() =>
                               !isLoggedIn
                                 ? ""
@@ -1028,6 +1042,12 @@ const ArticleContent = ({
                       );
                     })}
                   </div>
+                  {/* <Ratings
+                    uniqueId={uniqueId}
+                    isLoggedIn={isLoggedIn}
+                    token={token}
+                    user_id={user_id}
+                  /> */}
                 </div>
               </div>
 
@@ -1061,7 +1081,7 @@ const ArticleContent = ({
                     isLoggedIn
                       ? handleBookmarkClick(
                           id,
-                          articleData.article.article_title,
+                          articleData.title,
                           source || "PubMed"
                         )
                       : ""
@@ -1219,37 +1239,36 @@ const ArticleContent = ({
                   marginBottom: "5px",
                 }}
               >
-                <p className="Article-Authors" style={{marginBottom:"0"}}>
-    <span style={{color:"#2b9247"}}>Authors: </span>
-    {(articleData.authors || '') // Ensure it's a valid string
-        .toString() // Convert to string if it's not
-        .split(/\s*,\s*/) // Split by commas, handling spaces
-        .map((author, index, arr) => (
-            <span key={index}>
-                {author}
-                {index < arr.length - 1 ? ', ' : ''} {/* Add comma except for last */}
-            </span>
-        ))}
-</p>
-
-
+                <p className="Article-Authors" style={{ marginBottom: "0" }}>
+                  <span style={{ color: "#2b9247" }}>Authors: </span>
+                  {(articleData.authors || "") // Ensure it's a valid string
+                    .toString() // Convert to string if it's not
+                    .split(/\s*,\s*/) // Split by commas, handling spaces
+                    .map((author, index, arr) => (
+                      <span key={index}>
+                        {author}
+                        {index < arr.length - 1 ? ", " : ""}{" "}
+                        {/* Add comma except for last */}
+                      </span>
+                    ))}
+                </p>
               </div>
 
-              {articleData.abstract&& (
+              {articleData.abstract && (
                 <>
-                  <p className="article-abstract">                   
-                  {renderContentInOrder(
-                      articleData.abstract,
-                      true
-                    )}
+                  <p className="article-abstract">
+                    {renderContentInOrder(articleData.abstract, true)}
                   </p>
                 </>
               )}
-              {articleData.keywords&&<div>
-                <p className="article-keywords">
-                    <span style={{color:"#2b9247"}}> Keywords : </span>{articleData.keywords}
-                </p>
-              </div>}
+              {articleData.keywords && (
+                <div>
+                  <p className="article-keywords">
+                    <span style={{ color: "#2b9247" }}> Keywords : </span>
+                    {articleData.keywords}
+                  </p>
+                </div>
+              )}
               {/* <div className="content-brake"></div>  */}
               {/* {articleData.article.body_content &&
                 renderContentInOrder(articleData.article.body_content, true)} */}

@@ -103,7 +103,8 @@ const Collection = ({ setIsCollectionOpen }) => {
               <div className="collection-item-list">
                 <p >{collectionName}</p>
                 <p>
-                {`${collections[collectionName].length} (articles)`}
+                {`${collections[collectionName].length}`}
+                {`${collections[collectionName].length > 1 ? "(articles)" : "(article)"}`}
                 </p>
               </div>
             </div>
