@@ -135,7 +135,7 @@ export const apiService = {
           page: page,
         },
         headers: {
-          Authorization: `Bearer ${token}`,
+          // Authorization: `Bearer ${token}`,
         },
       }
     ),
